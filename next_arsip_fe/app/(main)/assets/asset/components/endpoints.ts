@@ -1,0 +1,6 @@
+export const apiEndpointGet = '/asset-management/asset-data'
+export const apiEndpointCreate = '/asset-management/asset-create'
+export const apiEndpointUpdate = '/asset-management/asset-update'
+export const apiEndpointDelete = '/asset-management/asset-delete'
+export const apiEndpointGetCategory = '/asset-management/categories-data'
+export const apiEndpointGetDivision = '/setup/divisions/division-data'

@@ -1,0 +1,6 @@
+export const apiEndpointGet = '/setup/user-login/user-data'
+export const apiEndpointCreate = '/setup/user-login/user-create'
+export const apiEndpointUpdate = '/setup/user-login/user-update'
+export const apiEndpointDelete = '/setup/user-login/user-delete'
+export const apiEndpointGetNavDataEdit = '/setup/nav/user-data-edit'
+export const apiEndpointUpdateNav = '/setup/nav/user-insert'

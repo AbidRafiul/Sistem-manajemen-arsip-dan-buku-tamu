@@ -1,0 +1,27 @@
+.p-image-preview-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.p-image-preview-indicator {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.35);
+  cursor: pointer;
+
+  opacity: 0;                 
+  transition: opacity 0.2s ease;
+}
+
+.p-image-preview-container:hover .p-image-preview-indicator {
+  opacity: 1;                 
+}
+
+.p-image-preview-indicator .pi {
+  color: #fff;
+  font-size: 1.5rem;
+}

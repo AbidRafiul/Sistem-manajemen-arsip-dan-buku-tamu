@@ -1,0 +1,57 @@
+{
+    "name": "frontend",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint"
+    },
+    "dependencies": {
+        "@auth/core": "^0.41.0",
+        "@fullcalendar/core": "^6.1.18",
+        "@fullcalendar/daygrid": "^6.1.18",
+        "@fullcalendar/interaction": "^6.1.18",
+        "@fullcalendar/react": "^6.1.18",
+        "@fullcalendar/timegrid": "^6.1.18",
+        "axios": "^1.10.0",
+        "chart.js": "4.2.1",
+        "classnames": "^2.5.1",
+        "date-fns": "^2.30.0",
+        "date-fns-tz": "^2.0.0",
+        "formik": "^2.4.9",
+        "jose": "^6.1.2",
+        "jspdf": "^3.0.3",
+        "jspdf-autotable": "^5.0.2",
+        "next": "^14.2.3",
+        "next-auth": "^5.0.0-beta.30",
+        "nextjs-toploader": "^3.9.17",
+        "nookies": "^2.5.2",
+        "pdfjs-dist": "4.8.69",
+        "primeflex": "^3.3.1",
+        "primeicons": "^6.0.1",
+        "primereact": "10.2.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-pdf": "10.0.1",
+        "sass": "^1.89.2",
+        "socket.io-client": "^4.8.1",
+        "xlsx": "^0.18.5"
+    },
+    "overrides": {
+        "pdfjs-dist": "4.8.69"
+    },
+    "devDependencies": {
+        "@eslint/eslintrc": "^3",
+        "@types/estree": "^1.0.8",
+        "@types/json-schema": "^7.0.15",
+        "@types/node": "^20.19.25",
+        "@types/react": "^18",
+        "@types/react-dom": "^18",
+        "@types/trusted-types": "^2.0.7",
+        "eslint": "^8",
+        "eslint-config-next": "14.2.3",
+        "typescript": "^5"
+    }
+}
