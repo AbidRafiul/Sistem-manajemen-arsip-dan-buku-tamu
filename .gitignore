@@ -34,5 +34,6 @@ Thumbs.db
 # ========================
 **/.env
 **/.env.*
+!**/.env.example
 
 run_dev.sh
