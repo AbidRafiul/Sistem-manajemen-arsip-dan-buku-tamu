@@ -11,6 +11,11 @@ import documentGet from "./document_get.js";
 // GET /get - Get document metadata
 router.get("/get", documentGet);
 
+import documentDetail from "./document_detail.js";
+
+// GET /detail - Get document detail with versions and loans
+router.get("/detail", documentDetail);
+
 import documentVersionCreate from "./document_version_create.js";
 
 // POST /version/create - Create new document version
