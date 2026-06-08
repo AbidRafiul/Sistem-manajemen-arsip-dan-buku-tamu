@@ -21,6 +21,11 @@ import documentVersionCreate from "./document_version_create.js";
 // POST /version/create - Create new document version
 router.post("/version/create", documentVersionCreate);
 
+import documentVersionGet from "./document_version_get.js";
+
+// GET /version/get - Get document versions
+router.get("/version/get", documentVersionGet);
+
 import loanCreate from "./archive_loan_create.js";
 
 // POST /loan/create - Create new archive loan
