@@ -68,17 +68,6 @@ export async function up(knex) {
     table.datetime('UpdatedAt').notNullable();
   });
 
-  await knex.schema.createTable('mst_letter_types', (table) => {
-    table.increments('LetterTypeId').primary();
-    table.string('LetterTypeCode', 45).notNullable().unique();
-    table.string('LetterTypeName', 45).notNullable();
-    table.string('Direction', 45).notNullable();
-    table.string('Description', 45).nullable();
-    table.enu('Status', ['active', 'nonactive']).notNullable().defaultTo('active');
-    table.datetime('CreatedAt').notNullable();
-    table.datetime('UpdatedAt').notNullable();
-  });
-
   await knex.schema.createTable('mst_visit_purpose', (table) => {
     table.integer('VisitPurposeId').primary(); // Sesuai SQL Workbench: INT NOT NULL tanpa AI
     table.string('VisitPurposeCode', 45).notNullable().unique();
@@ -223,7 +212,6 @@ export async function down(knex) {
   await knex.schema.dropTableIfExists('mst_divisions');
   await knex.schema.dropTableIfExists('mst_menus');
   await knex.schema.dropTableIfExists('mst_visit_purpose');
-  await knex.schema.dropTableIfExists('mst_letter_types');
   await knex.schema.dropTableIfExists('mst_confidentiality_levels');
   await knex.schema.dropTableIfExists('mst_document_type');
   await knex.schema.dropTableIfExists('mst_archive_classifications');

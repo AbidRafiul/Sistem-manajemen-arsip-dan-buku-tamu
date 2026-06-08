@@ -148,7 +148,7 @@ router.post("/", async (req, res) => {
     Logging(error, {
       file: "user_create.js",
       func: "create",
-      request: body,
+      request: oPayload,
       response: oResult,
       user: username,
     });

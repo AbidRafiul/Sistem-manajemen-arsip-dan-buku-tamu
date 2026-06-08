@@ -1,11 +1,7 @@
-import { SignJWT } from "jose";
 import {
   formatDateSystem,
-  hmac,
   sanitizeString,
-  status,
 } from "./general.js";
-import axios from "axios";
 
 import DB from "../../../../core/config/knex.js";
 import Joi from "joi";
@@ -66,42 +62,6 @@ export const setLastKodeRegister = async (kode) => {
     const nId = 1;
     await DB("nomor_faktur").insert({ Kode: kode, Id: nId });
   }
-};
-
-
-
-export const getBalance = async (req, oJson, endpoint, baseURL) => {
-  const { data: oToken } = await getToken(req);
-
-  const oPayloadEncoded = await encodePayload(
-    req,
-    oJson,
-    endpoint,
-    oToken.access_token
-  );
-
-  const cSignature = await getSignature(
-    req,
-    oPayloadEncoded,
-    oToken.access_token,
-    endpoint
-  );
-
-  const { data: oBalance } = await axios.post(
-    baseURL + endpoint,
-    {
-      orderdata: oPayloadEncoded,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${oToken.access_token}`,
-        "X-Timestamp": formatDateSystem(),
-        "X-Signature": cSignature,
-      },
-    }
-  );
-
-  return oBalance;
 };
 
 export const Logging = async (

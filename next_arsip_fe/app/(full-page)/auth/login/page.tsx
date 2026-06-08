@@ -62,11 +62,13 @@ const LoginPage = () => {
         redirect: false,
       })
 
-      if (nAuth.error) {
+      if (nAuth?.error) {
         showError(toast, nAuth.error)
+        return;
       }
 
-      router.push("/");
+      router.replace("/dashboard");
+      router.refresh();
 
     } catch (error: any) {
       const e = error?.response?.data || error;
