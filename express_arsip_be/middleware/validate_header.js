@@ -142,7 +142,7 @@ export const validateBaseToken = async (req, res, next) => {
   }
 
 
-  if (!token && header.startsWith("Basic ")) {
+  if (!token || !header.startsWith("Basic ")) {
     return res.status(400).json({
       status: status.BAD_REQUEST,
       message: "No token provided",
@@ -187,7 +187,7 @@ export const validateAccessToken = async (req, res, next) => {
     return next()
   }
 
-  if (!token && header.startsWith("Bearer ")) {
+  if (!token || !header.startsWith("Bearer ")) {
     return res.status(400).json({
       status: status.BAD_REQUEST,
       message: "No token provided",

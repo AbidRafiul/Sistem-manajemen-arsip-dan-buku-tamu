@@ -3,6 +3,7 @@ import AccessToken from "./auth/token_get.js";
 import Login from "./auth/login.js";
 import Setup from "./setup/index.js";
 import Function from "./components/index.js";
+import ArsipDokumen from "./arsip_dokumen/index.js";
 
 import {
   contextMiddleware,
@@ -29,6 +30,13 @@ router.use(
   "/function",
   [validateAccessToken, validateSignature, contextMiddleware],
   Function
+);
+
+// Arsip Dokumen
+router.use(
+  "/arsip-dokumen",
+  [validateAccessToken, validateSignature, contextMiddleware],
+  ArsipDokumen
 );
 
 export default router;
