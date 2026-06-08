@@ -25,7 +25,7 @@ Axios.interceptors.response.use(
 async function postData(endpoint: string, data = {}, customHeader = {}) {
     try {
         // console.log(process.env.NEXT_PUBLIC_API_DIR_PATH)
-        const header = {
+        const defaultHeader = {
             'X-ENDPOINT': endpoint,
             'X-Custom-Header': JSON.stringify({
                 'X-Level': "1",
@@ -33,8 +33,13 @@ async function postData(endpoint: string, data = {}, customHeader = {}) {
             }),
         };
 
+        const headers = {
+            ...defaultHeader,
+            ...customHeader,
+        };
+
         const response = await Axios.post('', data, {
-            headers: header,
+            headers,
         });
         return response;
     } catch (error: any) {
