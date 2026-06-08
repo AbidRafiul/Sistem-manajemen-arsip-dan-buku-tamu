@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-import { UserCredential } from "./types/next-auth";
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
@@ -27,6 +26,9 @@ export async function middleware(req: NextRequest) {
 
     if (!a2fCookie) {
       throw new Error('No A2F cookie');
+    }
+    if (!a2rCookie) {
+      throw new Error('No A2R cookie');
     }
 
     const secret = new TextEncoder().encode(process.env.USER_KEY);
