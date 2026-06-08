@@ -21,6 +21,11 @@ import loanCreate from "./archive_loan_create.js";
 // POST /loan/create - Create new archive loan
 router.post("/loan/create", loanCreate);
 
+import loanGet from "./archive_loan_get.js";
+
+// GET /loan/get - Get archive loans
+router.get("/loan/get", loanGet);
+
 import loanApprove from "./archive_loan_approve.js";
 
 // POST /loan/approve - Approve or reject archive loan
