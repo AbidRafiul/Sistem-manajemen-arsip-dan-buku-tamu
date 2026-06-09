@@ -9,18 +9,18 @@ const router = express.Router();
 // [READ] GET ALL DATA
 router.get("/", async (req, res) => {
   try {
-    const aData = await DB("mst_departments")
-      .select("DepartmentId", "DepartmentCode", "DepartmentName", "Status")
+    const aData = await DB("mst_branches")
+      .select("BranchId", "BranchCode", "BranchName", "Status")
       .where("Status", "active");
 
     return res.status(200).json({
       status: status.SUKSES,
-      message: "Data departemen berhasil ditarik",
+      message: "Data branch berhasil ditarik",
       datetime: formatDateSystem(),
       data: aData,
     });
   } catch (error) {
-    Logging(error, { file: "department_get.js", func: "getAllDepartment" });
+    Logging(error, { file: "branch_get.js", func: "getAllBranch" });
     return res.status(500).json({ status: status.BAD_REQUEST, message: "Terjadi kesalahan sistem", datetime: formatDateSystem() });
   }
 });
@@ -33,9 +33,8 @@ router.post("/", async (req, res) => {
   try {
     const cValidation = await validatePayload(
       {
-        DepartmentCode: Joi.string().required().label("Kode Departemen"),
-        DepartmentName: Joi.string().required().label("Nama Departemen"),
-        DivisionId: Joi.number().required().label("ID Divisi"),
+        BranchCode: Joi.string().required().label("Kode Branch"),
+        BranchName: Joi.string().required().label("Nama Branch"),
       },
       { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
       oPayload
@@ -43,10 +42,9 @@ router.post("/", async (req, res) => {
 
     if (cValidation) return res.status(422).json({ status: status.BAD_REQUEST, message: cValidation, datetime: formatDateSystem() });
 
-    await DB("mst_departments").insert({
-      DepartmentCode: oPayload.DepartmentCode,
-      DepartmentName: oPayload.DepartmentName,
-      DivisionId: oPayload.DivisionId,
+    await DB("mst_branches").insert({
+      BranchCode: oPayload.BranchCode,
+      BranchName: oPayload.BranchName,
       Status: "active",
       CreatedAt: dNow,
       UpdatedAt: dNow,
@@ -54,49 +52,48 @@ router.post("/", async (req, res) => {
 
     return res.status(201).json({ status: status.SUKSES, message: "Berhasil ditambahkan!", datetime: formatDateSystem() });
   } catch (error) {
-    Logging(error, { file: "department_create.js", func: "createDepartment", request: oPayload });
+    Logging(error, { file: "branch_create.js", func: "createBranch", request: oPayload });
     return res.status(500).json({ status: status.BAD_REQUEST, message: "Gagal menyimpan", datetime: formatDateSystem() });
   }
 });
 
 // [UPDATE] EDIT DATA
-router.put("/:DepartmentId", async (req, res) => {
+router.put("/:BranchId", async (req, res) => {
   const oPayload = req.body;
-  const cDepartmentId = req.params.DepartmentId;
+  const cBranchId = req.params.BranchId;
   const dNow = new Date();
 
   try {
-    const nUpdated = await DB("mst_departments")
-      .where("DepartmentId", cDepartmentId)
+    const nUpdated = await DB("mst_branches")
+      .where("BranchId", cBranchId)
       .update({
-        DepartmentCode: oPayload.DepartmentCode,
-        DepartmentName: oPayload.DepartmentName,
-        DivisionId: oPayload.DivisionId,
+        BranchCode: oPayload.BranchCode,
+        BranchName: oPayload.BranchName,
         UpdatedAt: dNow,
       });
 
     if (!nUpdated) return res.status(404).json({ message: "Data tidak ditemukan" });
     return res.status(200).json({ status: status.SUKSES, message: "Berhasil diupdate!" });
   } catch (error) {
-    Logging(error, { file: "department_update.js", func: "updateDepartment", request: oPayload });
+    Logging(error, { file: "branch_update.js", func: "updateBranch", request: oPayload });
     return res.status(500).json({ message: "Gagal mengupdate" });
   }
 });
 
 // [DELETE] SOFT DELETE
-router.delete("/:DepartmentId", async (req, res) => {
-  const cDepartmentId = req.params.DepartmentId;
+router.delete("/:BranchId", async (req, res) => {
+  const cBranchId = req.params.BranchId;
   const dNow = new Date();
 
   try {
-    const nUpdated = await DB("mst_departments")
-      .where("DepartmentId", cDepartmentId)
+    const nUpdated = await DB("mst_branches")
+      .where("BranchId", cBranchId)
       .update({ Status: "nonactive", UpdatedAt: dNow });
 
     if (!nUpdated) return res.status(404).json({ message: "Data tidak ditemukan" });
     return res.status(200).json({ status: status.SUKSES, message: "Berhasil dihapus!" });
   } catch (error) {
-    Logging(error, { file: "department_delete.js", func: "deleteDepartment" });
+    Logging(error, { file: "branch_delete.js", func: "deleteBranch" });
     return res.status(500).json({ message: "Gagal menghapus" });
   }
 });

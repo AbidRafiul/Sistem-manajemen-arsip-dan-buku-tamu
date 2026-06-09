@@ -9,18 +9,18 @@ const router = express.Router();
 // [READ] GET ALL DATA
 router.get("/", async (req, res) => {
   try {
-    const aData = await DB("mst_departments")
-      .select("DepartmentId", "DepartmentCode", "DepartmentName", "Status")
+    const aData = await DB("mst_divisions")
+      .select("DivisionId", "DivisionCode", "DivisionName", "Status")
       .where("Status", "active");
 
     return res.status(200).json({
       status: status.SUKSES,
-      message: "Data departemen berhasil ditarik",
+      message: "Data divisi berhasil ditarik",
       datetime: formatDateSystem(),
       data: aData,
     });
   } catch (error) {
-    Logging(error, { file: "department_get.js", func: "getAllDepartment" });
+    Logging(error, { file: "division_get.js", func: "getAllDivision" });
     return res.status(500).json({ status: status.BAD_REQUEST, message: "Terjadi kesalahan sistem", datetime: formatDateSystem() });
   }
 });
@@ -33,9 +33,9 @@ router.post("/", async (req, res) => {
   try {
     const cValidation = await validatePayload(
       {
-        DepartmentCode: Joi.string().required().label("Kode Departemen"),
-        DepartmentName: Joi.string().required().label("Nama Departemen"),
-        DivisionId: Joi.number().required().label("ID Divisi"),
+        DivisionCode: Joi.string().required().label("Kode Divisi"),
+        DivisionName: Joi.string().required().label("Nama Divisi"),
+        BranchId: Joi.number().required().label("ID Branch"),
       },
       { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
       oPayload
@@ -43,10 +43,10 @@ router.post("/", async (req, res) => {
 
     if (cValidation) return res.status(422).json({ status: status.BAD_REQUEST, message: cValidation, datetime: formatDateSystem() });
 
-    await DB("mst_departments").insert({
-      DepartmentCode: oPayload.DepartmentCode,
-      DepartmentName: oPayload.DepartmentName,
-      DivisionId: oPayload.DivisionId,
+    await DB("mst_divisions").insert({
+      DivisionCode: oPayload.DivisionCode,
+      DivisionName: oPayload.DivisionName,
+      BranchId: oPayload.BranchId,
       Status: "active",
       CreatedAt: dNow,
       UpdatedAt: dNow,
@@ -54,49 +54,49 @@ router.post("/", async (req, res) => {
 
     return res.status(201).json({ status: status.SUKSES, message: "Berhasil ditambahkan!", datetime: formatDateSystem() });
   } catch (error) {
-    Logging(error, { file: "department_create.js", func: "createDepartment", request: oPayload });
+    Logging(error, { file: "division_create.js", func: "createDivision", request: oPayload });
     return res.status(500).json({ status: status.BAD_REQUEST, message: "Gagal menyimpan", datetime: formatDateSystem() });
   }
 });
 
 // [UPDATE] EDIT DATA
-router.put("/:DepartmentId", async (req, res) => {
+router.put("/:DivisionId", async (req, res) => {
   const oPayload = req.body;
-  const cDepartmentId = req.params.DepartmentId;
+  const cDivisionId = req.params.DivisionId;
   const dNow = new Date();
 
   try {
-    const nUpdated = await DB("mst_departments")
-      .where("DepartmentId", cDepartmentId)
+    const nUpdated = await DB("mst_divisions")
+      .where("DivisionId", cDivisionId)
       .update({
-        DepartmentCode: oPayload.DepartmentCode,
-        DepartmentName: oPayload.DepartmentName,
-        DivisionId: oPayload.DivisionId,
+        DivisionCode: oPayload.DivisionCode,
+        DivisionName: oPayload.DivisionName,
+        BranchId: oPayload.BranchId,
         UpdatedAt: dNow,
       });
 
     if (!nUpdated) return res.status(404).json({ message: "Data tidak ditemukan" });
     return res.status(200).json({ status: status.SUKSES, message: "Berhasil diupdate!" });
   } catch (error) {
-    Logging(error, { file: "department_update.js", func: "updateDepartment", request: oPayload });
+    Logging(error, { file: "division_update.js", func: "updateDivision", request: oPayload });
     return res.status(500).json({ message: "Gagal mengupdate" });
   }
 });
 
 // [DELETE] SOFT DELETE
-router.delete("/:DepartmentId", async (req, res) => {
-  const cDepartmentId = req.params.DepartmentId;
+router.delete("/:DivisionId", async (req, res) => {
+  const cDivisionId = req.params.DivisionId;
   const dNow = new Date();
 
   try {
-    const nUpdated = await DB("mst_departments")
-      .where("DepartmentId", cDepartmentId)
+    const nUpdated = await DB("mst_divisions")
+      .where("DivisionId", cDivisionId)
       .update({ Status: "nonactive", UpdatedAt: dNow });
 
     if (!nUpdated) return res.status(404).json({ message: "Data tidak ditemukan" });
     return res.status(200).json({ status: status.SUKSES, message: "Berhasil dihapus!" });
   } catch (error) {
-    Logging(error, { file: "department_delete.js", func: "deleteDepartment" });
+    Logging(error, { file: "division_delete.js", func: "deleteDivision" });
     return res.status(500).json({ message: "Gagal menghapus" });
   }
 });
