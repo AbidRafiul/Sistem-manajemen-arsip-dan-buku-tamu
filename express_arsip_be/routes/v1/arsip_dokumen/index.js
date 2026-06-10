@@ -6,6 +6,16 @@ import documentCreate from "./document_create.js";
 // POST /create - Create new document
 router.post("/create", documentCreate);
 
+import documentUpdate from "./document_update.js";
+
+// POST /update - Update document metadata
+router.post("/update", documentUpdate);
+
+import documentDelete from "./document_delete.js";
+
+// POST /delete - Soft delete document metadata
+router.post("/delete", documentDelete);
+
 import documentGet from "./document_get.js";
 
 // GET /get - Get document metadata
