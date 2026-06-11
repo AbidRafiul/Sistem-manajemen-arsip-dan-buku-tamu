@@ -6,6 +6,12 @@ import documentCreate from "./document_create.js";
 // POST /create - Create new document
 router.post("/create", documentCreate);
 
+import documentUpload from "./document_upload.js";
+import { uploadDocument } from "../../../middleware/upload_document.js";
+
+// POST /upload - Upload document file
+router.post("/upload", uploadDocument, documentUpload);
+
 import documentUpdate from "./document_update.js";
 
 // POST /update - Update document metadata
@@ -30,6 +36,11 @@ import documentVersionCreate from "./document_version_create.js";
 
 // POST /version/create - Create new document version
 router.post("/version/create", documentVersionCreate);
+
+import documentVersionUpload from "./document_version_upload.js";
+
+// POST /version/upload - Upload document file and create version
+router.post("/version/upload", uploadDocument, documentVersionUpload);
 
 import documentVersionGet from "./document_version_get.js";
 
