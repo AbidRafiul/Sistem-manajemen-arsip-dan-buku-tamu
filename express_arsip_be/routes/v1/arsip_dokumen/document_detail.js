@@ -10,27 +10,48 @@ const getDocumentDetail = async (req, res) => {
     if (!nDocumentId) {
       const oResult = {
         status: "error",
-        message: "DocumentId is required",
+        message: "DocumentId wajib diisi",
       };
-
       return res.status(422).json(oResult);
     }
 
-    const oDocument = await DB("trx_documents")
+    // Ambil data dokumen + join ke semua master
+    const oDocument = await DB("trx_documents as d")
       .select(
-        "DocumentId",
-        "ArchiveClassificationId",
-        "DocumentName",
-        "DocumentNumber",
-        "DocumentDate",
-        "ExpiredDate",
-        "PicName",
-        "Status",
-        "CreatedAt",
-        "UpdatedAt"
+        "d.DocumentId",
+        "d.DocumentName",
+        "d.DocumentNumber",
+        "d.DocumentDate",
+        "d.ExpiredDate",
+        "d.PicName",
+        "d.PhysicalLocation",
+        "d.QRCode",
+        "d.Tags",
+        "d.Status",
+        "d.CreatedAt",
+        "d.UpdatedAt",
+        // Master data
+        "dt.DocumentTypeId",
+        "dt.DocumentTypeName",
+        "dc.DocumentCategoryId",
+        "dc.DocumentCategoryName",
+        "ac.ArchiveClassificationId",
+        "ac.ClassificationCode",
+        "ac.ClassificationName",
+        "cl.ConfidentialityLevelId",
+        "cl.ConfidentialityLevelName",
+        "cl.ConfidentialityLevel",
+        "rs.RetentionScheduleId",
+        "rs.RetentionName",
+        "rs.RetentionYears",
+        "rs.RetentionAction"
       )
-      .where("DocumentId", nDocumentId)
-      .where("Status", "active")
+      .leftJoin("mst_document_type as dt", "d.DocumentTypeId", "dt.DocumentTypeId")
+      .leftJoin("mst_document_categories as dc", "d.DocumentCategoryId", "dc.DocumentCategoryId")
+      .leftJoin("mst_archive_classifications as ac", "d.ArchiveClassificationId", "ac.ArchiveClassificationId")
+      .leftJoin("mst_confidentiality_levels as cl", "d.ConfidentialityLevelId", "cl.ConfidentialityLevelId")
+      .leftJoin("mst_retention_schedule as rs", "d.RetentionScheduleId", "rs.RetentionScheduleId")
+      .where("d.DocumentId", nDocumentId)
       .first();
 
     if (!oDocument) {
@@ -38,10 +59,10 @@ const getDocumentDetail = async (req, res) => {
         status: "error",
         message: "Document not found",
       };
-
       return res.status(404).json(oResult);
     }
 
+    // Ambil semua versi dokumen (terbaru dulu), beserta info approval
     const vaVersions = await DB("trx_document_versions")
       .select(
         "VersionId",
@@ -49,26 +70,53 @@ const getDocumentDetail = async (req, res) => {
         "VersionNumber",
         "ChangeNotes",
         "FilePath",
+        "UploadedBy",
+        "ApprovalStatus",
+        "ApprovedBy",
+        "ApprovedAt",
+        "ApprovalNotes",
         "CreatedAt",
         "UpdatedAt"
       )
       .where("DocumentId", nDocumentId)
       .orderBy("VersionNumber", "desc");
 
+    // Ambil riwayat peminjaman (terbaru dulu)
     const vaLoans = await DB("trx_archive_loans")
       .select(
         "LoanId",
         "DocumentId",
         "BorrowerName",
         "LoanDate",
+        "ExpectedReturnDate",
         "ReturnDate",
         "Purpose",
         "Status",
+        "ApprovedBy",
+        "ApprovedAt",
+        "ApprovalNotes",
+        "IsOverdue",
         "CreatedAt",
         "UpdatedAt"
       )
       .where("DocumentId", nDocumentId)
       .orderBy("LoanId", "desc");
+
+    // Cek apakah ada proposal pemusnahan aktif
+    const oDestructionProposal = await DB("trx_destruction_proposals")
+      .select(
+        "ProposalId",
+        "Status",
+        "ProposedBy",
+        "ProposedAt",
+        "ReviewedBy",
+        "ReviewedAt",
+        "ReviewNotes"
+      )
+      .where("DocumentId", nDocumentId)
+      .whereNotIn("Status", ["rejected", "executed"])
+      .orderBy("ProposalId", "desc")
+      .first();
 
     const oResult = {
       status: "success",
@@ -77,6 +125,7 @@ const getDocumentDetail = async (req, res) => {
         document: oDocument,
         versions: vaVersions,
         loans: vaLoans,
+        destructionProposal: oDestructionProposal || null,
       },
     };
 
@@ -93,7 +142,7 @@ const getDocumentDetail = async (req, res) => {
       func: "getDocumentDetail",
       request: oQuery,
       response: oResult,
-      user: req?.auth?.username || "system",
+      user: req?.context?.Username || "system",
     });
 
     return res.status(500).json(oResult);

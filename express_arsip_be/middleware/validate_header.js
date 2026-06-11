@@ -120,6 +120,8 @@ export const validateSignature = async (req, res, next) => {
       role: oUser.Role,
     }
 
+    req.context = oUser;
+
     next();
   } catch (error) {
     Logging(error)

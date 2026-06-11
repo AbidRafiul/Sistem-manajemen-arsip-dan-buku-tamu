@@ -1,20 +1,21 @@
-import Knex from "../../../core/config/knex.js";
+import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 
-const approveArchiveLoan = async (req, res) => {
+const approveDocumentVersion = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const nLoanId = oPayload.LoanId;
+    const nVersionId = oPayload.VersionId;
     const cStatus = oPayload.Status;
     const cApprovalNotes = oPayload.ApprovalNotes || null;
     const cApprovedBy = req?.context?.Username || oPayload.ApprovedBy || "system";
     const dNow = new Date();
 
-    if (!nLoanId) {
+    // Validasi input
+    if (!nVersionId) {
       const oResult = {
         status: "error",
-        message: "LoanId wajib diisi",
+        message: "VersionId wajib diisi",
       };
       return res.status(422).json(oResult);
     }
@@ -27,49 +28,46 @@ const approveArchiveLoan = async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    // Cek loan ada dan masih pending
-    const oLoan = await Knex("trx_archive_loans")
-      .where("LoanId", nLoanId)
+    // Cek versi ada dan masih pending
+    const oVersion = await DB("trx_document_versions")
+      .where("VersionId", nVersionId)
       .first();
 
-    if (!oLoan) {
+    if (!oVersion) {
       const oResult = {
         status: "error",
-        message: "Archive loan not found",
+        message: "Document version not found",
       };
       return res.status(404).json(oResult);
     }
 
-    if (oLoan.Status !== "pending") {
+    if (oVersion.ApprovalStatus !== "pending") {
       const oResult = {
         status: "error",
-        message: `Peminjaman sudah diproses dengan status '${oLoan.Status}'`,
+        message: `Versi dokumen sudah diproses sebelumnya dengan status '${oVersion.ApprovalStatus}'`,
       };
       return res.status(422).json(oResult);
     }
 
-    // Jika approved, ubah status jadi 'borrowed' (langsung bisa dipinjam)
-    const cNewStatus = cStatus === "approved" ? "borrowed" : "rejected";
-
     const oData = {
-      Status: cNewStatus,
+      ApprovalStatus: cStatus,
       ApprovedBy: cApprovedBy,
       ApprovedAt: dNow,
       ApprovalNotes: cApprovalNotes,
       UpdatedAt: dNow,
     };
 
-    await Knex("trx_archive_loans")
-      .where("LoanId", nLoanId)
+    await DB("trx_document_versions")
+      .where("VersionId", nVersionId)
       .update(oData);
 
     const oResult = {
       status: "success",
-      message: `Peminjaman arsip berhasil di-${cStatus === "approved" ? "setujui (status: borrowed)" : "tolak"}`,
+      message: `Versi dokumen berhasil di-${cStatus === "approved" ? "setujui" : "tolak"}`,
       data: {
-        LoanId: nLoanId,
-        DocumentId: oLoan.DocumentId,
-        BorrowerName: oLoan.BorrowerName,
+        VersionId: nVersionId,
+        DocumentId: oVersion.DocumentId,
+        VersionNumber: oVersion.VersionNumber,
         ...oData,
       },
     };
@@ -78,13 +76,13 @@ const approveArchiveLoan = async (req, res) => {
   } catch (error) {
     const oResult = {
       status: "error",
-      message: "Failed to update archive loan",
+      message: "Failed to process version approval",
       error: error.message,
     };
 
     Logging(error, {
-      file: "archive_loan_approve.js",
-      func: "approveArchiveLoan",
+      file: "document_version_approve.js",
+      func: "approveDocumentVersion",
       request: oPayload,
       response: oResult,
       user: req?.context?.Username || "system",
@@ -94,4 +92,4 @@ const approveArchiveLoan = async (req, res) => {
   }
 };
 
-export default approveArchiveLoan;
+export default approveDocumentVersion;
