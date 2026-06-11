@@ -90,7 +90,7 @@ router.post("/", async (req, res) => {
       Telp: oPayload.Telp,
       Role: oPayload.Role,
       Status: oPayload.Status,
-      Divisioncode: oPayload.Divisioncode,
+      // Divisioncode: oPayload.Divisioncode,
       UniqueId: cUniqueId,
       CreatedAt: formatDateSystem(),
       UpdatedAt: formatDateSystem(),
@@ -148,7 +148,7 @@ router.post("/", async (req, res) => {
     Logging(error, {
       file: "user_create.js",
       func: "create",
-      request: body,
+      request: oPayload,
       response: oResult,
       user: username,
     });
