@@ -36,7 +36,9 @@
     "nodemailer": "^6.10.1",
     "pg": "^8.16.3",
     "pizzip": "^3.2.0",
-    "sequelize": "^6.37.5"
+    "qrcode": "^1.5.4",
+    "sequelize": "^6.37.5",
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",
