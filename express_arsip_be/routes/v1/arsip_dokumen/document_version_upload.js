@@ -12,42 +12,69 @@ const uploadDocumentVersion = async (req, res) => {
         status: "error",
         message: "File dokumen wajib diunggah",
       };
-
       return res.status(400).json(oResult);
     }
 
     const cFilePath = `/uploads/documents/${oFile.filename}`;
     const nDocumentId = parseInt(oPayload.DocumentId, 10);
-    const cChangeNotes = oPayload.ChangeNotes;
+    const cChangeNotes = oPayload.ChangeNotes || null;
+    const cUploadedBy = req?.context?.Username || oPayload.UploadedBy || "system";
+    const dNow = new Date();
 
-    const vaLastVersion = await DB("trx_document_versions")
+    if (!nDocumentId) {
+      const oResult = {
+        status: "error",
+        message: "DocumentId wajib diisi",
+      };
+      return res.status(422).json(oResult);
+    }
+
+    // Verifikasi dokumen aktif
+    const oDocument = await DB("trx_documents")
+      .where("DocumentId", nDocumentId)
+      .where("Status", "active")
+      .first();
+
+    if (!oDocument) {
+      const oResult = {
+        status: "error",
+        message: "Document not found or already inactive",
+      };
+      return res.status(404).json(oResult);
+    }
+
+    // Hitung nomor versi berikutnya
+    const oLastVersion = await DB("trx_document_versions")
       .select("VersionNumber")
       .where("DocumentId", nDocumentId)
       .orderBy("VersionNumber", "desc")
-      .limit(1);
+      .first();
 
-    let nVersionNumber = 1;
-    if (vaLastVersion.length > 0) {
-      nVersionNumber = vaLastVersion[0].VersionNumber + 1;
-    }
-
-    const dNow = new Date();
+    const nVersionNumber = oLastVersion ? oLastVersion.VersionNumber + 1 : 1;
 
     const oData = {
       DocumentId: nDocumentId,
       VersionNumber: nVersionNumber,
       ChangeNotes: cChangeNotes,
       FilePath: cFilePath,
+      UploadedBy: cUploadedBy,
+      ApprovalStatus: "pending",
+      ApprovedBy: null,
+      ApprovedAt: null,
+      ApprovalNotes: null,
       CreatedAt: dNow,
       UpdatedAt: dNow,
     };
 
-    await DB("trx_document_versions").insert(oData);
+    const [nVersionId] = await DB("trx_document_versions").insert(oData);
 
     const oResult = {
       status: "success",
-      message: "Versi dokumen berhasil diunggah",
-      data: oData,
+      message: `Versi dokumen V${nVersionNumber} berhasil diunggah dan menunggu approval`,
+      data: {
+        VersionId: nVersionId,
+        ...oData,
+      },
     };
 
     return res.status(200).json(oResult);
@@ -63,7 +90,7 @@ const uploadDocumentVersion = async (req, res) => {
       func: "uploadDocumentVersion",
       request: oPayload,
       response: oResult,
-      user: req?.auth?.username || "system",
+      user: req?.context?.Username || "system",
     });
 
     return res.status(500).json(oResult);

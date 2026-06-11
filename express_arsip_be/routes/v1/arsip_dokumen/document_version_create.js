@@ -2,8 +2,8 @@ import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 
 const createDocumentVersion = async (req, res) => {
+  const oPayload = req.body;
   try {
-    const oPayload = req.body;
 
     const nDocumentId = oPayload.DocumentId;
     const nVersionNumber = oPayload.VersionNumber;
