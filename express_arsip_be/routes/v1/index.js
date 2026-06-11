@@ -5,6 +5,7 @@ import Setup from "./setup/index.js";
 import Function from "./components/index.js";
 import MasterData from "./master/index.js";
 import ResetPassword from "./auth/reset_password.js";
+import ArsipDokumen from "./arsip_dokumen/index.js";
 
 import {
   contextMiddleware,
@@ -38,6 +39,13 @@ router.use(
   "/master",
   [validateAccessToken, validateSignature, contextMiddleware],
   MasterData
+)
+
+// Arsip Dokumen
+router.use(
+  "/arsip-dokumen",
+  [validateAccessToken, validateSignature, contextMiddleware],
+  ArsipDokumen
 );
 
 export default router;
