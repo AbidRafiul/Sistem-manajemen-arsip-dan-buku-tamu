@@ -14,8 +14,6 @@ interface CustomHeaders {
     'x-credential'?: string;
 }
 
-
-
 export const POST = async (request: NextRequest) => {
     try {
         // Check cookies

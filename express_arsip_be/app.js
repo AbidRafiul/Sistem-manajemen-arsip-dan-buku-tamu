@@ -33,7 +33,7 @@ app.use(
       "X-Signature",
       "X-Credential",
     ],
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     optionSuccessStatus: 200,
   })
 );
