@@ -6,7 +6,7 @@ import Function from "./components/index.js";
 import MasterData from "./master/index.js";
 import ResetPassword from "./auth/reset_password.js";
 import ArsipDokumen from "./arsip_dokumen/index.js";
-import BukuTamu from "./buku_tamu/index.js"; 
+import SuratMasuk from "./correspondence/index.js"
 
 import {
   contextMiddleware,
@@ -49,10 +49,11 @@ router.use(
   ArsipDokumen
 );
 
-// Buku Tamu
-router.use(
-  "/buku-tamu", 
-  BukuTamu     
-);
+//Surat Masuk (Correspondence)
+router.use (
+  "/correspondence",
+  [validateAccessToken, validateSignature, contextMiddleware],
+  SuratMasuk
+)
 
 export default router;
