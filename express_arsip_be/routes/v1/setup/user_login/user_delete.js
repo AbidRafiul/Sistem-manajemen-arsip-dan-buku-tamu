@@ -54,11 +54,12 @@ router.post("/", async (req, res) => {
     }
 
     // Hapus data berdasarkan kode
-    const exists = await DB("user_credential")
+    const updatedRows = await DB("user_credential")
       .whereIn('UniqueId', oPayload.UniqueId)
-      .del();
+      .update({ Status: '0' }); 
 
-    if (!exists) {
+    // Jika tidak ada baris yang ter-update (berarti ID tidak ditemukan)
+    if (updatedRows === 0) {
       return res.status(404).json({
         status: status.NOT_FOUND,
         message: "Data dengan kode tersebut tidak ditemukan",
@@ -66,13 +67,13 @@ router.post("/", async (req, res) => {
       });
     } 
 
-      await DB("user_navigation")
-        .whereIn('UniqueId', oPayload.UniqueId)
-        .del();
+      // await DB("user_navigation")
+      //   .whereIn('UniqueId', oPayload.UniqueId)
+      //   .del();
 
     return res.status(200).json({
       status: status.SUKSES,
-      message: "Data berhasil dihapus",
+      message: "Data berhasil dinonaktifkan (Soft Delete)",
       datetime: formatDateSystem(),
     });
   } catch (error) {

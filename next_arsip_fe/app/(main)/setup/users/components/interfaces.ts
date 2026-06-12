@@ -95,10 +95,11 @@ export interface ListMenuDisplayProps {
 }
 
 export interface RoleColors {
-    admin: 'success' | 'info' | 'warning' | 'danger' | null | undefined;
-    manager: 'success' | 'info' | 'warning' | 'danger' | null | undefined;
-    technician: 'success' | 'info' | 'warning' | 'danger' | null | undefined;
-    logistics: 'success' | 'info' | 'warning' | 'danger' | null | undefined;
-    employee: 'success' | 'info' | 'warning' | 'danger' | null | undefined;
-    superadmin: 'success' | 'info' | 'warning' | 'danger' | null | undefined;
+    'superadmin': 'success' | 'info' | 'warning' | 'danger' | null | undefined;
+    'Pimpinan': 'success' | 'info' | 'warning' | 'danger' | null | undefined;
+    'Sekretaris': 'success' | 'info' | 'warning' | 'danger' | null | undefined;
+    'Staff Arsip': 'success' | 'info' | 'warning' | 'danger' | null | undefined;
+    'Staff Umum': 'success' | 'info' | 'warning' | 'danger' | null | undefined;
+    'Resepsionis': 'success' | 'info' | 'warning' | 'danger' | null | undefined;
+    'Auditor': 'success' | 'info' | 'warning' | 'danger' | null | undefined;
 }
