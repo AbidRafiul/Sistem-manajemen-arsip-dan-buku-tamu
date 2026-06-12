@@ -48,19 +48,11 @@ router.use(
   ArsipDokumen
 );
 
-<<<<<<< HEAD
-// Buku Tamu
-router.use(
-  "/buku_tamu", 
-  BukuTamu     
-);
-=======
 //Surat Masuk (Correspondence)
 router.use (
   "/correspondence",
   [validateAccessToken, validateSignature, contextMiddleware],
   SuratMasuk
 )
->>>>>>> e042541625035dfe45b726d2946e1bc08bcc02bd
 
 export default router;
