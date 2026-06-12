@@ -78,12 +78,8 @@ const routeMiddleware = async (searchUrl: string) => {
         return '99';
     }
 
-<<<<<<< Updated upstream
-    const dSessionExp = parse(session?.expires, 'yyyy-MM-dd HH:mm:ss', new Date());
-=======
     // 2. Validasi Waktu Kedaluwarsa Session (Token Lifecycle)
     const dSessionExp = new Date(session.expires);
->>>>>>> Stashed changes
     const dNow = new Date();
 
     if ((dNow.getTime() > dSessionExp.getTime())) {
@@ -92,16 +88,11 @@ const routeMiddleware = async (searchUrl: string) => {
 
     if (session.user.uniqueId) {
         try {
-<<<<<<< Updated upstream
-            const resp = await axios.post(
-                `${process.env.NEXT_PUBLIC_API_DIR_PATH}`,
-=======
             // Ambil menu langsung dari Express API, bukan lewat Next interceptor.
             const apiBaseUrl = (process.env.API_URL || process.env.NEXT_PUBLIC_URL_API || 'http://localhost:8000/api/v1').replace(/\/$/, '');
 
             const resp = await axios.post(
                 `${apiBaseUrl}/setup/nav/user-data`,
->>>>>>> Stashed changes
                 { UniqueId: session?.user?.uniqueId },
                 {
                     headers: {
