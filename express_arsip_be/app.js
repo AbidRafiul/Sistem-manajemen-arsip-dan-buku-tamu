@@ -36,13 +36,8 @@ app.use(
       "X-ENDPOINT",
       "x-endpoint",
     ],
-<<<<<<< Updated upstream
-    methods: ["GET", "POST"],
-    optionSuccessStatus: 200,
-=======
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     optionsSuccessStatus: 200,
->>>>>>> Stashed changes
   })
 );
 
@@ -72,10 +67,4 @@ app.use((req, res, next) => {
   });
 });
 
-<<<<<<< Updated upstream
-
-
-
-=======
->>>>>>> Stashed changes
 export default app;
