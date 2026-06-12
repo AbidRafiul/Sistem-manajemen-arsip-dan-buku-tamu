@@ -114,6 +114,6 @@ export interface RootLayoutProps {
 }
 
 export type TZKey = "wib" | "wita" | "wit" | "utc";
-export type UserRole = "superadmin" | "admin" | "employee" | "technician" | "manager" | "logistics";
+export type UserRole = 'superadmin' | 'Pimpinan' | 'Sekretaris' | 'Staff Arsip' | 'Staff Umum' | 'Resepsionis' | 'Auditor';
 
 

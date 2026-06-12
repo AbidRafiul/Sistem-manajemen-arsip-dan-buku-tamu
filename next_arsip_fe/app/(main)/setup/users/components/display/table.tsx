@@ -48,12 +48,13 @@ const Table = ({
 
     const roleBodyTemplate = (rowData: TableData) => {
         const roleColors: RoleColors = {
-            superadmin: "danger",
-            admin: "danger",
-            manager: "warning",
-            technician: "info",
-            logistics: "info",
-            employee: "success"
+           'superadmin': "danger",
+           'Pimpinan': "warning",
+           'Sekretaris': "info",
+           'Staff Arsip': "success",
+           'Staff Umum': "success",
+           'Resepsionis': "info",
+           'Auditor': "warning"
         };
 
 
