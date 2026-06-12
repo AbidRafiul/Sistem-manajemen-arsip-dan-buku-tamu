@@ -1,52 +1,36 @@
 import express from "express";
-import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { formatDateSystem } from "../components/tools/general.js";
-import { getPresignedUrl } from "../../../core/components/tools/minio_helper.js";
 
 const router = express.Router();
 
 router.post("/", async (req, res) => {
-  const { body: oPayload } = req;
   try {
-    const page = parseInt(oPayload.page || 1, 10) || 1;
-    const limit = parseInt(oPayload.limit || 20, 10) || 20;
-    const offset = (page - 1) * limit;
+    const today = formatDateSystem(new Date(), "yyyy-MM-dd");
 
-    const q = DB("trx_visitations as t")
-      .select(
-        "t.*",
-        "mp.Name as VisitPurposeName",
-        "u.Fullname as HostFullname"
-      )
-      .leftJoin("mst_visit_purposes as mp", "t.VisitPurposeId", "mp.Id")
-      .leftJoin("user_credential as u", "t.HostUserId", "u.UniqueId");
+    const [{ today_total }] = await DB.raw("SELECT COUNT(*) as today_total FROM trx_visitations WHERE DATE(CheckInTime)=?", [today]);
+    const [{ today_in }] = await DB.raw("SELECT COUNT(*) as today_in FROM trx_visitations WHERE DATE(CheckInTime)=? AND Status='in'", [today]);
+    const [{ today_out }] = await DB.raw("SELECT COUNT(*) as today_out FROM trx_visitations WHERE DATE(CheckInTime)=? AND Status='out'", [today]);
+    const [{ pending_approval }] = await DB.raw("SELECT COUNT(*) as pending_approval FROM trx_visitations WHERE ApprovalStatus='pending'");
 
-    if (oPayload.Status) q.where("t.Status", oPayload.Status);
-    if (oPayload.ApprovalStatus) q.where("t.ApprovalStatus", oPayload.ApprovalStatus);
-    if (oPayload.GuestName) q.whereILike("t.GuestName", `%${oPayload.GuestName}%`);
-    if (oPayload.VisitPurposeId) q.where("t.VisitPurposeId", oPayload.VisitPurposeId);
+    const chart_per_hour_raw = await DB.raw("SELECT HOUR(CheckInTime) as hour, COUNT(*) as count FROM trx_visitations WHERE DATE(CheckInTime)=? GROUP BY HOUR(CheckInTime) ORDER BY hour", [today]);
+    const chart_per_hour = chart_per_hour_raw[0].map(r => ({ hour: r.hour, count: r.count }));
 
-    if (oPayload.TanggalMulai && oPayload.TanggalSelesai) {
-      const start = oPayload.TanggalMulai + " 00:00:00";
-      const end = oPayload.TanggalSelesai + " 23:59:59";
-      q.whereBetween("t.CheckInTime", [start, end]);
-    }
+    // 🎯 FIX SINKRONISASI DATABASE: Menggunakan mp.VisitPurposeName dan mp.VisitPurposeId sesuai phpMyAdmin laptopmu
+    const chart_per_purpose_raw = await DB.raw(
+      "SELECT mp.VisitPurposeName as purpose, COUNT(*) as count FROM trx_visitations t LEFT JOIN mst_visit_purpose mp ON t.VisitPurposeId = mp.VisitPurposeId WHERE DATE(t.CheckInTime) = ? GROUP BY t.VisitPurposeId", 
+      [today]
+    );
+    const chart_per_purpose = chart_per_purpose_raw[0].map(r => ({ purpose: r.purpose, count: r.count }));
 
-    const totalObj = await DB("trx_visitations as t").count({ total: '*' }).first();
-    const rows = await q.orderBy("t.CheckInTime", "desc").limit(limit).offset(offset);
+    const recent_10 = await DB("trx_visitations").select("VisitationId", "GuestName", "VisitCode", "CheckInTime", "Status").orderBy("CheckInTime", "desc").limit(10);
 
-    // generate presigned urls
-    for (const r of rows) {
-      if (r.PhotoFace) {
-        try { r.PhotoFaceUrl = await getPresignedUrl("buku-tamu", r.PhotoFace); } catch (e) { r.PhotoFaceUrl = null; }
-      }
-      if (r.PhotoIdentity) {
-        try { r.PhotoIdentityUrl = await getPresignedUrl("buku-tamu", r.PhotoIdentity); } catch (e) { r.PhotoIdentityUrl = null; }
-      }
-    }
-
-    return res.status(200).json({ status: "00", message: "OK", data: { total: totalObj.total || 0, page, limit, rows }, datetime: formatDateSystem() });
+    return res.status(200).json({
+      status: "00",
+      message: "OK",
+      data: { today_total: today_total || 0, today_in: today_in || 0, today_out: today_out || 0, pending_approval: pending_approval || 0, chart_per_hour, chart_per_purpose, recent_10 },
+      datetime: formatDateSystem(),
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ status: "01", message: "Sistem error", datetime: formatDateSystem() });

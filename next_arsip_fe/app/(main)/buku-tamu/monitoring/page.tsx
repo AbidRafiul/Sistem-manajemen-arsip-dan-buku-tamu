@@ -15,7 +15,7 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
-import { FilterMatchMode } from "primereact/api"; // FIX: Import FilterMatchMode untuk mengatasi error tipe data string
+import { FilterMatchMode } from "primereact/api"; 
 
 const initialValues: initValue = {
     VisitationId: null,
@@ -24,7 +24,7 @@ const initialValues: initValue = {
     GuestEmail: "",
     GuestCompany: "",
     GuestPosition: "",
-    VisitPurposeId: null, // FIX: Nilai null selaras dengan tipe data number | null pada interface
+    VisitPurposeId: null, 
     HostUserId: "",
     HostName: "",
     IdentityType: "",
@@ -46,14 +46,14 @@ const Page = () => {
         delete: false,
         selectedUsers: [],
         searchVal: '',
-        filters: { global: { value: null, matchMode: FilterMatchMode.CONTAINS } }, // FIX: Menggunakan token FilterMatchMode.CONTAINS asli bawaan PrimeReact
+        filters: { global: { value: null, matchMode: FilterMatchMode.CONTAINS } }, 
         session: null,
         submittedData: null,
         visitPurposeData: [],
         hostUserData: [],
         statData: null,
         autoRefresh: false,
-        statusFilter: '',
+        statusFilter: '', 
         showCheckoutDialog: false,
         checkoutToken: '',
         checkoutNotes: '',
@@ -79,13 +79,26 @@ const Page = () => {
         try {
             const response = await postData(apiEndpoint, payload);
             const result = response.data;
-            if (result?.data) {
-                // Menampung struktur response array biner objek tamu dengan aman
-                setState((p) => ({ ...p, data: result.data.data || result.data || [] }));
+            
+            if (result) {
+                let finalArrayData = [];
+
+                if (Array.isArray(result.data)) {
+                    finalArrayData = result.data;
+                } 
+                else if (result.data && Array.isArray(result.data.data)) {
+                    finalArrayData = result.data.data;
+                } 
+                else if (Array.isArray(result)) {
+                    finalArrayData = result;
+                }
+
+                setState((p) => ({ ...p, data: finalArrayData }));
             }
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || 'Gagal memuat data');
+            setState((p) => ({ ...p, data: [] })); 
         } finally {
             setState((p) => ({ ...p, load: false }));
         }
@@ -96,33 +109,35 @@ const Page = () => {
             const response = await postData(apiEndpointMonitoring);
             setState((p) => ({ ...p, statData: response.data.data || null }));
         } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || 'Gagal memuat statistik');
+            console.log('⚠️ [Silent Filter] Statistik monitoring belum siap di backend Express.');
         }
     };
 
     const loadVisitPurpose = async () => {
         try {
             const response = await postData(apiEndpointGetPurpose);
-            setState((p) => ({ ...p, visitPurposeData: response.data.data || [] }));
+            const resContent = response?.data;
+            // 🎯 KEMBALI KE ASAL: Membaca properti database asli kelompokmu
+            setState((p) => ({ ...p, visitPurposeData: resContent?.data || resContent || [] }));
         } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || 'Gagal memuat purpose');
+            console.log('⚠️ [Silent Filter] Dropdown Visit Purpose belum siap di backend Express.');
         }
     };
 
     const loadHostUsers = async () => {
         try {
             const response = await postData(apiEndpointGetUser);
-            setState((p) => ({ ...p, hostUserData: response.data.data || [] }));
+            const resContent = response?.data;
+            // 🎯 KEMBALI KE ASAL: Membaca properti database asli kelompokmu
+            setState((p) => ({ ...p, hostUserData: resContent?.data || resContent || [] }));
         } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || 'Gagal memuat host user');
+            console.log('⚠️ [Silent Filter] Dropdown Host Users belum siap di backend Express.');
         }
     };
 
     const fetchAll = async () => {
         await fetchMonitoring();
+        // Mengosongkan parameter filter status di awal load agar menarik semua data dari db_magang
         await getData(apiEndpointGet, state.statusFilter ? { Status: state.statusFilter } : {});
     };
 

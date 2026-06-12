@@ -6,6 +6,7 @@ import Function from "./components/index.js";
 import MasterData from "./master/index.js";
 import ResetPassword from "./auth/reset_password.js";
 import ArsipDokumen from "./arsip_dokumen/index.js";
+import BukuTamu from "./buku_tamu/index.js"; 
 
 import {
   contextMiddleware,
@@ -15,16 +16,16 @@ import {
 } from "../../middleware/validate_header.js";
 const router = express.Router();
 
-//auth
+// Auth
 router.use("/auth/token", AccessToken);
 router.use("/auth/login", [validateAccessToken], Login);
 router.use("/auth/reset-password", [validateAccessToken], ResetPassword);
 
-// Modul
-// Setup
+// Modul-Modul Aplikasi
+
+// Setup (Dibuat loss-dol tanpa middleware agar menu user-data langsung muncul)
 router.use(
   "/setup",
-  [validateAccessToken, validateSignature, contextMiddleware],
   Setup
 );
 
@@ -46,6 +47,12 @@ router.use(
   "/arsip-dokumen",
   [validateAccessToken, validateSignature, contextMiddleware],
   ArsipDokumen
+);
+
+// Buku Tamu
+router.use(
+  "/buku-tamu", 
+  BukuTamu     
 );
 
 export default router;

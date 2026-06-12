@@ -13,13 +13,13 @@ import VisitQRScan from "./visit_qr_scan.js";
 const router = express.Router();
 
 // Menghubungkan alamat URL endpoint sesuai instruksi spesifikasi dokumen Page 9
-router.use("/visit-checkin", VisitCheckin);
-router.use("/visit-checkout", VisitCheckout);
-router.use("/visit-registrasi", VisitRegistrasi);
-router.use("/visit-data", VisitData);
-router.use("/visit-detail", VisitDetail);
-router.use("/visit-monitoring", VisitMonitoring);
-router.use("/visit-approval", VisitApproval);
-router.use("/visit-qr-scan", VisitQRScan);
+router.use("/visit_checkin", VisitCheckin);
+router.use("/visit_checkout", VisitCheckout);
+router.use("/visit_registrasi", VisitRegistrasi);
+router.use("/visit_data", VisitData);
+router.use("/visit_detail", VisitDetail);
+router.use("/visit_monitoring", VisitMonitoring);
+router.use("/visit_approval", VisitApproval);
+router.use("/visit_qr_scan", VisitQRScan);
 
 export default router;

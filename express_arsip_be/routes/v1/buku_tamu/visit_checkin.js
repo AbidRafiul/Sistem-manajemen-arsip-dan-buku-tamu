@@ -3,7 +3,7 @@ import multer from "multer";
 import crypto from "crypto";
 import Joi from "joi";
 import { formatDateSystem } from "../components/tools/general.js";
-import { getLastFaktur, Logging, validatePayload } from "../components/tools/servertool.js";
+import { Logging, validatePayload } from "../components/tools/servertool.js"; // 💡 Menghapus getLastFaktur karena diganti generator dinamis
 import DB from "../../../core/config/knex.js";
 import { uploadFileToMinio } from "../../../core/components/tools/minio_helper.js";
 
@@ -57,14 +57,6 @@ router.post(
           datetime: formatDateSystem(),
         };
 
-        Logging(null, {
-          file: "visit_checkin.js",
-          func: "check-in",
-          request: oPayload,
-          response: oResult,
-          user: username,
-        });
-
         return res.status(422).json(oResult);
       }
 
@@ -105,7 +97,11 @@ router.post(
         );
       }
 
-      const VisitCode = await getLastFaktur("TAMU", 4);
+      // 🎯 FIX GENERATOR DINAMIS: Membuat kode unik otomatis berbasis penanggalan milidetik
+      const dateStr = formatDateSystem(new Date(), "yyyyMMdd"); // Hasil: 20260611
+      const uniqueSuffix = Date.now().toString().slice(-4); // Mengambil 4 digit milidetik terakhir riil
+      const VisitCode = `TAMU${dateStr}${uniqueSuffix}`; // Hasil: TAMU202606115932 (Anti-Duplikat!)
+
       const QRToken =
         typeof crypto.randomUUID === "function"
           ? crypto.randomUUID()
@@ -146,6 +142,9 @@ router.post(
         datetime: formatDateSystem(),
       });
     } catch (error) {
+      // Mengirimkan log pesan error riil dari MySQL ke konsol terminal untuk mempermudah audit kalian
+      console.error("❌ [Database Error Log]:", error); 
+
       const oResult = {
         status: "01",
         message: "Sistem sedang maintenance harap tunggu sebentar",

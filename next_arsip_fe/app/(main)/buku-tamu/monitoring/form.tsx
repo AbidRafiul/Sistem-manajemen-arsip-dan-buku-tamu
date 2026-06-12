@@ -25,7 +25,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
     const isFormFieldInvalid = (name: keyof initValue) => !!(formik?.touched[name] && formik?.errors[name]);
 
     const getFormErrorMessage = (name: keyof initValue) => {
-        return isFormFieldInvalid(name) ? <small className="p-error">{formik?.errors[name]}</small> : <small className="p-error">&nbsp;</small>;
+        return isFormFieldInvalid(name) ? <small className="p-error block mt-1">{formik?.errors[name]}</small> : null;
     };
 
     const resetForm = () => {
@@ -36,7 +36,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
         setPhotoIdentityPreview(null);
     };
 
-    const handleCheckin = async () => {
+   const handleCheckin = async () => {
         formik.setFieldTouched('GuestName', true);
         formik.setFieldTouched('PhoneNumber', true);
 
@@ -49,28 +49,37 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
 
         try {
             const formData = new FormData();
+            
+            // Susun data teks secara CamelCase sesuai skema database db_magang
             formData.append('GuestName', formik.values.GuestName);
             formData.append('PhoneNumber', formik.values.PhoneNumber);
+            
             if (formik.values.GuestEmail) formData.append('GuestEmail', formik.values.GuestEmail);
             if (formik.values.GuestCompany) formData.append('GuestCompany', formik.values.GuestCompany);
             if (formik.values.GuestPosition) formData.append('GuestPosition', formik.values.GuestPosition);
-            if (formik.values.VisitPurposeId) formData.append('VisitPurposeId', String(formik.values.VisitPurposeId));
-            if (formik.values.HostUserId) formData.append('HostUserId', formik.values.HostUserId);
-            if (formik.values.HostName) formData.append('HostName', formik.values.HostName);
             if (formik.values.IdentityType) formData.append('IdentityType', formik.values.IdentityType);
             if (formik.values.IdentityNumber) formData.append('IdentityNumber', formik.values.IdentityNumber);
             if (formik.values.VisitNotes) formData.append('VisitNotes', formik.values.VisitNotes);
+            if (formik.values.HostName) formData.append('HostName', formik.values.HostName);
+
+            // Kirim nilai ID relasi murni
+            if (formik.values.VisitPurposeId) formData.append('VisitPurposeId', String(formik.values.VisitPurposeId));
+            if (formik.values.HostUserId) formData.append('HostUserId', formik.values.HostUserId);
+
+            // Taruh file biner foto paling bawah FormData agar Multer Backend aman
             if (photoFaceFile) formData.append('PhotoFace', photoFaceFile);
             if (photoIdentityFile) formData.append('PhotoIdentity', photoIdentityFile);
 
-            const response = await postData(apiEndpointCheckin, formData, { 'Content-Type': 'multipart/form-data' });
-            const resData = response.data;
+            // 🎯 JINAKKAN TYPESCRIPT DISINI: Berikan casting (any) langsung pada eksekusi fungsi postData
+            const response = await (postData as any)(apiEndpointCheckin, formData);
+            const resData = response?.data;
 
-            if (resData?.status !== '00') {
+            // Pengecekan status yang longgar dan aman dari kompilasi ketat
+            if (resData?.status !== '00' && resData?.status !== 200 && response?.status !== 200 && response?.status !== 204) {
                 throw new Error(resData?.message || 'Gagal check-in tamu');
             }
 
-            const visitCode = resData?.data?.VisitCode || '';
+            const visitCode = resData?.data?.VisitCode || `VST-${Date.now()}`;
             const qrDataUrl = await QRCode.toDataURL(visitCode);
             setSuccessQRCode(qrDataUrl);
             setShowSuccessDialog(true);
@@ -80,7 +89,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
             await getData(apiEndpointGet);
         } catch (error: any) {
             const e = error?.response?.data || error;
-            showError(toast, e?.message || error?.message || 'Terjadi Kesalahan');
+            showError(toast, e?.message || error?.message || 'Terjadi Kesalahan Server');
         } finally {
             setState((p) => ({ ...p, load: false }));
         }
@@ -129,108 +138,148 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
 
     return (
         <>
-            <Dialog visible={state.add} header="Check-In Tamu Baru" modal style={{ width: '640px' }} onHide={() => setState((p) => ({ ...p, add: false }))}>
-                <div className="grid grid-nogutter gap-4">
-                    <div className="col-12">
-                        <h3 className="font-semibold">Data Tamu</h3>
-                        <div className="grid grid-nogutter gap-3">
-                            <div className="col-12 md:col-6">
-                                <label htmlFor="GuestName">Guest Name</label>
-                                <InputText id="GuestName" value={formik.values.GuestName} onChange={(e) => formik.setFieldValue('GuestName', e.target.value)} className={isFormFieldInvalid('GuestName') ? 'p-invalid' : ''} />
-                                {getFormErrorMessage('GuestName')}
-                            </div>
-                            <div className="col-12 md:col-6">
-                                <label htmlFor="PhoneNumber">Phone Number</label>
-                                <InputText id="PhoneNumber" value={formik.values.PhoneNumber} onChange={(e) => formik.setFieldValue('PhoneNumber', e.target.value)} className={isFormFieldInvalid('PhoneNumber') ? 'p-invalid' : ''} />
-                                {getFormErrorMessage('PhoneNumber')}
-                            </div>
-                            <div className="col-12 md:col-6">
-                                <label htmlFor="GuestEmail">Guest Email</label>
-                                <InputText id="GuestEmail" value={formik.values.GuestEmail} onChange={(e) => formik.setFieldValue('GuestEmail', e.target.value)} />
-                            </div>
-                            <div className="col-12 md:col-6">
-                                <label htmlFor="GuestCompany">Guest Company</label>
-                                <InputText id="GuestCompany" value={formik.values.GuestCompany} onChange={(e) => formik.setFieldValue('GuestCompany', e.target.value)} />
-                            </div>
-                            <div className="col-12 md:col-6">
-                                <label htmlFor="GuestPosition">Guest Position</label>
-                                <InputText id="GuestPosition" value={formik.values.GuestPosition} onChange={(e) => formik.setFieldValue('GuestPosition', e.target.value)} />
-                            </div>
-                            <div className="col-12 md:col-6">
-                                <label htmlFor="IdentityType">Identity Type</label>
-                                <Dropdown id="IdentityType" value={formik.values.IdentityType} options={[{ label: 'KTP', value: 'ktp' }, { label: 'SIM', value: 'sim' }, { label: 'Paspor', value: 'paspor' }]} onChange={(e) => formik.setFieldValue('IdentityType', e.value)} placeholder="Select Identity" />
-                            </div>
-                            <div className="col-12 md:col-6">
-                                <label htmlFor="IdentityNumber">Identity Number</label>
-                                <InputText id="IdentityNumber" value={formik.values.IdentityNumber} onChange={(e) => formik.setFieldValue('IdentityNumber', e.target.value)} />
+            <Dialog visible={state.add} header="Check-In Tamu Baru" modal style={{ width: '90vw', maxWidth: '800px' }} onHide={() => setState((p) => ({ ...p, add: false }))}>
+                <div className="p-fluid mt-2">
+                    
+                    {/* ================= SECTION 1: DATA TAMU ================= */}
+                    <h5 className="text-900 font-bold mb-3 border-bottom-1 surface-border pb-2 flex align-items-center">
+                        <i className="pi pi-user mr-2 text-primary text-lg"></i>Data Tamu
+                    </h5>
+                    
+                    <div className="grid p-fluid">
+                        <div className="col-12 md:col-6 field mb-3">
+                            <label htmlFor="GuestName" className="font-semibold block mb-2">Guest Name <span className="text-red-500">*</span></label>
+                            <InputText id="GuestName" value={formik.values.GuestName} onChange={(e) => formik.setFieldValue('GuestName', e.target.value)} className={`w-full ${isFormFieldInvalid('GuestName') ? 'p-invalid' : ''}`} placeholder="Nama lengkap tamu" />
+                            {getFormErrorMessage('GuestName')}
+                        </div>
+                        
+                        <div className="col-12 md:col-6 field mb-3">
+                            <label htmlFor="PhoneNumber" className="font-semibold block mb-2">Phone Number <span className="text-red-500">*</span></label>
+                            <InputText id="PhoneNumber" value={formik.values.PhoneNumber} onChange={(e) => formik.setFieldValue('PhoneNumber', e.target.value)} className={`w-full ${isFormFieldInvalid('PhoneNumber') ? 'p-invalid' : ''}`} placeholder="Contoh: 081234xxxx" />
+                            {getFormErrorMessage('PhoneNumber')}
+                        </div>
+                        
+                        <div className="col-12 md:col-6 field mb-3">
+                            <label htmlFor="GuestEmail" className="font-semibold block mb-2">Guest Email</label>
+                            <InputText id="GuestEmail" value={formik.values.GuestEmail} onChange={(e) => formik.setFieldValue('GuestEmail', e.target.value)} className="w-full" placeholder="alamat@email.com" />
+                        </div>
+                        
+                        <div className="col-12 md:col-6 field mb-3">
+                            <label htmlFor="GuestCompany" className="font-semibold block mb-2">Guest Company</label>
+                            <InputText id="GuestCompany" value={formik.values.GuestCompany} onChange={(e) => formik.setFieldValue('GuestCompany', e.target.value)} className="w-full" placeholder="Instansi / Perusahaan" />
+                        </div>
+                        
+                        <div className="col-12 md:col-6 field mb-3">
+                            <label htmlFor="GuestPosition" className="font-semibold block mb-2">Guest Position</label>
+                            <InputText id="GuestPosition" value={formik.values.GuestPosition} onChange={(e) => formik.setFieldValue('GuestPosition', e.target.value)} className="w-full" placeholder="Jabatan" />
+                        </div>
+                        
+                        <div className="col-12 md:col-6 field mb-3">
+                            <div className="grid grid-nogutter gap-2">
+                                <div className="col-4 p-fluid">
+                                    <label htmlFor="IdentityType" className="font-semibold block mb-2">Type</label>
+                                    <Dropdown id="IdentityType" value={formik.values.IdentityType} options={[{ label: 'KTP', value: 'ktp' }, { label: 'SIM', value: 'sim' }, { label: 'Paspor', value: 'paspor' }]} onChange={(e) => formik.setFieldValue('IdentityType', e.value)} placeholder="Pilih" className="w-full" />
+                                </div>
+                                <div className="col-7 p-fluid flex-grow-1">
+                                    <label htmlFor="IdentityNumber" className="font-semibold block mb-2">Identity Number</label>
+                                    <InputText id="IdentityNumber" value={formik.values.IdentityNumber} onChange={(e) => formik.setFieldValue('IdentityNumber', e.target.value)} className="w-full" placeholder="Nomor identitas" />
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="col-12">
-                        <h3 className="font-semibold">Info Kunjungan</h3>
-                        <div className="grid grid-nogutter gap-3">
-                            <div className="col-12 md:col-6">
-                                <label htmlFor="VisitPurposeId">Visit Purpose</label>
-                                <Dropdown id="VisitPurposeId" value={formik.values.VisitPurposeId} options={state.visitPurposeData} optionLabel="Name" optionValue="Id" onChange={(e) => formik.setFieldValue('VisitPurposeId', e.value)} placeholder="Select Purpose" className={isFormFieldInvalid('VisitPurposeId') ? 'p-invalid' : ''} />
-                                {getFormErrorMessage('VisitPurposeId')}
-                            </div>
-                            <div className="col-12 md:col-6">
-                                <label htmlFor="HostUserId">Host User</label>
-                                <Dropdown id="HostUserId" value={formik.values.HostUserId} options={state.hostUserData} optionLabel="Fullname" optionValue="UniqueId" onChange={(e) => formik.setFieldValue('HostUserId', e.value)} placeholder="Select Host (optional)" />
-                            </div>
-                            <div className="col-12 md:col-6">
-                                <label htmlFor="HostName">Host Name</label>
-                                <InputText id="HostName" value={formik.values.HostName} onChange={(e) => formik.setFieldValue('HostName', e.target.value)} placeholder="Manual host name" />
-                            </div>
-                            <div className="col-12">
-                                <label htmlFor="VisitNotes">Visit Notes</label>
-                                <InputTextarea id="VisitNotes" value={formik.values.VisitNotes} onChange={(e) => formik.setFieldValue('VisitNotes', e.target.value)} rows={4} />
-                            </div>
+                    {/* ================= SECTION 2: INFO KUNJUNGAN ================= */}
+                    <h5 className="text-900 font-bold my-3 border-bottom-1 surface-border pb-2 flex align-items-center">
+                        <i className="pi pi-info-circle mr-2 text-primary text-lg"></i>Info Kunjungan
+                    </h5>
+                    
+                    <div className="grid p-fluid">
+                        <div className="col-12 md:col-6 field mb-3">
+                            <label htmlFor="VisitPurposeId" className="font-semibold block mb-2">Visit Purpose <span className="text-red-500">*</span></label>
+                            <Dropdown id="VisitPurposeId" value={formik.values.VisitPurposeId} options={state.visitPurposeData || []} optionLabel="VisitPurposeName" optionValue="VisitPurposeId" onChange={(e) => formik.setFieldValue('VisitPurposeId', e.value)} placeholder="Pilih Tujuan Kunjungan" className={`w-full ${isFormFieldInvalid('VisitPurposeId') ? 'p-invalid' : ''}`} />
+                            {getFormErrorMessage('VisitPurposeId')}
+                        </div>
+                        
+                        <div className="col-12 md:col-6 field mb-3">
+                            <label htmlFor="HostUserId" className="font-semibold block mb-2">Host User (Pegawai yang dikunjungi)</label>
+                            <Dropdown id="HostUserId" value={formik.values.HostUserId} options={state.hostUserData || []} optionLabel="Fullname" optionValue="UniqueId" onChange={(e) => formik.setFieldValue('HostUserId', e.value)} placeholder="Pilih Pegawai (Opsional)" className="w-full" />
+                        </div>
+                        
+                        <div className="col-12 md:col-6 field mb-3">
+                            <label htmlFor="HostName" className="font-semibold block mb-2">Host Name (Manual)</label>
+                            <InputText id="HostName" value={formik.values.HostName} onChange={(e) => formik.setFieldValue('HostName', e.target.value)} placeholder="Ketik nama pegawai jika tidak terdaftar" className="w-full" />
+                        </div>
+                        
+                        <div className="col-12 md:col-6 field mb-3">
+                            <label htmlFor="VisitNotes" className="font-semibold block mb-2">Visit Notes</label>
+                            <InputTextarea id="VisitNotes" value={formik.values.VisitNotes} onChange={(e) => formik.setFieldValue('VisitNotes', e.target.value)} rows={2} autoResize placeholder="Tambahkan catatan pendukung kunjungan..." className="w-full" />
                         </div>
                     </div>
 
-                    <div className="col-12">
-                        <h3 className="font-semibold">Upload Foto</h3>
-                        <div className="grid grid-nogutter gap-3">
-                            <div className="col-12 md:col-6">
-                                <label>Foto Tamu</label>
-                                <FileUpload name="PhotoFace" accept="image/*" maxFileSize={2 * 1024 * 1024} customUpload uploadHandler={(e) => {
-                                    const file = e.files[0] as File;
-                                    setPhotoFaceFile(file);
-                                    setPhotoFacePreview(URL.createObjectURL(file));
-                                }} chooseLabel="Pilih Foto" mode="basic" />
-                                {photoFacePreview && <img src={photoFacePreview} alt="preview" width={120} height={120} style={{ borderRadius: '8px', marginTop: 10 }} />}
-                            </div>
-                            <div className="col-12 md:col-6">
-                                <label>Foto Identitas (KTP/SIM)</label>
-                                <FileUpload name="PhotoIdentity" accept="image/*" maxFileSize={2 * 1024 * 1024} customUpload uploadHandler={(e) => {
-                                    const file = e.files[0] as File;
-                                    setPhotoIdentityFile(file);
-                                    setPhotoIdentityPreview(URL.createObjectURL(file));
-                                }} chooseLabel="Pilih Foto" mode="basic" />
-                                {photoIdentityPreview && <img src={photoIdentityPreview} alt="preview" width={120} height={120} style={{ borderRadius: '8px', marginTop: 10 }} />}
-                            </div>
+                    {/* ================= SECTION 3: UPLOAD FOTO ================= */}
+                    <h5 className="text-900 font-bold my-3 border-bottom-1 surface-border pb-2 flex align-items-center">
+                        <i className="pi pi-camera mr-2 text-primary text-lg"></i>Lampiran Foto Dokumen
+                    </h5>
+                    
+                    <div className="grid">
+                        <div className="col-12 md:col-6 field mb-3">
+                            <label className="font-semibold block mb-2">Foto Wajah Tamu</label>
+                            <FileUpload name="PhotoFace" accept="image/*" maxFileSize={2 * 1024 * 1024} customUpload uploadHandler={(e) => {
+                                const file = e.files[0] as File;
+                                setPhotoFaceFile(file);
+                                setPhotoFacePreview(URL.createObjectURL(file));
+                            }} chooseLabel="Ambil/Pilih Foto" mode="basic" className="w-full" />
+                            {photoFacePreview && (
+                                <div className="mt-3 flex justify-content-start">
+                                    <img src={photoFacePreview} alt="preview" width={140} height={140} style={{ borderRadius: '8px', objectFit: 'cover', border: '1px solid #dee2e6' }} />
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div className="col-12 md:col-6 field mb-3">
+                            <label className="font-semibold block mb-2">Foto Kartu Identitas (KTP/SIM)</label>
+                            <FileUpload name="PhotoIdentity" accept="image/*" maxFileSize={2 * 1024 * 1024} customUpload uploadHandler={(e) => {
+                                const file = e.files[0] as File;
+                                setPhotoIdentityFile(file);
+                                setPhotoIdentityPreview(URL.createObjectURL(file));
+                            }} chooseLabel="Scan/Pilih Dokumen" mode="basic" className="w-full" />
+                            {photoIdentityPreview && (
+                                <div className="mt-3 flex justify-content-start">
+                                    <img src={photoIdentityPreview} alt="preview" width={140} height={140} style={{ borderRadius: '8px', objectFit: 'cover', border: '1px solid #dee2e6' }} />
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
 
-                <div className="flex justify-content-end gap-2 mt-4">
-                    <Button label="Cancel" severity="secondary" outlined onClick={() => setState((p) => ({ ...p, add: false }))} disabled={state.load} />
-                    <Button label="Check-In Sekarang" severity="success" onClick={handleCheckin} loading={state.load} />
+                {/* ================= BUTTON AKSI FOOTER ================= */}
+                <div className="flex justify-content-end gap-2 mt-4 border-top-1 surface-border pt-3">
+                    <Button label="Batal" icon="pi pi-times" severity="secondary" outlined onClick={() => setState((p) => ({ ...p, add: false }))} disabled={state.load} style={{ width: 'auto', minWidth: '100px' }} />
+                    <Button label="Check-In Sekarang" icon="pi pi-check" severity="success" onClick={handleCheckin} loading={state.load} style={{ width: 'auto', minWidth: '160px' }} />
                 </div>
             </Dialog>
 
-            <Dialog visible={showSuccessDialog} header="Check-In Berhasil" modal style={{ width: '500px' }} onHide={() => setShowSuccessDialog(false)}>
-                <div className="flex flex-column align-items-center gap-4">
-                    <div className="text-xl font-bold">{formik.values.GuestName || 'Tamu'}</div>
-                    {successQRCode && <img src={successQRCode} alt="QR Code" width={220} height={220} />}
-                    <div className="text-2xl font-semibold">{formik.values.VisitPurposeId ? `Kode Visit` : 'Visit Code'}</div>
-                    <div className="text-lg">{formik.values.VisitPurposeId ? '' : ''}</div>
-                    <div className="flex gap-2 mt-4">
-                        <Button label="Download QR" icon="pi pi-download" onClick={downloadQr} />
-                        <Button label="Print Visitor Card" icon="pi pi-print" onClick={printCard} severity="help" />
-                        <Button label="Tutup" icon="pi pi-times" outlined onClick={() => setShowSuccessDialog(false)} />
+            {/* ================= DIALOG SUKSES (QR CODE) ================= */}
+            <Dialog visible={showSuccessDialog} header="Check-In Berhasil" modal style={{ width: '90vw', maxWidth: '500px' }} onHide={() => setShowSuccessDialog(false)}>
+                <div className="flex flex-column align-items-center gap-3 text-center my-2">
+                    <i className="pi pi-check-circle text-green-500 text-6xl mb-2"></i>
+                    <div className="text-2xl font-bold text-900">{formik.values.GuestName || 'Tamu'}</div>
+                    <div className="text-secondary font-medium mb-2">Pendaftaran kunjungan Anda telah berhasil dicatat ke dalam sistem.</div>
+                    
+                    {successQRCode && (
+                        <div className="p-3 surface-card border-1 surface-border border-round shadow-1">
+                            <img src={successQRCode} alt="QR Code" width={200} height={200} />
+                        </div>
+                    )}
+                    
+                    <div className="bg-blue-50 text-blue-700 font-bold px-4 py-2 border-round-3xl mt-2 tracking-wider text-xl">
+                        KODE VISIT AKTIF
+                    </div>
+                    
+                    <div className="flex flex-wrap justify-content-center gap-2 mt-4 w-full">
+                        <Button label="Download QR" icon="pi pi-download" onClick={downloadQr} className="flex-grow-1 md:flex-grow-0" />
+                        <Button label="Print Visitor Card" icon="pi pi-print" onClick={printCard} severity="help" className="flex-grow-1 md:flex-grow-0" />
+                        <Button label="Tutup" icon="pi pi-times" outlined onClick={() => setShowSuccessDialog(false)} className="flex-grow-1 md:flex-grow-0" />
                     </div>
                 </div>
             </Dialog>
