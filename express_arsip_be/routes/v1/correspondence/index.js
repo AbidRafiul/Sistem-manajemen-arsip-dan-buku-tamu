@@ -1,5 +1,3 @@
-<<<<<<< Updated upstream
-=======
 import express from "express";
 
 // Endpoint Post - incoming-letter-data
@@ -46,4 +44,3 @@ router.use("/letter-disposition-process", letterDispositionProcess)
 router.use("/letter-disposition-complete", letterDispositionComplete)
 
 export default router;
->>>>>>> Stashed changes
