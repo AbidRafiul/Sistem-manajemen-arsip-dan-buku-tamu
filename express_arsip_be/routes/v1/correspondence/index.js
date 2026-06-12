@@ -26,6 +26,9 @@ import letterDispositionData from "./letter_disposition_data.js"
 //Endpoint - letter-disposition-process
 import letterDispositionProcess from "./letter_disposition_process.js"
 
+//Endpoint - letter-disposition-complete
+import letterDispositionComplete from "./letter_disposition_complete.js"
+
 
 const router = express.Router();
 
@@ -38,5 +41,6 @@ router.use("/letter-disposition-create", letterDispositionCreate)
 router.use("/incoming-letter-tracking-data", incomingLetterTrackingData)
 router.use("/letter-disposition-data", letterDispositionData)
 router.use("/letter-disposition-process", letterDispositionProcess)
+router.use("/letter-disposition-complete", letterDispositionComplete)
 
 export default router;

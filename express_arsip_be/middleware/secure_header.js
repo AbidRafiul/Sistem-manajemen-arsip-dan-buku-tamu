@@ -13,7 +13,7 @@ export default function secureHeader(req, res, next) {
   );
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "Content-Type,Authorization,X-Requested-With,X-CSRF-Token,X-Signature,X-Timestamp"
+    "Content-Type,Authorization,X-Requested-With,X-CSRF-Token,X-Signature,X-Timestamp,X-Credential,X-Endpoint,X-ENDPOINT,x-endpoint"
   );
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.setHeader("X-Content-Type-Options", "nosniff");
