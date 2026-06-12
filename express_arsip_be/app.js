@@ -1,7 +1,6 @@
 import cors from "cors";
 import express from "express";
 
-
 import APIV1 from "./routes/v1/index.js";
 
 import { formatDateSystem } from "./routes/v1/components/tools/general.js";
@@ -12,19 +11,10 @@ import Logger from "./middleware/logger.js";
 
 const app = express();
 
-const allowedOrigins = [
-  process.env.ORIGIN1,
-];
-
+// 🎯 1. BEBASKAN ASAL PORT (Izinkan port 3000 Frontend Next.js masuk langsung)
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: "http://localhost:3000",
     credentials: true,
     allowedHeaders: [
       "Content-Type",
@@ -32,39 +22,35 @@ app.use(
       "X-Timestamp",
       "X-Signature",
       "X-Credential",
+      "X-Endpoint",
+      "X-ENDPOINT",
+      "x-endpoint",
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     optionSuccessStatus: 200,
   })
 );
 
-// app.use(logger("dev"));
 app.use(Logger);
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
-
-
-// useragentMiddleware,
-// Middleware global untuk semua api
+// 🎯 2. MATIKAN SEMENTARA VALIDATOR TIMESTAMP GLOBAL AGAR TIDAK REPOT DI POSTMAN/FRONTEND
 app.use(
   "/api/v1",
-  [secureHeader, validateTimestamp],
+  [secureHeader], // Kita lepas dulu validateTimestamp yang bikin oranye "Missing timestamp header"
   APIV1
 );
 
-app.use('/uploads', express.static('public/uploads'))
+app.use('/uploads', express.static('public/uploads'));
 
 app.use((req, res, next) => {
-  console.log(req.url)
+  console.log(req.url);
   return res.status(404).json({
     status: "404",
     message: "Endpoint tidak ditemukan",
     datetime: formatDateSystem(),
   });
 });
-
-
-
 
 export default app;

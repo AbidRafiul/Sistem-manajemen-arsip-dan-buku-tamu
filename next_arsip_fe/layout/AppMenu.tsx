@@ -17,6 +17,36 @@ interface MenuState {
     menu: AppMenuItem[];
 }
 
+const mailInMenu: AppMenuItem = {
+    label: 'Mail In',
+    icon: 'pi pi-inbox',
+    to: '/correspondence/mail-in'
+};
+
+const ensureCorrespondenceMenu = (menu: AppMenuItem[]) => {
+    const hasMailIn = (items: AppMenuItem[] = []): boolean => {
+        return items.some((item) => item.to === mailInMenu.to || hasMailIn(item.items || []));
+    };
+
+    if (hasMailIn(menu)) return menu;
+
+    const correspondence = menu.find((item) => item.label?.toLowerCase() === 'correspondence');
+
+    if (correspondence) {
+        correspondence.items = [...(correspondence.items || []), mailInMenu];
+        return menu;
+    }
+
+    return [
+        ...menu,
+        {
+            label: 'Correspondence',
+            icon: 'pi pi-envelope',
+            items: [mailInMenu]
+        }
+    ];
+};
+
 const AppMenu = () => {
     const { data: session } = useSession();
     const { layoutConfig } = useContext(LayoutContext);
@@ -45,8 +75,8 @@ const AppMenu = () => {
                 throw new Error('Invalid menu data');
             }
 
-            const menu: AppMenuItem[] = JSON.parse(JSON.stringify(vaData.data));
-            const menu2: AppMenuItem[] = JSON.parse(JSON.stringify(vaData.data));
+            const menu: AppMenuItem[] = ensureCorrespondenceMenu(JSON.parse(JSON.stringify(vaData.data)));
+            const menu2: AppMenuItem[] = ensureCorrespondenceMenu(JSON.parse(JSON.stringify(vaData.data)));
 
             setState(prev => ({
                 ...prev,
@@ -182,7 +212,8 @@ const AppMenu = () => {
             <ul className="layout-menu">
                 {state.load
                     ? [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((item, i) => (
-                        <li className="my-3">
+                        // 🎯 FIX WARNING KEY: Ditambahkan key unik berbasis index `i` pada wrapper <li> loading
+                        <li className="my-3" key={`menu-skeleton-${i}`}>
                             <Skeleton className="py-4" />
                         </li>
                     ))
@@ -193,7 +224,7 @@ const AppMenu = () => {
                                 item={item}
                                 root={true}
                                 index={i}
-                                key={item.label || i}
+                                key={item.label || `menu-item-${i}`}
                             />
                         ) : (
                             <li className="menu-separator" key={`separator-${i}`}></li>
