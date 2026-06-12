@@ -3,12 +3,10 @@
 import axios from "axios";
 import { destroyCookie } from 'nookies';
 import { signOut } from 'next-auth/react';
-import { parse } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import { findToValuesRecursive } from "./generalTools";
-import NextAuth from 'next-auth';
 import { auth } from "./authTools";
 import postData from "../axios/postData";
 
@@ -110,8 +108,7 @@ const routeMiddleware = async (searchUrl: string) => {
                 { UniqueId: session?.user?.uniqueId },
                 {
                     headers: {
-                        'X-ENDPOINT': "/setup/nav/user-data",
-                        'X-Level': "1",
+                        'Content-Type': 'application/json',
                     }
                 }
             );
