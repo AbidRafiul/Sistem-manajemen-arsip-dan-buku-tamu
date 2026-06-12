@@ -60,7 +60,7 @@ const Page = () => {
             Password: '',
             Telp: '',
             Status: '0',
-            Role: 'employee',
+            Role: 'superadmin',
         },
         validate: (data: initValue) => {
             let errors = {} as initValue;

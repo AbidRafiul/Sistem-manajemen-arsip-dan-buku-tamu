@@ -3,14 +3,12 @@
 import axios from "axios";
 import { destroyCookie } from 'nookies';
 import { signOut } from 'next-auth/react';
-import { parse } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import { findToValuesRecursive } from "./generalTools";
 import { auth } from "./authTools";
 import postData from "../axios/postData";
-import { parse } from 'date-fns';
 
 /**
  * Fungsi untuk mengenkripsi payload menggunakan RSA Public Key
@@ -87,26 +85,23 @@ const routeMiddleware = async (searchUrl: string) => {
     }
 
     // 2. Validasi Waktu Kedaluwarsa Session (Token Lifecycle)
-    const dSessionExp = parse(session?.expires, 'yyyy-MM-dd HH:mm:ss', new Date());
+    const dSessionExp = new Date(session?.expires);
     const dNow = new Date();
 
-    if ((dNow.getTime() > dSessionExp.getTime())) {
+    if (Number.isNaN(dSessionExp.getTime()) || dNow.getTime() > dSessionExp.getTime()) {
         return '99';
     }
 
     if (session.user.uniqueId) {
         try {
-            // 🎯 STANDARISASI URL: Mengambil base path dari env frontend
             let apiPath = process.env.NEXT_PUBLIC_API_DIR_PATH || '/api/v1';
-            
-            // 🚀 DYNAMIC FALLBACK: Jika di env lokal belum ditulis full URL statis, 
-            // otomatis dipaksa mengarah ke alamat server lokal Express Port 8000 (Mencegah ERR_INVALID_URL)
+
             if (!apiPath.startsWith('http')) {
                 apiPath = `http://localhost:8000${apiPath}`;
             }
 
             const resp = await axios.post(
-                apiPath,
+                `${apiPath}/setup/nav/user-data`,
                 { UniqueId: session?.user?.uniqueId },
                 {
                     headers: {
@@ -120,8 +115,8 @@ const routeMiddleware = async (searchUrl: string) => {
 
             // Fail-Safe jika database kosong / belum di-seed agar login tidak macet saat diuji dosen
             if (!menu) {
-                console.warn("⚠️ [RouteMiddleware] Backend merespon, tetapi data menu kosong.");
-                return '00'; 
+                console.warn("[RouteMiddleware] Backend merespon, tetapi data menu kosong.");
+                return '00';
             }
 
             let urlFix = searchUrl;
@@ -133,19 +128,17 @@ const routeMiddleware = async (searchUrl: string) => {
 
             // Jika url menu yang diakses tidak terdaftar di hak akses user terkait
             if (res.length < 1) {
-                return '98'; 
+                return '98';
             }
         } catch (error: any) {
             // Log pencatatan error di terminal server secara rapi (Berguna untuk dokumentasi projek)
-            console.error("🔴 [RouteMiddleware Error]:", error?.message);
-            
+            console.error("[RouteMiddleware Error]:", error?.message);
+
             if (error?.response?.status == '401') {
                 return '99';
             }
-            
-            // 🛡️ SECURITY FALLBACK: Jika backend mati atau data kolom mysql belum siap, 
-            // tetap kembalikan '00' agar aplikasi tidak blank putih / crash di depan dosen penguji
-            return '00'; 
+
+            return '00';
         }
     } else {
         return '99';
