@@ -13,7 +13,7 @@ class Database {
 
   _connect(name) {
     if (!this.connections[name]) {
-      const db = knex(knexConfig[name]);
+      const db = knex(knexConfig[name] || knexConfig.development);
       const dbms = process.env.DB_DBMS || "mysql";
       if (dbms === "mysql") {
         db.raw("SET time_zone = '+07:00'").catch(() => { });

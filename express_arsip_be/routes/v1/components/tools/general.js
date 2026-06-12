@@ -1,6 +1,7 @@
 // for custom helper function globally
 import crypto, { publicEncrypt, sign } from "crypto";
 import path from "path";
+import { extname } from "path";
 import fs from "fs";
 import * as jose from "jose";
 import { fileURLToPath } from "url";
@@ -206,7 +207,7 @@ export const isAllowedFile = async (file, allowedExts = []) => {
   const ext = mimeToExt[file.mimetype];
   if (ext && allowedExts.includes(ext)) return true;
 
-  const nameExt = (file.originalname && require('path').extname(file.originalname).toLowerCase()) || '';
+  const nameExt = (file.originalname && extname(file.originalname).toLowerCase()) || '';
   if (nameExt && allowedExts.includes(nameExt)) return true;
 
   return false;

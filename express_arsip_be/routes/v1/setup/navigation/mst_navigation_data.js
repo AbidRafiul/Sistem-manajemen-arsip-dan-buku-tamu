@@ -64,7 +64,7 @@ router.post("/", async (req, res) => {
                 datetime: datetime(),
             };
 
-            Logging(error, {
+            Logging(null, {
                 file: "mst_navigation_data.js",
                 func: "get",
                 request: oPayload,
