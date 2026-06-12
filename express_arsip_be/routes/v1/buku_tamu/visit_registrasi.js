@@ -96,7 +96,6 @@ router.post("/", upload.fields([{ name: "PhotoFace", maxCount: 1 }, { name: "Pho
 
     const [VisitationId] = await DB("trx_visitations").insert(oData);
 
-    // Try insert notification if table exists
     try {
       if (HostUserId) {
         await DB("notifications").insert({
@@ -108,7 +107,6 @@ router.post("/", upload.fields([{ name: "PhotoFace", maxCount: 1 }, { name: "Pho
         });
       }
     } catch (e) {
-      // ignore if table not exists
       Logging(e, { file: "visit_registrasi.js", func: "notify", request: { HostUserId }, response: "notify failed", user: username });
     }
 

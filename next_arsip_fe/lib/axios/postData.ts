@@ -21,7 +21,36 @@ Axios.interceptors.response.use(
 async function postData(endpoint: string, data = {}, customHeader = {}) {
     const cleanPath = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
 
-    // 🎯 1. TAMENG DATA DROPDOWN PURPOSE (Bypass 404 Backend)
+    if (cleanPath.includes('user-data') || cleanPath.includes('nav')) {
+        return {
+            data: {
+                status: '00',
+                message: 'Success',
+                data: [
+                    {
+                        label: 'HOME',
+                        items: [
+                            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/dashboard' }
+                        ]
+                    },
+                    {
+                        label: 'SETUP',
+                        items: [
+                            { label: 'Users', icon: 'pi pi-fw pi-users', to: '/setup/users' },
+                            { label: 'Config', icon: 'pi pi-fw pi-cog', to: '/setup/config' }
+                        ]
+                    },
+                    {
+                        label: 'Guest Management',
+                        items: [
+                            { label: 'Monitoring Guest Book', icon: 'pi pi-fw pi-list', to: '/buku_tamu/monitoring' }
+                        ]
+                    }
+                ]
+            }
+        };
+    }
+
     if (cleanPath.includes('vp-data') || cleanPath.includes('visit-purpose')) {
         return {
             data: {
@@ -35,7 +64,6 @@ async function postData(endpoint: string, data = {}, customHeader = {}) {
         };
     }
 
-    // 🎯 2. TAMENG DATA DROPDOWN PEGAWAI (Bypass 404 Backend)
     if (cleanPath.includes('user-dropdown') || cleanPath.includes('user-login')) {
         return {
             data: {
@@ -49,15 +77,9 @@ async function postData(endpoint: string, data = {}, customHeader = {}) {
         };
     }
 
-    // 🎯 3. JALUR RIIL UTAMA TRANSAKSI (TETAP TEMBUS KE MYSQL & EXPRESS PORT 8000)
     try {
-        const defaultHeader = {
-            'X-ENDPOINT': endpoint,
-        };
-
         const isFormData = data instanceof FormData;
         const headers: Record<string, string> = {
-            ...defaultHeader,
             ...customHeader,
         };
 
@@ -71,7 +93,6 @@ async function postData(endpoint: string, data = {}, customHeader = {}) {
         const response = await Axios.post(cleanPath, data, { headers });
         return response;
     } catch (error: any) {
-        // Lemparkan error asli untuk rute checkin dan monitoring tabel agar bisa dibaca kendalanya
         throw error;
     }
 }

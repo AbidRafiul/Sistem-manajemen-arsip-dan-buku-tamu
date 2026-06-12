@@ -23,7 +23,6 @@ router.use("/auth/reset-password", [validateAccessToken], ResetPassword);
 
 // Modul-Modul Aplikasi
 
-// Setup (Dibuat loss-dol tanpa middleware agar menu user-data langsung muncul)
 router.use(
   "/setup",
   Setup
@@ -51,7 +50,7 @@ router.use(
 
 // Buku Tamu
 router.use(
-  "/buku-tamu", 
+  "/buku_tamu", 
   BukuTamu     
 );
 

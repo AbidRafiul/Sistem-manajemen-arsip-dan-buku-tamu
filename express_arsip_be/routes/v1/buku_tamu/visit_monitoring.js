@@ -15,10 +15,10 @@ router.post("/", async (req, res) => {
     const q = DB("trx_visitations as t")
       .select(
         "t.*",
-        "mp.VisitPurposeName as VisitPurposeName", // 🎯 FIX: mp.Name -> mp.VisitPurposeName
+        "mp.VisitPurposeName as VisitPurposeName", 
         "u.Fullname as HostFullname"
       )
-      .leftJoin("mst_visit_purpose as mp", "t.VisitPurposeId", "mp.VisitPurposeId") // 🎯 FIX: mp.Id -> mp.VisitPurposeId
+      .leftJoin("mst_visit_purpose as mp", "t.VisitPurposeId", "mp.VisitPurposeId")
       .leftJoin("user_credential as u", "t.HostUserId", "u.UniqueId");
 
     if (oPayload.Status) q.where("t.Status", oPayload.Status);
@@ -35,7 +35,6 @@ router.post("/", async (req, res) => {
     const totalObj = await DB("trx_visitations as t").count({ total: '*' }).first();
     const rows = await q.orderBy("t.CheckInTime", "desc").limit(limit).offset(offset);
 
-    // 🎯 BYPASS MINIO: Mengubah path gambar langsung ke URL lokal folder uploads statis
     for (const r of rows) {
       if (r.PhotoFace) {
         r.PhotoFaceUrl = `http://localhost:8000/uploads/${r.PhotoFace}`;

@@ -14,7 +14,7 @@ const Table = ({ state, setState, getData, toast, onOpenCheckin, onCheckout, onA
     const headerTemplate = (
         <div className="flex flex-wrap align-items-center justify-content-between gap-2">
             <div>
-                <span className="text-xl font-semibold">Monitoring Buku Tamu</span>
+                <span className="text-xl font-semibold">Monitoring Guest Book</span>
             </div>
             <div className="flex flex-wrap gap-2 align-items-center">
                 <Button label="Check-In Tamu Baru" icon="pi pi-sign-in" severity="success" onClick={onOpenCheckin} />
@@ -54,7 +54,6 @@ const Table = ({ state, setState, getData, toast, onOpenCheckin, onCheckout, onA
             out: { label: "Out", severity: "secondary" },
         };
         const config = lookup[status] || { label: status, severity: "info" };
-        // FIX: Tambahkan 'as any' pada severity agar TypeScript tidak komplain perihal TagProps
         return <Tag value={config.label} severity={config.severity as any} />;
     };
 
@@ -65,7 +64,6 @@ const Table = ({ state, setState, getData, toast, onOpenCheckin, onCheckout, onA
             rejected: { label: "Rejected", severity: "danger" },
         };
         const config = lookup[approval] || { label: approval, severity: "info" };
-        // FIX: Tambahkan 'as any' pada severity agar TypeScript tidak komplain perihal TagProps
         return <Tag value={config.label} severity={config.severity as any} />;
     };
 
@@ -94,27 +92,9 @@ const Table = ({ state, setState, getData, toast, onOpenCheckin, onCheckout, onA
         );
     };
 
-    const cards = state.statData ? [
-        { title: 'Tamu Hari Ini', value: state.statData.today_total, color: '#2563eb' },
-        { title: 'Sedang Berkunjung', value: state.statData.today_in, color: '#16a34a' },
-        { title: 'Sudah Keluar', value: state.statData.today_out, color: '#6b7280' },
-        { title: 'Menunggu Approval', value: state.statData.pending_approval, color: '#f59e0b' },
-    ] : [];
-
     return (
         <div className="card border-none p-0">
-            {/* FIX: Set col-12 dan col-sm-6 agar layout responsive aman & proporsional */}
-            <div className="grid mt-1 mb-4">
-                {cards.map((card) => (
-                    <div key={card.title} className="col-12 sm:col-6 lg:col">
-                        <div className="p-4 border-round shadow-1" style={{ backgroundColor: card.color, color: '#ffffff' }}>
-                            <div className="text-sm font-medium opacity-80">{card.title}</div>
-                            <div className="text-3xl font-bold mt-2">{card.value}</div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
+            {/* 🎯 KARTU DUPLIKAT LAMA SUDAH DIHAPUS TOTAL DARI SINI AGAR TIDAK BENTROK */}
             <div className="card">
                 <DataTable
                     value={state.data}
