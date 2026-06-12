@@ -97,10 +97,9 @@ router.post(
         );
       }
 
-      // 🎯 FIX GENERATOR DINAMIS: Membuat kode unik otomatis berbasis penanggalan milidetik
-      const dateStr = formatDateSystem(new Date(), "yyyyMMdd"); // Hasil: 20260611
-      const uniqueSuffix = Date.now().toString().slice(-4); // Mengambil 4 digit milidetik terakhir riil
-      const VisitCode = `TAMU${dateStr}${uniqueSuffix}`; // Hasil: TAMU202606115932 (Anti-Duplikat!)
+      const dateStr = formatDateSystem(new Date(), "yyyyMMdd"); 
+      const uniqueSuffix = Date.now().toString().slice(-4); 
+      const VisitCode = `TAMU${dateStr}${uniqueSuffix}`;
 
       const QRToken =
         typeof crypto.randomUUID === "function"
@@ -142,7 +141,7 @@ router.post(
         datetime: formatDateSystem(),
       });
     } catch (error) {
-      // Mengirimkan log pesan error riil dari MySQL ke konsol terminal untuk mempermudah audit kalian
+ 
       console.error("❌ [Database Error Log]:", error); 
 
       const oResult = {

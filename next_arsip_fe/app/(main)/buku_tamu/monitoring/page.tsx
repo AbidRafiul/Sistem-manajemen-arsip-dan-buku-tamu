@@ -15,7 +15,13 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
-import { FilterMatchMode } from "primereact/api"; 
+import { FilterMatchMode } from "primereact/api";
+
+// 🎯 FIX VIEWPORT EXPORT
+export const viewport = {
+    width: 'device-width',
+    initialScale: 1,
+};
 
 const initialValues: initValue = {
     VisitationId: null,
@@ -24,7 +30,7 @@ const initialValues: initValue = {
     GuestEmail: "",
     GuestCompany: "",
     GuestPosition: "",
-    VisitPurposeId: null, 
+    VisitPurposeId: null,
     HostUserId: "",
     HostName: "",
     IdentityType: "",
@@ -46,14 +52,14 @@ const Page = () => {
         delete: false,
         selectedUsers: [],
         searchVal: '',
-        filters: { global: { value: null, matchMode: FilterMatchMode.CONTAINS } }, 
+        filters: { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
         session: null,
         submittedData: null,
         visitPurposeData: [],
         hostUserData: [],
         statData: null,
         autoRefresh: false,
-        statusFilter: '', 
+        statusFilter: '',
         showCheckoutDialog: false,
         checkoutToken: '',
         checkoutNotes: '',
@@ -79,16 +85,16 @@ const Page = () => {
         try {
             const response = await postData(apiEndpoint, payload);
             const result = response.data;
-            
+
             if (result) {
                 let finalArrayData = [];
 
                 if (Array.isArray(result.data)) {
                     finalArrayData = result.data;
-                } 
+                }
                 else if (result.data && Array.isArray(result.data.data)) {
                     finalArrayData = result.data.data;
-                } 
+                }
                 else if (Array.isArray(result)) {
                     finalArrayData = result;
                 }
@@ -98,7 +104,7 @@ const Page = () => {
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || 'Gagal memuat data');
-            setState((p) => ({ ...p, data: [] })); 
+            setState((p) => ({ ...p, data: [] }));
         } finally {
             setState((p) => ({ ...p, load: false }));
         }
@@ -117,7 +123,6 @@ const Page = () => {
         try {
             const response = await postData(apiEndpointGetPurpose);
             const resContent = response?.data;
-            // 🎯 KEMBALI KE ASAL: Membaca properti database asli kelompokmu
             setState((p) => ({ ...p, visitPurposeData: resContent?.data || resContent || [] }));
         } catch (error: any) {
             console.log('⚠️ [Silent Filter] Dropdown Visit Purpose belum siap di backend Express.');
@@ -128,7 +133,6 @@ const Page = () => {
         try {
             const response = await postData(apiEndpointGetUser);
             const resContent = response?.data;
-            // 🎯 KEMBALI KE ASAL: Membaca properti database asli kelompokmu
             setState((p) => ({ ...p, hostUserData: resContent?.data || resContent || [] }));
         } catch (error: any) {
             console.log('⚠️ [Silent Filter] Dropdown Host Users belum siap di backend Express.');
@@ -137,7 +141,6 @@ const Page = () => {
 
     const fetchAll = async () => {
         await fetchMonitoring();
-        // Mengosongkan parameter filter status di awal load agar menarik semua data dari db_magang
         await getData(apiEndpointGet, state.statusFilter ? { Status: state.statusFilter } : {});
     };
 
@@ -171,34 +174,6 @@ const Page = () => {
 
     const onCheckout = (row: any) => {
         setState((p) => ({ ...p, showCheckoutDialog: true, checkoutToken: row.QRToken || row.VisitCode || '', checkoutNotes: '' }));
-    };
-
-    const onApprove = async (row: any) => {
-        try {
-            setState((p) => ({ ...p, load: true }));
-            await postData(apiEndpointApproval, { VisitationId: row.VisitationId, action: 'approved', ApprovalNotes: '' });
-            showSuccess(toast, 'Kunjungan disetujui');
-            fetchAll();
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || 'Gagal approve');
-        } finally {
-            setState((p) => ({ ...p, load: false }));
-        }
-    };
-
-    const onReject = async (row: any) => {
-        try {
-            setState((p) => ({ ...p, load: true }));
-            await postData(apiEndpointApproval, { VisitationId: row.VisitationId, action: 'rejected', ApprovalNotes: '' });
-            showSuccess(toast, 'Kunjungan ditolak');
-            fetchAll();
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || 'Gagal reject');
-        } finally {
-            setState((p) => ({ ...p, load: false }));
-        }
     };
 
     const onDetail = (row: any) => {
@@ -237,8 +212,65 @@ const Page = () => {
     };
 
     return (
-        <div className="p-4">
+        <div className="p-4 bg-slate-50 min-h-screen">
             <Toast ref={toast} position="top-right" />
+
+            {/* 🎯 KARTU STATISTIK PREMIUM: Menggunakan Flexbox Vertikal Anti-Tabrakan & Box Ikon Pojok */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+                {/* 🔹 Card 1: Tamu Hari Ini (#4F46E5) */}
+                <div style={{ backgroundColor: '#4F46E5' }} className="text-white p-4 rounded-xl shadow-sm flex flex-col justify-between min-h-[110px] transition-transform hover:scale-102">
+                    <span className="text-xs font-bold tracking-wider opacity-80 uppercase">Tamu Hari Ini</span>
+                    <div className="flex justify-between items-end mt-4">
+                        <span className="text-4xl font-extrabold leading-none">{state.data ? state.data.length : 0}</span>
+                        <div className="bg-white/10 p-2 rounded-lg flex items-center justify-center">
+                            <i className="pi pi-users text-xl opacity-90"></i>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 🟢 Card 2: Sedang Berkunjung (#0EA5E9) */}
+                <div style={{ backgroundColor: '#0EA5E9' }} className="text-white p-4 rounded-xl shadow-sm flex flex-col justify-between min-h-[110px] transition-transform hover:scale-102">
+                    <span className="text-xs font-bold tracking-wider opacity-80 uppercase">Sedang Berkunjung</span>
+                    <div className="flex justify-between items-end mt-4">
+                        <span className="text-4xl font-extrabold leading-none">
+                            {state.data ? state.data.filter((t: any) => t.Status === 'in').length : 0}
+                        </span>
+                        <div className="bg-white/10 p-2 rounded-lg flex items-center justify-center">
+                            <i className="pi pi-sign-in text-xl opacity-90"></i>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 🔘 Card 3: Sudah Keluar (#64748B) */}
+                <div style={{ backgroundColor: '#64748B' }} className="text-white p-4 rounded-xl shadow-sm flex flex-col justify-between min-h-[110px] transition-transform hover:scale-102">
+                    <span className="text-xs font-bold tracking-wider opacity-80 uppercase">Sudah Keluar</span>
+                    <div className="flex justify-between items-end mt-4">
+                        <span className="text-4xl font-extrabold leading-none">
+                            {state.data ? state.data.filter((t: any) => t.Status === 'out').length : 0}
+                        </span>
+                        <div className="bg-white/10 p-2 rounded-lg flex items-center justify-center">
+                            <i className="pi pi-sign-out text-xl opacity-90"></i>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 🟠 Card 4: Menunggu Approval (#F43F5E) */}
+                <div style={{ backgroundColor: '#F43F5E' }} className="text-white p-4 rounded-xl shadow-sm flex flex-col justify-between min-h-[110px] transition-transform hover:scale-102">
+                    <span className="text-xs font-bold tracking-wider opacity-80 uppercase">Menunggu Approval</span>
+                    <div className="flex justify-between items-end mt-4">
+                        <span className="text-4xl font-extrabold leading-none">
+                            {state.data ? state.data.filter((t: any) => t.ApprovalStatus === 'pending').length : 0}
+                        </span>
+                        <div className="bg-white/10 p-2 rounded-lg flex items-center justify-center">
+                            <i className="pi pi-clock text-xl opacity-90"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            {/* 🔹 AREA UTAMA TABEL MONITORING DATA */}
             <Table
                 state={state}
                 setState={setState}
@@ -246,14 +278,16 @@ const Page = () => {
                 toast={toast}
                 onOpenCheckin={onOpenCheckin}
                 onCheckout={onCheckout}
-                onApprove={onApprove}
-                onReject={onReject}
+                onApprove={async () => { }}
+                onReject={async () => { }}
                 onDetail={onDetail}
                 onFilterStatus={onFilterStatus}
                 onRefresh={onRefresh}
             />
+
             <Form state={state} setState={setState} formik={formik} toast={toast} getData={getData} />
 
+            {/* POP-UP DIALOG MODAL AREA */}
             <Dialog header="Check-Out Tamu" visible={state.showCheckoutDialog} modal style={{ width: '480px' }} onHide={() => setState((p) => ({ ...p, showCheckoutDialog: false }))}>
                 <div className="grid grid-nogutter gap-3">
                     <div className="col-12">

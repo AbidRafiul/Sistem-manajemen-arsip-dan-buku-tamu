@@ -31,7 +31,7 @@ export default function DaftarSemuaKunjunganPage() {
     const [loading, setLoading] = useState(false);
     const [visitations, setVisitations] = useState([]);
     const [expandedRows, setExpandedRows] = useState<any>(null);
-    
+
     const [printData, setPrintData] = useState<any>(null);
     const [qrCodeUrl, setQrCodeUrl] = useState('');
     const [showPrintDialog, setShowPrintDialog] = useState(false);
@@ -72,7 +72,7 @@ export default function DaftarSemuaKunjunganPage() {
             if (activeFilters.StartDate instanceof Date) params.append('StartDate', activeFilters.StartDate.toISOString());
             if (activeFilters.EndDate instanceof Date) params.append('EndDate', activeFilters.EndDate.toISOString());
 
-            const response = await postData(`/buku-tamu/visit-data?${params.toString()}`, {});
+            const response = await postData(`/buku_tamu/visit-data?${params.toString()}`, {});
             if (response?.data?.status === '00') {
                 setVisitations(response.data.data);
             }
@@ -226,7 +226,7 @@ export default function DaftarSemuaKunjunganPage() {
     return (
         <div className="p-4">
             <Toast ref={toast} />
-            
+
             <div className="flex justify-content-between align-items-center mb-4">
                 <h2 className="text-2xl font-bold m-0 text-900">Log & Riwayat Kunjungan Tamu</h2>
                 <Button type="button" label="Export ke Excel" icon="pi pi-file-excel" severity="success" onClick={exportToExcel} />

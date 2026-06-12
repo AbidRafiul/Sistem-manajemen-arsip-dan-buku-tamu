@@ -2,7 +2,6 @@ import express from "express";
 import DB from "../../../core/config/knex.js";
 import { formatDateSystem } from "../components/tools/general.js";
 
-// 🎯 BYPASS: Hapus import getPresignedUrl yang bikin crash
 
 const router = express.Router();
 
@@ -28,7 +27,6 @@ router.post("/", async (req, res) => {
       return res.status(404).json({ status: "01", message: "Data tidak ditemukan" });
     }
 
-    // 🎯 BYPASS MINIO LOGIC: Set URL lokal statis untuk foto detail
     if (row.PhotoFace) {
       row.PhotoFaceUrl = `http://localhost:8000/uploads/${row.PhotoFace}`;
     } else {
