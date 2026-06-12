@@ -9,6 +9,7 @@ import crypto from 'crypto';
 import { findToValuesRecursive } from "./generalTools";
 import { auth } from "./authTools";
 import postData from "../axios/postData";
+import { parse } from "date-fns";
 
 
 const encryptChunkRSA = async (payload: string) => {
@@ -74,12 +75,7 @@ const routeMiddleware = async (searchUrl: string) => {
         return '99';
     }
 
-<<<<<<< HEAD
-    // 2. Validasi Waktu Kedaluwarsa Session (Token Lifecycle)
-    const dSessionExp = new Date(session?.expires);
-=======
     const dSessionExp = parse(session?.expires, 'yyyy-MM-dd HH:mm:ss', new Date());
->>>>>>> 0e9c28e76ae4aaaed219e1ffa7546d124ada1cdb
     const dNow = new Date();
 
     if (Number.isNaN(dSessionExp.getTime()) || dNow.getTime() > dSessionExp.getTime()) {
@@ -88,14 +84,9 @@ const routeMiddleware = async (searchUrl: string) => {
 
     if (session.user.uniqueId) {
         try {
-<<<<<<< HEAD
-            let apiPath = process.env.NEXT_PUBLIC_API_DIR_PATH || '/api/v1';
-
-=======
 
             let apiPath = process.env.NEXT_PUBLIC_API_DIR_PATH || '/api/v1';
-            
->>>>>>> 0e9c28e76ae4aaaed219e1ffa7546d124ada1cdb
+
             if (!apiPath.startsWith('http')) {
                 apiPath = `http://localhost:8000${apiPath}`;
             }
@@ -129,7 +120,6 @@ const routeMiddleware = async (searchUrl: string) => {
                 return '98';
             }
         } catch (error: any) {
-<<<<<<< HEAD
             // Log pencatatan error di terminal server secara rapi (Berguna untuk dokumentasi projek)
             console.error("[RouteMiddleware Error]:", error?.message);
 
@@ -138,16 +128,6 @@ const routeMiddleware = async (searchUrl: string) => {
             }
 
             return '00';
-=======
-
-            console.error("🔴 [RouteMiddleware Error]:", error?.message);
-            
-            if (error?.response?.status == '401') {
-                return '99';
-            }
-            
-            return '00'; 
->>>>>>> 0e9c28e76ae4aaaed219e1ffa7546d124ada1cdb
         }
     } else {
         return '99';
