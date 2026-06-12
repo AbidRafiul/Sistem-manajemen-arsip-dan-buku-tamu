@@ -182,7 +182,8 @@ const AppMenu = () => {
             <ul className="layout-menu">
                 {state.load
                     ? [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((item, i) => (
-                        <li className="my-3">
+                        // 🎯 FIX WARNING KEY: Ditambahkan key unik berbasis index `i` pada wrapper <li> loading
+                        <li className="my-3" key={`menu-skeleton-${i}`}>
                             <Skeleton className="py-4" />
                         </li>
                     ))
@@ -193,7 +194,7 @@ const AppMenu = () => {
                                 item={item}
                                 root={true}
                                 index={i}
-                                key={item.label || i}
+                                key={item.label || `menu-item-${i}`}
                             />
                         ) : (
                             <li className="menu-separator" key={`separator-${i}`}></li>
