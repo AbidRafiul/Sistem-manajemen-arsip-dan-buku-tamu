@@ -14,8 +14,6 @@ interface CustomHeaders {
     'x-credential'?: string;
 }
 
-
-
 export const POST = async (request: NextRequest) => {
     try {
         // Check cookies
@@ -100,6 +98,71 @@ export const POST = async (request: NextRequest) => {
     }
 }
 
+export const GET = async (request: NextRequest) => {
+    try {
+        const cookieStore = request.cookies;
+        const session = await auth()
+        const a2fCookie = cookieStore.get('_A2F');
+
+        if (!session) {
+            return NextResponse.json(
+                {
+                    status: 99,
+                    message: 'Unauthenticated',
+                    datetime: formatDateCalendar(new Date()),
+                },
+                { status: 401 }
+            );
+        }
+        if (!a2fCookie) {
+            return NextResponse.json(
+                {
+                    status: 99,
+                    message: 'Unauthenticated',
+                    datetime: formatDateCalendar(new Date()),
+                },
+                { status: 401 }
+            );
+        }
+
+        const dNow = new Date();
+        const tokenResponse = await axios.get(`${process.env.API_URL}/auth/token`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Timestamp': formatDateCalendar(dNow),
+            },
+        });
+
+        const token = tokenResponse.data;
+
+        if (!token?.access_token) {
+            return NextResponse.json(
+                {
+                    status: '99',
+                    message: 'Token not found',
+                    datetime: formatDateCalendar(new Date()),
+                },
+                { status: 400 }
+            );
+        }
+
+        return await getCRUD(request, token, a2fCookie.value);
+
+    } catch (error: any) {
+        console.error("Bridge error:", error);
+
+        return NextResponse.json(
+            {
+                status: '99',
+                message: error?.response?.data?.message || error?.message || 'Internal server error',
+                datetime: formatDateCalendar(new Date()),
+                data: error.response?.data || null,
+            },
+            { status: 400 }
+        );
+    }
+}
+
 async function postCRUD(request: NextRequest, token: any, a2fCookie: string) {
     try {
         const headers: CustomHeaders = {};
@@ -167,6 +230,75 @@ async function postCRUD(request: NextRequest, token: any, a2fCookie: string) {
 
         if (err?.response?.status === 401) {
             // Clear cookies on unauthorized
+            const cookieStore = cookies();
+            cookieStore.delete('_A2R');
+            cookieStore.delete('_A2F');
+
+            return NextResponse.json(
+                err?.response?.data || { error: 'Unauthorized' },
+                { status: 401 }
+            );
+        }
+
+        return NextResponse.json(
+            err?.response?.data || { error: 'Internal server error' },
+            { status: err?.response?.status || 500 }
+        );
+    }
+}
+
+async function getCRUD(request: NextRequest, token: any, a2fCookie: string) {
+    try {
+        const headers: CustomHeaders = {};
+
+        request.headers.forEach((value, key) => {
+            if (key.toLowerCase().startsWith('x-')) {
+                headers[key.toLowerCase() as keyof CustomHeaders] = value;
+            }
+        });
+
+        const endpoint = headers['x-endpoint'];
+        if (!endpoint) {
+            return NextResponse.json(
+                { error: 'Endpoint not specified' },
+                { status: 400 }
+            );
+        }
+
+        let customHeader: Record<string, any> = {};
+        if (headers['x-custom-header']) {
+            try {
+                customHeader = JSON.parse(headers['x-custom-header']);
+            } catch (e) {
+                console.error('Failed to parse x-custom-header:', e);
+            }
+        }
+
+        let requestHeaders: Record<string, string> = {
+            'Content-Type': 'application/json',
+            'X-Timestamp': formatDateCalendar(new Date()) as string,
+            'Authorization': `Bearer ${token.access_token}`,
+            ...customHeader,
+        };
+
+        if (customHeader['X-Level'] && customHeader['X-Level'] == '1') {
+            const secret = new TextEncoder().encode(process.env.USER_KEY);
+            const { payload } = await jwtVerify<A2FPayload>(a2fCookie, secret);
+            const userPayload = payload;
+
+            requestHeaders['X-UniqueId'] = userPayload.uniqueId ?? '';
+        }
+
+        delete requestHeaders['X-Level'];
+        const result = await axios.get(
+            `${process.env.API_URL}${endpoint}`,
+            { headers: requestHeaders }
+        );
+
+        return NextResponse.json(result.data);
+
+    } catch (err: any) {
+        if (err?.response?.status === 401) {
             const cookieStore = cookies();
             cookieStore.delete('_A2R');
             cookieStore.delete('_A2F');

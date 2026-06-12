@@ -3,7 +3,12 @@
  * @returns { Promise<void> }
  */
 export async function up(knex) {
+  await knex.schema.dropTableIfExists("trs_incoming_letters");
   await knex.schema.createTable("trs_incoming_letters", (table) => {
+    // 1. Tambahkan standar charset dan collation
+    table.charset("utf8mb4");
+    table.collate("utf8mb4_unicode_ci");
+
     table.bigIncrements("IncomingLetterId").primary();
 
     table.string("AgendaNumber", 100).notNullable().unique();
@@ -16,7 +21,8 @@ export async function up(knex) {
     table.string("Subject", 255).notNullable();
     table.text("AttachmentDescription").nullable();
 
-    table.bigInteger("LetterTypeId").unsigned().nullable();
+    // 2. PERBAIKAN: bigInteger diubah menjadi integer
+    table.integer("LetterTypeId").unsigned().nullable();
     table.integer("DocumentTypeId").unsigned().nullable();
     table.integer("ArchiveClassificationId").unsigned().nullable();
     table.integer("ConfidentialityLevelId").unsigned().nullable();
@@ -29,11 +35,19 @@ export async function up(knex) {
     table.integer("CreatedBy").unsigned().nullable();
     table.integer("UpdatedBy").unsigned().nullable();
 
-    table.dateTime("CreatedAt").notNullable().defaultTo(knex.fn.now());
-    table.dateTime("UpdatedAt").notNullable().defaultTo(knex.fn.now());
+    // 3. PERBAIKAN: Hapus defaultTo(knex.fn.now())
+    table.datetime("CreatedAt").notNullable();
+    table.datetime("UpdatedAt").notNullable();
 
-    table.foreign("LetterTypeId").references("LetterTypeId").inTable("mst_letter_types");
-    table.foreign("DocumentTypeId").references("DocumentTypeId").inTable("mst_document_type");
+    // Foreign Keys Setup
+    table
+      .foreign("LetterTypeId")
+      .references("LetterTypeId")
+      .inTable("mst_letter_types");
+    table
+      .foreign("DocumentTypeId")
+      .references("DocumentTypeId")
+      .inTable("mst_document_type");
     table
       .foreign("ArchiveClassificationId")
       .references("ArchiveClassificationId")
@@ -48,6 +62,10 @@ export async function up(knex) {
   });
 }
 
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
 export async function down(knex) {
   await knex.schema.dropTableIfExists("trs_incoming_letters");
 }

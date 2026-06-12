@@ -1,0 +1,5 @@
+export const apiEndpointDocumentGet = '/arsip-dokumen/get'
+export const apiEndpointDocumentCreate = '/arsip-dokumen/create'
+export const apiEndpointDocumentUpdate = '/arsip-dokumen/update'
+export const apiEndpointDocumentDelete = '/arsip-dokumen/delete'
+export const apiEndpointDocumentDetail = '/arsip-dokumen/detail'
