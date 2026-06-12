@@ -12,6 +12,7 @@ import { Logging, validatePayload } from "../components/tools/servertool.js";
 import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { jwtVerify, SignJWT } from "jose";
+import { recordAuditTrail } from "../components/tools/audit_tool.js";
 
 const router = express.Router();
 
@@ -45,7 +46,7 @@ router.post("/", async (req, res) => {
         "string.empty": "{#label} tidak boleh kosong",
         "any.required": "{#label} wajib diisi",
       },
-      oPayload
+      oPayload,
     );
 
     if (cValidation) {
@@ -76,14 +77,14 @@ router.post("/", async (req, res) => {
         "Fullname",
         "Status",
         "Telp",
-        "CreatedAt"
+        "CreatedAt",
       )
       .first();
 
     if (oUser) {
       const dDatetime = formatDateSystem(
         oUser.CreatedAt,
-        "yyyy-MM-dd HH:mm:ss"
+        "yyyy-MM-dd HH:mm:ss",
       );
       const secret = process.env.USER_SECRET;
       const cPassword =
@@ -125,12 +126,13 @@ router.post("/", async (req, res) => {
         role: oUser.Role,
       };
 
-
       const secretKey = new TextEncoder().encode(process.env.USER_KEY);
 
       const jwtCredential = await new SignJWT(credential)
         .setProtectedHeader({ alg: "HS512" })
         .sign(secretKey);
+
+      recordAuditTrail(oUser.Username, oUser.Role, "LOGIN", req);
 
       return res.status(200).json({
         status: status.SUKSES,

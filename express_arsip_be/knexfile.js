@@ -57,5 +57,4 @@ const knexConfig = {
     } : undefined
   },
 };
-
 export default knexConfig;
