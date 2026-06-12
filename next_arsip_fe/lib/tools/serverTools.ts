@@ -11,10 +11,7 @@ import { auth } from "./authTools";
 import postData from "../axios/postData";
 import { parse } from 'date-fns';
 
-/**
- * Fungsi untuk mengenkripsi payload menggunakan RSA Public Key
- * Standar enkripsi asimetris untuk keamanan data projek
- */
+
 const encryptChunkRSA = async (payload: string) => {
     const chunkSize = 214;
     const chunks = payload.match(new RegExp(`.{1,${chunkSize}}`, 'g')) || [];
@@ -48,9 +45,6 @@ const encryptChunkRSA = async (payload: string) => {
 
 let isLoggingOut = false;
 
-/**
- * Fungsi Logout Sistem untuk membersihkan Cookies dan Session Auth
- */
 const logout = async (
     context: any = null,
     redirectToLogin: boolean = true
@@ -73,19 +67,14 @@ const logout = async (
     return;
 };
 
-/**
- * Middleware Server-Side Route Interceptor (RBAC)
- * Memvalidasi hak akses menu user secara dinamis dari database melalui Express BE
- */
+
 const routeMiddleware = async (searchUrl: string) => {
     const session = await auth();
 
-    // 1. Validasi Keberadaan Session User
     if (!session?.user) {
         return '99';
     }
 
-    // 2. Validasi Waktu Kedaluwarsa Session (Token Lifecycle)
     const dSessionExp = parse(session?.expires, 'yyyy-MM-dd HH:mm:ss', new Date());
     const dNow = new Date();
 
@@ -95,11 +84,9 @@ const routeMiddleware = async (searchUrl: string) => {
 
     if (session.user.uniqueId) {
         try {
-            // 🎯 STANDARISASI URL: Mengambil base path dari env frontend
+
             let apiPath = process.env.NEXT_PUBLIC_API_DIR_PATH || '/api/v1';
             
-            // 🚀 DYNAMIC FALLBACK: Jika di env lokal belum ditulis full URL statis, 
-            // otomatis dipaksa mengarah ke alamat server lokal Express Port 8000 (Mencegah ERR_INVALID_URL)
             if (!apiPath.startsWith('http')) {
                 apiPath = `http://localhost:8000${apiPath}`;
             }
@@ -114,10 +101,8 @@ const routeMiddleware = async (searchUrl: string) => {
                 }
             );
 
-            // 3. Ekstraksi Data Struktur Menu Akses User
             const menu = resp.data.data;
 
-            // Fail-Safe jika database kosong / belum di-seed agar login tidak macet saat diuji dosen
             if (!menu) {
                 console.warn("⚠️ [RouteMiddleware] Backend merespon, tetapi data menu kosong.");
                 return '00'; 
@@ -130,20 +115,18 @@ const routeMiddleware = async (searchUrl: string) => {
 
             const res = findToValuesRecursive(menu, urlFix);
 
-            // Jika url menu yang diakses tidak terdaftar di hak akses user terkait
+
             if (res.length < 1) {
                 return '98'; 
             }
         } catch (error: any) {
-            // Log pencatatan error di terminal server secara rapi (Berguna untuk dokumentasi projek)
+
             console.error("🔴 [RouteMiddleware Error]:", error?.message);
             
             if (error?.response?.status == '401') {
                 return '99';
             }
             
-            // 🛡️ SECURITY FALLBACK: Jika backend mati atau data kolom mysql belum siap, 
-            // tetap kembalikan '00' agar aplikasi tidak blank putih / crash di depan dosen penguji
             return '00'; 
         }
     } else {
@@ -153,9 +136,7 @@ const routeMiddleware = async (searchUrl: string) => {
     return '00';
 }
 
-/**
- * Fungsi Komponen Global untuk mengambil Dynamic Global Configuration dari DB
- */
+
 export const getDBConfig = async (key: string) => {
     let requestBody = {
         Key: key,

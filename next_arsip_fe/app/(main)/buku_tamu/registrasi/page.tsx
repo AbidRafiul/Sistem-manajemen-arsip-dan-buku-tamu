@@ -83,11 +83,11 @@ export default function RegistrasiKunjunganPage() {
                 }
             });
 
-            const response = await postData('/buku-tamu/visit-registrasi', submitData, { 'Content-Type': 'multipart/form-data' });
+            const response = await postData('/buku_tamu/visit-registrasi', submitData, { 'Content-Type': 'multipart/form-data' });
             if (response?.data?.status === '00') {
                 showSuccess(toast, 'Rencana kunjungan berhasil didaftarkan!');
                 setTimeout(() => {
-                    router.push('/buku-tamu/monitoring');
+                    router.push('/buku_tamu/monitoring');
                 }, 1500);
             } else {
                 throw new Error(response?.data?.message || 'Gagal meregistrasi kunjungan');
@@ -104,7 +104,7 @@ export default function RegistrasiKunjunganPage() {
             <Toast ref={toast} />
             <div className="flex justify-content-between align-items-center mb-4">
                 <h2 className="text-2xl font-bold m-0 text-900">Booking / Registrasi Kunjungan</h2>
-                <Button type="button" label="Kembali ke Monitoring" icon="pi pi-arrow-left" className="p-button-outlined" onClick={() => router.push('/buku-tamu/monitoring')} />
+                <Button type="button" label="Kembali ke Monitoring" icon="pi pi-arrow-left" className="p-button-outlined" onClick={() => router.push('/buku_tamu/monitoring')} />
             </div>
 
             <form onSubmit={handleSubmit} className="grid">

@@ -72,7 +72,7 @@ export default function DaftarSemuaKunjunganPage() {
             if (activeFilters.StartDate instanceof Date) params.append('StartDate', activeFilters.StartDate.toISOString());
             if (activeFilters.EndDate instanceof Date) params.append('EndDate', activeFilters.EndDate.toISOString());
 
-            const response = await postData(`/buku-tamu/visit-data?${params.toString()}`, {});
+            const response = await postData(`/buku_tamu/visit-data?${params.toString()}`, {});
             if (response?.data?.status === '00') {
                 setVisitations(response.data.data);
             }
