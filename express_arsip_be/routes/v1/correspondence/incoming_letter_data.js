@@ -11,7 +11,7 @@ const incomingLetterData = async (req, res) => {
   try {
     const oPayload = req.body || {};
 
-    const oQuery = DB("trs_incoming_letters as til")
+    const oQuery = DB("trx_incoming_letters as til")
       .leftJoin("mst_letter_types as mlt", "til.letter_type_id", "mlt.letter_type_id")
       .select(
         "til.incoming_letter_id",

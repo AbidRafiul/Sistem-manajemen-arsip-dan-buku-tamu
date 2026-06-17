@@ -16,7 +16,7 @@ export default function RegistrasiKunjunganPage() {
     const router = useRouter();
     const toast = React.useRef<Toast>(null);
     const [loading, setLoading] = useState(false);
-    
+
     const [visitPurposeOptions, setVisitPurposeOptions] = useState([]);
     const [hostUserOptions, setHostUserOptions] = useState([]);
 
@@ -71,7 +71,7 @@ export default function RegistrasiKunjunganPage() {
         setLoading(true);
         try {
             const submitData = new FormData();
-            
+
             // Loop data dengan casting type 'any' agar TypeScript tidak komplain di FormData
             Object.entries(formData).forEach(([key, val]: [string, any]) => {
                 if (val !== null && val !== undefined && val !== '') {

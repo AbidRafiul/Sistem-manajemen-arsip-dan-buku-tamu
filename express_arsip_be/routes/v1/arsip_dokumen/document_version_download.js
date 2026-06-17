@@ -8,10 +8,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const downloadDocumentVersion = async (req, res) => {
-  const oQuery = req.query;
-
   try {
-    const nVersionId = oQuery.VersionId;
+    const nVersionId = req.query.VersionId || req.body?.VersionId;
 
     if (!nVersionId) {
       const oResult = {

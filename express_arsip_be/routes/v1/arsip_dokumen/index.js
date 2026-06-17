@@ -103,8 +103,9 @@ router.post("/version/approve", documentVersionApprove);
 // POST /version/rollback — Rollback ke versi sebelumnya
 router.post("/version/rollback", documentVersionRollback);
 
-// GET /version/download — Download file versi dokumen
+// GET & POST /version/download — Download file versi dokumen
 router.get("/version/download", documentVersionDownload);
+router.post("/version/download", documentVersionDownload);
 
 // ════════════════════════════════════════════════════════════════════════════
 // ARCHIVE LOAN (Peminjaman Arsip)

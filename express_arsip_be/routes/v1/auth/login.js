@@ -13,6 +13,7 @@ import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { jwtVerify, SignJWT } from "jose";
 import { recordAuditTrail } from "../components/tools/audit_tool.js";
+import { getNavigationMenu } from "../setup/navigation/navigation_helper.js";
 
 const router = express.Router();
 
@@ -106,15 +107,12 @@ router.post("/", async (req, res) => {
         });
       }
 
-      const oNavigation = await DB("user_navigation")
-        .select("Menu as menu")
-        .where("UniqueId", oUser.UniqueId)
-        .first();
+      const { menu: oNavigation } = await getNavigationMenu(DB, oUser.UniqueId);
 
-      if (!oNavigation && !oNavigation?.menu) {
+      if (!Array.isArray(oNavigation) || oNavigation.length < 1) {
         return res.status(400).json({
           status: status.GAGAL,
-          message: "User tidak memiliki credential terdaftar di database",
+          message: "User tidak memiliki hak akses menu terdaftar di database",
           datetime: formatDateSystem(),
         });
       }

@@ -38,9 +38,9 @@ const letterDispositionData = async (req, res) => {
       });
     }
 
-    const oQuery = DB("trs_letter_dispositions as tld")
+    const oQuery = DB("trx_letter_dispositions as tld")
       .leftJoin(
-        "trs_incoming_letters as til",
+        "trx_incoming_letters as til",
         "tld.incoming_letter_id",
         "til.incoming_letter_id"
       )

@@ -35,15 +35,16 @@ router.post("/", async (req, res) => {
     const totalObj = await DB("trx_visitations as t").count({ total: '*' }).first();
     const rows = await q.orderBy("t.CheckInTime", "desc").limit(limit).offset(offset);
 
+    const cBaseUrl = `${process.env.APP_SERVER}:${process.env.APP_PORT}`;
     for (const r of rows) {
       if (r.PhotoFace) {
-        r.PhotoFaceUrl = `http://localhost:8000/uploads/${r.PhotoFace}`;
+        r.PhotoFaceUrl = `${cBaseUrl}/uploads/${r.PhotoFace}`;
       } else {
         r.PhotoFaceUrl = null;
       }
       
       if (r.PhotoIdentity) {
-        r.PhotoIdentityUrl = `http://localhost:8000/uploads/${r.PhotoIdentity}`;
+        r.PhotoIdentityUrl = `${cBaseUrl}/uploads/${r.PhotoIdentity}`;
       } else {
         r.PhotoIdentityUrl = null;
       }

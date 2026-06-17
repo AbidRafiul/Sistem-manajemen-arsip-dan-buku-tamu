@@ -1,47 +1,48 @@
 import axios from 'axios';
-import { logout } from '../tools/serverTools';
 import { signOut } from "next-auth/react";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_DIR_PATH || '/api/interceptor';
+
 const Axios = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_DIR_PATH,
+    baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
     },
     withCredentials: true,
 });
 
-
 Axios.interceptors.response.use(
-    r => r,
+    (response) => response,
     async (error) => {
         if (error.response?.status === 401) {
-            await signOut({ callbackUrl: "/auth/login" });
+            if (typeof window !== "undefined") {
+                await signOut({ callbackUrl: "/auth/login" });
+            }
         }
         return Promise.reject(error);
     }
 );
 
-
 async function postData(endpoint: string, data = {}, customHeader = {}) {
+    // Pastikan endpoint diawali dengan '/'
+    const proxyEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+
     try {
-        // console.log(process.env.NEXT_PUBLIC_API_DIR_PATH)
         const header = {
-            'X-ENDPOINT': endpoint,
+            'X-ENDPOINT': proxyEndpoint,
             'X-Custom-Header': JSON.stringify({
-                'X-Level': "1",
-                ...customHeader
+                'X-Level': '1',
+                ...customHeader,
             }),
         };
 
-        const response = await Axios.post('', data, {
-            headers: header,
-        });
+        // Cukup panggil Axios satu kali saja
+        const response = await Axios.post('', data, { headers: header });
         return response;
+
     } catch (error: any) {
-        console.log(error)
-        if (error?.response?.status == 401) {
-            logout(null, true);
-        }
+        // Error handling yang rapi tanpa memicu redundant logout
+        console.error(`[postData Error] at ${proxyEndpoint}:`, error?.message);
         throw error;
     }
 }

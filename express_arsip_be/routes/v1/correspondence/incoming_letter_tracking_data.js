@@ -30,7 +30,7 @@ const incomingLetterTrackingData = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trs_incoming_letters")
+    const oLetter = await DB("trx_incoming_letters")
       .select(
         "incoming_letter_id",
         "agenda_number",
@@ -49,9 +49,9 @@ const incomingLetterTrackingData = async (req, res) => {
       });
     }
 
-    const vaData = await DB("trs_incoming_letter_trackings as tilt")
+    const vaData = await DB("trx_incoming_letter_trackings as tilt")
       .leftJoin(
-        "trs_letter_dispositions as tld",
+        "trx_letter_dispositions as tld",
         "tilt.disposition_id",
         "tld.disposition_id"
       )

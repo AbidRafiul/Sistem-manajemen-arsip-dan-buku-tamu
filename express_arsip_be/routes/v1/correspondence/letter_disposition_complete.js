@@ -31,7 +31,7 @@ const letterDispositionComplete = async (req, res) => {
       });
     }
 
-    const oDisposition = await DB("trs_letter_dispositions")
+    const oDisposition = await DB("trx_letter_dispositions")
       .where("disposition_id", oPayload.disposition_id)
       .first();
 
@@ -49,7 +49,7 @@ const letterDispositionComplete = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trs_incoming_letters")
+    const oLetter = await DB("trx_incoming_letters")
       .where("incoming_letter_id", oDisposition.incoming_letter_id)
       .first();
 
@@ -72,7 +72,7 @@ const letterDispositionComplete = async (req, res) => {
     let bAllDispositionCompleted = false;
 
     await DB.transaction(async (trx) => {
-      await trx("trs_letter_dispositions")
+      await trx("trx_letter_dispositions")
         .where("disposition_id", oPayload.disposition_id)
         .update({
           status: "selesai",
@@ -83,7 +83,7 @@ const letterDispositionComplete = async (req, res) => {
           updated_at: dNow,
         });
 
-      await trx("trs_incoming_letter_trackings").insert({
+      await trx("trx_incoming_letter_trackings").insert({
         incoming_letter_id: oDisposition.incoming_letter_id,
         disposition_id: oPayload.disposition_id,
         action_name: "disposisi_selesai",
@@ -98,14 +98,14 @@ const letterDispositionComplete = async (req, res) => {
         updated_at: dNow,
       });
 
-      const vaUnfinishedDispositions = await trx("trs_letter_dispositions")
+      const vaUnfinishedDispositions = await trx("trx_letter_dispositions")
         .where("incoming_letter_id", oDisposition.incoming_letter_id)
         .whereNot("status", "selesai");
 
       if (vaUnfinishedDispositions.length === 0) {
         bAllDispositionCompleted = true;
 
-        await trx("trs_incoming_letters")
+        await trx("trx_incoming_letters")
           .where("incoming_letter_id", oDisposition.incoming_letter_id)
           .update({
             status: "selesai",
@@ -113,7 +113,7 @@ const letterDispositionComplete = async (req, res) => {
             updated_at: dNow,
           });
 
-        await trx("trs_incoming_letter_trackings").insert({
+        await trx("trx_incoming_letter_trackings").insert({
           incoming_letter_id: oDisposition.incoming_letter_id,
           disposition_id: oPayload.disposition_id,
           action_name: "surat_selesai",
@@ -128,7 +128,7 @@ const letterDispositionComplete = async (req, res) => {
           updated_at: dNow,
         });
       } else {
-        await trx("trs_incoming_letters")
+        await trx("trx_incoming_letters")
           .where("incoming_letter_id", oDisposition.incoming_letter_id)
           .update({
             status: "diproses",

@@ -31,7 +31,7 @@ export default function DaftarSemuaKunjunganPage() {
     const [loading, setLoading] = useState(false);
     const [visitations, setVisitations] = useState([]);
     const [expandedRows, setExpandedRows] = useState<any>(null);
-    
+
     const [printData, setPrintData] = useState<any>(null);
     const [qrCodeUrl, setQrCodeUrl] = useState('');
     const [showPrintDialog, setShowPrintDialog] = useState(false);
@@ -204,7 +204,7 @@ export default function DaftarSemuaKunjunganPage() {
                                 <div>
                                     <div className="font-bold text-900">Validasi Check-In Keamanan: <span className="text-primary capitalize">{data.ApprovalStatus || 'Pending'}</span></div>
                                     <small className="text-500">{data.ApprovalTime ? new Date(data.ApprovalTime).toLocaleString('id-ID') : 'Menunggu aksi petugas security'}</small>
-                                    {data.ApprovalNotes && <div className="text-sm text-600 mt-1 italic">" {data.ApprovalNotes} "</div>}
+                                    {data.ApprovalNotes && <div className="text-sm text-600 mt-1 italic">&quot; {data.ApprovalNotes} &quot;</div>}
                                 </div>
                             </div>
                             {data.Status === 'out' && (
@@ -226,7 +226,7 @@ export default function DaftarSemuaKunjunganPage() {
     return (
         <div className="p-4">
             <Toast ref={toast} />
-            
+
             <div className="flex justify-content-between align-items-center mb-4">
                 <h2 className="text-2xl font-bold m-0 text-900">Log & Riwayat Kunjungan Tamu</h2>
                 <Button type="button" label="Export ke Excel" icon="pi pi-file-excel" severity="success" onClick={exportToExcel} />

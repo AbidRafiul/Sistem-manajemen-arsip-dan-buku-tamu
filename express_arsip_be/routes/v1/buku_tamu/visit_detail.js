@@ -27,14 +27,15 @@ router.post("/", async (req, res) => {
       return res.status(404).json({ status: "01", message: "Data tidak ditemukan" });
     }
 
+    const cBaseUrl = `${process.env.APP_SERVER}:${process.env.APP_PORT}`;
     if (row.PhotoFace) {
-      row.PhotoFaceUrl = `http://localhost:8000/uploads/${row.PhotoFace}`;
+      row.PhotoFaceUrl = `${cBaseUrl}/uploads/${row.PhotoFace}`;
     } else {
       row.PhotoFaceUrl = null;
     }
 
     if (row.PhotoIdentity) {
-      row.PhotoIdentityUrl = `http://localhost:8000/uploads/${row.PhotoIdentity}`;
+      row.PhotoIdentityUrl = `${cBaseUrl}/uploads/${row.PhotoIdentity}`;
     } else {
       row.PhotoIdentityUrl = null;
     }

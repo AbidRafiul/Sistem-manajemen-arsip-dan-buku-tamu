@@ -32,6 +32,11 @@ export interface VersionData {
     VersionNumber: number
     ChangeNotes: string
     FilePath: string
+    UploadedBy?: string | null
+    ApprovalStatus?: string
+    ApprovedBy?: string | null
+    ApprovedAt?: string | null
+    ApprovalNotes?: string | null
     CreatedAt: string
     UpdatedAt: string
 }
@@ -82,6 +87,10 @@ export interface TableProps {
     getDocuments: () => Promise<void>;
     getDocumentDetail: (DocumentId: number) => Promise<void>;
     deleteDocuments: () => Promise<void>;
+    uploadVersion: (documentId: number, changeNotes: string, file: File) => Promise<void>;
+    downloadVersion: (versionId: number, fileName: string) => Promise<void>;
+    rollbackVersion: (documentId: number, versionId: number) => Promise<void>;
+    approveVersion: (versionId: number, status: 'approved' | 'rejected', notes?: string) => Promise<void>;
     toast: RefObject<Toast>
 }
 

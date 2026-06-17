@@ -3,7 +3,7 @@
  * @returns { Promise<void> }
  */
 export async function up(knex) {
-  await knex.schema.createTable("trs_incoming_letter_trackings", (table) => {
+  await knex.schema.createTable("trx_incoming_letter_trackings", (table) => {
     table.bigIncrements("incoming_letter_tracking_id").primary();
 
     table.bigInteger("incoming_letter_id").unsigned().notNullable();
@@ -28,13 +28,13 @@ export async function up(knex) {
     table
       .foreign("incoming_letter_id")
       .references("incoming_letter_id")
-      .inTable("trs_incoming_letters")
+      .inTable("trx_incoming_letters")
       .onDelete("CASCADE");
 
     table
       .foreign("disposition_id")
       .references("disposition_id")
-      .inTable("trs_letter_dispositions");
+      .inTable("trx_letter_dispositions");
 
     table.foreign("from_user_id").references("UserId").inTable("mst_users");
     table.foreign("to_user_id").references("UserId").inTable("mst_users");
@@ -43,5 +43,5 @@ export async function up(knex) {
 }
 
 export async function down(knex) {
-  await knex.schema.dropTableIfExists("trs_incoming_letter_trackings");
+  await knex.schema.dropTableIfExists("trx_incoming_letter_trackings");
 }
