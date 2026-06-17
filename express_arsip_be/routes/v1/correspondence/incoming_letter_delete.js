@@ -29,7 +29,7 @@ const incomingLetterDelete = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trs_incoming_letters")
+    const oLetter = await DB("trx_incoming_letters")
       .where("incoming_letter_id", oPayload.incoming_letter_id)
       .first();
 
@@ -41,7 +41,7 @@ const incomingLetterDelete = async (req, res) => {
     }
 
     await DB.transaction(async (trx) => {
-      await trx("trs_incoming_letters")
+      await trx("trx_incoming_letters")
         .where("incoming_letter_id", oPayload.incoming_letter_id)
         .del();
     });

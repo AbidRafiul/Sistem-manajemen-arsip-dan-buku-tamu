@@ -37,7 +37,7 @@ const incomingLetterCreate = async (req, res) => {
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
       uniqueField: ["agenda_number"],
-      table: "trs_incoming_letters",
+      table: "trx_incoming_letters",
       allowUnknown: false,
     });
 
@@ -109,7 +109,7 @@ const incomingLetterCreate = async (req, res) => {
     const dNow = new Date();
 
     const nIncomingLetterId = await DB.transaction(async (trx) => {
-      const vaInserted = await trx("trs_incoming_letters").insert({
+      const vaInserted = await trx("trx_incoming_letters").insert({
         agenda_number: oPayload.agenda_number,
         letter_number: oPayload.letter_number,
         letter_date: oPayload.letter_date,
@@ -131,7 +131,7 @@ const incomingLetterCreate = async (req, res) => {
 
       const nId = vaInserted[0];
 
-      await trx("trs_incoming_letter_trackings").insert({
+      await trx("trx_incoming_letter_trackings").insert({
         incoming_letter_id: nId,
         disposition_id: null,
         action_name: "surat_dibuat",

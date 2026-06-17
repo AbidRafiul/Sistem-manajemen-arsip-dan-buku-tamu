@@ -3,7 +3,7 @@
  * @returns { Promise<void> }
  */
 export async function up(knex) {
-  await knex.schema.createTable("trs_incoming_letters", (table) => {
+  await knex.schema.createTable("trx_incoming_letters", (table) => {
     table.bigIncrements("incoming_letter_id").primary();
 
     table.string("agenda_number", 100).notNullable().unique();
@@ -46,5 +46,5 @@ export async function up(knex) {
 }
 
 export async function down(knex) {
-  await knex.schema.dropTableIfExists("trs_incoming_letters");
+  await knex.schema.dropTableIfExists("trx_incoming_letters");
 }
