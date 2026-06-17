@@ -15,7 +15,7 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
-import { FilterMatchMode } from "primereact/api"; 
+import { FilterMatchMode } from "primereact/api";
 
 // 🎯 FIX VIEWPORT EXPORT
 export const viewport = {
@@ -30,7 +30,7 @@ const initialValues: initValue = {
     GuestEmail: "",
     GuestCompany: "",
     GuestPosition: "",
-    VisitPurposeId: null, 
+    VisitPurposeId: null,
     HostUserId: "",
     HostName: "",
     IdentityType: "",
@@ -52,14 +52,14 @@ const Page = () => {
         delete: false,
         selectedUsers: [],
         searchVal: '',
-        filters: { global: { value: null, matchMode: FilterMatchMode.CONTAINS } }, 
+        filters: { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
         session: null,
         submittedData: null,
         visitPurposeData: [],
         hostUserData: [],
         statData: null,
         autoRefresh: false,
-        statusFilter: '', 
+        statusFilter: '',
         showCheckoutDialog: false,
         checkoutToken: '',
         checkoutNotes: '',
@@ -85,16 +85,16 @@ const Page = () => {
         try {
             const response = await postData(apiEndpoint, payload);
             const result = response.data;
-            
+
             if (result) {
                 let finalArrayData = [];
 
                 if (Array.isArray(result.data)) {
                     finalArrayData = result.data;
-                } 
+                }
                 else if (result.data && Array.isArray(result.data.data)) {
                     finalArrayData = result.data.data;
-                } 
+                }
                 else if (Array.isArray(result)) {
                     finalArrayData = result;
                 }
@@ -104,7 +104,7 @@ const Page = () => {
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || 'Gagal memuat data');
-            setState((p) => ({ ...p, data: [] })); 
+            setState((p) => ({ ...p, data: [] }));
         } finally {
             setState((p) => ({ ...p, load: false }));
         }
@@ -217,7 +217,7 @@ const Page = () => {
 
             {/* 🎯 KARTU STATISTIK PREMIUM: Menggunakan Flexbox Vertikal Anti-Tabrakan & Box Ikon Pojok */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                
+
                 {/* 🔹 Card 1: Tamu Hari Ini (#4F46E5) */}
                 <div style={{ backgroundColor: '#4F46E5' }} className="text-white p-4 rounded-xl shadow-sm flex flex-col justify-between min-h-[110px] transition-transform hover:scale-102">
                     <span className="text-xs font-bold tracking-wider opacity-80 uppercase">Tamu Hari Ini</span>
@@ -278,13 +278,13 @@ const Page = () => {
                 toast={toast}
                 onOpenCheckin={onOpenCheckin}
                 onCheckout={onCheckout}
-                onApprove={async () => {}}
-                onReject={async () => {}}
+                onApprove={async () => { }}
+                onReject={async () => { }}
                 onDetail={onDetail}
                 onFilterStatus={onFilterStatus}
                 onRefresh={onRefresh}
             />
-            
+
             <Form state={state} setState={setState} formik={formik} toast={toast} getData={getData} />
 
             {/* POP-UP DIALOG MODAL AREA */}

@@ -10,6 +10,8 @@ import { SessionProvider } from 'next-auth/react';
 import NextTopLoader from 'nextjs-toploader';
 import { RootLayoutProps } from '@/types/layout';
 import { Metadata } from 'next';
+import './tailwind.css';
+import './global.css';
 
 export const metadata: Metadata = {
     title: 'Standart',

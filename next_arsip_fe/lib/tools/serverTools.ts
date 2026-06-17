@@ -9,7 +9,7 @@ import crypto from 'crypto';
 import { findToValuesRecursive } from "./generalTools";
 import { auth } from "./authTools";
 import postData from "../axios/postData";
-import { parse } from 'date-fns';
+import { parse } from "date-fns";
 
 
 const encryptChunkRSA = async (payload: string) => {
@@ -79,21 +79,23 @@ const routeMiddleware = async (searchUrl: string) => {
     const dSessionExp = new Date(session.expires);
     const dNow = new Date();
 
-    if ((dNow.getTime() > dSessionExp.getTime())) {
+    if (Number.isNaN(dSessionExp.getTime()) || dNow.getTime() > dSessionExp.getTime()) {
         return '99';
     }
 
     if (session.user.uniqueId) {
         try {
+
+            const cApiUrl = process.env.API_URL;
             //  STANDARISASI URL: Mengambil base path dari env frontend
             let apiPath = process.env.NEXT_PUBLIC_API_DIR_PATH || '/api/v1';
-            
+
             if (!apiPath.startsWith('http')) {
                 apiPath = `http://localhost:8000${apiPath}`;
             }
 
             const resp = await axios.post(
-                apiPath,
+                `${cApiUrl}/setup/nav/user-data`,
                 { UniqueId: session?.user?.uniqueId },
                 {
                     headers: {
@@ -105,8 +107,8 @@ const routeMiddleware = async (searchUrl: string) => {
             const menu = resp.data.data;
 
             if (!menu) {
-                console.warn("⚠️ [RouteMiddleware] Backend merespon, tetapi data menu kosong.");
-                return '00'; 
+                console.warn("[RouteMiddleware] Backend merespon, tetapi data menu kosong.");
+                return '00';
             }
 
             let urlFix = searchUrl;
@@ -118,17 +120,17 @@ const routeMiddleware = async (searchUrl: string) => {
 
 
             if (res.length < 1) {
-                return '98'; 
+                return '98';
             }
         } catch (error: any) {
+            // Log pencatatan error di terminal server secara rapi (Berguna untuk dokumentasi projek)
+            console.error("[RouteMiddleware Error]:", error?.message);
 
-            console.error("🔴 [RouteMiddleware Error]:", error?.message);
-            
             if (error?.response?.status == '401') {
                 return '99';
             }
-            
-            return '00'; 
+
+            return '00';
         }
     } else {
         return '99';
