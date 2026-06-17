@@ -11,12 +11,12 @@ const incomingLetterTrackingData = async (req, res) => {
     const oPayload = req.body || {};
 
     const oValidation = {
-      IncomingLetterId: Joi.number().required(),
+      incoming_letter_id: Joi.number().required(),
     };
 
     const oMessage = {
-      "IncomingLetterId.required": "IncomingLetterId wajib diisi",
-      "IncomingLetterId.number": "IncomingLetterId harus berupa angka",
+      "incoming_letter_id.required": "incoming_letter_id wajib diisi",
+      "incoming_letter_id.number": "incoming_letter_id harus berupa angka",
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
@@ -32,14 +32,14 @@ const incomingLetterTrackingData = async (req, res) => {
 
     const oLetter = await DB("trs_incoming_letters")
       .select(
-        "IncomingLetterId",
-        "AgendaNumber",
-        "LetterNumber",
-        "Subject",
-        "SenderName",
-        "Status"
+        "incoming_letter_id",
+        "agenda_number",
+        "letter_number",
+        "subject",
+        "sender_name",
+        "status"
       )
-      .where("IncomingLetterId", oPayload.IncomingLetterId)
+      .where("incoming_letter_id", oPayload.incoming_letter_id)
       .first();
 
     if (!oLetter) {
@@ -52,39 +52,39 @@ const incomingLetterTrackingData = async (req, res) => {
     const vaData = await DB("trs_incoming_letter_trackings as tilt")
       .leftJoin(
         "trs_letter_dispositions as tld",
-        "tilt.DispositionId",
-        "tld.DispositionId"
+        "tilt.disposition_id",
+        "tld.disposition_id"
       )
       .select(
-        "tilt.IncomingLetterTrackingId",
-        "tilt.IncomingLetterId",
-        "tilt.DispositionId",
-        "tilt.ActionName",
-        "tilt.FromUserId",
-        "tilt.ToUserId",
-        "tilt.PreviousStatus",
-        "tilt.CurrentStatus",
-        "tilt.Notes",
-        "tilt.ProcessedAt",
-        "tilt.CreatedBy",
-        "tilt.CreatedAt",
-        "tilt.UpdatedAt",
+        "tilt.incoming_letter_tracking_id",
+        "tilt.incoming_letter_id",
+        "tilt.disposition_id",
+        "tilt.action_name",
+        "tilt.from_user_id",
+        "tilt.to_user_id",
+        "tilt.previous_status",
+        "tilt.current_status",
+        "tilt.notes",
+        "tilt.processed_at",
+        "tilt.created_by",
+        "tilt.created_at",
+        "tilt.updated_at",
 
-        "tld.ParentDispositionId",
-        "tld.Instruction",
-        "tld.DispositionNote",
-        "tld.DueDate",
-        "tld.Status as DispositionStatus"
+        "tld.parent_disposition_id",
+        "tld.instruction",
+        "tld.disposition_note",
+        "tld.due_date",
+        "tld.status as disposition_status"
       )
-      .where("tilt.IncomingLetterId", oPayload.IncomingLetterId)
-      .orderBy("tilt.ProcessedAt", "asc");
+      .where("tilt.incoming_letter_id", oPayload.incoming_letter_id)
+      .orderBy("tilt.processed_at", "asc");
 
     return res.status(200).json({
       status: true,
       message: "Tracking surat masuk berhasil diambil",
       data: {
-        Letter: oLetter,
-        Trackings: vaData,
+        letter: oLetter,
+        trackings: vaData,
       },
     });
   } catch (error) {

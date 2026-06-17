@@ -6,7 +6,7 @@ import Function from "./components/index.js";
 import MasterData from "./master/index.js";
 import ResetPassword from "./auth/reset_password.js";
 import ArsipDokumen from "./arsip_dokumen/index.js";
-import SuratMasuk from "./correspondence/index.js"
+import SuratMasuk from "./correspondence/index.js";
 import BukuTamu from "./buku_tamu/index.js";
 
 import {
@@ -15,6 +15,7 @@ import {
   validateBaseToken,
   validateSignature,
 } from "../../middleware/validate_header.js";
+
 const router = express.Router();
 
 // Auth
@@ -39,7 +40,7 @@ router.use(
   "/master",
   [validateAccessToken, validateSignature, contextMiddleware],
   MasterData
-)
+);
 
 // Arsip Dokumen
 router.use(
@@ -53,11 +54,12 @@ router.use(
   "/buku_tamu", 
   BukuTamu     
 );
-//Surat Masuk (Correspondence)
-router.use (
+
+// Surat Masuk (Correspondence)
+router.use(
   "/correspondence",
   [validateAccessToken, validateSignature, contextMiddleware],
   SuratMasuk
-)
+);
 
 export default router;

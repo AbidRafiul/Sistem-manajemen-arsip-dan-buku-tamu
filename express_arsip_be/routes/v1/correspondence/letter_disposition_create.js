@@ -10,28 +10,28 @@ const letterDispositionCreate = async (req, res) => {
     const oPayload = req.body || {};
 
     const oValidation = {
-      IncomingLetterId: Joi.number().required(),
-      ParentDispositionId: Joi.number().allow(null).optional(),
+      incoming_letter_id: Joi.number().required(),
+      parent_disposition_id: Joi.number().allow(null).optional(),
 
-      FromUserId: Joi.number().allow(null).optional(),
-      ToUserId: Joi.number().required(),
+      from_user_id: Joi.number().allow(null).optional(),
+      to_user_id: Joi.number().required(),
 
-      DispositionInstructionId: Joi.number().allow(null).optional(),
+      disposition_instruction_id: Joi.number().allow(null).optional(),
 
-      Instruction: Joi.string().allow(null, "").optional(),
-      DispositionNote: Joi.string().allow(null, "").optional(),
-      DueDate: Joi.date().allow(null).optional(),
+      instruction: Joi.string().allow(null, "").optional(),
+      disposition_note: Joi.string().allow(null, "").optional(),
+      due_date: Joi.date().allow(null).optional(),
 
-      CreatedBy: Joi.number().allow(null).optional(),
-      UpdatedBy: Joi.number().allow(null).optional(),
+      created_by: Joi.number().allow(null).optional(),
+      updated_by: Joi.number().allow(null).optional(),
     };
 
     const oMessage = {
-      "IncomingLetterId.required": "IncomingLetterId wajib diisi",
-      "IncomingLetterId.number": "IncomingLetterId harus berupa angka",
+      "incoming_letter_id.required": "incoming_letter_id wajib diisi",
+      "incoming_letter_id.number": "incoming_letter_id harus berupa angka",
 
-      "ToUserId.required": "User tujuan disposisi wajib diisi",
-      "ToUserId.number": "ToUserId harus berupa angka",
+      "to_user_id.required": "User tujuan disposisi wajib diisi",
+      "to_user_id.number": "to_user_id harus berupa angka",
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
@@ -46,7 +46,7 @@ const letterDispositionCreate = async (req, res) => {
     }
 
     const oLetter = await DB("trs_incoming_letters")
-      .where("IncomingLetterId", oPayload.IncomingLetterId)
+      .where("incoming_letter_id", oPayload.incoming_letter_id)
       .first();
 
     if (!oLetter) {
@@ -56,7 +56,7 @@ const letterDispositionCreate = async (req, res) => {
       });
     }
 
-    if (oLetter.Status === "selesai") {
+    if (oLetter.status === "selesai") {
       return res.status(400).json({
         status: false,
         message: "Surat masuk sudah selesai dan tidak dapat didisposisikan",
@@ -65,31 +65,31 @@ const letterDispositionCreate = async (req, res) => {
 
     const vaReferenceChecks = [
       {
-        field: "FromUserId",
+        field: "from_user_id",
         table: "mst_users",
         key: "UserId",
         label: "User asal disposisi",
       },
       {
-        field: "ToUserId",
+        field: "to_user_id",
         table: "mst_users",
         key: "UserId",
         label: "User tujuan disposisi",
       },
       {
-        field: "DispositionInstructionId",
+        field: "disposition_instruction_id",
         table: "mst_disposition_instructions",
-        key: "DispositionInstructionId",
+        key: "disposition_instruction_id",
         label: "Instruksi disposisi",
       },
       {
-        field: "CreatedBy",
+        field: "created_by",
         table: "mst_users",
         key: "UserId",
         label: "User pembuat",
       },
       {
-        field: "UpdatedBy",
+        field: "updated_by",
         table: "mst_users",
         key: "UserId",
         label: "User pengubah",
@@ -115,10 +115,10 @@ const letterDispositionCreate = async (req, res) => {
       }
     }
 
-    if (oPayload.ParentDispositionId) {
+    if (oPayload.parent_disposition_id) {
       const oParentDisposition = await DB("trs_letter_dispositions")
-        .where("DispositionId", oPayload.ParentDispositionId)
-        .where("IncomingLetterId", oPayload.IncomingLetterId)
+        .where("disposition_id", oPayload.parent_disposition_id)
+        .where("incoming_letter_id", oPayload.incoming_letter_id)
         .first();
 
       if (!oParentDisposition) {
@@ -133,52 +133,52 @@ const letterDispositionCreate = async (req, res) => {
 
     const nDispositionId = await DB.transaction(async (trx) => {
       const vaInserted = await trx("trs_letter_dispositions").insert({
-        IncomingLetterId: oPayload.IncomingLetterId,
-        ParentDispositionId: oPayload.ParentDispositionId || null,
+        incoming_letter_id: oPayload.incoming_letter_id,
+        parent_disposition_id: oPayload.parent_disposition_id || null,
 
-        FromUserId: oPayload.FromUserId || null,
-        ToUserId: oPayload.ToUserId,
+        from_user_id: oPayload.from_user_id || null,
+        to_user_id: oPayload.to_user_id,
 
-        DispositionInstructionId: oPayload.DispositionInstructionId || null,
+        disposition_instruction_id: oPayload.disposition_instruction_id || null,
 
-        Instruction: oPayload.Instruction || null,
-        DispositionNote: oPayload.DispositionNote || null,
-        DueDate: oPayload.DueDate || null,
+        instruction: oPayload.instruction || null,
+        disposition_note: oPayload.disposition_note || null,
+        due_date: oPayload.due_date || null,
 
-        Status: "baru",
-        ReceivedAt: null,
-        ProcessedAt: null,
-        CompletedAt: null,
+        status: "baru",
+        received_at: null,
+        processed_at: null,
+        completed_at: null,
 
-        CreatedBy: oPayload.CreatedBy || null,
-        UpdatedBy: oPayload.UpdatedBy || null,
-        CreatedAt: dNow,
-        UpdatedAt: dNow,
+        created_by: oPayload.created_by || null,
+        updated_by: oPayload.updated_by || null,
+        created_at: dNow,
+        updated_at: dNow,
       });
 
       const nId = vaInserted[0];
 
       await trx("trs_incoming_letters")
-        .where("IncomingLetterId", oPayload.IncomingLetterId)
+        .where("incoming_letter_id", oPayload.incoming_letter_id)
         .update({
-          Status: "didisposisi",
-          UpdatedBy: oPayload.UpdatedBy || oPayload.CreatedBy || null,
-          UpdatedAt: dNow,
+          status: "didisposisi",
+          updated_by: oPayload.updated_by || oPayload.created_by || null,
+          updated_at: dNow,
         });
 
       await trx("trs_incoming_letter_trackings").insert({
-        IncomingLetterId: oPayload.IncomingLetterId,
-        DispositionId: nId,
-        ActionName: "surat_didisposisi",
-        FromUserId: oPayload.FromUserId || null,
-        ToUserId: oPayload.ToUserId,
-        PreviousStatus: oLetter.Status,
-        CurrentStatus: "didisposisi",
-        Notes: oPayload.DispositionNote || oPayload.Instruction || "Surat didisposisikan",
-        ProcessedAt: dNow,
-        CreatedBy: oPayload.CreatedBy || null,
-        CreatedAt: dNow,
-        UpdatedAt: dNow,
+        incoming_letter_id: oPayload.incoming_letter_id,
+        disposition_id: nId,
+        action_name: "surat_didisposisi",
+        from_user_id: oPayload.from_user_id || null,
+        to_user_id: oPayload.to_user_id,
+        previous_status: oLetter.status,
+        current_status: "didisposisi",
+        notes: oPayload.disposition_note || oPayload.instruction || "Surat didisposisikan",
+        processed_at: dNow,
+        created_by: oPayload.created_by || null,
+        created_at: dNow,
+        updated_at: dNow,
       });
 
       return nId;
@@ -188,7 +188,7 @@ const letterDispositionCreate = async (req, res) => {
       status: true,
       message: "Disposisi surat berhasil dibuat",
       data: {
-        DispositionId: nDispositionId,
+        disposition_id: nDispositionId,
       },
     });
   } catch (error) {

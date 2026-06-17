@@ -1,32 +1,31 @@
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
-**/
-
+ */
 export async function up(knex) {
   await knex.schema.createTable("trs_incoming_letter_files", (table) => {
-    table.bigIncrements("IncomingLetterFileId").primary();
+    table.bigIncrements("incoming_letter_file_id").primary();
 
-    table.bigInteger("IncomingLetterId").unsigned().notNullable();
+    table.bigInteger("incoming_letter_id").unsigned().notNullable();
 
-    table.string("FilePath", 255).notNullable();
-    table.string("FileName", 255).nullable();
-    table.string("FileMimeType", 100).nullable();
-    table.bigInteger("FileSize").nullable();
+    table.string("file_path", 255).notNullable();
+    table.string("file_name", 255).nullable();
+    table.string("file_mime_type", 100).nullable();
+    table.bigInteger("file_size").nullable();
 
-    table.integer("UploadedBy").unsigned().nullable();
+    table.integer("uploaded_by").unsigned().nullable();
 
-    table.enu("Status", ["active", "nonactive"]).notNullable().defaultTo("active");
-    table.dateTime("CreatedAt").notNullable().defaultTo(knex.fn.now());
-    table.dateTime("UpdatedAt").notNullable().defaultTo(knex.fn.now());
+    table.enu("status", ["active", "nonactive"]).notNullable().defaultTo("active");
+    table.dateTime("created_at").notNullable().defaultTo(knex.fn.now());
+    table.dateTime("updated_at").notNullable().defaultTo(knex.fn.now());
 
     table
-      .foreign("IncomingLetterId")
-      .references("IncomingLetterId")
+      .foreign("incoming_letter_id")
+      .references("incoming_letter_id")
       .inTable("trs_incoming_letters")
       .onDelete("CASCADE");
 
-    table.foreign("UploadedBy").references("UserId").inTable("mst_users");
+    table.foreign("uploaded_by").references("UserId").inTable("mst_users");
   });
 }
 
