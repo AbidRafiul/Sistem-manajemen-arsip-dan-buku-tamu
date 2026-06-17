@@ -10,21 +10,21 @@ const letterDispositionData = async (req, res) => {
     const oPayload = req.body || {};
 
     const oValidation = {
-      IncomingLetterId: Joi.number().allow(null).optional(),
-      ToUserId: Joi.number().allow(null).optional(),
-      FromUserId: Joi.number().allow(null).optional(),
-      Status: Joi.string()
+      incoming_letter_id: Joi.number().allow(null).optional(),
+      to_user_id: Joi.number().allow(null).optional(),
+      from_user_id: Joi.number().allow(null).optional(),
+      status: Joi.string()
         .valid("baru", "dibaca", "diproses", "selesai")
         .allow(null, "")
         .optional(),
-      Keyword: Joi.string().allow(null, "").optional(),
+      keyword: Joi.string().allow(null, "").optional(),
     };
 
     const oMessage = {
-      "IncomingLetterId.number": "IncomingLetterId harus berupa angka",
-      "ToUserId.number": "ToUserId harus berupa angka",
-      "FromUserId.number": "FromUserId harus berupa angka",
-      "Status.valid": "Status disposisi tidak valid",
+      "incoming_letter_id.number": "incoming_letter_id harus berupa angka",
+      "to_user_id.number": "to_user_id harus berupa angka",
+      "from_user_id.number": "from_user_id harus berupa angka",
+      "status.valid": "status disposisi tidak valid",
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
@@ -41,69 +41,69 @@ const letterDispositionData = async (req, res) => {
     const oQuery = DB("trs_letter_dispositions as tld")
       .leftJoin(
         "trs_incoming_letters as til",
-        "tld.IncomingLetterId",
-        "til.IncomingLetterId"
+        "tld.incoming_letter_id",
+        "til.incoming_letter_id"
       )
       .leftJoin(
         "mst_disposition_instructions as mdi",
-        "tld.DispositionInstructionId",
-        "mdi.DispositionInstructionId"
+        "tld.disposition_instruction_id",
+        "mdi.disposition_instruction_id"
       )
       .select(
-        "tld.DispositionId",
-        "tld.IncomingLetterId",
-        "til.AgendaNumber",
-        "til.LetterNumber",
-        "til.Subject",
-        "til.SenderName",
-        "til.Status as LetterStatus",
+        "tld.disposition_id",
+        "tld.incoming_letter_id",
+        "til.agenda_number",
+        "til.letter_number",
+        "til.subject",
+        "til.sender_name",
+        "til.status as letter_status",
 
-        "tld.ParentDispositionId",
-        "tld.FromUserId",
-        "tld.ToUserId",
-        "tld.DispositionInstructionId",
-        "mdi.InstructionName",
+        "tld.parent_disposition_id",
+        "tld.from_user_id",
+        "tld.to_user_id",
+        "tld.disposition_instruction_id",
+        "mdi.instruction_name",
 
-        "tld.Instruction",
-        "tld.DispositionNote",
-        "tld.DueDate",
-        "tld.Status",
-        "tld.ReceivedAt",
-        "tld.ProcessedAt",
-        "tld.CompletedAt",
+        "tld.instruction",
+        "tld.disposition_note",
+        "tld.due_date",
+        "tld.status",
+        "tld.received_at",
+        "tld.processed_at",
+        "tld.completed_at",
 
-        "tld.CreatedBy",
-        "tld.UpdatedBy",
-        "tld.CreatedAt",
-        "tld.UpdatedAt"
+        "tld.created_by",
+        "tld.updated_by",
+        "tld.created_at",
+        "tld.updated_at"
       )
-      .orderBy("tld.CreatedAt", "desc");
+      .orderBy("tld.created_at", "desc");
 
-    if (oPayload.IncomingLetterId) {
-      oQuery.where("tld.IncomingLetterId", oPayload.IncomingLetterId);
+    if (oPayload.incoming_letter_id) {
+      oQuery.where("tld.incoming_letter_id", oPayload.incoming_letter_id);
     }
 
-    if (oPayload.ToUserId) {
-      oQuery.where("tld.ToUserId", oPayload.ToUserId);
+    if (oPayload.to_user_id) {
+      oQuery.where("tld.to_user_id", oPayload.to_user_id);
     }
 
-    if (oPayload.FromUserId) {
-      oQuery.where("tld.FromUserId", oPayload.FromUserId);
+    if (oPayload.from_user_id) {
+      oQuery.where("tld.from_user_id", oPayload.from_user_id);
     }
 
-    if (oPayload.Status) {
-      oQuery.where("tld.Status", oPayload.Status);
+    if (oPayload.status) {
+      oQuery.where("tld.status", oPayload.status);
     }
 
-    if (oPayload.Keyword) {
+    if (oPayload.keyword) {
       oQuery.where((oBuilder) => {
         oBuilder
-          .where("til.AgendaNumber", "like", `%${oPayload.Keyword}%`)
-          .orWhere("til.LetterNumber", "like", `%${oPayload.Keyword}%`)
-          .orWhere("til.Subject", "like", `%${oPayload.Keyword}%`)
-          .orWhere("til.SenderName", "like", `%${oPayload.Keyword}%`)
-          .orWhere("tld.Instruction", "like", `%${oPayload.Keyword}%`)
-          .orWhere("tld.DispositionNote", "like", `%${oPayload.Keyword}%`);
+          .where("til.agenda_number", "like", `%${oPayload.keyword}%`)
+          .orWhere("til.letter_number", "like", `%${oPayload.keyword}%`)
+          .orWhere("til.subject", "like", `%${oPayload.keyword}%`)
+          .orWhere("til.sender_name", "like", `%${oPayload.keyword}%`)
+          .orWhere("tld.instruction", "like", `%${oPayload.keyword}%`)
+          .orWhere("tld.disposition_note", "like", `%${oPayload.keyword}%`);
       });
     }
 

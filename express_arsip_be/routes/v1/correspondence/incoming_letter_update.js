@@ -10,46 +10,46 @@ const incomingLetterUpdate = async (req, res) => {
     const oPayload = req.body || {};
 
     const oValidation = {
-      IncomingLetterId: Joi.number().required(),
+      incoming_letter_id: Joi.number().required(),
 
-      AgendaNumber: Joi.string().max(100).optional(),
-      LetterNumber: Joi.string().max(100).optional(),
-      LetterDate: Joi.date().optional(),
-      ReceivedDate: Joi.date().optional(),
-      SenderName: Joi.string().max(150).optional(),
-      SenderInstitution: Joi.string().max(150).allow(null, "").optional(),
-      Subject: Joi.string().max(255).optional(),
-      AttachmentDescription: Joi.string().allow(null, "").optional(),
+      agenda_number: Joi.string().max(100).optional(),
+      letter_number: Joi.string().max(100).optional(),
+      letter_date: Joi.date().optional(),
+      received_date: Joi.date().optional(),
+      sender_name: Joi.string().max(150).optional(),
+      sender_institution: Joi.string().max(150).allow(null, "").optional(),
+      subject: Joi.string().max(255).optional(),
+      attachment_description: Joi.string().allow(null, "").optional(),
 
-      LetterTypeId: Joi.number().allow(null).optional(),
-      DocumentTypeId: Joi.number().allow(null).optional(),
-      ArchiveClassificationId: Joi.number().allow(null).optional(),
-      ConfidentialityLevelId: Joi.number().allow(null).optional(),
+      letter_type_id: Joi.number().allow(null).optional(),
+      document_type_id: Joi.number().allow(null).optional(),
+      archive_classification_id: Joi.number().allow(null).optional(),
+      confidentiality_level_id: Joi.number().allow(null).optional(),
 
-      Status: Joi.string()
+      status: Joi.string()
         .valid("baru", "diproses", "didisposisi", "selesai")
         .optional(),
 
-      UpdatedBy: Joi.number().allow(null).optional(),
+      updated_by: Joi.number().allow(null).optional(),
     };
 
     const oMessage = {
-      "IncomingLetterId.required": "IncomingLetterId wajib diisi",
-      "IncomingLetterId.number": "IncomingLetterId harus berupa angka",
+      "incoming_letter_id.required": "incoming_letter_id wajib diisi",
+      "incoming_letter_id.number": "incoming_letter_id harus berupa angka",
 
-      "AgendaNumber.max": "Nomor agenda maksimal 100 karakter",
-      "LetterNumber.max": "Nomor surat maksimal 100 karakter",
-      "SenderName.max": "Nama pengirim maksimal 150 karakter",
-      "Subject.max": "Perihal maksimal 255 karakter",
+      "agenda_number.max": "Nomor agenda maksimal 100 karakter",
+      "letter_number.max": "Nomor surat maksimal 100 karakter",
+      "sender_name.max": "Nama pengirim maksimal 150 karakter",
+      "subject.max": "Perihal maksimal 255 karakter",
 
-      "Status.valid":
-        "Status hanya boleh baru, diproses, didisposisi, atau selesai",
+      "status.valid":
+        "status hanya boleh baru, diproses, didisposisi, atau selesai",
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
-      uniqueField: ["AgendaNumber"],
+      uniqueField: ["agenda_number"],
       table: "trs_incoming_letters",
-      excludedField: "IncomingLetterId",
+      excludedField: "incoming_letter_id",
       allowUnknown: false,
     });
 
@@ -61,7 +61,7 @@ const incomingLetterUpdate = async (req, res) => {
     }
 
     const oLetter = await DB("trs_incoming_letters")
-      .where("IncomingLetterId", oPayload.IncomingLetterId)
+      .where("incoming_letter_id", oPayload.incoming_letter_id)
       .first();
 
     if (!oLetter) {
@@ -73,31 +73,31 @@ const incomingLetterUpdate = async (req, res) => {
 
     const vaReferenceChecks = [
       {
-        field: "LetterTypeId",
+        field: "letter_type_id",
         table: "mst_letter_types",
-        key: "LetterTypeId",
+        key: "letter_type_id",
         label: "Jenis surat",
       },
       {
-        field: "DocumentTypeId",
+        field: "document_type_id",
         table: "mst_document_type",
         key: "DocumentTypeId",
         label: "Tipe dokumen",
       },
       {
-        field: "ArchiveClassificationId",
+        field: "archive_classification_id",
         table: "mst_archive_classifications",
         key: "ArchiveClassificationId",
         label: "Klasifikasi arsip",
       },
       {
-        field: "ConfidentialityLevelId",
+        field: "confidentiality_level_id",
         table: "mst_confidentiality_levels",
         key: "ConfidentialityLevelId",
         label: "Level kerahasiaan",
       },
       {
-        field: "UpdatedBy",
+        field: "updated_by",
         table: "mst_users",
         key: "UserId",
         label: "User pengubah",
@@ -126,21 +126,21 @@ const incomingLetterUpdate = async (req, res) => {
     const dNow = new Date();
 
     const oUpdate = {
-      AgendaNumber: oPayload.AgendaNumber,
-      LetterNumber: oPayload.LetterNumber,
-      LetterDate: oPayload.LetterDate,
-      ReceivedDate: oPayload.ReceivedDate,
-      SenderName: oPayload.SenderName,
-      SenderInstitution: oPayload.SenderInstitution,
-      Subject: oPayload.Subject,
-      AttachmentDescription: oPayload.AttachmentDescription,
-      LetterTypeId: oPayload.LetterTypeId,
-      DocumentTypeId: oPayload.DocumentTypeId,
-      ArchiveClassificationId: oPayload.ArchiveClassificationId,
-      ConfidentialityLevelId: oPayload.ConfidentialityLevelId,
-      Status: oPayload.Status,
-      UpdatedBy: oPayload.UpdatedBy || null,
-      UpdatedAt: dNow,
+      agenda_number: oPayload.agenda_number,
+      letter_number: oPayload.letter_number,
+      letter_date: oPayload.letter_date,
+      received_date: oPayload.received_date,
+      sender_name: oPayload.sender_name,
+      sender_institution: oPayload.sender_institution,
+      subject: oPayload.subject,
+      attachment_description: oPayload.attachment_description,
+      letter_type_id: oPayload.letter_type_id,
+      document_type_id: oPayload.document_type_id,
+      archive_classification_id: oPayload.archive_classification_id,
+      confidentiality_level_id: oPayload.confidentiality_level_id,
+      status: oPayload.status,
+      updated_by: oPayload.updated_by || null,
+      updated_at: dNow,
     };
 
     Object.keys(oUpdate).forEach((cKey) => {
@@ -151,22 +151,22 @@ const incomingLetterUpdate = async (req, res) => {
 
     await DB.transaction(async (trx) => {
       await trx("trs_incoming_letters")
-        .where("IncomingLetterId", oPayload.IncomingLetterId)
+        .where("incoming_letter_id", oPayload.incoming_letter_id)
         .update(oUpdate);
 
       await trx("trs_incoming_letter_trackings").insert({
-        IncomingLetterId: oPayload.IncomingLetterId,
-        DispositionId: null,
-        ActionName: "surat_diupdate",
-        FromUserId: null,
-        ToUserId: null,
-        PreviousStatus: oLetter.Status,
-        CurrentStatus: oUpdate.Status || oLetter.Status,
-        Notes: "Data surat masuk diperbarui",
-        ProcessedAt: dNow,
-        CreatedBy: oPayload.UpdatedBy || null,
-        CreatedAt: dNow,
-        UpdatedAt: dNow,
+        incoming_letter_id: oPayload.incoming_letter_id,
+        disposition_id: null,
+        action_name: "surat_diupdate",
+        from_user_id: null,
+        to_user_id: null,
+        previous_status: oLetter.status,
+        current_status: oUpdate.status || oLetter.status,
+        notes: "Data surat masuk diperbarui",
+        processed_at: dNow,
+        created_by: oPayload.updated_by || null,
+        created_at: dNow,
+        updated_at: dNow,
       });
     });
 
