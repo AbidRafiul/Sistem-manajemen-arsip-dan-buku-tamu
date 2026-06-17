@@ -7,6 +7,7 @@ import MasterData from "./master/index.js";
 import ResetPassword from "./auth/reset_password.js";
 import ArsipDokumen from "./arsip_dokumen/index.js";
 import SuratMasuk from "./correspondence/index.js"
+import BukuTamu from "./buku_tamu/index.js";
 
 import {
   contextMiddleware,
@@ -22,7 +23,6 @@ router.use("/auth/login", [validateAccessToken], Login);
 router.use("/auth/reset-password", [validateAccessToken], ResetPassword);
 
 // Modul-Modul Aplikasi
-
 router.use(
   "/setup",
   Setup
@@ -48,19 +48,16 @@ router.use(
   ArsipDokumen
 );
 
-<<<<<<< HEAD
 // Buku Tamu
 router.use(
   "/buku_tamu", 
   BukuTamu     
 );
-=======
 //Surat Masuk (Correspondence)
 router.use (
   "/correspondence",
   [validateAccessToken, validateSignature, contextMiddleware],
   SuratMasuk
 )
->>>>>>> e042541625035dfe45b726d2946e1bc08bcc02bd
 
 export default router;

@@ -3,45 +3,43 @@
  * @returns { Promise<void> }
  */
 export async function up(knex) {
-  await knex.schema.createTable('trx_visitations', (table) => {
-    // 1. Kolom Identitas Tamu Dasar
-    table.increments('VisitationId').primary();
-    table.string('GuestName', 100).notNullable();
-    table.string('PhoneNumber', 45).notNullable(); 
-    table.string('GuestEmail', 150).nullable(); 
-    table.string('GuestCompany', 100).notNullable();
-    table.string('GuestPosition', 20).nullable(); 
-    table.enum('IdentityType', ['ktp', 'sim', 'paspor']).nullable(); 
-    table.string('IdentityNumber', 50).nullable(); 
+
+  await knex.schema.dropTableIfExists('tr_visitations');
+
+  await knex.schema.createTable('tr_visitations', (table) => {
+
+    table.increments('visitation_id').primary();
+    table.string('guest_name', 100).notNullable();
+    table.string('phone_number', 45).notNullable(); 
+    table.string('guest_email', 150).nullable(); 
+    table.string('guest_company', 100).notNullable();
+    table.string('guest_position', 20).nullable(); 
+    table.enum('identity_type', ['ktp', 'sim', 'paspor']).nullable(); 
+    table.string('identity_number', 50).nullable(); 
     
-    // 2. Waktu Kunjungan & Berkas Dokumentasi MinIO
-    table.datetime('CheckInTime').nullable(); 
-    table.datetime('CheckOutTime').nullable();
-    table.string('PhotoFace', 255).nullable(); 
-    table.string('PhotoIdentity', 255).nullable(); 
-    table.enum('Status', ['in', 'out']).notNullable().defaultTo('in');
+    table.datetime('check_in_time').nullable(); 
+    table.datetime('check_out_time').nullable();
+    table.string('photo_face', 255).nullable(); 
+    table.string('photo_identity', 255).nullable(); 
+    table.enum('status', ['in', 'out']).notNullable().defaultTo('in');
     
-    // 3. Kolom Tambahan Fitur QR Token, Kode Kunjungan & Approval Internal
-    table.string('HostUserId', 36).nullable(); 
-    table.string('HostName', 100).nullable(); 
-    table.text('VisitNotes').nullable(); 
-    table.string('VisitCode', 30).nullable(); 
-    table.string('QRToken', 100).nullable(); 
-    table.enum('ApprovalStatus', ['pending', 'approved', 'rejected']).notNullable().defaultTo('approved');
-    table.text('ApprovalNotes').nullable(); 
+    table.string('host_user_id', 36).nullable(); 
+    table.string('host_name', 100).nullable(); 
+    table.text('visit_notes').nullable(); 
+    table.string('visit_code', 30).nullable(); 
+    table.string('qr_token', 100).nullable(); 
+    table.enum('approval_status', ['pending', 'approved', 'rejected']).notNullable().defaultTo('approved');
+    table.text('approval_notes').nullable(); 
 
-    // 4. Kolom Relasi (UBAH JADI SEPERTI INI: Kolom biasa agar tidak eror di DB kosong)
-    table.integer('UserId').unsigned().nullable();
-    table.integer('VisitPurposeId').nullable(); 
+    table.integer('user_id').unsigned().nullable();
+    table.integer('visit_purpose_id').nullable(); 
 
-    // 5. Timestamps Data
-    table.datetime('CreatedAt').notNullable().defaultTo(knex.fn.now());
-    table.datetime('UpdatedAt').notNullable().defaultTo(knex.fn.now());
+    table.datetime('created_at').notNullable().defaultTo(knex.fn.now());
+    table.datetime('updated_at').notNullable().defaultTo(knex.fn.now());
 
-    // 6. Unique Constraints & Indexing Optimasi Kecepatan Query
-    table.unique('QRToken', 'uq_visitation_qr');
-    table.unique('VisitCode', 'uq_visitation_code');
-    table.index('Status', 'idx_visit_status');
+    table.unique('qr_token', 'uq_visitation_qr');
+    table.unique('visit_code', 'uq_visitation_code');
+    table.index('status', 'idx_visit_status');
   });
 }
 
@@ -50,6 +48,5 @@ export async function up(knex) {
  * @returns { Promise<void> }
  */
 export async function down(knex) {
-  // Menghapus tabel trx_visitations saat rollback dijalankan
-  await knex.schema.dropTableIfExists('trx_visitations');
+  await knex.schema.dropTableIfExists('tr_visitations');
 }
