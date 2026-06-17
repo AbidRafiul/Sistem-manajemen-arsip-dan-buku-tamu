@@ -28,7 +28,7 @@ export async function up(knex) {
     table.dateTime("updated_at").notNullable().defaultTo(knex.fn.now());
   });
 
-  await createIfMissing(knex, "trs_incoming_letters", (table) => {
+  await createIfMissing(knex, "trx_incoming_letters", (table) => {
     table.bigIncrements("incoming_letter_id").primary();
     table.string("agenda_number", 100).notNullable().unique();
     table.string("letter_number", 100).notNullable();
@@ -55,7 +55,7 @@ export async function up(knex) {
     table.foreign("updated_by").references("UserId").inTable("mst_users");
   });
 
-  await createIfMissing(knex, "trs_letter_dispositions", (table) => {
+  await createIfMissing(knex, "trx_letter_dispositions", (table) => {
     table.bigIncrements("disposition_id").primary();
     table.bigInteger("incoming_letter_id").unsigned().notNullable();
     table.bigInteger("parent_disposition_id").unsigned().nullable();
@@ -73,8 +73,8 @@ export async function up(knex) {
     table.integer("updated_by").unsigned().nullable();
     table.dateTime("created_at").notNullable().defaultTo(knex.fn.now());
     table.dateTime("updated_at").notNullable().defaultTo(knex.fn.now());
-    table.foreign("incoming_letter_id").references("incoming_letter_id").inTable("trs_incoming_letters").onDelete("CASCADE");
-    table.foreign("parent_disposition_id").references("disposition_id").inTable("trs_letter_dispositions");
+    table.foreign("incoming_letter_id").references("incoming_letter_id").inTable("trx_incoming_letters").onDelete("CASCADE");
+    table.foreign("parent_disposition_id").references("disposition_id").inTable("trx_letter_dispositions");
     table.foreign("from_user_id").references("UserId").inTable("mst_users");
     table.foreign("to_user_id").references("UserId").inTable("mst_users");
     table.foreign("disposition_instruction_id").references("disposition_instruction_id").inTable("mst_disposition_instructions");
@@ -82,7 +82,7 @@ export async function up(knex) {
     table.foreign("updated_by").references("UserId").inTable("mst_users");
   });
 
-  await createIfMissing(knex, "trs_incoming_letter_files", (table) => {
+  await createIfMissing(knex, "trx_incoming_letter_files", (table) => {
     table.bigIncrements("incoming_letter_file_id").primary();
     table.bigInteger("incoming_letter_id").unsigned().notNullable();
     table.string("file_path", 255).notNullable();
@@ -93,11 +93,11 @@ export async function up(knex) {
     table.enu("status", ["active", "nonactive"]).notNullable().defaultTo("active");
     table.dateTime("created_at").notNullable().defaultTo(knex.fn.now());
     table.dateTime("updated_at").notNullable().defaultTo(knex.fn.now());
-    table.foreign("incoming_letter_id").references("incoming_letter_id").inTable("trs_incoming_letters").onDelete("CASCADE");
+    table.foreign("incoming_letter_id").references("incoming_letter_id").inTable("trx_incoming_letters").onDelete("CASCADE");
     table.foreign("uploaded_by").references("UserId").inTable("mst_users");
   });
 
-  await createIfMissing(knex, "trs_incoming_letter_trackings", (table) => {
+  await createIfMissing(knex, "trx_incoming_letter_trackings", (table) => {
     table.bigIncrements("incoming_letter_tracking_id").primary();
     table.bigInteger("incoming_letter_id").unsigned().notNullable();
     table.bigInteger("disposition_id").unsigned().nullable();
@@ -111,8 +111,8 @@ export async function up(knex) {
     table.integer("created_by").unsigned().nullable();
     table.dateTime("created_at").notNullable().defaultTo(knex.fn.now());
     table.dateTime("updated_at").notNullable().defaultTo(knex.fn.now());
-    table.foreign("incoming_letter_id").references("incoming_letter_id").inTable("trs_incoming_letters").onDelete("CASCADE");
-    table.foreign("disposition_id").references("disposition_id").inTable("trs_letter_dispositions");
+    table.foreign("incoming_letter_id").references("incoming_letter_id").inTable("trx_incoming_letters").onDelete("CASCADE");
+    table.foreign("disposition_id").references("disposition_id").inTable("trx_letter_dispositions");
     table.foreign("from_user_id").references("UserId").inTable("mst_users");
     table.foreign("to_user_id").references("UserId").inTable("mst_users");
     table.foreign("created_by").references("UserId").inTable("mst_users");

@@ -29,7 +29,7 @@ const incomingLetterDetail = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trs_incoming_letters as til")
+    const oLetter = await DB("trx_incoming_letters as til")
       .leftJoin("mst_letter_types as mlt", "til.letter_type_id", "mlt.letter_type_id")
       .select(
         "til.incoming_letter_id",
@@ -62,7 +62,7 @@ const incomingLetterDetail = async (req, res) => {
       });
     }
 
-    const vaFiles = await DB("trs_incoming_letter_files")
+    const vaFiles = await DB("trx_incoming_letter_files")
       .select(
         "incoming_letter_file_id",
         "incoming_letter_id",
@@ -79,7 +79,7 @@ const incomingLetterDetail = async (req, res) => {
       .where("status", "active")
       .orderBy("created_at", "desc");
 
-    const vaDispositions = await DB("trs_letter_dispositions as tld")
+    const vaDispositions = await DB("trx_letter_dispositions as tld")
       .leftJoin(
         "mst_disposition_instructions as mdi",
         "tld.disposition_instruction_id",
@@ -108,7 +108,7 @@ const incomingLetterDetail = async (req, res) => {
       .where("tld.incoming_letter_id", oPayload.incoming_letter_id)
       .orderBy("tld.created_at", "desc");
 
-    const vaTrackings = await DB("trs_incoming_letter_trackings")
+    const vaTrackings = await DB("trx_incoming_letter_trackings")
       .select(
         "incoming_letter_tracking_id",
         "incoming_letter_id",

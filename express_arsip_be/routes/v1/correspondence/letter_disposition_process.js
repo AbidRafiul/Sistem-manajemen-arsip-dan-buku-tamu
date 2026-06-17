@@ -31,7 +31,7 @@ const letterDispositionProcess = async (req, res) => {
       });
     }
 
-    const oDisposition = await DB("trs_letter_dispositions")
+    const oDisposition = await DB("trx_letter_dispositions")
       .where("disposition_id", oPayload.disposition_id)
       .first();
 
@@ -56,7 +56,7 @@ const letterDispositionProcess = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trs_incoming_letters")
+    const oLetter = await DB("trx_incoming_letters")
       .where("incoming_letter_id", oDisposition.incoming_letter_id)
       .first();
 
@@ -77,7 +77,7 @@ const letterDispositionProcess = async (req, res) => {
     const dNow = new Date();
 
     await DB.transaction(async (trx) => {
-      await trx("trs_letter_dispositions")
+      await trx("trx_letter_dispositions")
         .where("disposition_id", oPayload.disposition_id)
         .update({
           status: "diproses",
@@ -87,7 +87,7 @@ const letterDispositionProcess = async (req, res) => {
           updated_at: dNow,
         });
 
-      await trx("trs_incoming_letters")
+      await trx("trx_incoming_letters")
         .where("incoming_letter_id", oDisposition.incoming_letter_id)
         .update({
           status: "diproses",
@@ -95,7 +95,7 @@ const letterDispositionProcess = async (req, res) => {
           updated_at: dNow,
         });
 
-      await trx("trs_incoming_letter_trackings").insert({
+      await trx("trx_incoming_letter_trackings").insert({
         incoming_letter_id: oDisposition.incoming_letter_id,
         disposition_id: oPayload.disposition_id,
         action_name: "disposisi_diproses",
