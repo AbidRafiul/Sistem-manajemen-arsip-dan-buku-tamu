@@ -75,7 +75,8 @@ const routeMiddleware = async (searchUrl: string) => {
         return '99';
     }
 
-    const dSessionExp = new Date(session?.expires);
+    // 2. Validasi Waktu Kedaluwarsa Session (Token Lifecycle)
+    const dSessionExp = new Date(session.expires);
     const dNow = new Date();
 
     if (Number.isNaN(dSessionExp.getTime()) || dNow.getTime() > dSessionExp.getTime()) {
@@ -86,6 +87,13 @@ const routeMiddleware = async (searchUrl: string) => {
         try {
 
             const cApiUrl = process.env.API_URL;
+            //  STANDARISASI URL: Mengambil base path dari env frontend
+            let apiPath = process.env.NEXT_PUBLIC_API_DIR_PATH || '/api/v1';
+
+            if (!apiPath.startsWith('http')) {
+                apiPath = `http://localhost:8000${apiPath}`;
+            }
+
             const resp = await axios.post(
                 `${cApiUrl}/setup/nav/user-data`,
                 { UniqueId: session?.user?.uniqueId },
