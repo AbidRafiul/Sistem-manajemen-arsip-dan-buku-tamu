@@ -14,7 +14,7 @@ const app = express();
 // 🎯 1. BEBASKAN ASAL PORT (Izinkan port 3000 Frontend Next.js masuk langsung)
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: process.env.ORIGIN1 || "http://localhost:3000",
     credentials: true,
     allowedHeaders: [
       "Content-Type",

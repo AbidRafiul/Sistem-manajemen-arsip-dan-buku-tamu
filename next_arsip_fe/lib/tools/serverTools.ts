@@ -75,7 +75,7 @@ const routeMiddleware = async (searchUrl: string) => {
         return '99';
     }
 
-    const dSessionExp = parse(session?.expires, 'yyyy-MM-dd HH:mm:ss', new Date());
+    const dSessionExp = new Date(session?.expires);
     const dNow = new Date();
 
     if (Number.isNaN(dSessionExp.getTime()) || dNow.getTime() > dSessionExp.getTime()) {
@@ -85,14 +85,9 @@ const routeMiddleware = async (searchUrl: string) => {
     if (session.user.uniqueId) {
         try {
 
-            let apiPath = process.env.NEXT_PUBLIC_API_DIR_PATH || '/api/v1';
-
-            if (!apiPath.startsWith('http')) {
-                apiPath = `http://localhost:8000${apiPath}`;
-            }
-
+            const cApiUrl = process.env.API_URL;
             const resp = await axios.post(
-                `${apiPath}/setup/nav/user-data`,
+                `${cApiUrl}/setup/nav/user-data`,
                 { UniqueId: session?.user?.uniqueId },
                 {
                     headers: {
