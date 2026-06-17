@@ -5,12 +5,12 @@ const scanDocumentQR = async (req, res) => {
   const oQuery = req.query;
 
   try {
-    const cQRCode = oQuery.QRCode;
+    const cQRCode = oQuery.qr_code;
 
     if (!cQRCode) {
       const oResult = {
         status: "error",
-        message: "QRCode wajib diisi",
+        message: "qr_code wajib diisi",
       };
       return res.status(422).json(oResult);
     }
@@ -18,30 +18,30 @@ const scanDocumentQR = async (req, res) => {
     // Cari dokumen berdasarkan QR Code string
     const oDocument = await DB("trx_documents as d")
       .select(
-        "d.DocumentId",
-        "d.DocumentName",
-        "d.DocumentNumber",
-        "d.DocumentDate",
-        "d.ExpiredDate",
-        "d.PicName",
-        "d.PhysicalLocation",
-        "d.QRCode",
-        "d.Tags",
-        "d.Status",
+        "d.document_id",
+        "d.document_name",
+        "d.document_number",
+        "d.document_date",
+        "d.expired_date",
+        "d.pic_name",
+        "d.physical_location",
+        "d.qr_code",
+        "d.tags",
+        "d.status",
         // Master data
-        "dt.DocumentTypeName",
-        "dc.DocumentCategoryName",
-        "ac.ClassificationName",
-        "cl.ConfidentialityLevelName",
-        "rs.RetentionName",
-        "rs.RetentionYears"
+        "dt.document_type_name",
+        "dc.document_category_name",
+        "ac.classification_name",
+        "cl.confidentiality_level_name",
+        "rs.retention_name",
+        "rs.retention_years"
       )
-      .leftJoin("mst_document_type as dt", "d.DocumentTypeId", "dt.DocumentTypeId")
-      .leftJoin("mst_document_categories as dc", "d.DocumentCategoryId", "dc.DocumentCategoryId")
-      .leftJoin("mst_archive_classifications as ac", "d.ArchiveClassificationId", "ac.ArchiveClassificationId")
-      .leftJoin("mst_confidentiality_levels as cl", "d.ConfidentialityLevelId", "cl.ConfidentialityLevelId")
-      .leftJoin("mst_retention_schedule as rs", "d.RetentionScheduleId", "rs.RetentionScheduleId")
-      .where("d.QRCode", cQRCode)
+      .leftJoin("mst_document_type as dt", "d.document_type_id", "dt.document_type_id")
+      .leftJoin("mst_document_categories as dc", "d.document_category_id", "dc.document_category_id")
+      .leftJoin("mst_archive_classifications as ac", "d.archive_classification_id", "ac.archive_classification_id")
+      .leftJoin("mst_confidentiality_levels as cl", "d.confidentiality_level_id", "cl.confidentiality_level_id")
+      .leftJoin("mst_retention_schedule as rs", "d.retention_schedule_id", "rs.retention_schedule_id")
+      .where("d.qr_code", cQRCode)
       .first();
 
     if (!oDocument) {
@@ -54,17 +54,17 @@ const scanDocumentQR = async (req, res) => {
 
     // Ambil versi terbaru yang approved
     const oLatestVersion = await DB("trx_document_versions")
-      .select("VersionId", "VersionNumber", "FilePath", "CreatedAt")
-      .where("DocumentId", oDocument.DocumentId)
-      .where("ApprovalStatus", "approved")
-      .orderBy("VersionNumber", "desc")
+      .select("version_id", "version_number", "file_path", "created_at")
+      .where("document_id", oDocument.document_id)
+      .where("approval_status", "approved")
+      .orderBy("version_number", "desc")
       .first();
 
     // Status peminjaman aktif
     const oActiveLoan = await DB("trx_archive_loans")
-      .select("LoanId", "BorrowerName", "LoanDate", "ExpectedReturnDate", "Status")
-      .where("DocumentId", oDocument.DocumentId)
-      .where("Status", "borrowed")
+      .select("loan_id", "borrower_name", "loan_date", "expected_return_date", "status")
+      .where("document_id", oDocument.document_id)
+      .where("status", "borrowed")
       .first();
 
     const oResult = {
@@ -72,9 +72,9 @@ const scanDocumentQR = async (req, res) => {
       message: "Dokumen ditemukan",
       data: {
         document: oDocument,
-        latestVersion: oLatestVersion || null,
-        activeLoan: oActiveLoan || null,
-        isCurrentlyBorrowed: !!oActiveLoan,
+        latest_version: oLatestVersion || null,
+        active_loan: oActiveLoan || null,
+        is_currently_borrowed: !!oActiveLoan,
       },
     };
 

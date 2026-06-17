@@ -7,21 +7,21 @@ const generateDocumentQR = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const nDocumentId = oPayload.DocumentId;
+    const nDocumentId = oPayload.document_id;
 
     if (!nDocumentId) {
       const oResult = {
         status: "error",
-        message: "DocumentId wajib diisi",
+        message: "document_id wajib diisi",
       };
       return res.status(422).json(oResult);
     }
 
     // Ambil data dokumen
     const oDocument = await DB("trx_documents")
-      .select("DocumentId", "DocumentName", "DocumentNumber", "QRCode", "Status")
-      .where("DocumentId", nDocumentId)
-      .where("Status", "active")
+      .select("document_id", "document_name", "document_number", "qr_code", "status")
+      .where("document_id", nDocumentId)
+      .where("status", "active")
       .first();
 
     if (!oDocument) {
@@ -33,25 +33,25 @@ const generateDocumentQR = async (req, res) => {
     }
 
     // Gunakan QRCode yang sudah ada atau generate baru jika kosong
-    let cQRCodeString = oDocument.QRCode;
+    let cQRCodeString = oDocument.qr_code;
     if (!cQRCodeString) {
       cQRCodeString = `DOC-${uuidv4()}`;
 
       // Simpan QR Code string ke database
       await DB("trx_documents")
-        .where("DocumentId", nDocumentId)
+        .where("document_id", nDocumentId)
         .update({
-          QRCode: cQRCodeString,
-          UpdatedAt: new Date(),
+          qr_code: cQRCodeString,
+          updated_at: new Date(),
         });
     }
 
     // Data yang akan diencode ke dalam QR Code
     const oQRData = {
-      DocumentId: oDocument.DocumentId,
-      DocumentNumber: oDocument.DocumentNumber,
-      DocumentName: oDocument.DocumentName,
-      QRCode: cQRCodeString,
+      document_id: oDocument.document_id,
+      document_number: oDocument.document_number,
+      document_name: oDocument.document_name,
+      qr_code: cQRCodeString,
     };
 
     // Generate QR Code sebagai base64 PNG
@@ -69,11 +69,11 @@ const generateDocumentQR = async (req, res) => {
       status: "success",
       message: "QR Code berhasil di-generate",
       data: {
-        DocumentId: oDocument.DocumentId,
-        DocumentNumber: oDocument.DocumentNumber,
-        DocumentName: oDocument.DocumentName,
-        QRCode: cQRCodeString,
-        QRBase64: cQRBase64,
+        document_id: oDocument.document_id,
+        document_number: oDocument.document_number,
+        document_name: oDocument.document_name,
+        qr_code: cQRCodeString,
+        qr_base64: cQRBase64,
       },
     };
 

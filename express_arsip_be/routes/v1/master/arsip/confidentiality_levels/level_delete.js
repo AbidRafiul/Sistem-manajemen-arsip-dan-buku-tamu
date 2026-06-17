@@ -12,8 +12,8 @@ router.delete("/:ConfidentialityLevelId", async (req, res) => {
 
   try {
     const nUpdated = await DB("mst_confidentiality_levels")
-      .where("ConfidentialityLevelId", cConfidentialityLevelId)
-      .update({ Status: "nonactive", UpdatedAt: new Date() });
+      .where("confidentiality_level_id", cConfidentialityLevelId)
+      .update({ status: "nonactive", updated_at: new Date() });
 
     if (!nUpdated) {
       return res.status(404).json({

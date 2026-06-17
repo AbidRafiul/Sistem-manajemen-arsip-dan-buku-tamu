@@ -2,13 +2,13 @@ export async function seed(knex) {
   const dNow = new Date();
 
   const vaDocumentIds = await knex("trx_documents").insert({
-    DocumentName: "Dokumen Test EDMS",
-    DocumentNumber: "EDMS-TEST-001",
-    DocumentDate: "2026-06-08",
-    ExpiredDate: "2026-12-31",
-    PicName: "Tester EDMS",
-    CreatedAt: dNow,
-    UpdatedAt: dNow,
+    document_name: "Dokumen Test EDMS",
+    document_number: "EDMS-TEST-001",
+    document_date: "2026-06-08",
+    expired_date: "2026-12-31",
+    pic_name: "Tester EDMS",
+    created_at: dNow,
+    updated_at: dNow,
   });
 
   const nDocumentId = Array.isArray(vaDocumentIds)
@@ -16,13 +16,13 @@ export async function seed(knex) {
     : vaDocumentIds;
 
   await knex("trx_archive_loans").insert({
-    DocumentId: nDocumentId,
-    BorrowerName: "Tester Loan",
-    LoanDate: "2026-06-08",
-    ReturnDate: "2026-06-10",
-    Purpose: "Testing approve archive loan",
-    Status: "pending",
-    CreatedAt: dNow,
-    UpdatedAt: dNow,
+    document_id: nDocumentId,
+    borrower_name: "Tester Loan",
+    loan_date: "2026-06-08",
+    return_date: "2026-06-10",
+    purpose: "Testing approve archive loan",
+    status: "pending",
+    created_at: dNow,
+    updated_at: dNow,
   });
 }

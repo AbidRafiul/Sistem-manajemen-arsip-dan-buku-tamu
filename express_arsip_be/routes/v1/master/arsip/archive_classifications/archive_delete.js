@@ -12,8 +12,8 @@ router.delete("/:ArchiveClassificationId", async (req, res) => {
 
   try {
     const nUpdated = await DB("mst_archive_classifications")
-      .where("ArchiveClassificationId", cArchiveClassificationId)
-      .update({ Status: "nonactive", UpdatedAt: new Date() });
+      .where("archive_classification_id", cArchiveClassificationId)
+      .update({ status: "nonactive", updated_at: new Date() });
 
     if (!nUpdated) return res.status(404).json({ status: status.NOT_FOUND, message: "Data tidak ditemukan", datetime: formatDateSystem() });
     return res.status(200).json({ status: status.SUKSES, message: "Berhasil dihapus!", datetime: formatDateSystem() });

@@ -48,14 +48,14 @@ const Table = ({
     );
 
     const statusTemplate = (rowData: LoanData) => {
-        const status = rowData.Status;
+        const status = rowData.status;
         let severity: 'success' | 'danger' | 'warning' | 'info' = 'warning';
         if (status === 'returned') severity = 'success';
         if (status === 'rejected') severity = 'danger';
         if (status === 'borrowed') severity = 'info';
         
         // Check if overdue
-        if (rowData.IsOverdue === 1 && status === 'borrowed') {
+        if (rowData.is_overdue === 1 && status === 'borrowed') {
             return <Tag value="OVERDUE" severity="danger" />;
         }
         
@@ -63,7 +63,7 @@ const Table = ({
     };
 
     const actionTemplate = (rowData: LoanData) => {
-        const status = rowData.Status;
+        const status = rowData.status;
 
         return (
             <div className="flex gap-2 justify-content-center">
@@ -121,8 +121,8 @@ const Table = ({
                         className="p-button-sm"
                         tooltip="Kembalikan Dokumen"
                         onClick={() => {
-                            if (confirm(`Kembalikan dokumen ${rowData.DocumentNumber} yang dipinjam oleh ${rowData.BorrowerName}?`)) {
-                                handleReturn(rowData.LoanId);
+                            if (confirm(`Kembalikan dokumen ${rowData.document_number} yang dipinjam oleh ${rowData.borrower_name}?`)) {
+                                handleReturn(rowData.loan_id);
                             }
                         }}
                     />
@@ -134,19 +134,19 @@ const Table = ({
     const filteredData = state.data.filter((item) => {
         const query = state.searchVal?.toLowerCase() || '';
         const matchSearch = 
-            item.BorrowerName?.toLowerCase().includes(query) ||
-            item.DocumentName?.toLowerCase().includes(query) ||
-            item.DocumentNumber?.toLowerCase().includes(query) ||
-            item.Purpose?.toLowerCase().includes(query);
+            item.borrower_name?.toLowerCase().includes(query) ||
+            item.document_name?.toLowerCase().includes(query) ||
+            item.document_number?.toLowerCase().includes(query) ||
+            item.purpose?.toLowerCase().includes(query);
 
         if (!matchSearch) return false;
 
         const tab = state.activeTab;
         if (tab === 'all') return true;
-        if (tab === 'pending') return item.Status === 'pending';
-        if (tab === 'borrowed') return item.Status === 'borrowed' && item.IsOverdue !== 1;
-        if (tab === 'returned') return item.Status === 'returned';
-        if (tab === 'overdue') return item.IsOverdue === 1 && item.Status === 'borrowed';
+        if (tab === 'pending') return item.status === 'pending';
+        if (tab === 'borrowed') return item.status === 'borrowed' && item.is_overdue !== 1;
+        if (tab === 'returned') return item.status === 'returned';
+        if (tab === 'overdue') return item.is_overdue === 1 && item.status === 'borrowed';
 
         return true;
     });
@@ -157,10 +157,10 @@ const Table = ({
 
     const tabs: { label: string; value: typeof state.activeTab; icon: string; count: number }[] = [
         { label: 'Semua', value: 'all', icon: 'pi pi-list', count: state.data.length },
-        { label: 'Pending', value: 'pending', icon: 'pi pi-clock', count: state.data.filter(d => d.Status === 'pending').length },
-        { label: 'Dipinjam', value: 'borrowed', icon: 'pi pi-info-circle', count: state.data.filter(d => d.Status === 'borrowed' && d.IsOverdue !== 1).length },
-        { label: 'Kembali', value: 'returned', icon: 'pi pi-check-circle', count: state.data.filter(d => d.Status === 'returned').length },
-        { label: 'Terlambat', value: 'overdue', icon: 'pi pi-exclamation-circle', count: state.data.filter(d => d.IsOverdue === 1 && d.Status === 'borrowed').length }
+        { label: 'Pending', value: 'pending', icon: 'pi pi-clock', count: state.data.filter(d => d.status === 'pending').length },
+        { label: 'Dipinjam', value: 'borrowed', icon: 'pi pi-info-circle', count: state.data.filter(d => d.status === 'borrowed' && d.is_overdue !== 1).length },
+        { label: 'Kembali', value: 'returned', icon: 'pi pi-check-circle', count: state.data.filter(d => d.status === 'returned').length },
+        { label: 'Terlambat', value: 'overdue', icon: 'pi pi-exclamation-circle', count: state.data.filter(d => d.is_overdue === 1 && d.status === 'borrowed').length }
     ];
 
     return <>
@@ -212,24 +212,24 @@ const Table = ({
                 rows={10}
                 header={headerTemplate}
                 loading={state.load}
-                dataKey="LoanId"
+                dataKey="loan_id"
                 emptyMessage="Tidak ada riwayat peminjaman"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data"
             >
-                <Column field="BorrowerName" header="Borrower" sortable />
+                <Column field="borrower_name" header="Borrower" sortable />
                 <Column 
                     header="Document" 
                     body={(rowData: LoanData) => (
                         <div>
-                            <span className="font-semibold block">{rowData.DocumentNumber}</span>
-                            <span className="text-sm text-color-secondary">{rowData.DocumentName}</span>
+                            <span className="font-semibold block">{rowData.document_number}</span>
+                            <span className="text-sm text-color-secondary">{rowData.document_name}</span>
                         </div>
                     )} 
                 />
-                <Column field="LoanDate" header="Loan Date" sortable body={rowData => formatDateCalendar(rowData.LoanDate)} />
-                <Column field="ExpectedReturnDate" header="Expected Return" sortable body={rowData => rowData.ExpectedReturnDate ? formatDateCalendar(rowData.ExpectedReturnDate) : '-'} />
-                <Column field="ReturnDate" header="Returned At" sortable body={rowData => rowData.ReturnDate ? formatDateCalendar(rowData.ReturnDate) : '-'} />
+                <Column field="loan_date" header="Loan Date" sortable body={rowData => formatDateCalendar(rowData.loan_date)} />
+                <Column field="expected_return_date" header="Expected Return" sortable body={rowData => rowData.expected_return_date ? formatDateCalendar(rowData.expected_return_date) : '-'} />
+                <Column field="return_date" header="Returned At" sortable body={rowData => rowData.return_date ? formatDateCalendar(rowData.return_date) : '-'} />
                 <Column body={statusTemplate} header="Status" style={{ width: '8rem', textAlign: 'center' }} />
                 <Column headerStyle={{ textAlign: 'center' }} header="Action" body={actionTemplate} style={{ width: '15rem' }} />
             </DataTable>
@@ -253,7 +253,7 @@ const Table = ({
                     <div className="grid">
                         <div className="col-12 md:col-6">
                             <div className="text-color-secondary mb-1 text-sm font-semibold">Borrower Name</div>
-                            <div className="font-bold text-lg">{selectedDetail.BorrowerName}</div>
+                            <div className="font-bold text-lg">{selectedDetail.borrower_name}</div>
                         </div>
                         <div className="col-12 md:col-6">
                             <div className="text-color-secondary mb-1 text-sm font-semibold">Status</div>
@@ -264,51 +264,51 @@ const Table = ({
                         </div>
                         <div className="col-12 md:col-6">
                             <div className="text-color-secondary mb-1 text-sm font-semibold">Document Number</div>
-                            <div className="font-semibold">{selectedDetail.DocumentNumber || '-'}</div>
+                            <div className="font-semibold">{selectedDetail.document_number || '-'}</div>
                         </div>
                         <div className="col-12 md:col-6">
                             <div className="text-color-secondary mb-1 text-sm font-semibold">Document Name</div>
-                            <div>{selectedDetail.DocumentName || '-'}</div>
+                            <div>{selectedDetail.document_name || '-'}</div>
                         </div>
                         <div className="col-12">
                             <Divider />
                         </div>
                         <div className="col-12 md:col-4">
                             <div className="text-color-secondary mb-1 text-sm font-semibold">Loan Date</div>
-                            <div>{formatDateCalendar(selectedDetail.LoanDate)}</div>
+                            <div>{formatDateCalendar(selectedDetail.loan_date)}</div>
                         </div>
                         <div className="col-12 md:col-4">
                             <div className="text-color-secondary mb-1 text-sm font-semibold">Expected Return Date</div>
-                            <div>{selectedDetail.ExpectedReturnDate ? formatDateCalendar(selectedDetail.ExpectedReturnDate) : '-'}</div>
+                            <div>{selectedDetail.expected_return_date ? formatDateCalendar(selectedDetail.expected_return_date) : '-'}</div>
                         </div>
                         <div className="col-12 md:col-4">
                             <div className="text-color-secondary mb-1 text-sm font-semibold">Return Date</div>
-                            <div className="font-semibold text-primary">{selectedDetail.ReturnDate ? formatDateCalendar(selectedDetail.ReturnDate) : 'Not Returned Yet'}</div>
+                            <div className="font-semibold text-primary">{selectedDetail.return_date ? formatDateCalendar(selectedDetail.return_date) : 'Not Returned Yet'}</div>
                         </div>
                         <div className="col-12">
                             <Divider />
                         </div>
                         <div className="col-12">
                             <div className="text-color-secondary mb-1 text-sm font-semibold">Purpose of Loan</div>
-                            <div className="p-3 bg-light border-round" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>{selectedDetail.Purpose}</div>
+                            <div className="p-3 bg-light border-round" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>{selectedDetail.purpose}</div>
                         </div>
                         
-                        {(selectedDetail.ApprovedBy || selectedDetail.ApprovalNotes) && (
+                        {(selectedDetail.approved_by || selectedDetail.approval_notes) && (
                             <>
                                 <div className="col-12">
                                     <Divider />
                                 </div>
                                 <div className="col-12 md:col-6">
                                     <div className="text-color-secondary mb-1 text-sm font-semibold">Reviewed By</div>
-                                    <div>{selectedDetail.ApprovedBy}</div>
+                                    <div>{selectedDetail.approved_by}</div>
                                 </div>
                                 <div className="col-12 md:col-6">
                                     <div className="text-color-secondary mb-1 text-sm font-semibold">Reviewed At</div>
-                                    <div>{selectedDetail.ApprovedAt ? formatDateCalendar(selectedDetail.ApprovedAt) : '-'}</div>
+                                    <div>{selectedDetail.approved_at ? formatDateCalendar(selectedDetail.approved_at) : '-'}</div>
                                 </div>
                                 <div className="col-12 mt-2">
                                     <div className="text-color-secondary mb-1 text-sm font-semibold">Reviewer Notes</div>
-                                    <div className="p-3 bg-light border-round italic" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>{selectedDetail.ApprovalNotes || 'No notes left.'}</div>
+                                    <div className="p-3 bg-light border-round italic" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>{selectedDetail.approval_notes || 'No notes left.'}</div>
                                 </div>
                             </>
                         )}
@@ -332,7 +332,7 @@ const Table = ({
         >
             <div className="flex flex-column gap-3">
                 <p>
-                    Apakah Anda yakin ingin <strong>{targetStatus === 'approved' ? 'menyetujui' : 'menolak'}</strong> pengajuan peminjaman dokumen <strong>{selectedDetail?.DocumentNumber}</strong> oleh <strong>{selectedDetail?.BorrowerName}</strong>?
+                    Apakah Anda yakin ingin <strong>{targetStatus === 'approved' ? 'menyetujui' : 'menolak'}</strong> pengajuan peminjaman dokumen <strong>{selectedDetail?.document_number}</strong> oleh <strong>{selectedDetail?.borrower_name}</strong>?
                 </p>
                 <div className="flex flex-column gap-2">
                     <label htmlFor="notes" className="font-semibold text-sm">Catatan Persetujuan (Optional)</label>
@@ -360,7 +360,7 @@ const Table = ({
                         severity={targetStatus === 'approved' ? 'success' : 'danger'}
                         onClick={async () => {
                             if (selectedDetail && targetStatus) {
-                                await handleApproveReject(selectedDetail.LoanId, targetStatus, notes);
+                                await handleApproveReject(selectedDetail.loan_id, targetStatus, notes);
                                 setApprovalDialog(false);
                                 setSelectedDetail(null);
                                 setNotes('');

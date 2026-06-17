@@ -9,12 +9,12 @@ const __dirname = path.dirname(__filename);
 
 const downloadDocumentVersion = async (req, res) => {
   try {
-    const nVersionId = req.query.VersionId || req.body?.VersionId;
+    const nVersionId = req.query.version_id || req.body?.version_id;
 
     if (!nVersionId) {
       const oResult = {
         status: "error",
-        message: "VersionId wajib diisi",
+        message: "version_id wajib diisi",
       };
       return res.status(422).json(oResult);
     }
@@ -22,16 +22,16 @@ const downloadDocumentVersion = async (req, res) => {
     // Ambil data versi dokumen
     const oVersion = await DB("trx_document_versions as v")
       .select(
-        "v.VersionId",
-        "v.DocumentId",
-        "v.VersionNumber",
-        "v.FilePath",
-        "v.ApprovalStatus",
-        "d.DocumentName",
-        "d.DocumentNumber"
+        "v.version_id",
+        "v.document_id",
+        "v.version_number",
+        "v.file_path",
+        "v.approval_status",
+        "d.document_name",
+        "d.document_number"
       )
-      .leftJoin("trx_documents as d", "v.DocumentId", "d.DocumentId")
-      .where("v.VersionId", nVersionId)
+      .leftJoin("trx_documents as d", "v.document_id", "d.document_id")
+      .where("v.version_id", nVersionId)
       .first();
 
     if (!oVersion) {
@@ -44,7 +44,7 @@ const downloadDocumentVersion = async (req, res) => {
 
     // Bangun absolute path file
     // FilePath tersimpan sebagai /uploads/documents/filename.ext
-    const cRelativePath = oVersion.FilePath.replace(/^\//, "");
+    const cRelativePath = oVersion.file_path.replace(/^\//, "");
     const cAbsolutePath = path.join(__dirname, "../../../../public", cRelativePath);
 
     // Cek file ada di disk
@@ -57,8 +57,8 @@ const downloadDocumentVersion = async (req, res) => {
     }
 
     // Tentukan nama file download
-    const cFileExtension = path.extname(oVersion.FilePath);
-    const cDownloadName = `${oVersion.DocumentNumber}_V${oVersion.VersionNumber}${cFileExtension}`;
+    const cFileExtension = path.extname(oVersion.file_path);
+    const cDownloadName = `${oVersion.document_number}_V${oVersion.version_number}${cFileExtension}`;
 
     res.setHeader("Content-Disposition", `attachment; filename="${cDownloadName}"`);
     res.setHeader("Content-Type", "application/octet-stream");

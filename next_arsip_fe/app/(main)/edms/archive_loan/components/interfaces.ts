@@ -4,35 +4,35 @@ import { Toast } from "primereact/toast";
 import { RefObject } from "react";
 
 export interface initValue {
-    DocumentId: number | null;
-    BorrowerName: string;
-    ExpectedReturnDate: string;
-    Purpose: string;
+    document_id: number | null;
+    borrower_name: string;
+    expected_return_date: string;
+    purpose: string;
 }
 
 export interface LoanData {
-    LoanId: number;
-    DocumentId: number;
-    DocumentName?: string;
-    DocumentNumber?: string;
-    BorrowerName: string;
-    LoanDate: string;
-    ExpectedReturnDate?: string | null;
-    ReturnDate?: string | null;
-    Purpose: string;
-    Status: string;
-    ApprovedBy?: string | null;
-    ApprovedAt?: string | null;
-    ApprovalNotes?: string | null;
-    IsOverdue?: number;
-    CreatedAt: string;
-    UpdatedAt: string;
+    loan_id: number;
+    document_id: number;
+    document_name?: string;
+    document_number?: string;
+    borrower_name: string;
+    loan_date: string;
+    expected_return_date?: string | null;
+    return_date?: string | null;
+    purpose: string;
+    status: string;
+    approved_by?: string | null;
+    approved_at?: string | null;
+    approval_notes?: string | null;
+    is_overdue?: number;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface DocumentSelectData {
-    DocumentId: number;
-    DocumentName: string;
-    DocumentNumber: string;
+    document_id: number;
+    document_name: string;
+    document_number: string;
 }
 
 export interface State {

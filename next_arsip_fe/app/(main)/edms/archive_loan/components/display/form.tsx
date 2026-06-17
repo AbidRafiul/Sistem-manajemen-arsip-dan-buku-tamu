@@ -20,8 +20,8 @@ const Form = ({
     };
 
     const documentOptions = state.documents.map(doc => ({
-        label: `${doc.DocumentNumber} - ${doc.DocumentName}`,
-        value: doc.DocumentId
+        label: `${doc.document_number} - ${doc.document_name}`,
+        value: doc.document_id
     }));
 
     return <Dialog
@@ -36,54 +36,54 @@ const Form = ({
     >
         <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-3">
             <div className="flex flex-column gap-2">
-                <label htmlFor="DocumentId" className="font-semibold">Document</label>
+                <label htmlFor="document_id" className="font-semibold">Document</label>
                 <Dropdown
-                    id="DocumentId"
-                    value={formik.values.DocumentId}
+                    id="document_id"
+                    value={formik.values.document_id}
                     options={documentOptions}
                     filter
-                    onChange={(e) => formik.setFieldValue('DocumentId', e.value)}
+                    onChange={(e) => formik.setFieldValue('document_id', e.value)}
                     placeholder="Select a Document to Borrow"
-                    className={isFormFieldInvalid('DocumentId') ? 'p-invalid' : ''}
+                    className={isFormFieldInvalid('document_id') ? 'p-invalid' : ''}
                 />
-                {getFormErrorMessage('DocumentId')}
+                {getFormErrorMessage('document_id')}
             </div>
 
             <div className="flex flex-column gap-2">
-                <label htmlFor="BorrowerName" className="font-semibold">Borrower Name</label>
+                <label htmlFor="borrower_name" className="font-semibold">Borrower Name</label>
                 <InputText
-                    id="BorrowerName"
-                    value={formik.values.BorrowerName}
-                    onChange={(e) => formik.setFieldValue('BorrowerName', e.target.value)}
-                    className={isFormFieldInvalid('BorrowerName') ? 'p-invalid' : ''}
+                    id="borrower_name"
+                    value={formik.values.borrower_name}
+                    onChange={(e) => formik.setFieldValue('borrower_name', e.target.value)}
+                    className={isFormFieldInvalid('borrower_name') ? 'p-invalid' : ''}
                     placeholder="Enter borrower's full name"
                 />
-                {getFormErrorMessage('BorrowerName')}
+                {getFormErrorMessage('borrower_name')}
             </div>
 
             <div className="flex flex-column gap-2">
-                <label htmlFor="ExpectedReturnDate" className="font-semibold">Expected Return Date</label>
+                <label htmlFor="expected_return_date" className="font-semibold">Expected Return Date</label>
                 <InputText
-                    id="ExpectedReturnDate"
+                    id="expected_return_date"
                     type="date"
-                    value={formik.values.ExpectedReturnDate}
-                    onChange={(e) => formik.setFieldValue('ExpectedReturnDate', e.target.value)}
-                    className={isFormFieldInvalid('ExpectedReturnDate') ? 'p-invalid' : ''}
+                    value={formik.values.expected_return_date}
+                    onChange={(e) => formik.setFieldValue('expected_return_date', e.target.value)}
+                    className={isFormFieldInvalid('expected_return_date') ? 'p-invalid' : ''}
                 />
-                {getFormErrorMessage('ExpectedReturnDate')}
+                {getFormErrorMessage('expected_return_date')}
             </div>
 
             <div className="flex flex-column gap-2">
-                <label htmlFor="Purpose" className="font-semibold">Purpose</label>
+                <label htmlFor="purpose" className="font-semibold">Purpose</label>
                 <InputTextarea
-                    id="Purpose"
+                    id="purpose"
                     rows={4}
-                    value={formik.values.Purpose}
-                    onChange={(e) => formik.setFieldValue('Purpose', e.target.value)}
-                    className={isFormFieldInvalid('Purpose') ? 'p-invalid' : ''}
+                    value={formik.values.purpose}
+                    onChange={(e) => formik.setFieldValue('purpose', e.target.value)}
+                    className={isFormFieldInvalid('purpose') ? 'p-invalid' : ''}
                     placeholder="E.g., Auditing, legal review, verification..."
                 />
-                {getFormErrorMessage('Purpose')}
+                {getFormErrorMessage('purpose')}
             </div>
 
             <div className="flex justify-content-end gap-2 mt-2">

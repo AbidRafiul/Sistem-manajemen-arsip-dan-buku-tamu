@@ -22,9 +22,9 @@ router.put("/:DocumentTypeId", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        DocumentTypeCode: Joi.string().max(45).required().label("Kode Jenis Dokumen"),
-        DocumentTypeName: Joi.string().max(45).required().label("Nama Jenis Dokumen"),
-        Description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
+        document_type_code: Joi.string().max(45).required().label("Kode Jenis Dokumen"),
+        document_type_name: Joi.string().max(45).required().label("Nama Jenis Dokumen"),
+        description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
@@ -52,12 +52,12 @@ router.put("/:DocumentTypeId", async (req, res) => {
     }
 
     const nUpdated = await DB("mst_document_type")
-      .where("DocumentTypeId", cDocumentTypeId)
+      .where("document_type_id", cDocumentTypeId)
       .update({
-        DocumentTypeCode: oPayload.DocumentTypeCode,
-        DocumentTypeName: oPayload.DocumentTypeName,
-        Description: oPayload.Description || null,
-        UpdatedAt: new Date(),
+        document_type_code: oPayload.document_type_code,
+        document_type_name: oPayload.document_type_name,
+        description: oPayload.description || null,
+        updated_at: new Date(),
       });
 
     if (!nUpdated) {
