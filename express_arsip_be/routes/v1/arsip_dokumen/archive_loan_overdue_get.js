@@ -10,37 +10,37 @@ const getOverdueLoans = async (req, res) => {
     // 2. Status = 'borrowed' dan ExpectedReturnDate sudah lewat (belum kembali, sudah terlambat)
     const vaData = await DB("trx_archive_loans as l")
       .select(
-        "l.LoanId",
-        "l.DocumentId",
-        "l.BorrowerName",
-        "l.LoanDate",
-        "l.ExpectedReturnDate",
-        "l.ReturnDate",
-        "l.Purpose",
-        "l.Status",
-        "l.IsOverdue",
-        "l.ApprovedBy",
-        "l.CreatedAt",
+        "l.loan_id",
+        "l.document_id",
+        "l.borrower_name",
+        "l.loan_date",
+        "l.expected_return_date",
+        "l.return_date",
+        "l.purpose",
+        "l.status",
+        "l.is_overdue",
+        "l.approved_by",
+        "l.created_at",
         // Data dokumen
-        "d.DocumentName",
-        "d.DocumentNumber",
-        "d.PhysicalLocation",
+        "d.document_name",
+        "d.document_number",
+        "d.physical_location",
         // Kalkulasi hari keterlambatan
-        DB.raw(`DATEDIFF(?, l.ExpectedReturnDate) as OverdueDays`, [dToday])
+        DB.raw(`DATEDIFF(?, l.expected_return_date) as OverdueDays`, [dToday])
       )
-      .leftJoin("trx_documents as d", "l.DocumentId", "d.DocumentId")
+      .leftJoin("trx_documents as d", "l.document_id", "d.document_id")
       .where((oBuilder) => {
         oBuilder
           // Sudah dikembalikan terlambat
-          .where("l.IsOverdue", 1)
+          .where("l.is_overdue", 1)
           // ATAU masih dipinjam tapi sudah lewat expected return date
           .orWhere((oInner) => {
             oInner
-              .where("l.Status", "borrowed")
-              .where("l.ExpectedReturnDate", "<", dToday);
+              .where("l.status", "borrowed")
+              .where("l.expected_return_date", "<", dToday);
           });
       })
-      .orderBy("l.ExpectedReturnDate", "asc");
+      .orderBy("l.expected_return_date", "asc");
 
     const oResult = {
       status: "success",

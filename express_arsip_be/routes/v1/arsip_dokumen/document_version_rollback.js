@@ -5,23 +5,23 @@ const rollbackDocumentVersion = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const nDocumentId = oPayload.DocumentId;
-    const nTargetVersionId = oPayload.VersionId;
-    const cUploadedBy = req?.context?.Username || oPayload.RollbackBy || "system";
+    const nDocumentId = oPayload.document_id;
+    const nTargetVersionId = oPayload.version_id;
+    const cUploadedBy = req?.context?.Username || oPayload.rollback_by || "system";
     const dNow = new Date();
 
     if (!nDocumentId || !nTargetVersionId) {
       const oResult = {
         status: "error",
-        message: "DocumentId dan VersionId (target rollback) wajib diisi",
+        message: "document_id dan version_id (target rollback) wajib diisi",
       };
       return res.status(422).json(oResult);
     }
 
     // Verifikasi dokumen aktif
     const oDocument = await DB("trx_documents")
-      .where("DocumentId", nDocumentId)
-      .where("Status", "active")
+      .where("document_id", nDocumentId)
+      .where("status", "active")
       .first();
 
     if (!oDocument) {
@@ -34,9 +34,9 @@ const rollbackDocumentVersion = async (req, res) => {
 
     // Ambil versi target yang akan di-rollback
     const oTargetVersion = await DB("trx_document_versions")
-      .where("VersionId", nTargetVersionId)
-      .where("DocumentId", nDocumentId)
-      .where("ApprovalStatus", "approved")
+      .where("version_id", nTargetVersionId)
+      .where("document_id", nDocumentId)
+      .where("approval_status", "approved")
       .first();
 
     if (!oTargetVersion) {
@@ -49,39 +49,39 @@ const rollbackDocumentVersion = async (req, res) => {
 
     // Ambil nomor versi terbaru untuk menentukan nomor versi baru
     const oLastVersion = await DB("trx_document_versions")
-      .select("VersionNumber")
-      .where("DocumentId", nDocumentId)
-      .orderBy("VersionNumber", "desc")
+      .select("version_number")
+      .where("document_id", nDocumentId)
+      .orderBy("version_number", "desc")
       .first();
 
-    const nNewVersionNumber = oLastVersion ? oLastVersion.VersionNumber + 1 : 1;
+    const nNewVersionNumber = oLastVersion ? oLastVersion.version_number + 1 : 1;
 
     // Buat versi baru dengan FilePath dari versi target (rollback)
     const oNewVersion = {
-      DocumentId: nDocumentId,
-      VersionNumber: nNewVersionNumber,
-      ChangeNotes: `Rollback ke V${oTargetVersion.VersionNumber} (VersionId: ${nTargetVersionId})`,
-      FilePath: oTargetVersion.FilePath,
-      UploadedBy: cUploadedBy,
+      document_id: nDocumentId,
+      version_number: nNewVersionNumber,
+      change_notes: `Rollback ke V${oTargetVersion.version_number} (VersionId: ${nTargetVersionId})`,
+      file_path: oTargetVersion.file_path,
+      uploaded_by: cUploadedBy,
       // Rollback langsung approved (by system/user yang melakukan rollback)
-      ApprovalStatus: "approved",
-      ApprovedBy: cUploadedBy,
-      ApprovedAt: dNow,
-      ApprovalNotes: `Auto-approved: rollback ke versi ${oTargetVersion.VersionNumber}`,
-      CreatedAt: dNow,
-      UpdatedAt: dNow,
+      approval_status: "approved",
+      approved_by: cUploadedBy,
+      approved_at: dNow,
+      approval_notes: `Auto-approved: rollback ke versi ${oTargetVersion.version_number}`,
+      created_at: dNow,
+      updated_at: dNow,
     };
 
     const [nNewVersionId] = await DB("trx_document_versions").insert(oNewVersion);
 
     const oResult = {
       status: "success",
-      message: `Dokumen berhasil di-rollback ke V${oTargetVersion.VersionNumber}. Versi baru V${nNewVersionNumber} dibuat.`,
+      message: `Dokumen berhasil di-rollback ke V${oTargetVersion.version_number}. Versi baru V${nNewVersionNumber} dibuat.`,
       data: {
-        VersionId: nNewVersionId,
-        RolledBackFromVersionId: nTargetVersionId,
-        RolledBackFromVersionNumber: oTargetVersion.VersionNumber,
-        NewVersionNumber: nNewVersionNumber,
+        version_id: nNewVersionId,
+        rolled_back_from_version_id: nTargetVersionId,
+        rolled_back_from_version_number: oTargetVersion.version_number,
+        new_version_number: nNewVersionNumber,
         ...oNewVersion,
       },
     };

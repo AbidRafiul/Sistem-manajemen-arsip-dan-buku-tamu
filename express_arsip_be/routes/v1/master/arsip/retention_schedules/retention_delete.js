@@ -12,8 +12,8 @@ router.delete("/:RetentionScheduleId", async (req, res) => {
 
   try {
     const nUpdated = await DB("mst_retention_schedule")
-      .where("RetentionScheduleId", cRetentionScheduleId)
-      .update({ Status: "nonactive", UpdatedAt: new Date() });
+      .where("retention_schedule_id", cRetentionScheduleId)
+      .update({ status: "nonactive", updated_at: new Date() });
 
     if (!nUpdated) {
       return res.status(404).json({

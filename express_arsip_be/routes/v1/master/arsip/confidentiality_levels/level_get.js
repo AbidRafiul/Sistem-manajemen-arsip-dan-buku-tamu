@@ -12,15 +12,15 @@ router.get("/", async (req, res) => {
   try {
     const vaData = await DB("mst_confidentiality_levels")
       .select(
-        "ConfidentialityLevelId",
-        "ConfidentialityLevelCode",
-        "ConfidentialityLevelName",
-        "ConfidentialityLevel", // <--- Angka levelnya
-        "Description",
-        "Status"
+        "confidentiality_level_id",
+        "confidentiality_level_code",
+        "confidentiality_level_name",
+        "confidentiality_level", // <--- Angka levelnya
+        "description",
+        "status"
       )
-      .where("Status", "active")
-      .orderBy("ConfidentialityLevel", "asc"); // Urutkan berdasarkan levelnya
+      .where("status", "active")
+      .orderBy("confidentiality_level", "asc"); // Urutkan berdasarkan levelnya
 
     return res.status(200).json({
       status: status.SUKSES,

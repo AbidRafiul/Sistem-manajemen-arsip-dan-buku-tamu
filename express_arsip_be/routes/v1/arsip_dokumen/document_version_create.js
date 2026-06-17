@@ -5,19 +5,19 @@ const createDocumentVersion = async (req, res) => {
   const oPayload = req.body;
   try {
 
-    const nDocumentId = oPayload.DocumentId;
-    const nVersionNumber = oPayload.VersionNumber;
-    const cChangeNotes = oPayload.ChangeNotes;
-    const cFilePath = oPayload.FilePath;
+    const nDocumentId = oPayload.document_id;
+    const nVersionNumber = oPayload.version_number;
+    const cChangeNotes = oPayload.change_notes;
+    const cFilePath = oPayload.file_path;
     const dNow = new Date();
 
     const oData = {
-      DocumentId: nDocumentId,
-      VersionNumber: nVersionNumber,
-      ChangeNotes: cChangeNotes,
-      FilePath: cFilePath,
-      CreatedAt: dNow,
-      UpdatedAt: dNow,
+      document_id: nDocumentId,
+      version_number: nVersionNumber,
+      change_notes: cChangeNotes,
+      file_path: cFilePath,
+      created_at: dNow,
+      updated_at: dNow,
     };
 
     await DB("trx_document_versions").insert(oData);

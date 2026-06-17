@@ -3,26 +3,26 @@ import { Logging } from "../components/tools/servertool.js";
 
 const getDocumentCategories = async (req, res) => {
   try {
-    const cStatus = req.query.Status || "active";
+    const cStatus = req.query.status || "active";
 
     const vaData = await DB("mst_document_categories as dc")
       .select(
-        "dc.DocumentCategoryId",
-        "dc.DocumentCategoryCode",
-        "dc.DocumentCategoryName",
-        "dc.Description",
-        "dc.Status",
-        "ac.ArchiveClassificationId",
-        "ac.ClassificationCode",
-        "ac.ClassificationName"
+        "dc.document_category_id",
+        "dc.document_category_code",
+        "dc.document_category_name",
+        "dc.description",
+        "dc.status",
+        "ac.archive_classification_id",
+        "ac.classification_code",
+        "ac.classification_name"
       )
       .leftJoin(
         "mst_archive_classifications as ac",
-        "dc.ArchiveClassificationId",
-        "ac.ArchiveClassificationId"
+        "dc.archive_classification_id",
+        "ac.archive_classification_id"
       )
-      .where("dc.Status", cStatus)
-      .orderBy("dc.DocumentCategoryName", "asc");
+      .where("dc.status", cStatus)
+      .orderBy("dc.document_category_name", "asc");
 
     const oResult = {
       status: "success",

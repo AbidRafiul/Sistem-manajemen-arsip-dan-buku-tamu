@@ -30,5 +30,6 @@ export async function seed(knex) {
     UpdatedAt: dDatetime,
   };
 
+  await knex("user_credential").where('Id', 1).del();
   await knex("user_credential").insert(oData);
 };

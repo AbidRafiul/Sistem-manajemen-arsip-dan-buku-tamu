@@ -5,21 +5,21 @@ const returnArchiveLoan = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const nLoanId = oPayload.LoanId;
-    const dReturnDate = oPayload.ReturnDate || null;
+    const nLoanId = oPayload.loan_id;
+    const dReturnDate = oPayload.return_date || null;
     const dNow = new Date();
 
     if (!nLoanId) {
       const oResult = {
         status: "error",
-        message: "LoanId wajib diisi",
+        message: "loan_id wajib diisi",
       };
       return res.status(422).json(oResult);
     }
 
     // Ambil data peminjaman
     const oLoan = await DB("trx_archive_loans")
-      .where("LoanId", nLoanId)
+      .where("loan_id", nLoanId)
       .first();
 
     if (!oLoan) {
@@ -30,10 +30,10 @@ const returnArchiveLoan = async (req, res) => {
       return res.status(404).json(oResult);
     }
 
-    if (oLoan.Status !== "borrowed") {
+    if (oLoan.status !== "borrowed") {
       const oResult = {
         status: "error",
-        message: `Peminjaman tidak dalam status 'borrowed'. Status saat ini: '${oLoan.Status}'`,
+        message: `Peminjaman tidak dalam status 'borrowed'. Status saat ini: '${oLoan.status}'`,
       };
       return res.status(422).json(oResult);
     }
@@ -43,35 +43,35 @@ const returnArchiveLoan = async (req, res) => {
 
     // Deteksi keterlambatan: bandingkan tanggal kembali aktual vs ExpectedReturnDate
     const bIsOverdue =
-      oLoan.ExpectedReturnDate &&
-      new Date(dActualReturnDate) > new Date(oLoan.ExpectedReturnDate)
+      oLoan.expected_return_date &&
+      new Date(dActualReturnDate) > new Date(oLoan.expected_return_date)
         ? 1
         : 0;
 
     const oData = {
-      Status: "returned",
-      ReturnDate: dActualReturnDate,
-      IsOverdue: bIsOverdue,
-      UpdatedAt: dNow,
+      status: "returned",
+      return_date: dActualReturnDate,
+      is_overdue: bIsOverdue,
+      updated_at: dNow,
     };
 
     await DB("trx_archive_loans")
-      .where("LoanId", nLoanId)
+      .where("loan_id", nLoanId)
       .update(oData);
 
     const cOverdueMessage = bIsOverdue
-      ? ` (TERLAMBAT: seharusnya kembali ${oLoan.ExpectedReturnDate})`
+      ? ` (TERLAMBAT: seharusnya kembali ${oLoan.expected_return_date})`
       : "";
 
     const oResult = {
       status: "success",
       message: `Dokumen berhasil dikembalikan${cOverdueMessage}`,
       data: {
-        LoanId: nLoanId,
-        DocumentId: oLoan.DocumentId,
-        BorrowerName: oLoan.BorrowerName,
-        ExpectedReturnDate: oLoan.ExpectedReturnDate,
-        IsOverdue: bIsOverdue,
+        loan_id: nLoanId,
+        document_id: oLoan.document_id,
+        borrower_name: oLoan.borrower_name,
+        expected_return_date: oLoan.expected_return_date,
+        is_overdue: bIsOverdue,
         ...oData,
       },
     };

@@ -18,9 +18,9 @@ router.put("/:ArchiveClassificationId", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        ClassificationCode: Joi.string().max(45).required().label("Kode Klasifikasi"),
-        ClassificationName: Joi.string().max(45).required().label("Nama Klasifikasi"),
-        Description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
+        classification_code: Joi.string().max(45).required().label("Kode Klasifikasi"),
+        classification_name: Joi.string().max(45).required().label("Nama Klasifikasi"),
+        description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
       },
       { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
       oPayload
@@ -33,12 +33,12 @@ router.put("/:ArchiveClassificationId", async (req, res) => {
     }
 
     const nUpdated = await DB("mst_archive_classifications")
-      .where("ArchiveClassificationId", cArchiveClassificationId)
+      .where("archive_classification_id", cArchiveClassificationId)
       .update({
-        ClassificationCode: oPayload.ClassificationCode,
-        ClassificationName: oPayload.ClassificationName,
-        Description: oPayload.Description || null,
-        UpdatedAt: new Date(),
+        classification_code: oPayload.classification_code,
+        classification_name: oPayload.classification_name,
+        description: oPayload.description || null,
+        updated_at: new Date(),
       });
 
     if (!nUpdated) return res.status(404).json({ status: status.NOT_FOUND, message: "Data tidak ditemukan", datetime: formatDateSystem() });

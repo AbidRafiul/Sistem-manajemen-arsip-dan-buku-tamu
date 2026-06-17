@@ -22,12 +22,12 @@ router.put("/:RetentionScheduleId", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        DocumentCategoryId: Joi.number().required().label("ID Kategori Dokumen"),
-        RetentionCode: Joi.string().max(45).required().label("Kode Retensi"),
-        RetentionName: Joi.string().max(45).required().label("Nama Retensi"),
-        RetentionYears: Joi.number().required().label("Tahun Retensi"),
-        RetentionAction: Joi.string().max(45).required().label("Tindakan Retensi"),
-        Description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
+        document_category_id: Joi.number().required().label("ID Kategori Dokumen"),
+        retention_code: Joi.string().max(45).required().label("Kode Retensi"),
+        retention_name: Joi.string().max(45).required().label("Nama Retensi"),
+        retention_years: Joi.number().required().label("Tahun Retensi"),
+        retention_action: Joi.string().max(45).required().label("Tindakan Retensi"),
+        description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
@@ -55,15 +55,15 @@ router.put("/:RetentionScheduleId", async (req, res) => {
     }
 
     const nUpdated = await DB("mst_retention_schedule")
-      .where("RetentionScheduleId", cRetentionScheduleId)
+      .where("retention_schedule_id", cRetentionScheduleId)
       .update({
-        DocumentCategoryId: oPayload.DocumentCategoryId,
-        RetentionCode: oPayload.RetentionCode,
-        RetentionName: oPayload.RetentionName,
-        RetentionYears: oPayload.RetentionYears,
-        RetentionAction: oPayload.RetentionAction,
-        Description: oPayload.Description || null,
-        UpdatedAt: new Date(),
+        document_category_id: oPayload.document_category_id,
+        retention_code: oPayload.retention_code,
+        retention_name: oPayload.retention_name,
+        retention_years: oPayload.retention_years,
+        retention_action: oPayload.retention_action,
+        description: oPayload.description || null,
+        updated_at: new Date(),
       });
 
     if (!nUpdated) {

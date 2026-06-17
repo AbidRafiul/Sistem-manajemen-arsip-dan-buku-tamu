@@ -5,16 +5,16 @@ const reviewDestructionProposal = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const nProposalId = oPayload.ProposalId;
-    const cStatus = oPayload.Status;
-    const cReviewNotes = oPayload.ReviewNotes || null;
-    const cReviewedBy = req?.context?.Username || oPayload.ReviewedBy || "system";
+    const nProposalId = oPayload.proposal_id;
+    const cStatus = oPayload.status;
+    const cReviewNotes = oPayload.review_notes || null;
+    const cReviewedBy = req?.context?.Username || oPayload.reviewed_by || "system";
     const dNow = new Date();
 
     if (!nProposalId) {
       const oResult = {
         status: "error",
-        message: "ProposalId wajib diisi",
+        message: "proposal_id wajib diisi",
       };
       return res.status(422).json(oResult);
     }
@@ -29,7 +29,7 @@ const reviewDestructionProposal = async (req, res) => {
 
     // Cek proposal ada dan masih bisa di-review
     const oProposal = await DB("trx_destruction_proposals")
-      .where("ProposalId", nProposalId)
+      .where("proposal_id", nProposalId)
       .first();
 
     if (!oProposal) {
@@ -40,32 +40,32 @@ const reviewDestructionProposal = async (req, res) => {
       return res.status(404).json(oResult);
     }
 
-    if (oProposal.Status !== "submitted") {
+    if (oProposal.status !== "submitted") {
       const oResult = {
         status: "error",
-        message: `Proposal tidak dalam status 'submitted'. Status saat ini: '${oProposal.Status}'`,
+        message: `Proposal tidak dalam status 'submitted'. Status saat ini: '${oProposal.status}'`,
       };
       return res.status(422).json(oResult);
     }
 
     const oData = {
-      Status: cStatus,
-      ReviewedBy: cReviewedBy,
-      ReviewedAt: dNow,
-      ReviewNotes: cReviewNotes,
-      UpdatedAt: dNow,
+      status: cStatus,
+      reviewed_by: cReviewedBy,
+      reviewed_at: dNow,
+      review_notes: cReviewNotes,
+      updated_at: dNow,
     };
 
     await DB("trx_destruction_proposals")
-      .where("ProposalId", nProposalId)
+      .where("proposal_id", nProposalId)
       .update(oData);
 
     const oResult = {
       status: "success",
       message: `Proposal pemusnahan berhasil di-${cStatus === "approved" ? "setujui" : "tolak"}`,
       data: {
-        ProposalId: nProposalId,
-        DocumentId: oProposal.DocumentId,
+        proposal_id: nProposalId,
+        document_id: oProposal.document_id,
         ...oData,
       },
     };

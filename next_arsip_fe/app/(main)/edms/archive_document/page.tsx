@@ -46,30 +46,30 @@ const Page = () => {
 
     const formik = useFormik<initValue>({
         initialValues: {
-            DocumentId: null,
-            DocumentName: '',
-            DocumentNumber: '',
-            DocumentDate: '',
-            ExpiredDate: '',
-            PicName: '',
+            document_id: null,
+            document_name: '',
+            document_number: '',
+            document_date: '',
+            expired_date: '',
+            pic_name: '',
         },
         validate: (data: initValue) => {
             const errors = {} as initValue;
 
-            if (!data.DocumentName) {
-                errors.DocumentName = 'Document name wajib diisi';
+            if (!data.document_name) {
+                errors.document_name = 'Document name wajib diisi';
             }
 
-            if (!data.DocumentNumber) {
-                errors.DocumentNumber = 'Document number wajib diisi';
+            if (!data.document_number) {
+                errors.document_number = 'Document number wajib diisi';
             }
 
-            if (!data.DocumentDate) {
-                errors.DocumentDate = 'Document date wajib diisi';
+            if (!data.document_date) {
+                errors.document_date = 'Document date wajib diisi';
             }
 
-            if (!data.PicName) {
-                errors.PicName = 'PIC wajib diisi';
+            if (!data.pic_name) {
+                errors.pic_name = 'PIC wajib diisi';
             }
 
             return errors;
@@ -95,10 +95,10 @@ const Page = () => {
         }
     };
 
-    const getDocumentDetail = async (DocumentId: number) => {
+    const getDocumentDetail = async (documentId: number) => {
         setState((p) => ({ ...p, detailLoad: true }));
         try {
-            const res = await getData(apiEndpointDocumentDetail, { DocumentId });
+            const res = await getData(apiEndpointDocumentDetail, { document_id: documentId });
             setState((p) => ({
                 ...p,
                 detail: true,
@@ -119,12 +119,12 @@ const Page = () => {
             const cEndpoint = isEdit ? apiEndpointDocumentUpdate : apiEndpointDocumentCreate;
 
             const res = await postData(cEndpoint, {
-                DocumentId: input.DocumentId,
-                DocumentName: input.DocumentName,
-                DocumentNumber: input.DocumentNumber,
-                DocumentDate: input.DocumentDate,
-                ExpiredDate: input.ExpiredDate,
-                PicName: input.PicName,
+                document_id: input.document_id,
+                document_name: input.document_name,
+                document_number: input.document_number,
+                document_date: input.document_date,
+                expired_date: input.expired_date,
+                pic_name: input.pic_name,
             });
 
             showSuccess(toast, res.data?.message || 'Document berhasil disimpan');
@@ -147,9 +147,9 @@ const Page = () => {
                 return;
             }
 
-            const vaDocumentId = state.selectedDocuments.map((oDocument) => oDocument.DocumentId);
+            const vaDocumentId = state.selectedDocuments.map((oDocument) => oDocument.document_id);
             const res = await postData(apiEndpointDocumentDelete, {
-                DocumentId: vaDocumentId,
+                document_id: vaDocumentId,
             });
 
             showSuccess(toast, res.data?.message || 'Document berhasil dihapus');
@@ -167,8 +167,8 @@ const Page = () => {
         setState((p) => ({ ...p, load: true }));
         try {
             const formData = new FormData();
-            formData.append("DocumentId", String(documentId));
-            formData.append("ChangeNotes", changeNotes);
+            formData.append("document_id", String(documentId));
+            formData.append("change_notes", changeNotes);
             formData.append("file", file);
 
             const res = await formUpload(apiEndpointVersionUpload, formData, {});
@@ -186,7 +186,7 @@ const Page = () => {
     const downloadVersion = async (versionId: number, fileName: string) => {
         setState((p) => ({ ...p, load: true }));
         try {
-            const res = await fileDownload(apiEndpointVersionDownload, { VersionId: versionId });
+            const res = await fileDownload(apiEndpointVersionDownload, { version_id: versionId });
             const blob = new Blob([res.data]);
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -208,7 +208,7 @@ const Page = () => {
     const rollbackVersion = async (documentId: number, versionId: number) => {
         setState((p) => ({ ...p, load: true }));
         try {
-            const res = await postData(apiEndpointVersionRollback, { DocumentId: documentId, VersionId: versionId });
+            const res = await postData(apiEndpointVersionRollback, { document_id: documentId, version_id: versionId });
             showSuccess(toast, res.data?.message || 'Rollback versi berhasil');
             await getDocuments();
             await getDocumentDetail(documentId);
@@ -224,13 +224,13 @@ const Page = () => {
         setState((p) => ({ ...p, load: true }));
         try {
             const res = await postData(apiEndpointVersionApprove, {
-                VersionId: versionId,
-                Status: status,
-                ApprovalNotes: notes || ''
+                version_id: versionId,
+                status: status,
+                approval_notes: notes || ''
             });
             showSuccess(toast, res.data?.message || `Berhasil mengubah status versi menjadi ${status}`);
-            if (state.detailData?.document?.DocumentId) {
-                await getDocumentDetail(state.detailData.document.DocumentId);
+            if (state.detailData?.document?.document_id) {
+                await getDocumentDetail(state.detailData.document.document_id);
             }
             await getDocuments();
         } catch (error: any) {

@@ -12,8 +12,8 @@ router.delete("/:DocumentTypeId", async (req, res) => {
 
   try {
     const nUpdated = await DB("mst_document_type")
-      .where("DocumentTypeId", cDocumentTypeId)
-      .update({ Status: "nonactive", UpdatedAt: new Date() });
+      .where("document_type_id", cDocumentTypeId)
+      .update({ status: "nonactive", updated_at: new Date() });
 
     if (!nUpdated) {
       return res.status(404).json({

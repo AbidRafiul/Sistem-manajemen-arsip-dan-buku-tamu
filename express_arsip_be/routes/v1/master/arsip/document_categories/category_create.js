@@ -28,19 +28,19 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        ArchiveClassificationId: Joi.number()
+        archive_classification_id: Joi.number()
           .required()
           .label("ID Klasifikasi"),
-        DocumentCategoryCode: Joi.string()
+        document_category_code: Joi.string()
           .max(45)
           .required()
           .label("Kode Kategori"),
-        DocumentCategoryName: Joi.string()
+        document_category_name: Joi.string()
           .max(45)
           .required()
           .label("Nama Kategori"),
 
-        Description: Joi.string()
+        description: Joi.string()
           .max(45)
           .optional()
           .allow(null, "")
@@ -73,13 +73,13 @@ router.post("/", async (req, res) => {
 
     const dNow = new Date();
     await DB("mst_document_categories").insert({
-      ArchiveClassificationId: oPayload.ArchiveClassificationId,
-      DocumentCategoryCode: oPayload.DocumentCategoryCode,
-      DocumentCategoryName: oPayload.DocumentCategoryName,
-      Description: oPayload.Description || null,
-      Status: "active",
-      CreatedAt: dNow,
-      UpdatedAt: dNow,
+      archive_classification_id: oPayload.archive_classification_id,
+      document_category_code: oPayload.document_category_code,
+      document_category_name: oPayload.document_category_name,
+      description: oPayload.description || null,
+      status: "active",
+      created_at: dNow,
+      updated_at: dNow,
     });
 
     return res.status(201).json({

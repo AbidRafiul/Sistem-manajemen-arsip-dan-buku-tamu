@@ -55,8 +55,8 @@ const Table = ({
 
     const statusTemplate = (rowData: DocumentData) => (
         <Tag
-            value={rowData.Status}
-            severity={rowData.Status === 'active' ? 'success' : 'danger'}
+            value={rowData.status}
+            severity={rowData.status === 'active' ? 'success' : 'danger'}
             style={{ minWidth: "75px", justifyContent: "center" }}
         />
     );
@@ -70,7 +70,7 @@ const Table = ({
                 className="p-button-sm"
                 tooltip="Detail"
                 loading={state.detailLoad}
-                onClick={() => getDocumentDetail(rowData.DocumentId)}
+                onClick={() => getDocumentDetail(rowData.document_id)}
             />
             <Button
                 icon="pi pi-pencil"
@@ -80,12 +80,12 @@ const Table = ({
                 tooltip="Edit"
                 onClick={() => {
                     formik.setValues({
-                        DocumentId: rowData.DocumentId,
-                        DocumentName: rowData.DocumentName,
-                        DocumentNumber: rowData.DocumentNumber,
-                        DocumentDate: formatDateInput(rowData.DocumentDate),
-                        ExpiredDate: formatDateInput(rowData.ExpiredDate),
-                        PicName: rowData.PicName,
+                        document_id: rowData.document_id,
+                        document_name: rowData.document_name,
+                        document_number: rowData.document_number,
+                        document_date: formatDateInput(rowData.document_date),
+                        expired_date: formatDateInput(rowData.expired_date),
+                        pic_name: rowData.pic_name,
                     });
                     setState((p) => ({ ...p, add: false, edit: true, delete: false, selectedDocuments: [rowData] }));
                 }}
@@ -122,11 +122,11 @@ const Table = ({
         </div>
     );
 
-    const highestVersionNumber = Math.max(...(state.detailData?.versions || []).map(v => v.VersionNumber), 0);
+    const highestVersionNumber = Math.max(...(state.detailData?.versions || []).map(v => v.version_number), 0);
     const isAdmin = state.session?.user?.role === 'superadmin' || state.session?.user?.role === 'Administrator' || state.session?.user?.role === 'admin';
 
     const versionStatusTemplate = (rowData: VersionData) => {
-        const status = rowData.ApprovalStatus || 'pending';
+        const status = rowData.approval_status || 'pending';
         let severity: 'success' | 'danger' | 'warning' | 'info' = 'warning';
         if (status === 'approved') severity = 'success';
         if (status === 'rejected') severity = 'danger';
@@ -134,8 +134,8 @@ const Table = ({
     };
 
     const versionActionTemplate = (rowData: VersionData) => {
-        const isLatest = rowData.VersionNumber === highestVersionNumber;
-        const status = rowData.ApprovalStatus || 'pending';
+        const isLatest = rowData.version_number === highestVersionNumber;
+        const status = rowData.approval_status || 'pending';
 
         return (
             <div className="flex gap-2">
@@ -147,10 +147,10 @@ const Table = ({
                     className="p-button-sm"
                     tooltip="Download File"
                     onClick={() => {
-                        const parts = rowData.FilePath.split('.');
+                        const parts = rowData.file_path.split('.');
                         const ext = parts.length > 1 ? parts.pop() : 'pdf';
-                        const fileName = `${state.detailData?.document?.DocumentNumber || 'doc'}_V${rowData.VersionNumber}.${ext}`;
-                        downloadVersion(rowData.VersionId, fileName);
+                        const fileName = `${state.detailData?.document?.document_number || 'doc'}_V${rowData.version_number}.${ext}`;
+                        downloadVersion(rowData.version_id, fileName);
                     }}
                 />
                 {status === 'approved' && !isLatest && (
@@ -162,8 +162,8 @@ const Table = ({
                         className="p-button-sm"
                         tooltip="Rollback to this version"
                         onClick={() => {
-                            if (confirm(`Apakah Anda yakin ingin melakukan rollback ke V${rowData.VersionNumber}?`)) {
-                                rollbackVersion(rowData.DocumentId, rowData.VersionId);
+                            if (confirm(`Apakah Anda yakin ingin melakukan rollback ke V${rowData.version_number}?`)) {
+                                rollbackVersion(rowData.document_id, rowData.version_id);
                             }
                         }}
                     />
@@ -177,7 +177,7 @@ const Table = ({
                             severity="success"
                             className="p-button-sm"
                             tooltip="Approve Version"
-                            onClick={() => approveVersion(rowData.VersionId, 'approved')}
+                            onClick={() => approveVersion(rowData.version_id, 'approved')}
                         />
                         <Button
                             icon="pi pi-times"
@@ -189,7 +189,7 @@ const Table = ({
                             onClick={() => {
                                 const notes = prompt('Masukkan alasan penolakan:');
                                 if (notes !== null) {
-                                    approveVersion(rowData.VersionId, 'rejected', notes);
+                                    approveVersion(rowData.version_id, 'rejected', notes);
                                 }
                             }}
                         />
@@ -250,20 +250,20 @@ const Table = ({
                 onSelectionChange={(e) => setState((p) => ({ ...p, selectedDocuments: e.value }))}
                 rows={10}
                 header={headerTemplate}
-                globalFilterFields={['DocumentName', 'DocumentNumber', 'PicName', 'Status']}
+                globalFilterFields={['document_name', 'document_number', 'pic_name', 'status']}
                 filters={state.filters}
                 loading={state.load}
-                dataKey="DocumentId"
+                dataKey="document_id"
                 emptyMessage="Data Kosong"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data"
             >
                 <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
-                <Column field="DocumentNumber" header="Document Number" sortable />
-                <Column field="DocumentName" header="Document Name" sortable />
-                <Column field="PicName" header="PIC" sortable />
-                <Column field="DocumentDate" header="Document Date" sortable body={rowData => formatDateCalendar(rowData.DocumentDate)} />
-                <Column field="ExpiredDate" header="Expired Date" sortable body={rowData => formatDateCalendar(rowData.ExpiredDate)} />
+                <Column field="document_number" header="Document Number" sortable />
+                <Column field="document_name" header="Document Name" sortable />
+                <Column field="pic_name" header="PIC" sortable />
+                <Column field="document_date" header="Document Date" sortable body={rowData => formatDateCalendar(rowData.document_date)} />
+                <Column field="expired_date" header="Expired Date" sortable body={rowData => formatDateCalendar(rowData.expired_date)} />
                 <Column body={statusTemplate} header="Status" />
                 <Column headerStyle={{ textAlign: 'center' }} header="Action" body={actionTemplate} />
             </DataTable>
@@ -286,23 +286,23 @@ const Table = ({
                 <div className="grid">
                     <div className="col-12 md:col-6">
                         <div className="text-color-secondary mb-1">Document Number</div>
-                        <div className="font-semibold">{state.detailData?.document?.DocumentNumber || '-'}</div>
+                        <div className="font-semibold">{state.detailData?.document?.document_number || '-'}</div>
                     </div>
                     <div className="col-12 md:col-6">
                         <div className="text-color-secondary mb-1">Document Name</div>
-                        <div className="font-semibold">{state.detailData?.document?.DocumentName || '-'}</div>
+                        <div className="font-semibold">{state.detailData?.document?.document_name || '-'}</div>
                     </div>
                     <div className="col-12 md:col-4">
                         <div className="text-color-secondary mb-1">PIC</div>
-                        <div>{state.detailData?.document?.PicName || '-'}</div>
+                        <div>{state.detailData?.document?.pic_name || '-'}</div>
                     </div>
                     <div className="col-12 md:col-4">
                         <div className="text-color-secondary mb-1">Document Date</div>
-                        <div>{state.detailData?.document?.DocumentDate ? formatDateCalendar(state.detailData.document.DocumentDate) : '-'}</div>
+                        <div>{state.detailData?.document?.document_date ? formatDateCalendar(state.detailData.document.document_date) : '-'}</div>
                     </div>
                     <div className="col-12 md:col-4">
                         <div className="text-color-secondary mb-1">Expired Date</div>
-                        <div>{state.detailData?.document?.ExpiredDate ? formatDateCalendar(state.detailData.document.ExpiredDate) : '-'}</div>
+                        <div>{state.detailData?.document?.expired_date ? formatDateCalendar(state.detailData.document.expired_date) : '-'}</div>
                     </div>
                 </div>
 
@@ -336,8 +336,8 @@ const Table = ({
                                 size="small"
                                 disabled={!newVersionFile || !changeNotes.trim() || state.load}
                                 onClick={async () => {
-                                    if (state.detailData?.document?.DocumentId && newVersionFile) {
-                                        await uploadVersion(state.detailData.document.DocumentId, changeNotes, newVersionFile);
+                                    if (state.detailData?.document?.document_id && newVersionFile) {
+                                        await uploadVersion(state.detailData.document.document_id, changeNotes, newVersionFile);
                                         setNewVersionFile(null);
                                         setChangeNotes('');
                                     }
@@ -354,11 +354,11 @@ const Table = ({
                     paginator
                     emptyMessage="Belum ada versi dokumen"
                 >
-                    <Column field="VersionNumber" header="Version" sortable />
-                    <Column field="ChangeNotes" header="Change Notes" />
-                    <Column field="UploadedBy" header="Uploaded By" body={rowData => rowData.UploadedBy || '-'} />
-                    <Column field="ApprovalStatus" header="Status" body={versionStatusTemplate} />
-                    <Column field="CreatedAt" header="Created At" body={(rowData: VersionData) => formatDateCalendar(rowData.CreatedAt)} />
+                    <Column field="version_number" header="Version" sortable />
+                    <Column field="change_notes" header="Change Notes" />
+                    <Column field="uploaded_by" header="Uploaded By" body={rowData => rowData.uploaded_by || '-'} />
+                    <Column field="approval_status" header="Status" body={versionStatusTemplate} />
+                    <Column field="created_at" header="Created At" body={(rowData: VersionData) => formatDateCalendar(rowData.created_at)} />
                     <Column header="Action" body={versionActionTemplate} style={{ width: '12rem' }} />
                 </DataTable>
 
@@ -369,11 +369,11 @@ const Table = ({
                     paginator
                     emptyMessage="Belum ada riwayat peminjaman"
                 >
-                    <Column field="BorrowerName" header="Borrower" sortable />
-                    <Column field="LoanDate" header="Loan Date" body={(rowData: LoanData) => formatDateCalendar(rowData.LoanDate)} />
-                    <Column field="ReturnDate" header="Return Date" body={(rowData: LoanData) => rowData.ReturnDate ? formatDateCalendar(rowData.ReturnDate) : '-'} />
-                    <Column field="Purpose" header="Purpose" />
-                    <Column field="Status" header="Status" body={(rowData: LoanData) => <Tag value={rowData.Status} severity={rowData.Status === 'approved' ? 'success' : rowData.Status === 'rejected' ? 'danger' : 'warning'} />} />
+                    <Column field="borrower_name" header="Borrower" sortable />
+                    <Column field="loan_date" header="Loan Date" body={(rowData: LoanData) => formatDateCalendar(rowData.loan_date)} />
+                    <Column field="return_date" header="Return Date" body={(rowData: LoanData) => rowData.return_date ? formatDateCalendar(rowData.return_date) : '-'} />
+                    <Column field="purpose" header="Purpose" />
+                    <Column field="status" header="Status" body={(rowData: LoanData) => <Tag value={rowData.status} severity={rowData.status === 'approved' ? 'success' : rowData.status === 'rejected' ? 'danger' : 'warning'} />} />
                 </DataTable>
             </div>
         </Dialog>
@@ -395,7 +395,7 @@ const Table = ({
                     <p className="text-color-secondary">
                         {state.selectedDocuments.length > 1
                             ? `Dokumen yang dipilih akan dinonaktifkan.`
-                            : `Dokumen ${state.selectedDocuments[0]?.DocumentNumber || ""} akan dinonaktifkan.`}
+                            : `Dokumen ${state.selectedDocuments[0]?.document_number || ""} akan dinonaktifkan.`}
                     </p>
                 </div>
             </div>

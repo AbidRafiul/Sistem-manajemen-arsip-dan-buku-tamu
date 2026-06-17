@@ -3,19 +3,19 @@ import { Logging } from "../components/tools/servertool.js";
 
 const getConfidentialityLevels = async (req, res) => {
   try {
-    const cStatus = req.query.Status || "active";
+    const cStatus = req.query.status || "active";
 
     const vaData = await DB("mst_confidentiality_levels")
       .select(
-        "ConfidentialityLevelId",
-        "ConfidentialityLevelCode",
-        "ConfidentialityLevelName",
-        "ConfidentialityLevel",
-        "Description",
-        "Status"
+        "confidentiality_level_id",
+        "confidentiality_level_code",
+        "confidentiality_level_name",
+        "confidentiality_level",
+        "description",
+        "status"
       )
-      .where("Status", cStatus)
-      .orderBy("ConfidentialityLevel", "asc");
+      .where("status", cStatus)
+      .orderBy("confidentiality_level", "asc");
 
     const oResult = {
       status: "success",

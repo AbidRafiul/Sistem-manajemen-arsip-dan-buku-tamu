@@ -5,25 +5,25 @@ const updateDocument = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const nDocumentId = oPayload.DocumentId;
-    const cDocumentName = oPayload.DocumentName;
-    const cDocumentNumber = oPayload.DocumentNumber;
-    const dDocumentDate = oPayload.DocumentDate;
-    const dExpiredDate = oPayload.ExpiredDate || null;
-    const cPicName = oPayload.PicName;
-    const nDocumentTypeId = oPayload.DocumentTypeId || null;
-    const nDocumentCategoryId = oPayload.DocumentCategoryId || null;
-    const nArchiveClassificationId = oPayload.ArchiveClassificationId || null;
-    const nConfidentialityLevelId = oPayload.ConfidentialityLevelId || null;
-    const nRetentionScheduleId = oPayload.RetentionScheduleId || null;
-    const cPhysicalLocation = oPayload.PhysicalLocation || null;
-    const cTags = oPayload.Tags || null;
+    const nDocumentId = oPayload.document_id;
+    const cDocumentName = oPayload.document_name;
+    const cDocumentNumber = oPayload.document_number;
+    const dDocumentDate = oPayload.document_date;
+    const dExpiredDate = oPayload.expired_date || null;
+    const cPicName = oPayload.pic_name;
+    const nDocumentTypeId = oPayload.document_type_id || null;
+    const nDocumentCategoryId = oPayload.document_category_id || null;
+    const nArchiveClassificationId = oPayload.archive_classification_id || null;
+    const nConfidentialityLevelId = oPayload.confidentiality_level_id || null;
+    const nRetentionScheduleId = oPayload.retention_schedule_id || null;
+    const cPhysicalLocation = oPayload.physical_location || null;
+    const cTags = oPayload.tags || null;
     const dNow = new Date();
 
     if (!nDocumentId) {
       const oResult = {
         status: "error",
-        message: "DocumentId wajib diisi",
+        message: "document_id wajib diisi",
       };
       return res.status(422).json(oResult);
     }
@@ -31,16 +31,16 @@ const updateDocument = async (req, res) => {
     if (!cDocumentName || !cDocumentNumber || !dDocumentDate || !cPicName) {
       const oResult = {
         status: "error",
-        message: "DocumentName, DocumentNumber, DocumentDate, dan PicName wajib diisi",
+        message: "document_name, document_number, document_date, dan pic_name wajib diisi",
       };
       return res.status(422).json(oResult);
     }
 
     // Cek duplikat nomor dokumen (exclude dokumen yang sedang diedit)
     const oExisting = await DB("trx_documents")
-      .where("DocumentNumber", cDocumentNumber)
-      .where("Status", "active")
-      .whereNot("DocumentId", nDocumentId)
+      .where("document_number", cDocumentNumber)
+      .where("status", "active")
+      .whereNot("document_id", nDocumentId)
       .first();
 
     if (oExisting) {
@@ -52,24 +52,24 @@ const updateDocument = async (req, res) => {
     }
 
     const oData = {
-      ArchiveClassificationId: nArchiveClassificationId,
-      DocumentTypeId: nDocumentTypeId,
-      DocumentCategoryId: nDocumentCategoryId,
-      ConfidentialityLevelId: nConfidentialityLevelId,
-      RetentionScheduleId: nRetentionScheduleId,
-      DocumentName: cDocumentName,
-      DocumentNumber: cDocumentNumber,
-      DocumentDate: dDocumentDate,
-      ExpiredDate: dExpiredDate,
-      PicName: cPicName,
-      PhysicalLocation: cPhysicalLocation,
-      Tags: cTags,
-      UpdatedAt: dNow,
+      archive_classification_id: nArchiveClassificationId,
+      document_type_id: nDocumentTypeId,
+      document_category_id: nDocumentCategoryId,
+      confidentiality_level_id: nConfidentialityLevelId,
+      retention_schedule_id: nRetentionScheduleId,
+      document_name: cDocumentName,
+      document_number: cDocumentNumber,
+      document_date: dDocumentDate,
+      expired_date: dExpiredDate,
+      pic_name: cPicName,
+      physical_location: cPhysicalLocation,
+      tags: cTags,
+      updated_at: dNow,
     };
 
     const nUpdated = await DB("trx_documents")
-      .where("DocumentId", nDocumentId)
-      .where("Status", "active")
+      .where("document_id", nDocumentId)
+      .where("status", "active")
       .update(oData);
 
     if (nUpdated === 0) {
@@ -83,7 +83,7 @@ const updateDocument = async (req, res) => {
     const oResult = {
       status: "success",
       message: "Document metadata updated successfully",
-      data: { DocumentId: nDocumentId, ...oData },
+      data: { document_id: nDocumentId, ...oData },
     };
 
     return res.status(200).json(oResult);

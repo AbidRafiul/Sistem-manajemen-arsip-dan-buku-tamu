@@ -29,61 +29,61 @@ const Form = ({
     >
         <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-3">
             <div className="flex flex-column gap-2">
-                <label htmlFor="DocumentNumber">Document Number</label>
+                <label htmlFor="document_number">Document Number</label>
                 <InputText
-                    id="DocumentNumber"
-                    value={formik.values.DocumentNumber}
-                    onChange={(e) => formik.setFieldValue('DocumentNumber', e.target.value)}
-                    className={isFormFieldInvalid('DocumentNumber') ? 'p-invalid' : ''}
+                    id="document_number"
+                    value={formik.values.document_number}
+                    onChange={(e) => formik.setFieldValue('document_number', e.target.value)}
+                    className={isFormFieldInvalid('document_number') ? 'p-invalid' : ''}
                 />
-                {getFormErrorMessage('DocumentNumber')}
+                {getFormErrorMessage('document_number')}
             </div>
 
             <div className="flex flex-column gap-2">
-                <label htmlFor="DocumentName">Document Name</label>
+                <label htmlFor="document_name">Document Name</label>
                 <InputText
-                    id="DocumentName"
-                    value={formik.values.DocumentName}
-                    onChange={(e) => formik.setFieldValue('DocumentName', e.target.value)}
-                    className={isFormFieldInvalid('DocumentName') ? 'p-invalid' : ''}
+                    id="document_name"
+                    value={formik.values.document_name}
+                    onChange={(e) => formik.setFieldValue('document_name', e.target.value)}
+                    className={isFormFieldInvalid('document_name') ? 'p-invalid' : ''}
                 />
-                {getFormErrorMessage('DocumentName')}
+                {getFormErrorMessage('document_name')}
             </div>
 
             <div className="grid">
                 <div className="col-12 md:col-6 flex flex-column gap-2">
-                    <label htmlFor="DocumentDate">Document Date</label>
+                    <label htmlFor="document_date">Document Date</label>
                     <InputText
-                        id="DocumentDate"
+                        id="document_date"
                         type="date"
-                        value={formik.values.DocumentDate}
-                        onChange={(e) => formik.setFieldValue('DocumentDate', e.target.value)}
-                        className={isFormFieldInvalid('DocumentDate') ? 'p-invalid' : ''}
+                        value={formik.values.document_date}
+                        onChange={(e) => formik.setFieldValue('document_date', e.target.value)}
+                        className={isFormFieldInvalid('document_date') ? 'p-invalid' : ''}
                     />
-                    {getFormErrorMessage('DocumentDate')}
+                    {getFormErrorMessage('document_date')}
                 </div>
 
                 <div className="col-12 md:col-6 flex flex-column gap-2">
-                    <label htmlFor="ExpiredDate">Expired Date</label>
+                    <label htmlFor="expired_date">Expired Date</label>
                     <InputText
-                        id="ExpiredDate"
+                        id="expired_date"
                         type="date"
-                        value={formik.values.ExpiredDate}
-                        onChange={(e) => formik.setFieldValue('ExpiredDate', e.target.value)}
+                        value={formik.values.expired_date}
+                        onChange={(e) => formik.setFieldValue('expired_date', e.target.value)}
                     />
-                    {getFormErrorMessage('ExpiredDate')}
+                    {getFormErrorMessage('expired_date')}
                 </div>
             </div>
 
             <div className="flex flex-column gap-2">
-                <label htmlFor="PicName">PIC Name</label>
+                <label htmlFor="pic_name">PIC Name</label>
                 <InputText
-                    id="PicName"
-                    value={formik.values.PicName}
-                    onChange={(e) => formik.setFieldValue('PicName', e.target.value)}
-                    className={isFormFieldInvalid('PicName') ? 'p-invalid' : ''}
+                    id="pic_name"
+                    value={formik.values.pic_name}
+                    onChange={(e) => formik.setFieldValue('pic_name', e.target.value)}
+                    className={isFormFieldInvalid('pic_name') ? 'p-invalid' : ''}
                 />
-                {getFormErrorMessage('PicName')}
+                {getFormErrorMessage('pic_name')}
             </div>
 
             <div className="flex justify-content-end gap-2 mt-2">
