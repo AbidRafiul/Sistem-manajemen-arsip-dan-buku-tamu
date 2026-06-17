@@ -10,14 +10,14 @@ const letterDispositionComplete = async (req, res) => {
     const oPayload = req.body || {};
 
     const oValidation = {
-      DispositionId: Joi.number().required(),
-      CompleteNote: Joi.string().allow(null, "").optional(),
-      UpdatedBy: Joi.number().allow(null).optional(),
+      disposition_id: Joi.number().required(),
+      complete_note: Joi.string().allow(null, "").optional(),
+      updated_by: Joi.number().allow(null).optional(),
     };
 
     const oMessage = {
-      "DispositionId.required": "DispositionId wajib diisi",
-      "DispositionId.number": "DispositionId harus berupa angka",
+      "disposition_id.required": "disposition_id wajib diisi",
+      "disposition_id.number": "disposition_id harus berupa angka",
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
@@ -32,7 +32,7 @@ const letterDispositionComplete = async (req, res) => {
     }
 
     const oDisposition = await DB("trs_letter_dispositions")
-      .where("DispositionId", oPayload.DispositionId)
+      .where("disposition_id", oPayload.disposition_id)
       .first();
 
     if (!oDisposition) {
@@ -42,7 +42,7 @@ const letterDispositionComplete = async (req, res) => {
       });
     }
 
-    if (oDisposition.Status === "selesai") {
+    if (oDisposition.status === "selesai") {
       return res.status(400).json({
         status: false,
         message: "Disposisi sudah selesai",
@@ -50,7 +50,7 @@ const letterDispositionComplete = async (req, res) => {
     }
 
     const oLetter = await DB("trs_incoming_letters")
-      .where("IncomingLetterId", oDisposition.IncomingLetterId)
+      .where("incoming_letter_id", oDisposition.incoming_letter_id)
       .first();
 
     if (!oLetter) {
@@ -60,7 +60,7 @@ const letterDispositionComplete = async (req, res) => {
       });
     }
 
-    if (oLetter.Status === "selesai") {
+    if (oLetter.status === "selesai") {
       return res.status(400).json({
         status: false,
         message: "Surat masuk sudah selesai",
@@ -73,67 +73,67 @@ const letterDispositionComplete = async (req, res) => {
 
     await DB.transaction(async (trx) => {
       await trx("trs_letter_dispositions")
-        .where("DispositionId", oPayload.DispositionId)
+        .where("disposition_id", oPayload.disposition_id)
         .update({
-          Status: "selesai",
-          ReceivedAt: oDisposition.ReceivedAt || dNow,
-          ProcessedAt: oDisposition.ProcessedAt || dNow,
-          CompletedAt: dNow,
-          UpdatedBy: oPayload.UpdatedBy || null,
-          UpdatedAt: dNow,
+          status: "selesai",
+          received_at: oDisposition.received_at || dNow,
+          processed_at: oDisposition.processed_at || dNow,
+          completed_at: dNow,
+          updated_by: oPayload.updated_by || null,
+          updated_at: dNow,
         });
 
       await trx("trs_incoming_letter_trackings").insert({
-        IncomingLetterId: oDisposition.IncomingLetterId,
-        DispositionId: oPayload.DispositionId,
-        ActionName: "disposisi_selesai",
-        FromUserId: oDisposition.FromUserId || null,
-        ToUserId: oDisposition.ToUserId || null,
-        PreviousStatus: oLetter.Status,
-        CurrentStatus: "diproses",
-        Notes: oPayload.CompleteNote || "Disposisi telah diselesaikan",
-        ProcessedAt: dNow,
-        CreatedBy: oPayload.UpdatedBy || null,
-        CreatedAt: dNow,
-        UpdatedAt: dNow,
+        incoming_letter_id: oDisposition.incoming_letter_id,
+        disposition_id: oPayload.disposition_id,
+        action_name: "disposisi_selesai",
+        from_user_id: oDisposition.from_user_id || null,
+        to_user_id: oDisposition.to_user_id || null,
+        previous_status: oLetter.status,
+        current_status: "diproses",
+        notes: oPayload.complete_note || "Disposisi telah diselesaikan",
+        processed_at: dNow,
+        created_by: oPayload.updated_by || null,
+        created_at: dNow,
+        updated_at: dNow,
       });
 
       const vaUnfinishedDispositions = await trx("trs_letter_dispositions")
-        .where("IncomingLetterId", oDisposition.IncomingLetterId)
-        .whereNot("Status", "selesai");
+        .where("incoming_letter_id", oDisposition.incoming_letter_id)
+        .whereNot("status", "selesai");
 
       if (vaUnfinishedDispositions.length === 0) {
         bAllDispositionCompleted = true;
 
         await trx("trs_incoming_letters")
-          .where("IncomingLetterId", oDisposition.IncomingLetterId)
+          .where("incoming_letter_id", oDisposition.incoming_letter_id)
           .update({
-            Status: "selesai",
-            UpdatedBy: oPayload.UpdatedBy || null,
-            UpdatedAt: dNow,
+            status: "selesai",
+            updated_by: oPayload.updated_by || null,
+            updated_at: dNow,
           });
 
         await trx("trs_incoming_letter_trackings").insert({
-          IncomingLetterId: oDisposition.IncomingLetterId,
-          DispositionId: oPayload.DispositionId,
-          ActionName: "surat_selesai",
-          FromUserId: oDisposition.FromUserId || null,
-          ToUserId: oDisposition.ToUserId || null,
-          PreviousStatus: oLetter.Status,
-          CurrentStatus: "selesai",
-          Notes: "Semua disposisi selesai, surat masuk dinyatakan selesai",
-          ProcessedAt: dNow,
-          CreatedBy: oPayload.UpdatedBy || null,
-          CreatedAt: dNow,
-          UpdatedAt: dNow,
+          incoming_letter_id: oDisposition.incoming_letter_id,
+          disposition_id: oPayload.disposition_id,
+          action_name: "surat_selesai",
+          from_user_id: oDisposition.from_user_id || null,
+          to_user_id: oDisposition.to_user_id || null,
+          previous_status: oLetter.status,
+          current_status: "selesai",
+          notes: "Semua disposisi selesai, surat masuk dinyatakan selesai",
+          processed_at: dNow,
+          created_by: oPayload.updated_by || null,
+          created_at: dNow,
+          updated_at: dNow,
         });
       } else {
         await trx("trs_incoming_letters")
-          .where("IncomingLetterId", oDisposition.IncomingLetterId)
+          .where("incoming_letter_id", oDisposition.incoming_letter_id)
           .update({
-            Status: "diproses",
-            UpdatedBy: oPayload.UpdatedBy || null,
-            UpdatedAt: dNow,
+            status: "diproses",
+            updated_by: oPayload.updated_by || null,
+            updated_at: dNow,
           });
       }
     });

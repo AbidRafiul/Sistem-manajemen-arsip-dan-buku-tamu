@@ -12,49 +12,49 @@ const incomingLetterData = async (req, res) => {
     const oPayload = req.body || {};
 
     const oQuery = DB("trs_incoming_letters as til")
-      .leftJoin("mst_letter_types as mlt", "til.LetterTypeId", "mlt.LetterTypeId")
+      .leftJoin("mst_letter_types as mlt", "til.letter_type_id", "mlt.letter_type_id")
       .select(
-        "til.IncomingLetterId",
-        "til.AgendaNumber",
-        "til.LetterNumber",
-        "til.LetterDate",
-        "til.ReceivedDate",
-        "til.SenderName",
-        "til.SenderInstitution",
-        "til.Subject",
-        "til.AttachmentDescription",
-        "til.LetterTypeId",
-        "mlt.LetterTypeName",
-        "til.DocumentTypeId",
-        "til.ArchiveClassificationId",
-        "til.ConfidentialityLevelId",
-        "til.Status",
-        "til.CreatedBy",
-        "til.UpdatedBy",
-        "til.CreatedAt",
-        "til.UpdatedAt"
+        "til.incoming_letter_id",
+        "til.agenda_number",
+        "til.letter_number",
+        "til.letter_date",
+        "til.received_date",
+        "til.sender_name",
+        "til.sender_institution",
+        "til.subject",
+        "til.attachment_description",
+        "til.letter_type_id",
+        "mlt.letter_type_name",
+        "til.document_type_id",
+        "til.archive_classification_id",
+        "til.confidentiality_level_id",
+        "til.status",
+        "til.created_by",
+        "til.updated_by",
+        "til.created_at",
+        "til.updated_at"
       )
-      .orderBy("til.CreatedAt", "desc");
+      .orderBy("til.created_at", "desc");
 
-    if (oPayload.Keyword) {
+    if (oPayload.keyword) {
       oQuery.where((oBuilder) => {
         oBuilder
-          .where("til.AgendaNumber", "like", `%${oPayload.Keyword}%`)
-          .orWhere("til.LetterNumber", "like", `%${oPayload.Keyword}%`)
-          .orWhere("til.SenderName", "like", `%${oPayload.Keyword}%`)
-          .orWhere("til.SenderInstitution", "like", `%${oPayload.Keyword}%`)
-          .orWhere("til.Subject", "like", `%${oPayload.Keyword}%`);
+          .where("til.agenda_number", "like", `%${oPayload.keyword}%`)
+          .orWhere("til.letter_number", "like", `%${oPayload.keyword}%`)
+          .orWhere("til.sender_name", "like", `%${oPayload.keyword}%`)
+          .orWhere("til.sender_institution", "like", `%${oPayload.keyword}%`)
+          .orWhere("til.subject", "like", `%${oPayload.keyword}%`);
       });
     }
 
-    if (oPayload.Status) {
-      oQuery.where("til.Status", oPayload.Status);
+    if (oPayload.status) {
+      oQuery.where("til.status", oPayload.status);
     }
 
-    if (oPayload.StartDate && oPayload.EndDate) {
-      oQuery.whereBetween("til.ReceivedDate", [
-        oPayload.StartDate,
-        oPayload.EndDate,
+    if (oPayload.start_date && oPayload.end_date) {
+      oQuery.whereBetween("til.received_date", [
+        oPayload.start_date,
+        oPayload.end_date,
       ]);
     }
 

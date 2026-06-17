@@ -75,7 +75,8 @@ const routeMiddleware = async (searchUrl: string) => {
         return '99';
     }
 
-    const dSessionExp = parse(session?.expires, 'yyyy-MM-dd HH:mm:ss', new Date());
+    // 2. Validasi Waktu Kedaluwarsa Session (Token Lifecycle)
+    const dSessionExp = new Date(session.expires);
     const dNow = new Date();
 
     if ((dNow.getTime() > dSessionExp.getTime())) {
@@ -84,7 +85,7 @@ const routeMiddleware = async (searchUrl: string) => {
 
     if (session.user.uniqueId) {
         try {
-
+            //  STANDARISASI URL: Mengambil base path dari env frontend
             let apiPath = process.env.NEXT_PUBLIC_API_DIR_PATH || '/api/v1';
             
             if (!apiPath.startsWith('http')) {
