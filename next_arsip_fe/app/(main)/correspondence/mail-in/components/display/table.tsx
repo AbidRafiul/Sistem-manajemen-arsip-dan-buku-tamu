@@ -1,17 +1,21 @@
 'use client'
 
+import fileDownload from "@/lib/axios/fileDownload";
+import postData from "@/lib/axios/postData";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
+import { showError } from "@/lib/tools/generalTools";
 import { FilterMatchMode } from "primereact/api";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Divider } from "primereact/divider";
+import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { Tag } from "primereact/tag";
-import { useEffect } from "react";
-import { apiEndpointGet } from "../endpoints";
-import { IncomingLetterStatus, TableData, TableProps } from "../interfaces";
+import { useEffect, useState } from "react";
+import { apiEndpointDetail, apiEndpointFileDownload, apiEndpointGet } from "../endpoints";
+import { IncomingLetterFile, IncomingLetterStatus, TableData, TableProps } from "../interfaces";
 import Form from "./form";
 
 const statusOptions = [
@@ -22,6 +26,12 @@ const statusOptions = [
     { label: "Selesai", value: "selesai" },
 ];
 
+const formatFileSize = (size?: number | null) => {
+    if (!size) return "-";
+    if (size < 1024 * 1024) return `${Math.ceil(size / 1024)} KB`;
+    return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+};
+
 const Table = ({
     state,
     setState,
@@ -29,12 +39,97 @@ const Table = ({
     getData,
     toast
 }: TableProps) => {
+    const [previewFile, setPreviewFile] = useState<{
+        url: string;
+        mimeType: string;
+        fileName: string;
+    } | null>(null);
+
     const buildPayload = () => ({
-        Keyword: state.searchVal || "",
-        Status: state.statusFilter || "",
+        keyword: state.searchVal || "",
+        status: state.statusFilter || "",
     });
 
     const refreshData = () => getData(apiEndpointGet, buildPayload());
+
+    const closePreview = () => {
+        if (previewFile?.url) {
+            window.URL.revokeObjectURL(previewFile.url);
+        }
+
+        setPreviewFile(null);
+    };
+
+    const closeDetail = () => {
+        closePreview();
+        setState((p) => ({ ...p, detail: false, detailData: null }));
+    };
+
+    const openDetail = async (rowData: TableData) => {
+        closePreview();
+        setState((p) => ({ ...p, detail: true, detailLoad: true, detailData: null }));
+
+        try {
+            const res = await postData(apiEndpointDetail, {
+                incoming_letter_id: rowData.IncomingLetterId,
+            });
+
+            setState((p) => ({
+                ...p,
+                detailData: res.data?.data || null,
+            }));
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Detail surat gagal diambil");
+            setState((p) => ({ ...p, detail: false, detailData: null }));
+        } finally {
+            setState((p) => ({ ...p, detailLoad: false }));
+        }
+    };
+
+    const getFileBlob = async (file: IncomingLetterFile) => {
+        return fileDownload(apiEndpointFileDownload, {
+            incoming_letter_file_id: file.incoming_letter_file_id,
+        });
+    };
+
+    const previewUploadedFile = async (file: IncomingLetterFile) => {
+        closePreview();
+
+        try {
+            const res = await getFileBlob(file);
+            const mimeType = file.file_mime_type || res.headers["content-type"] || "application/octet-stream";
+            const blob = new Blob([res.data], { type: mimeType });
+            const url = window.URL.createObjectURL(blob);
+
+            setPreviewFile({
+                url,
+                mimeType,
+                fileName: file.file_name || "file-surat",
+            });
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "File surat gagal dibuka");
+        }
+    };
+
+    const downloadUploadedFile = async (file: IncomingLetterFile) => {
+        try {
+            const res = await getFileBlob(file);
+            const blob = new Blob([res.data], { type: file.file_mime_type || "application/octet-stream" });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = file.file_name || "file-surat";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "File surat gagal didownload");
+        }
+    };
 
     const headerTemplate = (
         <div className="flex flex-wrap align-items-center justify-content-between gap-2">
@@ -78,6 +173,14 @@ const Table = ({
     const actionBodyTemplate = (rowData: TableData) => (
         <div className="flex gap-2">
             <Button
+                icon="pi pi-eye"
+                rounded
+                outlined
+                className="p-button-sm"
+                onClick={() => openDetail(rowData)}
+                tooltip="Detail"
+            />
+            <Button
                 icon="pi pi-pencil"
                 rounded
                 outlined
@@ -93,6 +196,7 @@ const Table = ({
                         SenderInstitution: rowData.SenderInstitution || "",
                         Subject: rowData.Subject,
                         AttachmentDescription: rowData.AttachmentDescription || "",
+                        LetterFile: null,
                         LetterTypeId: rowData.LetterTypeId,
                         DocumentTypeId: rowData.DocumentTypeId,
                         ArchiveClassificationId: rowData.ArchiveClassificationId,
@@ -136,7 +240,19 @@ const Table = ({
 
     useEffect(() => {
         getData(apiEndpointGet);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+        return () => {
+            if (previewFile?.url) {
+                window.URL.revokeObjectURL(previewFile.url);
+            }
+        };
+    }, [previewFile?.url]);
+
+    const detailLetter = state.detailData?.letter || null;
+    const detailFiles = state.detailData?.files || [];
 
     return (
         <>
@@ -218,6 +334,146 @@ const Table = ({
             </div>
 
             <Form getData={getData} toast={toast} state={state} setState={setState} formik={formik} />
+
+            <Dialog
+                header="Detail Surat Masuk"
+                visible={state.detail}
+                modal
+                style={{ width: "72rem", maxWidth: "96vw" }}
+                onHide={closeDetail}
+            >
+                {state.detailLoad ? (
+                    <div className="flex align-items-center gap-2 py-5">
+                        <i className="pi pi-spin pi-spinner" />
+                        <span>Memuat detail surat...</span>
+                    </div>
+                ) : (
+                    <div className="flex flex-column gap-4">
+                        <section>
+                            <div className="flex justify-content-between align-items-start gap-3 mb-3">
+                                <div>
+                                    <h3 className="m-0">{detailLetter?.subject || "-"}</h3>
+                                    <small className="text-color-secondary">{detailLetter?.agenda_number || "-"} / {detailLetter?.letter_number || "-"}</small>
+                                </div>
+                                {detailLetter?.status && statusBodyTemplate({ Status: detailLetter.status } as TableData)}
+                            </div>
+
+                            <div className="grid">
+                                <div className="col-12 md:col-6">
+                                    <small className="text-color-secondary">Nomor Agenda</small>
+                                    <div className="font-semibold">{detailLetter?.agenda_number || "-"}</div>
+                                </div>
+                                <div className="col-12 md:col-6">
+                                    <small className="text-color-secondary">Nomor Surat</small>
+                                    <div className="font-semibold">{detailLetter?.letter_number || "-"}</div>
+                                </div>
+                                <div className="col-12 md:col-6">
+                                    <small className="text-color-secondary">Tanggal Surat</small>
+                                    <div className="font-semibold">{formatDateCalendar(detailLetter?.letter_date) || "-"}</div>
+                                </div>
+                                <div className="col-12 md:col-6">
+                                    <small className="text-color-secondary">Tanggal Diterima</small>
+                                    <div className="font-semibold">{formatDateCalendar(detailLetter?.received_date) || "-"}</div>
+                                </div>
+                                <div className="col-12 md:col-6">
+                                    <small className="text-color-secondary">Pengirim</small>
+                                    <div className="font-semibold">{detailLetter?.sender_name || "-"}</div>
+                                </div>
+                                <div className="col-12 md:col-6">
+                                    <small className="text-color-secondary">Lampiran</small>
+                                    <div className="font-semibold">{detailLetter?.attachment_description || "-"}</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section>
+                            <div className="flex justify-content-between align-items-center mb-3">
+                                <h4 className="m-0">File Surat</h4>
+                                <Tag value={`${detailFiles.length} file`} severity="info" />
+                            </div>
+
+                            {detailFiles.length > 0 ? (
+                                <div className="grid">
+                                    <div className="col-12 lg:col-5">
+                                        <div className="flex flex-column gap-2">
+                                            {detailFiles.map((file) => (
+                                                <div key={file.incoming_letter_file_id} className="surface-50 border-1 border-200 border-round p-3">
+                                                    <div className="flex justify-content-between gap-3">
+                                                        <div>
+                                                            <strong>{file.file_name || "File surat"}</strong>
+                                                            <small className="block text-color-secondary mt-1">
+                                                                {file.file_mime_type || "-"} · {formatFileSize(file.file_size)}
+                                                            </small>
+                                                        </div>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                icon="pi pi-eye"
+                                                                rounded
+                                                                text
+                                                                tooltip="Lihat file"
+                                                                onClick={() => previewUploadedFile(file)}
+                                                            />
+                                                            <Button
+                                                                icon="pi pi-download"
+                                                                rounded
+                                                                text
+                                                                tooltip="Download file"
+                                                                onClick={() => downloadUploadedFile(file)}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="col-12 lg:col-7">
+                                        <div className="surface-50 border-1 border-200 border-round p-3" style={{ minHeight: "26rem" }}>
+                                            {previewFile ? (
+                                                previewFile.mimeType.startsWith("image/") ? (
+                                                    <img
+                                                        src={previewFile.url}
+                                                        alt={previewFile.fileName}
+                                                        className="w-full"
+                                                        style={{ maxHeight: "34rem", objectFit: "contain" }}
+                                                    />
+                                                ) : previewFile.mimeType === "application/pdf" ? (
+                                                    <iframe
+                                                        src={previewFile.url}
+                                                        title={previewFile.fileName}
+                                                        className="w-full border-none"
+                                                        style={{ minHeight: "34rem" }}
+                                                    />
+                                                ) : (
+                                                    <div className="flex flex-column align-items-center justify-content-center text-center gap-3" style={{ minHeight: "24rem" }}>
+                                                        <i className="pi pi-file text-5xl text-color-secondary" />
+                                                        <div>
+                                                            <strong>{previewFile.fileName}</strong>
+                                                            <p className="m-0 mt-2 text-color-secondary">File ini tidak bisa dipreview langsung. Gunakan tombol download.</p>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            ) : (
+                                                <div className="flex flex-column align-items-center justify-content-center text-center gap-3" style={{ minHeight: "24rem" }}>
+                                                    <i className="pi pi-file-pdf text-5xl text-color-secondary" />
+                                                    <div>
+                                                        <strong>Pilih file untuk preview</strong>
+                                                        <p className="m-0 mt-2 text-color-secondary">PDF dan gambar akan tampil di panel ini.</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="surface-50 border-1 border-200 border-round p-4 text-center text-color-secondary">
+                                    Belum ada file surat yang diupload.
+                                </div>
+                            )}
+                        </section>
+
+                    </div>
+                )}
+            </Dialog>
         </>
     );
 };

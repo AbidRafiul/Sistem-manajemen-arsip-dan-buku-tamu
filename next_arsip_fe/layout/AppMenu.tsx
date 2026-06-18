@@ -18,9 +18,26 @@ interface MenuState {
 }
 
 const mailInMenu: AppMenuItem = {
-    label: 'Mail In',
+    label: 'Surat Masuk',
     icon: 'pi pi-inbox',
-    to: '/correspondence/mail-in'
+    to: '/correspondence/mail-in',
+    items: [
+        {
+            label: 'Rekap Surat Masuk',
+            icon: 'pi pi-th-large',
+            to: '/correspondence/mail-in'
+        },
+        {
+            label: 'Data Surat Masuk',
+            icon: 'pi pi-envelope',
+            to: '/correspondence/mail-in/data'
+        },
+        {
+            label: 'Disposisi Surat',
+            icon: 'pi pi-send',
+            to: '/correspondence/mail-in/disposition'
+        },
+    ]
 };
 
 const archiveDocumentItems: AppMenuItem[] = [
@@ -85,16 +102,31 @@ const ensureArchiveDocumentMenu = (menu: AppMenuItem[]) => {
 };
 
 const ensureCorrespondenceMenu = (menu: AppMenuItem[]) => {
-    const hasMailIn = (items: AppMenuItem[] = []): boolean => {
-        return items.some((item) => item.to === mailInMenu.to || hasMailIn(item.items || []));
-    };
+    const cleanMailInItems = (items: AppMenuItem[] = []): AppMenuItem[] => {
+        return items
+            .filter((item) => {
+                const label = item.label?.toLowerCase();
+                const path = item.to || '';
+                return label !== 'mail in' && !path.startsWith('/correspondence/mail-in');
+            })
+            .map((item) => {
+                const childItems = cleanMailInItems(item.items || []);
+                const nextItem = { ...item };
 
-    if (hasMailIn(menu)) return menu;
+                if (childItems.length > 0) {
+                    nextItem.items = childItems;
+                } else {
+                    delete nextItem.items;
+                }
+
+                return nextItem;
+            });
+    };
 
     const correspondence = menu.find((item) => item.label?.toLowerCase() === 'correspondence');
 
     if (correspondence) {
-        correspondence.items = [...(correspondence.items || []), mailInMenu];
+        correspondence.items = [...cleanMailInItems(correspondence.items || []), mailInMenu];
         return menu;
     }
 
