@@ -7,7 +7,7 @@ import { InputText } from "primereact/inputtext";
 import { Tag } from "primereact/tag";
 import { Dialog } from "primereact/dialog";
 import { Divider } from "primereact/divider";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { DocumentData, LoanData, TableProps, VersionData } from "../interfaces";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
 import Form from "./form";
@@ -19,8 +19,15 @@ const Table = ({
     getDocuments,
     getDocumentDetail,
     deleteDocuments,
+    uploadVersion,
+    downloadVersion,
+    rollbackVersion,
+    approveVersion,
     toast
 }: TableProps) => {
+
+    const [newVersionFile, setNewVersionFile] = useState<File | null>(null);
+    const [changeNotes, setChangeNotes] = useState('');
 
     const formatDateInput = (value?: string) => {
         if (!value) return '';
@@ -48,8 +55,8 @@ const Table = ({
 
     const statusTemplate = (rowData: DocumentData) => (
         <Tag
-            value={rowData.Status}
-            severity={rowData.Status === 'active' ? 'success' : 'danger'}
+            value={rowData.status}
+            severity={rowData.status === 'active' ? 'success' : 'danger'}
             style={{ minWidth: "75px", justifyContent: "center" }}
         />
     );
@@ -63,7 +70,7 @@ const Table = ({
                 className="p-button-sm"
                 tooltip="Detail"
                 loading={state.detailLoad}
-                onClick={() => getDocumentDetail(rowData.DocumentId)}
+                onClick={() => getDocumentDetail(rowData.document_id)}
             />
             <Button
                 icon="pi pi-pencil"
@@ -73,12 +80,12 @@ const Table = ({
                 tooltip="Edit"
                 onClick={() => {
                     formik.setValues({
-                        DocumentId: rowData.DocumentId,
-                        DocumentName: rowData.DocumentName,
-                        DocumentNumber: rowData.DocumentNumber,
-                        DocumentDate: formatDateInput(rowData.DocumentDate),
-                        ExpiredDate: formatDateInput(rowData.ExpiredDate),
-                        PicName: rowData.PicName,
+                        document_id: rowData.document_id,
+                        document_name: rowData.document_name,
+                        document_number: rowData.document_number,
+                        document_date: formatDateInput(rowData.document_date),
+                        expired_date: formatDateInput(rowData.expired_date),
+                        pic_name: rowData.pic_name,
                     });
                     setState((p) => ({ ...p, add: false, edit: true, delete: false, selectedDocuments: [rowData] }));
                 }}
@@ -114,6 +121,83 @@ const Table = ({
             />
         </div>
     );
+
+    const highestVersionNumber = Math.max(...(state.detailData?.versions || []).map(v => v.version_number), 0);
+    const isAdmin = state.session?.user?.role === 'superadmin' || state.session?.user?.role === 'Administrator' || state.session?.user?.role === 'admin';
+
+    const versionStatusTemplate = (rowData: VersionData) => {
+        const status = rowData.approval_status || 'pending';
+        let severity: 'success' | 'danger' | 'warning' | 'info' = 'warning';
+        if (status === 'approved') severity = 'success';
+        if (status === 'rejected') severity = 'danger';
+        return <Tag value={status} severity={severity} />;
+    };
+
+    const versionActionTemplate = (rowData: VersionData) => {
+        const isLatest = rowData.version_number === highestVersionNumber;
+        const status = rowData.approval_status || 'pending';
+
+        return (
+            <div className="flex gap-2">
+                <Button
+                    icon="pi pi-download"
+                    rounded
+                    outlined
+                    severity="secondary"
+                    className="p-button-sm"
+                    tooltip="Download File"
+                    onClick={() => {
+                        const parts = rowData.file_path.split('.');
+                        const ext = parts.length > 1 ? parts.pop() : 'pdf';
+                        const fileName = `${state.detailData?.document?.document_number || 'doc'}_V${rowData.version_number}.${ext}`;
+                        downloadVersion(rowData.version_id, fileName);
+                    }}
+                />
+                {status === 'approved' && !isLatest && (
+                    <Button
+                        icon="pi pi-replay"
+                        rounded
+                        outlined
+                        severity="warning"
+                        className="p-button-sm"
+                        tooltip="Rollback to this version"
+                        onClick={() => {
+                            if (confirm(`Apakah Anda yakin ingin melakukan rollback ke V${rowData.version_number}?`)) {
+                                rollbackVersion(rowData.document_id, rowData.version_id);
+                            }
+                        }}
+                    />
+                )}
+                {status === 'pending' && isAdmin && (
+                    <>
+                        <Button
+                            icon="pi pi-check"
+                            rounded
+                            outlined
+                            severity="success"
+                            className="p-button-sm"
+                            tooltip="Approve Version"
+                            onClick={() => approveVersion(rowData.version_id, 'approved')}
+                        />
+                        <Button
+                            icon="pi pi-times"
+                            rounded
+                            outlined
+                            severity="danger"
+                            className="p-button-sm"
+                            tooltip="Reject Version"
+                            onClick={() => {
+                                const notes = prompt('Masukkan alasan penolakan:');
+                                if (notes !== null) {
+                                    approveVersion(rowData.version_id, 'rejected', notes);
+                                }
+                            }}
+                        />
+                    </>
+                )}
+            </div>
+        );
+    };
 
     useEffect(() => {
         getDocuments();
@@ -166,20 +250,20 @@ const Table = ({
                 onSelectionChange={(e) => setState((p) => ({ ...p, selectedDocuments: e.value }))}
                 rows={10}
                 header={headerTemplate}
-                globalFilterFields={['DocumentName', 'DocumentNumber', 'PicName', 'Status']}
+                globalFilterFields={['document_name', 'document_number', 'pic_name', 'status']}
                 filters={state.filters}
                 loading={state.load}
-                dataKey="DocumentId"
+                dataKey="document_id"
                 emptyMessage="Data Kosong"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data"
             >
                 <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
-                <Column field="DocumentNumber" header="Document Number" sortable />
-                <Column field="DocumentName" header="Document Name" sortable />
-                <Column field="PicName" header="PIC" sortable />
-                <Column field="DocumentDate" header="Document Date" sortable body={rowData => formatDateCalendar(rowData.DocumentDate)} />
-                <Column field="ExpiredDate" header="Expired Date" sortable body={rowData => formatDateCalendar(rowData.ExpiredDate)} />
+                <Column field="document_number" header="Document Number" sortable />
+                <Column field="document_name" header="Document Name" sortable />
+                <Column field="pic_name" header="PIC" sortable />
+                <Column field="document_date" header="Document Date" sortable body={rowData => formatDateCalendar(rowData.document_date)} />
+                <Column field="expired_date" header="Expired Date" sortable body={rowData => formatDateCalendar(rowData.expired_date)} />
                 <Column body={statusTemplate} header="Status" />
                 <Column headerStyle={{ textAlign: 'center' }} header="Action" body={actionTemplate} />
             </DataTable>
@@ -191,34 +275,77 @@ const Table = ({
             visible={state.detail}
             header="Document Detail"
             modal
-            style={{ width: '70rem', maxWidth: '95vw' }}
-            onHide={() => setState(p => ({ ...p, detail: false, detailData: null }))}
+            style={{ width: '75rem', maxWidth: '95vw' }}
+            onHide={() => {
+                setState(p => ({ ...p, detail: false, detailData: null }));
+                setNewVersionFile(null);
+                setChangeNotes('');
+            }}
         >
             <div className="flex flex-column gap-4">
                 <div className="grid">
                     <div className="col-12 md:col-6">
                         <div className="text-color-secondary mb-1">Document Number</div>
-                        <div className="font-semibold">{state.detailData?.document?.DocumentNumber || '-'}</div>
+                        <div className="font-semibold">{state.detailData?.document?.document_number || '-'}</div>
                     </div>
                     <div className="col-12 md:col-6">
                         <div className="text-color-secondary mb-1">Document Name</div>
-                        <div className="font-semibold">{state.detailData?.document?.DocumentName || '-'}</div>
+                        <div className="font-semibold">{state.detailData?.document?.document_name || '-'}</div>
                     </div>
                     <div className="col-12 md:col-4">
                         <div className="text-color-secondary mb-1">PIC</div>
-                        <div>{state.detailData?.document?.PicName || '-'}</div>
+                        <div>{state.detailData?.document?.pic_name || '-'}</div>
                     </div>
                     <div className="col-12 md:col-4">
                         <div className="text-color-secondary mb-1">Document Date</div>
-                        <div>{state.detailData?.document?.DocumentDate ? formatDateCalendar(state.detailData.document.DocumentDate) : '-'}</div>
+                        <div>{state.detailData?.document?.document_date ? formatDateCalendar(state.detailData.document.document_date) : '-'}</div>
                     </div>
                     <div className="col-12 md:col-4">
                         <div className="text-color-secondary mb-1">Expired Date</div>
-                        <div>{state.detailData?.document?.ExpiredDate ? formatDateCalendar(state.detailData.document.ExpiredDate) : '-'}</div>
+                        <div>{state.detailData?.document?.expired_date ? formatDateCalendar(state.detailData.document.expired_date) : '-'}</div>
                     </div>
                 </div>
 
                 <Divider />
+
+                {/* Upload New Version Section */}
+                <div className="card border-1 border-dashed surface-border p-4 flex flex-column gap-3">
+                    <div className="font-semibold text-lg mb-1">Upload New Version</div>
+                    <div className="flex flex-column md:flex-row gap-3 align-items-end">
+                        <div className="flex-1 w-full">
+                            <label className="block text-color-secondary mb-1 text-sm font-semibold">Select File</label>
+                            <input 
+                                type="file" 
+                                className="p-inputtext w-full text-sm" 
+                                onChange={(e) => setNewVersionFile(e.target.files?.[0] || null)}
+                            />
+                        </div>
+                        <div className="flex-2 w-full">
+                            <label className="block text-color-secondary mb-1 text-sm font-semibold">Change Notes</label>
+                            <InputText 
+                                className="w-full text-sm" 
+                                placeholder="E.g., Update content, Fix typos..."
+                                value={changeNotes}
+                                onChange={(e) => setChangeNotes(e.target.value)}
+                            />
+                        </div>
+                        <div className="align-self-end mt-2 md:mt-0">
+                            <Button 
+                                label="Upload" 
+                                icon="pi pi-upload" 
+                                size="small"
+                                disabled={!newVersionFile || !changeNotes.trim() || state.load}
+                                onClick={async () => {
+                                    if (state.detailData?.document?.document_id && newVersionFile) {
+                                        await uploadVersion(state.detailData.document.document_id, changeNotes, newVersionFile);
+                                        setNewVersionFile(null);
+                                        setChangeNotes('');
+                                    }
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
 
                 <DataTable
                     value={state.detailData?.versions || []}
@@ -227,10 +354,12 @@ const Table = ({
                     paginator
                     emptyMessage="Belum ada versi dokumen"
                 >
-                    <Column field="VersionNumber" header="Version" sortable />
-                    <Column field="ChangeNotes" header="Change Notes" />
-                    <Column field="FilePath" header="File Path" />
-                    <Column field="CreatedAt" header="Created At" body={(rowData: VersionData) => formatDateCalendar(rowData.CreatedAt)} />
+                    <Column field="version_number" header="Version" sortable />
+                    <Column field="change_notes" header="Change Notes" />
+                    <Column field="uploaded_by" header="Uploaded By" body={rowData => rowData.uploaded_by || '-'} />
+                    <Column field="approval_status" header="Status" body={versionStatusTemplate} />
+                    <Column field="created_at" header="Created At" body={(rowData: VersionData) => formatDateCalendar(rowData.created_at)} />
+                    <Column header="Action" body={versionActionTemplate} style={{ width: '12rem' }} />
                 </DataTable>
 
                 <DataTable
@@ -240,11 +369,11 @@ const Table = ({
                     paginator
                     emptyMessage="Belum ada riwayat peminjaman"
                 >
-                    <Column field="BorrowerName" header="Borrower" sortable />
-                    <Column field="LoanDate" header="Loan Date" body={(rowData: LoanData) => formatDateCalendar(rowData.LoanDate)} />
-                    <Column field="ReturnDate" header="Return Date" body={(rowData: LoanData) => rowData.ReturnDate ? formatDateCalendar(rowData.ReturnDate) : '-'} />
-                    <Column field="Purpose" header="Purpose" />
-                    <Column field="Status" header="Status" body={(rowData: LoanData) => <Tag value={rowData.Status} severity={rowData.Status === 'approved' ? 'success' : rowData.Status === 'rejected' ? 'danger' : 'warning'} />} />
+                    <Column field="borrower_name" header="Borrower" sortable />
+                    <Column field="loan_date" header="Loan Date" body={(rowData: LoanData) => formatDateCalendar(rowData.loan_date)} />
+                    <Column field="return_date" header="Return Date" body={(rowData: LoanData) => rowData.return_date ? formatDateCalendar(rowData.return_date) : '-'} />
+                    <Column field="purpose" header="Purpose" />
+                    <Column field="status" header="Status" body={(rowData: LoanData) => <Tag value={rowData.status} severity={rowData.status === 'approved' ? 'success' : rowData.status === 'rejected' ? 'danger' : 'warning'} />} />
                 </DataTable>
             </div>
         </Dialog>
@@ -266,7 +395,7 @@ const Table = ({
                     <p className="text-color-secondary">
                         {state.selectedDocuments.length > 1
                             ? `Dokumen yang dipilih akan dinonaktifkan.`
-                            : `Dokumen ${state.selectedDocuments[0]?.DocumentNumber || ""} akan dinonaktifkan.`}
+                            : `Dokumen ${state.selectedDocuments[0]?.document_number || ""} akan dinonaktifkan.`}
                     </p>
                 </div>
             </div>

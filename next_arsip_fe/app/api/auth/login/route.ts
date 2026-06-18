@@ -78,7 +78,7 @@ export const POST = async (req: NextRequest) => {
                 credential: dataResponse.credential
             };
 
-            return NextResponse.json(
+            const response = NextResponse.json(
                 {
                     status: '00',
                     message: 'Login Berhasil',
@@ -87,6 +87,35 @@ export const POST = async (req: NextRequest) => {
                 },
                 { status: 200 }
             );
+
+            const maxAge = credentials?.remember_me === '1' ? 60 * 60 * 24 : 60 * 60 * 7;
+            const secret = new TextEncoder().encode(process.env.USER_KEY!);
+            const payload = {
+                uid: userData.uniqueId,
+                name: userData.name,
+            };
+            const token = await new SignJWT(payload)
+                .setProtectedHeader({ alg: "HS512" })
+                .setExpirationTime(credentials?.remember_me === '1' ? "1d" : "7h")
+                .sign(secret);
+
+            response.cookies.set('_A2F', dataResponse.credential, {
+                httpOnly: false,
+                secure: false,
+                sameSite: 'lax',
+                path: '/',
+                maxAge,
+            });
+
+            response.cookies.set('_A2R', token, {
+                httpOnly: false,
+                secure: false,
+                sameSite: 'lax',
+                path: '/',
+                maxAge,
+            });
+
+            return response;
 
         }
 

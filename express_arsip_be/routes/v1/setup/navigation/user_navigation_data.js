@@ -11,6 +11,7 @@ import {
 import { Logging, validatePayload } from "../../components/tools/servertool.js";
 import Joi from "joi";
 import DB from "../../../../core/config/knex.js";
+import { getNavigationMenu } from "./navigation_helper.js";
 
 const router = express.Router();
 
@@ -56,13 +57,9 @@ router.post("/", async (req, res) => {
 
 
 
-        const oNavigation = await DB('user_navigation')
-            .select('Menu as menu')
-            .where('UniqueId', oPayload.UniqueId)
-            .first();
+        const { menu: vaData, source } = await getNavigationMenu(DB, oPayload.UniqueId);
 
-
-        if (!oNavigation || !oNavigation?.menu) {
+        if (!Array.isArray(vaData) || vaData.length < 1) {
             return res.status(400).json({
                 status: status.GAGAL,
                 message: "Data navigasi tidak ditemukan",
@@ -70,13 +67,12 @@ router.post("/", async (req, res) => {
             })
         }
 
-        const vaData = JSON.parse(oNavigation.menu)
-
         return res.status(200).json({
             status: status.SUKSES,
             message: "Data ditemukan",
             datetime: formatDateSystem(),
-            data: vaData
+            data: vaData,
+            source
         })
 
     } catch (error) {

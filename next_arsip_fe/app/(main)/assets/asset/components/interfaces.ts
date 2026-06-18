@@ -3,7 +3,10 @@ import { FormikProps } from "formik"
 import { Session } from "next-auth";
 import { Toast } from "primereact/toast";
 import { RefObject } from "react";
-import { TableData as TableDataDivision } from '../../../setup/division/components/interfaces'
+export interface TableDataDivision {
+    Code: string;
+    Name: string;
+}
 import { TableData as TableDataCategory } from '../../../assets/asset_categories/components/interfaces'
 export interface initValue {
     Code: string

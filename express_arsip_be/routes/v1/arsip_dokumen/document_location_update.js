@@ -5,22 +5,22 @@ const updateDocumentLocation = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const nDocumentId = oPayload.DocumentId;
-    const cPhysicalLocation = oPayload.PhysicalLocation;
+    const nDocumentId = oPayload.document_id;
+    const cPhysicalLocation = oPayload.physical_location;
     const dNow = new Date();
 
     if (!nDocumentId) {
       const oResult = {
         status: "error",
-        message: "DocumentId wajib diisi",
+        message: "document_id wajib diisi",
       };
       return res.status(422).json(oResult);
     }
 
     // PhysicalLocation boleh kosong (untuk clear lokasi)
     const oDocument = await DB("trx_documents")
-      .where("DocumentId", nDocumentId)
-      .where("Status", "active")
+      .where("document_id", nDocumentId)
+      .where("status", "active")
       .first();
 
     if (!oDocument) {
@@ -32,22 +32,22 @@ const updateDocumentLocation = async (req, res) => {
     }
 
     const oData = {
-      PhysicalLocation: cPhysicalLocation || null,
-      UpdatedAt: dNow,
+      physical_location: cPhysicalLocation || null,
+      updated_at: dNow,
     };
 
     await DB("trx_documents")
-      .where("DocumentId", nDocumentId)
+      .where("document_id", nDocumentId)
       .update(oData);
 
     const oResult = {
       status: "success",
       message: "Lokasi fisik dokumen berhasil diperbarui",
       data: {
-        DocumentId: nDocumentId,
-        DocumentNumber: oDocument.DocumentNumber,
-        DocumentName: oDocument.DocumentName,
-        OldLocation: oDocument.PhysicalLocation,
+        document_id: nDocumentId,
+        document_number: oDocument.document_number,
+        document_name: oDocument.document_name,
+        old_location: oDocument.physical_location,
         ...oData,
       },
     };

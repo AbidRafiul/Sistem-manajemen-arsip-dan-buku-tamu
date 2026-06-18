@@ -17,9 +17,9 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        ClassificationCode: Joi.string().max(45).required().label("Kode Klasifikasi"),
-        ClassificationName: Joi.string().max(45).required().label("Nama Klasifikasi"),
-        Description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
+        classification_code: Joi.string().max(45).required().label("Kode Klasifikasi"),
+        classification_name: Joi.string().max(45).required().label("Nama Klasifikasi"),
+        description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
       },
       { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
       oPayload
@@ -33,12 +33,12 @@ router.post("/", async (req, res) => {
 
     const dNow = new Date();
     await DB("mst_archive_classifications").insert({
-      ClassificationCode: oPayload.ClassificationCode,
-      ClassificationName: oPayload.ClassificationName,
-      Description: oPayload.Description || null,
-      Status: "active",
-      CreatedAt: dNow,
-      UpdatedAt: dNow,
+      classification_code: oPayload.classification_code,
+      classification_name: oPayload.classification_name,
+      description: oPayload.description || null,
+      status: "active",
+      created_at: dNow,
+      updated_at: dNow,
     });
 
     return res.status(201).json({ status: status.SUKSES, message: "Berhasil ditambahkan!", datetime: formatDateSystem() });

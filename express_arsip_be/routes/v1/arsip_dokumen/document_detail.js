@@ -5,12 +5,12 @@ const getDocumentDetail = async (req, res) => {
   const oQuery = req.query;
 
   try {
-    const nDocumentId = oQuery.DocumentId;
+    const nDocumentId = oQuery.document_id;
 
     if (!nDocumentId) {
       const oResult = {
         status: "error",
-        message: "DocumentId wajib diisi",
+        message: "document_id wajib diisi",
       };
       return res.status(422).json(oResult);
     }
@@ -18,40 +18,40 @@ const getDocumentDetail = async (req, res) => {
     // Ambil data dokumen + join ke semua master
     const oDocument = await DB("trx_documents as d")
       .select(
-        "d.DocumentId",
-        "d.DocumentName",
-        "d.DocumentNumber",
-        "d.DocumentDate",
-        "d.ExpiredDate",
-        "d.PicName",
-        "d.PhysicalLocation",
-        "d.QRCode",
-        "d.Tags",
-        "d.Status",
-        "d.CreatedAt",
-        "d.UpdatedAt",
+        "d.document_id",
+        "d.document_name",
+        "d.document_number",
+        "d.document_date",
+        "d.expired_date",
+        "d.pic_name",
+        "d.physical_location",
+        "d.qr_code",
+        "d.tags",
+        "d.status",
+        "d.created_at",
+        "d.updated_at",
         // Master data
-        "dt.DocumentTypeId",
-        "dt.DocumentTypeName",
-        "dc.DocumentCategoryId",
-        "dc.DocumentCategoryName",
-        "ac.ArchiveClassificationId",
-        "ac.ClassificationCode",
-        "ac.ClassificationName",
-        "cl.ConfidentialityLevelId",
-        "cl.ConfidentialityLevelName",
-        "cl.ConfidentialityLevel",
-        "rs.RetentionScheduleId",
-        "rs.RetentionName",
-        "rs.RetentionYears",
-        "rs.RetentionAction"
+        "dt.document_type_id",
+        "dt.document_type_name",
+        "dc.document_category_id",
+        "dc.document_category_name",
+        "ac.archive_classification_id",
+        "ac.classification_code",
+        "ac.classification_name",
+        "cl.confidentiality_level_id",
+        "cl.confidentiality_level_name",
+        "cl.confidentiality_level",
+        "rs.retention_schedule_id",
+        "rs.retention_name",
+        "rs.retention_years",
+        "rs.retention_action"
       )
-      .leftJoin("mst_document_type as dt", "d.DocumentTypeId", "dt.DocumentTypeId")
-      .leftJoin("mst_document_categories as dc", "d.DocumentCategoryId", "dc.DocumentCategoryId")
-      .leftJoin("mst_archive_classifications as ac", "d.ArchiveClassificationId", "ac.ArchiveClassificationId")
-      .leftJoin("mst_confidentiality_levels as cl", "d.ConfidentialityLevelId", "cl.ConfidentialityLevelId")
-      .leftJoin("mst_retention_schedule as rs", "d.RetentionScheduleId", "rs.RetentionScheduleId")
-      .where("d.DocumentId", nDocumentId)
+      .leftJoin("mst_document_type as dt", "d.document_type_id", "dt.document_type_id")
+      .leftJoin("mst_document_categories as dc", "d.document_category_id", "dc.document_category_id")
+      .leftJoin("mst_archive_classifications as ac", "d.archive_classification_id", "ac.archive_classification_id")
+      .leftJoin("mst_confidentiality_levels as cl", "d.confidentiality_level_id", "cl.confidentiality_level_id")
+      .leftJoin("mst_retention_schedule as rs", "d.retention_schedule_id", "rs.retention_schedule_id")
+      .where("d.document_id", nDocumentId)
       .first();
 
     if (!oDocument) {
@@ -65,57 +65,57 @@ const getDocumentDetail = async (req, res) => {
     // Ambil semua versi dokumen (terbaru dulu), beserta info approval
     const vaVersions = await DB("trx_document_versions")
       .select(
-        "VersionId",
-        "DocumentId",
-        "VersionNumber",
-        "ChangeNotes",
-        "FilePath",
-        "UploadedBy",
-        "ApprovalStatus",
-        "ApprovedBy",
-        "ApprovedAt",
-        "ApprovalNotes",
-        "CreatedAt",
-        "UpdatedAt"
+        "version_id",
+        "document_id",
+        "version_number",
+        "change_notes",
+        "file_path",
+        "uploaded_by",
+        "approval_status",
+        "approved_by",
+        "approved_at",
+        "approval_notes",
+        "created_at",
+        "updated_at"
       )
-      .where("DocumentId", nDocumentId)
-      .orderBy("VersionNumber", "desc");
+      .where("document_id", nDocumentId)
+      .orderBy("version_number", "desc");
 
     // Ambil riwayat peminjaman (terbaru dulu)
     const vaLoans = await DB("trx_archive_loans")
       .select(
-        "LoanId",
-        "DocumentId",
-        "BorrowerName",
-        "LoanDate",
-        "ExpectedReturnDate",
-        "ReturnDate",
-        "Purpose",
-        "Status",
-        "ApprovedBy",
-        "ApprovedAt",
-        "ApprovalNotes",
-        "IsOverdue",
-        "CreatedAt",
-        "UpdatedAt"
+        "loan_id",
+        "document_id",
+        "borrower_name",
+        "loan_date",
+        "expected_return_date",
+        "return_date",
+        "purpose",
+        "status",
+        "approved_by",
+        "approved_at",
+        "approval_notes",
+        "is_overdue",
+        "created_at",
+        "updated_at"
       )
-      .where("DocumentId", nDocumentId)
-      .orderBy("LoanId", "desc");
+      .where("document_id", nDocumentId)
+      .orderBy("loan_id", "desc");
 
     // Cek apakah ada proposal pemusnahan aktif
     const oDestructionProposal = await DB("trx_destruction_proposals")
       .select(
-        "ProposalId",
-        "Status",
-        "ProposedBy",
-        "ProposedAt",
-        "ReviewedBy",
-        "ReviewedAt",
-        "ReviewNotes"
+        "proposal_id",
+        "status",
+        "proposed_by",
+        "proposed_at",
+        "reviewed_by",
+        "reviewed_at",
+        "review_notes"
       )
-      .where("DocumentId", nDocumentId)
-      .whereNotIn("Status", ["rejected", "executed"])
-      .orderBy("ProposalId", "desc")
+      .where("document_id", nDocumentId)
+      .whereNotIn("status", ["rejected", "executed"])
+      .orderBy("proposal_id", "desc")
       .first();
 
     const oResult = {

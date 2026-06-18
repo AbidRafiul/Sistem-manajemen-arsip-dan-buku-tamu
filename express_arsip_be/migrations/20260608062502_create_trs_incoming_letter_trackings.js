@@ -2,47 +2,46 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-
 export async function up(knex) {
-  await knex.schema.createTable("trs_incoming_letter_trackings", (table) => {
-    table.bigIncrements("IncomingLetterTrackingId").primary();
+  await knex.schema.createTable("trx_incoming_letter_trackings", (table) => {
+    table.bigIncrements("incoming_letter_tracking_id").primary();
 
-    table.bigInteger("IncomingLetterId").unsigned().notNullable();
-    table.bigInteger("DispositionId").unsigned().nullable();
+    table.bigInteger("incoming_letter_id").unsigned().notNullable();
+    table.bigInteger("disposition_id").unsigned().nullable();
 
-    table.string("ActionName", 100).notNullable();
+    table.string("action_name", 100).notNullable();
 
-    table.integer("FromUserId").unsigned().nullable();
-    table.integer("ToUserId").unsigned().nullable();
+    table.integer("from_user_id").unsigned().nullable();
+    table.integer("to_user_id").unsigned().nullable();
 
-    table.string("PreviousStatus", 50).nullable();
-    table.string("CurrentStatus", 50).notNullable();
+    table.string("previous_status", 50).nullable();
+    table.string("current_status", 50).notNullable();
 
-    table.text("Notes").nullable();
-    table.dateTime("ProcessedAt").notNullable();
+    table.text("notes").nullable();
+    table.dateTime("processed_at").notNullable();
 
-    table.integer("CreatedBy").unsigned().nullable();
+    table.integer("created_by").unsigned().nullable();
 
-    table.dateTime("CreatedAt").notNullable().defaultTo(knex.fn.now());
-    table.dateTime("UpdatedAt").notNullable().defaultTo(knex.fn.now());
+    table.dateTime("created_at").notNullable().defaultTo(knex.fn.now());
+    table.dateTime("updated_at").notNullable().defaultTo(knex.fn.now());
 
     table
-      .foreign("IncomingLetterId")
-      .references("IncomingLetterId")
-      .inTable("trs_incoming_letters")
+      .foreign("incoming_letter_id")
+      .references("incoming_letter_id")
+      .inTable("trx_incoming_letters")
       .onDelete("CASCADE");
 
     table
-      .foreign("DispositionId")
-      .references("DispositionId")
-      .inTable("trs_letter_dispositions");
+      .foreign("disposition_id")
+      .references("disposition_id")
+      .inTable("trx_letter_dispositions");
 
-    table.foreign("FromUserId").references("UserId").inTable("mst_users");
-    table.foreign("ToUserId").references("UserId").inTable("mst_users");
-    table.foreign("CreatedBy").references("UserId").inTable("mst_users");
+    table.foreign("from_user_id").references("UserId").inTable("mst_users");
+    table.foreign("to_user_id").references("UserId").inTable("mst_users");
+    table.foreign("created_by").references("UserId").inTable("mst_users");
   });
 }
 
 export async function down(knex) {
-  await knex.schema.dropTableIfExists("trs_incoming_letter_trackings");
+  await knex.schema.dropTableIfExists("trx_incoming_letter_trackings");
 }

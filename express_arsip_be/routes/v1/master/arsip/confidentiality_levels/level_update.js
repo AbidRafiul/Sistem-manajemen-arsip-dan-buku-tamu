@@ -22,10 +22,10 @@ router.put("/:ConfidentialityLevelId", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        ConfidentialityLevelCode: Joi.string().max(45).required().label("Kode Kerahasiaan"),
-        ConfidentialityLevelName: Joi.string().max(100).required().label("Nama Kerahasiaan"),
-        ConfidentialityLevel: Joi.number().required().label("Level (Angka)"),
-        Description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
+        confidentiality_level_code: Joi.string().max(45).required().label("Kode Kerahasiaan"),
+        confidentiality_level_name: Joi.string().max(100).required().label("Nama Kerahasiaan"),
+        confidentiality_level: Joi.number().required().label("Level (Angka)"),
+        description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
@@ -53,13 +53,13 @@ router.put("/:ConfidentialityLevelId", async (req, res) => {
     }
 
     const nUpdated = await DB("mst_confidentiality_levels")
-      .where("ConfidentialityLevelId", cConfidentialityLevelId)
+      .where("confidentiality_level_id", cConfidentialityLevelId)
       .update({
-        ConfidentialityLevelCode: oPayload.ConfidentialityLevelCode,
-        ConfidentialityLevelName: oPayload.ConfidentialityLevelName,
-        ConfidentialityLevel: oPayload.ConfidentialityLevel,
-        Description: oPayload.Description || null,
-        UpdatedAt: new Date(),
+        confidentiality_level_code: oPayload.confidentiality_level_code,
+        confidentiality_level_name: oPayload.confidentiality_level_name,
+        confidentiality_level: oPayload.confidentiality_level,
+        description: oPayload.description || null,
+        updated_at: new Date(),
       });
 
     if (!nUpdated) {

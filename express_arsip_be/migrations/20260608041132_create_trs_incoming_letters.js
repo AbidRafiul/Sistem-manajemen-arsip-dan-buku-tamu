@@ -3,69 +3,48 @@
  * @returns { Promise<void> }
  */
 export async function up(knex) {
-  await knex.schema.dropTableIfExists("trs_incoming_letters");
-  await knex.schema.createTable("trs_incoming_letters", (table) => {
-    // 1. Tambahkan standar charset dan collation
-    table.charset("utf8mb4");
-    table.collate("utf8mb4_unicode_ci");
+  await knex.schema.createTable("trx_incoming_letters", (table) => {
+    table.bigIncrements("incoming_letter_id").primary();
 
-    table.bigIncrements("IncomingLetterId").primary();
+    table.string("agenda_number", 100).notNullable().unique();
+    table.string("letter_number", 100).notNullable();
+    table.date("letter_date").notNullable();
+    table.date("received_date").notNullable();
 
-    table.string("AgendaNumber", 100).notNullable().unique();
-    table.string("LetterNumber", 100).notNullable();
-    table.date("LetterDate").notNullable();
-    table.date("ReceivedDate").notNullable();
+    table.string("sender_name", 150).notNullable();
+    table.string("sender_institution", 150).nullable();
+    table.string("subject", 255).notNullable();
+    table.text("attachment_description").nullable();
 
-    table.string("SenderName", 150).notNullable();
-    table.string("SenderInstitution", 150).nullable();
-    table.string("Subject", 255).notNullable();
-    table.text("AttachmentDescription").nullable();
+    table.bigInteger("letter_type_id").unsigned().nullable();
+    table.integer("document_type_id").unsigned().nullable();
+    table.integer("archive_classification_id").unsigned().nullable();
+    table.integer("confidentiality_level_id").unsigned().nullable();
 
-    // 2. PERBAIKAN: bigInteger diubah menjadi integer
-    table.integer("LetterTypeId").unsigned().nullable();
-    table.integer("DocumentTypeId").unsigned().nullable();
-    table.integer("ArchiveClassificationId").unsigned().nullable();
-    table.integer("ConfidentialityLevelId").unsigned().nullable();
+    table.enu("status", ["baru", "diproses", "didisposisi", "selesai"]).notNullable().defaultTo("baru");
 
+    table.integer("created_by").unsigned().nullable();
+    table.integer("updated_by").unsigned().nullable();
+
+    table.dateTime("created_at").notNullable().defaultTo(knex.fn.now());
+    table.dateTime("updated_at").notNullable().defaultTo(knex.fn.now());
+
+    table.foreign("letter_type_id").references("letter_type_id").inTable("mst_letter_types");
+    table.foreign("document_type_id").references("DocumentTypeId").inTable("mst_document_type");
     table
-      .enu("Status", ["baru", "diproses", "didisposisi", "selesai"])
-      .notNullable()
-      .defaultTo("baru");
-
-    table.integer("CreatedBy").unsigned().nullable();
-    table.integer("UpdatedBy").unsigned().nullable();
-
-    // 3. PERBAIKAN: Hapus defaultTo(knex.fn.now())
-    table.datetime("CreatedAt").notNullable();
-    table.datetime("UpdatedAt").notNullable();
-
-    // Foreign Keys Setup
-    table
-      .foreign("LetterTypeId")
-      .references("LetterTypeId")
-      .inTable("mst_letter_types");
-    table
-      .foreign("DocumentTypeId")
-      .references("DocumentTypeId")
-      .inTable("mst_document_type");
-    table
-      .foreign("ArchiveClassificationId")
+      .foreign("archive_classification_id")
       .references("ArchiveClassificationId")
       .inTable("mst_archive_classifications");
     table
-      .foreign("ConfidentialityLevelId")
+      .foreign("confidentiality_level_id")
       .references("ConfidentialityLevelId")
       .inTable("mst_confidentiality_levels");
 
-    table.foreign("CreatedBy").references("UserId").inTable("mst_users");
-    table.foreign("UpdatedBy").references("UserId").inTable("mst_users");
+    table.foreign("created_by").references("UserId").inTable("mst_users");
+    table.foreign("updated_by").references("UserId").inTable("mst_users");
   });
 }
 
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
 export async function down(knex) {
-  await knex.schema.dropTableIfExists("trs_incoming_letters");
+  await knex.schema.dropTableIfExists("trx_incoming_letters");
 }

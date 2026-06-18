@@ -3,33 +3,33 @@ import { Logging } from "../components/tools/servertool.js";
 
 const getRetentionSchedules = async (req, res) => {
   try {
-    const cStatus = req.query.Status || "active";
-    const nDocumentCategoryId = req.query.DocumentCategoryId;
+    const cStatus = req.query.status || "active";
+    const nDocumentCategoryId = req.query.document_category_id;
 
     const oQuery = DB("mst_retention_schedule as rs")
       .select(
-        "rs.RetentionScheduleId",
-        "rs.RetentionCode",
-        "rs.RetentionName",
-        "rs.RetentionYears",
-        "rs.RetentionAction",
-        "rs.Description",
-        "rs.Status",
-        "dc.DocumentCategoryId",
-        "dc.DocumentCategoryName"
+        "rs.retention_schedule_id",
+        "rs.retention_code",
+        "rs.retention_name",
+        "rs.retention_years",
+        "rs.retention_action",
+        "rs.description",
+        "rs.status",
+        "dc.document_category_id",
+        "dc.document_category_name"
       )
       .leftJoin(
         "mst_document_categories as dc",
-        "rs.DocumentCategoryId",
-        "dc.DocumentCategoryId"
+        "rs.document_category_id",
+        "dc.document_category_id"
       )
-      .where("rs.Status", cStatus);
+      .where("rs.status", cStatus);
 
     if (nDocumentCategoryId) {
-      oQuery.andWhere("rs.DocumentCategoryId", nDocumentCategoryId);
+      oQuery.andWhere("rs.document_category_id", nDocumentCategoryId);
     }
 
-    const vaData = await oQuery.orderBy("rs.RetentionYears", "asc");
+    const vaData = await oQuery.orderBy("rs.retention_years", "asc");
 
     const oResult = {
       status: "success",

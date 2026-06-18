@@ -10,12 +10,12 @@ const incomingLetterDetail = async (req, res) => {
     const oPayload = req.body || {};
 
     const oValidation = {
-      IncomingLetterId: Joi.number().required(),
+      incoming_letter_id: Joi.number().required(),
     };
 
     const oMessage = {
-      "IncomingLetterId.required": "IncomingLetterId wajib diisi",
-      "IncomingLetterId.number": "IncomingLetterId harus berupa angka",
+      "incoming_letter_id.required": "incoming_letter_id wajib diisi",
+      "incoming_letter_id.number": "incoming_letter_id harus berupa angka",
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
@@ -29,30 +29,30 @@ const incomingLetterDetail = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trs_incoming_letters as til")
-      .leftJoin("mst_letter_types as mlt", "til.LetterTypeId", "mlt.LetterTypeId")
+    const oLetter = await DB("trx_incoming_letters as til")
+      .leftJoin("mst_letter_types as mlt", "til.letter_type_id", "mlt.letter_type_id")
       .select(
-        "til.IncomingLetterId",
-        "til.AgendaNumber",
-        "til.LetterNumber",
-        "til.LetterDate",
-        "til.ReceivedDate",
-        "til.SenderName",
-        "til.SenderInstitution",
-        "til.Subject",
-        "til.AttachmentDescription",
-        "til.LetterTypeId",
-        "mlt.LetterTypeName",
-        "til.DocumentTypeId",
-        "til.ArchiveClassificationId",
-        "til.ConfidentialityLevelId",
-        "til.Status",
-        "til.CreatedBy",
-        "til.UpdatedBy",
-        "til.CreatedAt",
-        "til.UpdatedAt"
+        "til.incoming_letter_id",
+        "til.agenda_number",
+        "til.letter_number",
+        "til.letter_date",
+        "til.received_date",
+        "til.sender_name",
+        "til.sender_institution",
+        "til.subject",
+        "til.attachment_description",
+        "til.letter_type_id",
+        "mlt.letter_type_name",
+        "til.document_type_id",
+        "til.archive_classification_id",
+        "til.confidentiality_level_id",
+        "til.status",
+        "til.created_by",
+        "til.updated_by",
+        "til.created_at",
+        "til.updated_at"
       )
-      .where("til.IncomingLetterId", oPayload.IncomingLetterId)
+      .where("til.incoming_letter_id", oPayload.incoming_letter_id)
       .first();
 
     if (!oLetter) {
@@ -62,79 +62,79 @@ const incomingLetterDetail = async (req, res) => {
       });
     }
 
-    const vaFiles = await DB("trs_incoming_letter_files")
+    const vaFiles = await DB("trx_incoming_letter_files")
       .select(
-        "IncomingLetterFileId",
-        "IncomingLetterId",
-        "FilePath",
-        "FileName",
-        "FileMimeType",
-        "FileSize",
-        "UploadedBy",
-        "Status",
-        "CreatedAt",
-        "UpdatedAt"
+        "incoming_letter_file_id",
+        "incoming_letter_id",
+        "file_path",
+        "file_name",
+        "file_mime_type",
+        "file_size",
+        "uploaded_by",
+        "status",
+        "created_at",
+        "updated_at"
       )
-      .where("IncomingLetterId", oPayload.IncomingLetterId)
-      .where("Status", "active")
-      .orderBy("CreatedAt", "desc");
+      .where("incoming_letter_id", oPayload.incoming_letter_id)
+      .where("status", "active")
+      .orderBy("created_at", "desc");
 
-    const vaDispositions = await DB("trs_letter_dispositions as tld")
+    const vaDispositions = await DB("trx_letter_dispositions as tld")
       .leftJoin(
         "mst_disposition_instructions as mdi",
-        "tld.DispositionInstructionId",
-        "mdi.DispositionInstructionId"
+        "tld.disposition_instruction_id",
+        "mdi.disposition_instruction_id"
       )
       .select(
-        "tld.DispositionId",
-        "tld.IncomingLetterId",
-        "tld.ParentDispositionId",
-        "tld.FromUserId",
-        "tld.ToUserId",
-        "tld.DispositionInstructionId",
-        "mdi.InstructionName",
-        "tld.Instruction",
-        "tld.DispositionNote",
-        "tld.DueDate",
-        "tld.Status",
-        "tld.ReceivedAt",
-        "tld.ProcessedAt",
-        "tld.CompletedAt",
-        "tld.CreatedBy",
-        "tld.UpdatedBy",
-        "tld.CreatedAt",
-        "tld.UpdatedAt"
+        "tld.disposition_id",
+        "tld.incoming_letter_id",
+        "tld.parent_disposition_id",
+        "tld.from_user_id",
+        "tld.to_user_id",
+        "tld.disposition_instruction_id",
+        "mdi.instruction_name",
+        "tld.instruction",
+        "tld.disposition_note",
+        "tld.due_date",
+        "tld.status",
+        "tld.received_at",
+        "tld.processed_at",
+        "tld.completed_at",
+        "tld.created_by",
+        "tld.updated_by",
+        "tld.created_at",
+        "tld.updated_at"
       )
-      .where("tld.IncomingLetterId", oPayload.IncomingLetterId)
-      .orderBy("tld.CreatedAt", "desc");
+      .where("tld.incoming_letter_id", oPayload.incoming_letter_id)
+      .orderBy("tld.created_at", "desc");
 
-    const vaTrackings = await DB("trs_incoming_letter_trackings")
+    const vaTrackings = await DB("trx_incoming_letter_trackings")
       .select(
-        "IncomingLetterTrackingId",
-        "IncomingLetterId",
-        "DispositionId",
-        "ActionName",
-        "FromUserId",
-        "ToUserId",
-        "PreviousStatus",
-        "CurrentStatus",
-        "Notes",
-        "ProcessedAt",
-        "CreatedBy",
-        "CreatedAt",
-        "UpdatedAt"
+        "incoming_letter_tracking_id",
+        "incoming_letter_id",
+        "disposition_id",
+        "action_name",
+        "from_user_id",
+        "to_user_id",
+        "previous_status",
+        "current_status",
+        "notes",
+        "processed_at",
+        "created_by",
+        "created_at",
+        "updated_at"
       )
-      .where("IncomingLetterId", oPayload.IncomingLetterId)
-      .orderBy("ProcessedAt", "desc");
+      .where("incoming_letter_id", oPayload.incoming_letter_id)
+      .orderBy("processed_at", "desc");
 
     return res.status(200).json({
       status: true,
       message: "Detail surat masuk berhasil diambil",
       data: {
-        Letter: oLetter,
-        Files: vaFiles,
-        Dispositions: vaDispositions,
-        Trackings: vaTrackings,
+        letter: oLetter,
+        files: vaFiles,
+        dispositions: vaDispositions,
+        trackings: vaTrackings,
       },
     });
   } catch (error) {

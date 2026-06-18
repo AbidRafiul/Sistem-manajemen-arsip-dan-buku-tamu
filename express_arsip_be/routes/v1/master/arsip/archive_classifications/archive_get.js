@@ -12,14 +12,14 @@ router.get("/", async (req, res) => {
   try {
     const vaData = await DB("mst_archive_classifications")
       .select(
-        "ArchiveClassificationId",
-        "ClassificationCode",
-        "ClassificationName",
-        "Description",
-        "Status"
+        "archive_classification_id",
+        "classification_code",
+        "classification_name",
+        "description",
+        "status"
       )
-      .where("Status", "active")
-      .orderBy("CreatedAt", "desc");
+      .where("status", "active")
+      .orderBy("created_at", "desc");
 
     return res.status(200).json({
       status: status.SUKSES,

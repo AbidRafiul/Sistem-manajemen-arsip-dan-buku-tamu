@@ -22,10 +22,10 @@ router.put("/:DocumentCategoryId", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        ArchiveClassificationId: Joi.number().required().label("ID Klasifikasi Arsip"),
-        DocumentCategoryCode: Joi.string().max(45).required().label("Kode Kategori"),
-        DocumentCategoryName: Joi.string().max(45).required().label("Nama Kategori"),
-        Description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
+        archive_classification_id: Joi.number().required().label("ID Klasifikasi Arsip"),
+        document_category_code: Joi.string().max(45).required().label("Kode Kategori"),
+        document_category_name: Joi.string().max(45).required().label("Nama Kategori"),
+        description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
@@ -53,13 +53,13 @@ router.put("/:DocumentCategoryId", async (req, res) => {
     }
 
     const nUpdated = await DB("mst_document_categories")
-      .where("DocumentCategoryId", cDocumentCategoryId)
+      .where("document_category_id", cDocumentCategoryId)
       .update({
-        ArchiveClassificationId: oPayload.ArchiveClassificationId,
-        DocumentCategoryCode: oPayload.DocumentCategoryCode,
-        DocumentCategoryName: oPayload.DocumentCategoryName,
-        Description: oPayload.Description || null,
-        UpdatedAt: new Date(),
+        archive_classification_id: oPayload.archive_classification_id,
+        document_category_code: oPayload.document_category_code,
+        document_category_name: oPayload.document_category_name,
+        description: oPayload.description || null,
+        updated_at: new Date(),
       });
 
     if (!nUpdated) {

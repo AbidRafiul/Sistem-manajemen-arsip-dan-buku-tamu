@@ -12,8 +12,8 @@ router.delete("/:DocumentCategoryId", async (req, res) => {
 
   try {
     const nUpdated = await DB("mst_document_categories")
-      .where("DocumentCategoryId", cDocumentCategoryId)
-      .update({ Status: "nonactive", UpdatedAt: new Date() });
+      .where("document_category_id", cDocumentCategoryId)
+      .update({ status: "nonactive", updated_at: new Date() });
 
     if (!nUpdated) {
       return res.status(404).json({

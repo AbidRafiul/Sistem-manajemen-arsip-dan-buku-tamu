@@ -5,16 +5,16 @@ const approveArchiveLoan = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const nLoanId = oPayload.LoanId;
-    const cStatus = oPayload.Status;
-    const cApprovalNotes = oPayload.ApprovalNotes || null;
-    const cApprovedBy = req?.context?.Username || oPayload.ApprovedBy || "system";
+    const nLoanId = oPayload.loan_id;
+    const cStatus = oPayload.status;
+    const cApprovalNotes = oPayload.approval_notes || null;
+    const cApprovedBy = req?.context?.Username || oPayload.approved_by || "system";
     const dNow = new Date();
 
     if (!nLoanId) {
       const oResult = {
         status: "error",
-        message: "LoanId wajib diisi",
+        message: "loan_id wajib diisi",
       };
       return res.status(422).json(oResult);
     }
@@ -29,7 +29,7 @@ const approveArchiveLoan = async (req, res) => {
 
     // Cek loan ada dan masih pending
     const oLoan = await Knex("trx_archive_loans")
-      .where("LoanId", nLoanId)
+      .where("loan_id", nLoanId)
       .first();
 
     if (!oLoan) {
@@ -40,10 +40,10 @@ const approveArchiveLoan = async (req, res) => {
       return res.status(404).json(oResult);
     }
 
-    if (oLoan.Status !== "pending") {
+    if (oLoan.status !== "pending") {
       const oResult = {
         status: "error",
-        message: `Peminjaman sudah diproses dengan status '${oLoan.Status}'`,
+        message: `Peminjaman sudah diproses dengan status '${oLoan.status}'`,
       };
       return res.status(422).json(oResult);
     }
@@ -52,24 +52,24 @@ const approveArchiveLoan = async (req, res) => {
     const cNewStatus = cStatus === "approved" ? "borrowed" : "rejected";
 
     const oData = {
-      Status: cNewStatus,
-      ApprovedBy: cApprovedBy,
-      ApprovedAt: dNow,
-      ApprovalNotes: cApprovalNotes,
-      UpdatedAt: dNow,
+      status: cNewStatus,
+      approved_by: cApprovedBy,
+      approved_at: dNow,
+      approval_notes: cApprovalNotes,
+      updated_at: dNow,
     };
 
     await Knex("trx_archive_loans")
-      .where("LoanId", nLoanId)
+      .where("loan_id", nLoanId)
       .update(oData);
 
     const oResult = {
       status: "success",
       message: `Peminjaman arsip berhasil di-${cStatus === "approved" ? "setujui (status: borrowed)" : "tolak"}`,
       data: {
-        LoanId: nLoanId,
-        DocumentId: oLoan.DocumentId,
-        BorrowerName: oLoan.BorrowerName,
+        loan_id: nLoanId,
+        document_id: oLoan.document_id,
+        borrower_name: oLoan.borrower_name,
         ...oData,
       },
     };

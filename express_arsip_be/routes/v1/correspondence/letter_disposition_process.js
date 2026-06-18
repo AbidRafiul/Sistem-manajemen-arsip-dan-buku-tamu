@@ -10,14 +10,14 @@ const letterDispositionProcess = async (req, res) => {
     const oPayload = req.body || {};
 
     const oValidation = {
-      DispositionId: Joi.number().required(),
-      ProcessNote: Joi.string().allow(null, "").optional(),
-      UpdatedBy: Joi.number().allow(null).optional(),
+      disposition_id: Joi.number().required(),
+      process_note: Joi.string().allow(null, "").optional(),
+      updated_by: Joi.number().allow(null).optional(),
     };
 
     const oMessage = {
-      "DispositionId.required": "DispositionId wajib diisi",
-      "DispositionId.number": "DispositionId harus berupa angka",
+      "disposition_id.required": "disposition_id wajib diisi",
+      "disposition_id.number": "disposition_id harus berupa angka",
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
@@ -31,8 +31,8 @@ const letterDispositionProcess = async (req, res) => {
       });
     }
 
-    const oDisposition = await DB("trs_letter_dispositions")
-      .where("DispositionId", oPayload.DispositionId)
+    const oDisposition = await DB("trx_letter_dispositions")
+      .where("disposition_id", oPayload.disposition_id)
       .first();
 
     if (!oDisposition) {
@@ -42,22 +42,22 @@ const letterDispositionProcess = async (req, res) => {
       });
     }
 
-    if (oDisposition.Status === "selesai") {
+    if (oDisposition.status === "selesai") {
       return res.status(400).json({
         status: false,
         message: "Disposisi sudah selesai dan tidak dapat diproses ulang",
       });
     }
 
-    if (oDisposition.Status === "diproses") {
+    if (oDisposition.status === "diproses") {
       return res.status(400).json({
         status: false,
         message: "Disposisi sudah dalam proses",
       });
     }
 
-    const oLetter = await DB("trs_incoming_letters")
-      .where("IncomingLetterId", oDisposition.IncomingLetterId)
+    const oLetter = await DB("trx_incoming_letters")
+      .where("incoming_letter_id", oDisposition.incoming_letter_id)
       .first();
 
     if (!oLetter) {
@@ -67,7 +67,7 @@ const letterDispositionProcess = async (req, res) => {
       });
     }
 
-    if (oLetter.Status === "selesai") {
+    if (oLetter.status === "selesai") {
       return res.status(400).json({
         status: false,
         message: "Surat masuk sudah selesai dan disposisi tidak dapat diproses",
@@ -77,37 +77,37 @@ const letterDispositionProcess = async (req, res) => {
     const dNow = new Date();
 
     await DB.transaction(async (trx) => {
-      await trx("trs_letter_dispositions")
-        .where("DispositionId", oPayload.DispositionId)
+      await trx("trx_letter_dispositions")
+        .where("disposition_id", oPayload.disposition_id)
         .update({
-          Status: "diproses",
-          ReceivedAt: oDisposition.ReceivedAt || dNow,
-          ProcessedAt: dNow,
-          UpdatedBy: oPayload.UpdatedBy || null,
-          UpdatedAt: dNow,
+          status: "diproses",
+          received_at: oDisposition.received_at || dNow,
+          processed_at: dNow,
+          updated_by: oPayload.updated_by || null,
+          updated_at: dNow,
         });
 
-      await trx("trs_incoming_letters")
-        .where("IncomingLetterId", oDisposition.IncomingLetterId)
+      await trx("trx_incoming_letters")
+        .where("incoming_letter_id", oDisposition.incoming_letter_id)
         .update({
-          Status: "diproses",
-          UpdatedBy: oPayload.UpdatedBy || null,
-          UpdatedAt: dNow,
+          status: "diproses",
+          updated_by: oPayload.updated_by || null,
+          updated_at: dNow,
         });
 
-      await trx("trs_incoming_letter_trackings").insert({
-        IncomingLetterId: oDisposition.IncomingLetterId,
-        DispositionId: oPayload.DispositionId,
-        ActionName: "disposisi_diproses",
-        FromUserId: oDisposition.FromUserId || null,
-        ToUserId: oDisposition.ToUserId || null,
-        PreviousStatus: oLetter.Status,
-        CurrentStatus: "diproses",
-        Notes: oPayload.ProcessNote || "Disposisi mulai diproses",
-        ProcessedAt: dNow,
-        CreatedBy: oPayload.UpdatedBy || null,
-        CreatedAt: dNow,
-        UpdatedAt: dNow,
+      await trx("trx_incoming_letter_trackings").insert({
+        incoming_letter_id: oDisposition.incoming_letter_id,
+        disposition_id: oPayload.disposition_id,
+        action_name: "disposisi_diproses",
+        from_user_id: oDisposition.from_user_id || null,
+        to_user_id: oDisposition.to_user_id || null,
+        previous_status: oLetter.status,
+        current_status: "diproses",
+        notes: oPayload.process_note || "Disposisi mulai diproses",
+        processed_at: dNow,
+        created_by: oPayload.updated_by || null,
+        created_at: dNow,
+        updated_at: dNow,
       });
     });
 

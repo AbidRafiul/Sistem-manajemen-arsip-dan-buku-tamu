@@ -3,18 +3,18 @@ import { Logging } from "../components/tools/servertool.js";
 
 const getDocumentTypes = async (req, res) => {
   try {
-    const cStatus = req.query.Status || "active";
+    const cStatus = req.query.status || "active";
 
     const vaData = await DB("mst_document_type")
       .select(
-        "DocumentTypeId",
-        "DocumentTypeCode",
-        "DocumentTypeName",
-        "Description",
-        "Status"
+        "document_type_id",
+        "document_type_code",
+        "document_type_name",
+        "description",
+        "status"
       )
-      .where("Status", cStatus)
-      .orderBy("DocumentTypeName", "asc");
+      .where("status", cStatus)
+      .orderBy("document_type_name", "asc");
 
     const oResult = {
       status: "success",

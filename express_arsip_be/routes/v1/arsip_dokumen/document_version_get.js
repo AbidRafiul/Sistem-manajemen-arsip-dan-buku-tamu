@@ -5,21 +5,21 @@ const getDocumentVersions = async (req, res) => {
   const oQuery = req.query;
 
   try {
-    const nDocumentId = oQuery.DocumentId;
+    const nDocumentId = oQuery.document_id;
 
     if (!nDocumentId) {
       const oResult = {
         status: "error",
-        message: "DocumentId is required",
+        message: "document_id is required",
       };
 
       return res.status(422).json(oResult);
     }
 
     const oDocument = await DB("trx_documents")
-      .select("DocumentId")
-      .where("DocumentId", nDocumentId)
-      .where("Status", "active")
+      .select("document_id")
+      .where("document_id", nDocumentId)
+      .where("status", "active")
       .first();
 
     if (!oDocument) {
@@ -33,16 +33,16 @@ const getDocumentVersions = async (req, res) => {
 
     const vaData = await DB("trx_document_versions")
       .select(
-        "VersionId",
-        "DocumentId",
-        "VersionNumber",
-        "ChangeNotes",
-        "FilePath",
-        "CreatedAt",
-        "UpdatedAt"
+        "version_id",
+        "document_id",
+        "version_number",
+        "change_notes",
+        "file_path",
+        "created_at",
+        "updated_at"
       )
-      .where("DocumentId", nDocumentId)
-      .orderBy("VersionNumber", "desc");
+      .where("document_id", nDocumentId)
+      .orderBy("version_number", "desc");
 
     const oResult = {
       status: "success",

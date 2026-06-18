@@ -23,6 +23,49 @@ const mailInMenu: AppMenuItem = {
     to: '/correspondence/mail-in'
 };
 
+const archiveDocumentItems: AppMenuItem[] = [
+    {
+        label: 'Dokumen Arsip',
+        icon: 'pi pi-folder-open',
+        to: '/edms/archive_document'
+    },
+    {
+        label: 'Peminjaman Arsip',
+        icon: 'pi pi-share-alt',
+        to: '/edms/archive_loan'
+    }
+];
+
+const ensureArchiveDocumentMenu = (menu: AppMenuItem[]) => {
+    const hasItem = (items: AppMenuItem[] = [], toPath: string): boolean => {
+        return items.some((item) => item.to === toPath || hasItem(item.items || [], toPath));
+    };
+
+    const hasAll = archiveDocumentItems.every((reqItem) => hasItem(menu, reqItem.to || ''));
+    if (hasAll) return menu;
+
+    const archiveGroup = menu.find((item) => {
+        const label = item.label?.toLowerCase();
+        return label === 'arsip dokumen' || label === 'edms' || label === 'arsip';
+    });
+
+    if (archiveGroup) {
+        const existingTos = (archiveGroup.items || []).map(item => item.to);
+        const missingItems = archiveDocumentItems.filter(item => !existingTos.includes(item.to));
+        archiveGroup.items = [...(archiveGroup.items || []), ...missingItems];
+        return menu;
+    }
+
+    return [
+        ...menu,
+        {
+            label: 'ARSIP DOKUMEN',
+            icon: 'pi pi-folder',
+            items: archiveDocumentItems
+        }
+    ];
+};
+
 const ensureCorrespondenceMenu = (menu: AppMenuItem[]) => {
     const hasMailIn = (items: AppMenuItem[] = []): boolean => {
         return items.some((item) => item.to === mailInMenu.to || hasMailIn(item.items || []));
@@ -45,6 +88,10 @@ const ensureCorrespondenceMenu = (menu: AppMenuItem[]) => {
             items: [mailInMenu]
         }
     ];
+};
+
+const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
+    return menu.filter((item) => item.label?.toLowerCase() !== 'korespondensi');
 };
 
 const AppMenu = () => {
@@ -75,8 +122,13 @@ const AppMenu = () => {
                 throw new Error('Invalid menu data');
             }
 
-            const menu: AppMenuItem[] = ensureCorrespondenceMenu(JSON.parse(JSON.stringify(vaData.data)));
-            const menu2: AppMenuItem[] = ensureCorrespondenceMenu(JSON.parse(JSON.stringify(vaData.data)));
+            const normalizedMenu = ensureArchiveDocumentMenu(
+                ensureCorrespondenceMenu(
+                    removeLegacyCorrespondenceMenu(JSON.parse(JSON.stringify(vaData.data)))
+                )
+            );
+            const menu: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
+            const menu2: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
 
             setState(prev => ({
                 ...prev,

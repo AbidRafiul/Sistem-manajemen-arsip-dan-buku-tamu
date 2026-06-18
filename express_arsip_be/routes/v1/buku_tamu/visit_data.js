@@ -16,7 +16,6 @@ router.post("/", async (req, res) => {
     const chart_per_hour_raw = await DB.raw("SELECT HOUR(CheckInTime) as hour, COUNT(*) as count FROM trx_visitations WHERE DATE(CheckInTime)=? GROUP BY HOUR(CheckInTime) ORDER BY hour", [today]);
     const chart_per_hour = chart_per_hour_raw[0].map(r => ({ hour: r.hour, count: r.count }));
 
-    // 🎯 FIX SINKRONISASI DATABASE: Menggunakan mp.VisitPurposeName dan mp.VisitPurposeId sesuai phpMyAdmin laptopmu
     const chart_per_purpose_raw = await DB.raw(
       "SELECT mp.VisitPurposeName as purpose, COUNT(*) as count FROM trx_visitations t LEFT JOIN mst_visit_purpose mp ON t.VisitPurposeId = mp.VisitPurposeId WHERE DATE(t.CheckInTime) = ? GROUP BY t.VisitPurposeId", 
       [today]
