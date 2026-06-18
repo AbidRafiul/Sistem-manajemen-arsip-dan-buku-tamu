@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { Metadata } from "next";
 import { RootLayoutProps } from "@/types/layout";
 
-
 export const metadata: Metadata = {
   title: 'Standart',
   description: 'Dashboard Standart',
@@ -29,11 +28,11 @@ export default async function AppLayout({ children }: RootLayoutProps) {
   const h = headers();
   const path = h.get("x-pathname") || "/";
 
-  const access = await routeMiddleware(path);
+  // MATIKAN SEMENTARA PENGECEKAN NEXTAUTH DI SINI
+  // const access = await routeMiddleware(path);
 
-  if (access === "99") redirect("/auth/login");
-  if (access === "98") redirect("/auth/access");
-
+  // if (access === "99") redirect("/auth/login");
+  // if (access === "98") redirect("/auth/access");
 
   return <Layout>{children}</Layout>;
 }

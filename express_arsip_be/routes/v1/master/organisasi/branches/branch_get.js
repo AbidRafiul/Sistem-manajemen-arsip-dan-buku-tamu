@@ -11,7 +11,7 @@ router.get("/", async (req, res) => {
 
   try {
     const vaData = await DB("mst_branches")
-      .select("BranchId", "BranchCode", "BranchName", "Status")
+      .select("BranchId as id", "BranchCode", "BranchName as name", "Status")
       .where("Status", "active");
 
     return res.status(200).json({

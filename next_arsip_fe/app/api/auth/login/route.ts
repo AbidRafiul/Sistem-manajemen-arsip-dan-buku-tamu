@@ -73,7 +73,7 @@ export const POST = async (req: NextRequest) => {
                 role: userDecrypted?.role,
                 name: userDecrypted?.fullname,
                 username: userDecrypted?.username,
-                uniqueId: userDecrypted?.uniqueId,
+                UserId: userDecrypted?.UserId,
                 remember_me: credentials?.remember_me === '1',
                 credential: dataResponse.credential
             };
@@ -101,7 +101,7 @@ export const POST = async (req: NextRequest) => {
 
     } catch (error: any) {
         let errorMessage = 'Login gagal';
-        // console.log(error)
+        console.log(error)
 
         if (axios.isAxiosError(error)) {
             errorMessage = error.response?.data?.message || error.message || 'Login gagal';

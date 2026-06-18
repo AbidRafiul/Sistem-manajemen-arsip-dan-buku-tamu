@@ -18,7 +18,7 @@ const router = express.Router();
 
 // Auth
 router.use("/auth/token", AccessToken);
-router.use("/auth/login", [validateAccessToken], Login);
+router.use("/auth/login", Login);
 router.use("/auth/reset-password", [validateAccessToken], ResetPassword);
 
 // Modul-Modul Aplikasi

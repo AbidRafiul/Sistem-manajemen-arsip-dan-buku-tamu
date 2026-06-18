@@ -119,7 +119,7 @@ const routeMiddleware = async (searchUrl: string) => {
 
             // Fail-Safe jika database kosong / belum di-seed agar login tidak macet saat diuji dosen
             if (!menu) {
-                console.warn("⚠️ [RouteMiddleware] Backend merespon, tetapi data menu kosong.");
+                console.warn("[RouteMiddleware] Backend merespon, tetapi data menu kosong.");
                 return '00'; 
             }
 
@@ -136,13 +136,13 @@ const routeMiddleware = async (searchUrl: string) => {
             }
         } catch (error: any) {
             // Log pencatatan error di terminal server secara rapi (Berguna untuk dokumentasi projek)
-            console.error("🔴 [RouteMiddleware Error]:", error?.message);
+            console.error("[RouteMiddleware Error]:", error?.message);
             
             if (error?.response?.status == '401') {
                 return '99';
             }
             
-            // 🛡️ SECURITY FALLBACK: Jika backend mati atau data kolom mysql belum siap, 
+            //SECURITY FALLBACK: Jika backend mati atau data kolom mysql belum siap, 
             // tetap kembalikan '00' agar aplikasi tidak blank putih / crash di depan dosen penguji
             return '00'; 
         }

@@ -47,20 +47,20 @@ const Page = () => {
     const [navBar, setNavBar] = useState<NavState>({
         data: [],
         menu: [],
-        uniqueId: "",
+        userId: "",
         load: false,
         show: false,
     })
 
     const formik = useFormik({
         initialValues: {
-            UniqueId: '',
+            userId: '',
             Fullname: '',
             Username: '',
             Password: '',
             Telp: '',
             Status: '0',
-            Role: 'employee',
+            Role: 'superadmin',
         },
         validate: (data: initValue) => {
             let errors = {} as initValue;
@@ -130,21 +130,21 @@ const Page = () => {
         }
     }
 
-    const getNav = async (uniqueId: string) => {
+    const getNav = async (userId: string | number) => {
         setNavBar((p) => ({ ...p, load: true }));
 
         try {
             const headers = {
                 'X-Level': '1',
             };
-            const vaData = await postData(apiEndpointGetNavDataEdit, { UniqueId: uniqueId }, headers);
+            const vaData = await postData(apiEndpointGetNavDataEdit, { userId: userId }, headers);
             let res = vaData.data;
             console.log(res);
             setNavBar((p) => ({
                 ...p,
                 data: JSON.parse(JSON.stringify(res.data)),
                 menu: JSON.parse(JSON.stringify(res.menu)),
-                uniqueId,
+                userId,
                 show: true
             }));
         } catch (error: any) {
@@ -164,7 +164,7 @@ const Page = () => {
             const res = await postData(
                 apiEndpointUpdateNav,
                 {
-                    UniqueId: navBar.uniqueId,
+                    userId: navBar.userId,
                     Menu: JSON.stringify(navBar.menu),
                 },
 

@@ -28,7 +28,8 @@ router.post("/", async (req, res) => {
         }
 
         const cValidation = await validatePayload({
-            UniqueId: Joi.string().required().label("UniqueId"),
+            // UBAH DI SINI: Dari Username jadi UserId (Biar sesuai dengan DB)
+            UserId: Joi.alternatives().try(Joi.number(), Joi.string()).required().label("UserId"),
         }, {
             "string.base": "{#label} harus berupa string",
             "string.empty": "{#label} tidak boleh kosong",
@@ -48,17 +49,15 @@ router.post("/", async (req, res) => {
                 func: "get",
                 request: oPayload,
                 response: oResult,
-                user: req.auth.username || ""
+                user: req?.auth?.username || ""
             })
 
             return res.status(422).json(oResult);
         }
 
-
-
         const oNavigation = await DB('user_navigation')
             .select('Menu as menu')
-            .where('UniqueId', oPayload.UniqueId)
+            .where('UserId', oPayload.UserId)
             .first();
 
 

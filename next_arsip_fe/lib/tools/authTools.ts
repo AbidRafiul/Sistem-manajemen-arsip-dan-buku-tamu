@@ -13,34 +13,39 @@ const authOptions = {
             },
             async authorize(credentials): Promise<any> {
                 try {
-                    if (!credentials.userData) {
-                        throw new CredentialsSignin();
-                    }
-
+                    if (!credentials.userData) throw new CredentialsSignin();
                     const userData = JSON.parse(credentials.userData as string);
 
-                    return userData
+                    // PASTIIN DATA DARI EXPRESS DIPETAKAN KE SINI
+                    return {
+                        id: userData.UserId, // KUNCI: Pake UserId dari Express
+                        UserId: userData.UserId, // Tambahkan eksplisit
+                        name: userData.fullname || userData.name,
+                        username: userData.username,
+                        credential: userData.credential, // Pastikan ini ada
+                        remember_me: userData.remember_me
+                    };
                 } catch (error: any) {
-                    console.error('Auth error:', error);
-
-                    throw new CredentialsSignin()
+                    throw new CredentialsSignin();
                 }
             }
-        }),
+        })
     ],
     pages: {
         signIn: '/auth/login',
         error: '/auth/login',
-        signOut: '/auth/login',
+        signOut: '/auth/login'
     },
     session: {
         strategy: 'jwt' as const,
-        maxAge: 7 * 24 * 60 * 60,
+        maxAge: 7 * 24 * 60 * 60
     },
     callbacks: {
-        async jwt({ token, user }: { token: JWT; user?: User; }) {
+        async jwt({ token, user }: { token: JWT; user?: User }) {
             // Initial sign in
             if (user) {
+                const anyUser = user as any;
+                token.id = anyUser.UserId || user.id;
                 token.id = user.id;
                 token.role = user.role;
                 token.uniqueId = user.uniqueId;
@@ -62,15 +67,17 @@ const authOptions = {
 
             return token;
         },
-        async session({ session, token }: { session: Session; token: JWT; }) {
+        async session({ session, token }: { session: Session; token: JWT }) {
             if (token.expired) {
                 throw new Error('Session telah kadaluarsa');
             }
 
             if (token.id) {
+                // TAMBAHKAN INI BIAR userId NYAMPE KE FRONTEND
+                (session.user as any).id = token.id; 
+                (session.user as any).UserId = token.id;
                 session.user.id = token.id as string;
                 session.user.role = token.role as string;
-                session.user.uniqueId = token.uniqueId as string;
                 session.user.name = token.name as string;
                 session.user.username = token.username as string;
             }
@@ -82,7 +89,7 @@ const authOptions = {
 
             return session;
         },
-        async signIn({ user: user }: { user: User; }) {
+        async signIn({ user: user }: { user: User }) {
             try {
                 if (user.credential) {
                     const cookieStore = cookies();
@@ -90,12 +97,13 @@ const authOptions = {
 
                     const secret = new TextEncoder().encode(process.env.USER_KEY);
                     const payload = {
-                        uid: user.uniqueId,
+                        userId: (user as any).UserId || user.id,
                         name: user.name,
+                        username: (user as any).username
                     };
                     const token = await new SignJWT(payload)
-                        .setProtectedHeader({ alg: "HS512" })
-                        .setExpirationTime(user.remember_me ? "1d" : "7h")
+                        .setProtectedHeader({ alg: 'HS512' })
+                        .setExpirationTime(user.remember_me ? '1d' : '7h')
                         .sign(secret);
 
                     cookieStore.set({
@@ -106,7 +114,7 @@ const authOptions = {
                         secure: false,
                         sameSite: 'lax',
                         path: '/',
-                        maxAge,
+                        maxAge
                     });
 
                     cookieStore.set({
@@ -117,7 +125,7 @@ const authOptions = {
                         secure: false,
                         sameSite: 'lax',
                         path: '/',
-                        maxAge,
+                        maxAge
                     });
                 }
 
@@ -126,7 +134,7 @@ const authOptions = {
                 console.error('Error setting cookie:', error);
                 return false;
             }
-        },
+        }
     },
     events: {
         async signOut() {
@@ -136,12 +144,11 @@ const authOptions = {
             } catch (error) {
                 console.error('Error deleting cookie:', error);
             }
-        },
+        }
     },
-    debug: process.env.NODE_ENV === 'development',
+    debug: process.env.NODE_ENV === 'development'
 };
 
 const { handlers, auth } = NextAuth(authOptions);
 
-
-export { authOptions, handlers, auth }
+export { authOptions, handlers, auth };

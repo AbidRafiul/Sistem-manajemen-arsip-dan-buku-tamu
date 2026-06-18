@@ -7,11 +7,12 @@ import { useFormik } from "formik";
 import { initValue, NavState, State } from "./components/interfaces";
 import { FilterMatchMode } from "primereact/api";
 import Form from "./components/display/form";
-import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
 
 const Page = () => {
     const toast = useRef<Toast>(null)
-    const { data: session } = useSession()
+    // const { data: session } = useSession()
+    const session: any = { user: { name: "Superadmin", role: "admin", userId: 1 } }
 
     const [state, setState] = useState<State>({
         load: false,
