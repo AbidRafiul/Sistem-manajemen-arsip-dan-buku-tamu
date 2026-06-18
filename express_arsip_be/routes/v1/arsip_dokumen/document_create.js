@@ -10,7 +10,6 @@ const createDocument = async (req, res) => {
     const cDocumentNumber = oPayload.document_number;
     const dDocumentDate = oPayload.document_date;
     const dExpiredDate = oPayload.expired_date || null;
-    const cPicName = oPayload.pic_name;
     const nDocumentTypeId = oPayload.document_type_id || null;
     const nDocumentCategoryId = oPayload.document_category_id || null;
     const nArchiveClassificationId = oPayload.archive_classification_id || null;
@@ -21,12 +20,21 @@ const createDocument = async (req, res) => {
     const dNow = new Date();
 
     // Validasi wajib
-    if (!cDocumentName || !cDocumentNumber || !dDocumentDate || !cPicName) {
+    if (!cDocumentName || !cDocumentNumber || !dDocumentDate) {
       const oResult = {
         status: "error",
-        message: "document_name, document_number, document_date, dan pic_name wajib diisi",
+        message: "document_name, document_number, dan document_date wajib diisi",
       };
       return res.status(422).json(oResult);
+    }
+
+    // Logika Fallback Pintar untuk Variabel cPic
+    let cPic = oPayload.pic || oPayload.pic_name;
+    if (typeof cPic === "string") {
+      cPic = cPic.trim();
+    }
+    if (!cPic) {
+      cPic = req.user?.name || "System Fallback (User Master Pending)";
     }
 
     // Cek duplikat nomor dokumen
@@ -56,7 +64,7 @@ const createDocument = async (req, res) => {
       document_number: cDocumentNumber,
       document_date: dDocumentDate,
       expired_date: dExpiredDate,
-      pic_name: cPicName,
+      pic_name: cPic,
       physical_location: cPhysicalLocation,
       qr_code: cQRCode,
       tags: cTags,
@@ -69,31 +77,22 @@ const createDocument = async (req, res) => {
 
     const oResult = {
       status: "success",
-      message: "Document metadata saved successfully",
+      message: "Document metadata registered successfully",
       data: {
-        document_id: nDocumentId,
-        qr_code: cQRCode,
-        ...oData,
+        id: nDocumentId,
+        pic: cPic,
       },
     };
 
     return res.status(200).json(oResult);
   } catch (error) {
-    const oResult = {
+    Logging("error", error.message);
+
+    return res.status(500).json({
       status: "error",
       message: "Failed to save document metadata",
       error: error.message,
-    };
-
-    Logging(error, {
-      file: "document_create.js",
-      func: "createDocument",
-      request: oPayload,
-      response: oResult,
-      user: req?.context?.Username || "system",
     });
-
-    return res.status(500).json(oResult);
   }
 };
 
