@@ -115,7 +115,7 @@ const Page = () => {
             const response = await postData(apiEndpointMonitoring);
             setState((p) => ({ ...p, statData: response.data.data || null }));
         } catch (error: any) {
-            console.log('⚠️ [Silent Filter] Statistik monitoring belum siap di backend Express.');
+            console.log('[Silent Filter] Statistik monitoring belum siap di backend Express.');
         }
     };
 
@@ -125,7 +125,7 @@ const Page = () => {
             const resContent = response?.data;
             setState((p) => ({ ...p, visitPurposeData: resContent?.data || resContent || [] }));
         } catch (error: any) {
-            console.log('⚠️ [Silent Filter] Dropdown Visit Purpose belum siap di backend Express.');
+            console.log('[Silent Filter] Dropdown Visit Purpose belum siap di backend Express.');
         }
     };
 
@@ -135,7 +135,7 @@ const Page = () => {
             const resContent = response?.data;
             setState((p) => ({ ...p, hostUserData: resContent?.data || resContent || [] }));
         } catch (error: any) {
-            console.log('⚠️ [Silent Filter] Dropdown Host Users belum siap di backend Express.');
+            console.log('[Silent Filter] Dropdown Host Users belum siap di backend Express.');
         }
     };
 

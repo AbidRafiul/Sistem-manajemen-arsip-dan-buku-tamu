@@ -6,34 +6,36 @@ import { Toast } from "primereact/toast";
 import { RefObject } from "react";
 import { DataRekap } from "@/types/print-tools";
 
-
 export interface initValue {
-    UniqueId: string
+    userId?: string | number; // Dibuat opsional
+    UserId?: string | number; // 🔥 DITAMBAHKAN agar TypeScript tidak error saat edit
     Fullname: string
     Username: string
     Password: string
     Telp: string
     Status: '0' | '1',
     Role: UserRole,
-}
-
-export interface NavState {
-
+    BranchId?: string | number;
+    PositionId?: string | number;
+    DivisionId?: string | number;
+    DepartmentId?: string | number;
+    WorkUnitId?: string | number;
 }
 
 export interface TableData {
-    UniqueId: string
+    userId?: string | number; 
+    UserId?: string | number; // 🔥 DITAMBAHKAN karena dari DB kolomnya "UserId"
     Fullname: string
     Username: string
     Password: string
     Telp: string
-    Status: '0' | '1',
+    Status: '0' | '1' | 'active' | 'nonactive', // Menyesuaikan nilai dari DB jika perlu
     Role: UserRole,
     CreatedAt: Date
 }
 
 export interface NavState {
-    uniqueId: string
+    userId: string | number
     load: boolean
     show: boolean
     data: MenuModel[]
@@ -65,7 +67,7 @@ export interface TableProps {
     formik: FormikProps<initValue>
     setState: React.Dispatch<React.SetStateAction<State>>;
     getData: (apiEndpoint: string) => Promise<void>;
-    getNav?: (uniqueId: string) => Promise<void>;
+    getNav?: (userId: string | number) => Promise<void>;
     toast: RefObject<Toast>
     navBar?: NavState;
     setNavBar?: React.Dispatch<React.SetStateAction<NavState>>;
@@ -84,10 +86,12 @@ export interface NavbarProps {
     setNavBar: React.Dispatch<React.SetStateAction<NavState>>;
     handleSaveNavbar: () => Promise<void>;
 }
+
 export interface MenuDisplayProps {
     data: AppMenuItem[],
     onEdit: (item: number[]) => void;
 }
+
 export interface ListMenuDisplayProps {
     data: AppMenuItem,
     indexPath?: number[];

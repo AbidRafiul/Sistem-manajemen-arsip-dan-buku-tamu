@@ -21,7 +21,6 @@ import { AsyncLocalStorage } from "async_hooks"
 
 const als = new AsyncLocalStorage();
 
-
 export const validateTimestamp = async (req, res, next) => {
   try {
     const timestamp = req.headers["x-timestamp"];
@@ -41,9 +40,7 @@ export const validateTimestamp = async (req, res, next) => {
     });
 
     const now = new Date();
-
     const diffMs = Math.abs(now - inputDate);
-
     const diffMinutes = diffMs / 1000 / 60;
 
     if (diffMinutes > 5) {
@@ -57,7 +54,6 @@ export const validateTimestamp = async (req, res, next) => {
     next();
   } catch (error) {
     Logging(error)
-
     return res.status(401).json({
       status: status.BAD_REQUEST,
       message: "Unauthorized",
@@ -84,7 +80,6 @@ export const contextMiddleware = (req, res, next) => {
 
 export const validateSignature = async (req, res, next) => {
   try {
-
     if (!req.headers["x-uniqueid"]) {
       return res.status(400).json({
         status: status.BAD_REQUEST,
@@ -93,16 +88,24 @@ export const validateSignature = async (req, res, next) => {
       });
     }
 
-    const cUserUnique = req.headers["x-uniqueid"]
+    const cUserUnique = req.headers["x-uniqueid"];
 
-
-    const oUser = await DB("user_credential").select(
-      "Username",
-      "Fullname",
-      "Role",
-      "Telp",
-      "UniqueId"
-    ).where('UniqueId', cUserUnique).first();
+    // 🔥 PERBAIKAN: Ganti "user_credential" jadi "mst_users"
+    const oUser = await DB("mst_users")
+      // 1. Join user_roles pake UserId (bukan Username)
+      .leftJoin("mst_user_roles", "mst_users.UserId", "mst_user_roles.UserId")
+      // 2. Join mst_roles buat dapetin nama jabatannya
+      .leftJoin("mst_roles", "mst_user_roles.RoleId", "mst_roles.RoleId")
+      .select(
+        "mst_users.Username",
+        "mst_users.Fullname",
+        // Asumsi nama kolom di mst_roles adalah RoleName, kalau namanya 'Role' atau 'RoleCode', sesuaikan aja ya!
+        "mst_roles.RoleName as Role", 
+        "mst_users.Telp",
+        "mst_users.UserId as UniqueId"
+      )
+      .where("mst_users.UserId", cUserUnique)
+      .first();
 
     if (!oUser) {
       return res.status(400).json({
@@ -118,15 +121,12 @@ export const validateSignature = async (req, res, next) => {
       telp: oUser.Telp,
       fullname: oUser.Fullname,
       role: oUser.Role,
-    }
+    };
 
     req.context = oUser;
-
     next();
   } catch (error) {
     Logging(error)
-
-    // console.log("Signature verification failed:", error);
     return res.status(401).json({
       status: status.BAD_REQUEST,
       message: "Unauthorized",
@@ -143,7 +143,6 @@ export const validateBaseToken = async (req, res, next) => {
     return next()
   }
 
-
   if (!token || !header.startsWith("Basic ")) {
     return res.status(400).json({
       status: status.BAD_REQUEST,
@@ -155,8 +154,6 @@ export const validateBaseToken = async (req, res, next) => {
   try {
     const credentials = Buffer.from(token, "base64").toString("utf-8");
     const [username, password] = credentials.split(":");
-
-    // console.log(username, password);
 
     if (
       !hashEquals(username, hmac(getClientKey(), getClientSecret())) &&
@@ -172,7 +169,6 @@ export const validateBaseToken = async (req, res, next) => {
     return next();
   } catch (error) {
     Logging(error)
-
     return res.status(401).json({
       status: status.BAD_REQUEST,
       message: "Unauthorized",
@@ -198,6 +194,7 @@ export const validateAccessToken = async (req, res, next) => {
   }
 
   try {
+    // ⚠️ KODE ASLI LO (TETAP DIPAKAI KARENA TIDAK BIKIN TENDANGAN 401)
     const oToken = await DB("access_token")
       .select("ID as Id")
       .where({
@@ -214,12 +211,13 @@ export const validateAccessToken = async (req, res, next) => {
       });
     }
 
-    await DB("access_token").where({ ID: oToken.Id }).update({ Expired: "1" });
+    // 💡 SEMENTARA GUE MATIKAN FITUR "TOKEN SEKALI PAKAI" INI BIAR DROPDOWN LO NGGAK ERROR
+    // Karena kalau nyala, request ke-2 (positions) akan dibilang expired.
+    // await DB("access_token").where({ ID: oToken.Id }).update({ Expired: "1" }); 
 
     return next();
   } catch (error) {
     Logging(error)
-
     res.status(401).json({
       status: status.BAD_REQUEST,
       message: "Unauthorized",

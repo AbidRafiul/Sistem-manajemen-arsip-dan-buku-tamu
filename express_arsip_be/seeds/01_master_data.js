@@ -1,93 +1,120 @@
 export async function seed(knex) {
-  // 1. MATIKAN Cek Foreign Key
-  await knex.raw('SET FOREIGN_KEY_CHECKS = 0;');
+  // 1. MATIKAN Cek Foreign Key (Biar bisa menghapus tanpa dilarang MySQL)
+  await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
 
-  // 2. BERSIHKAN TABEL
-  await knex('mst_departments').del();
-  await knex('mst_divisions').del();
-  await knex('mst_branches').del();
-  await knex('user_credential').del();
+  // 2. BERSIHKAN TABEL (Bumi hangus & reset ID kembali ke 1)
+  await knex("mst_departments").truncate();
+  await knex("mst_divisions").truncate();
+  await knex("mst_branches").truncate();
+  await knex("mst_positions").truncate();
+  await knex("mst_work_units").truncate();
+  await knex("mst_users").truncate(); // Kosongin user juga biar bersih total
+  await knex("mst_user_roles").truncate();
+  await knex("user_navigation").truncate();
+  await knex("mst_users").truncate();
+    await knex('user_credential').truncate();
 
   // 3. HIDUPKAN kembali Foreign Key Check
-  await knex.raw('SET FOREIGN_KEY_CHECKS = 1;');
+  await knex.raw("SET FOREIGN_KEY_CHECKS = 1;");
 
-  // 4. Masukkan data Master (BAPAK ke ANAK)
-  
-  // Masukkan 2 Branch (Pusat & Cabang)
-  await knex('mst_branches').insert([
-    { 
-      BranchId: 1, 
-      BranchCode: 'BR-001', 
-      BranchName: 'Kantor Pusat', 
-      Status: 'active', 
-      CreatedAt: new Date(), 
-      UpdatedAt: new Date() 
+  // 4. MASUKKAN DATA MASTER DARI NOL (HIERARKI)
+
+  // A. BRANCH (Cabang)
+  await knex("mst_branches").insert([
+    {
+      BranchId: 1,
+      BranchCode: "BR-001",
+      BranchName: "Kantor Pusat",
+      Status: "active",
+      CreatedAt: new Date(),
+      UpdatedAt: new Date(),
     },
-    { 
-      BranchId: 2, 
-      BranchCode: 'BR-002', 
-      BranchName: 'Kantor Cabang', 
-      Status: 'active', 
-      CreatedAt: new Date(), 
-      UpdatedAt: new Date() 
-    }
+    {
+      BranchId: 2,
+      BranchCode: "BR-002",
+      BranchName: "Kantor Cabang",
+      Status: "active",
+      CreatedAt: new Date(),
+      UpdatedAt: new Date(),
+    },
   ]);
 
-  // Masukkan Divisi (Mengacu ke BranchId yang sudah ada di atas)
-  await knex('mst_divisions').insert([
-    { 
-      DivisionId: 1, 
-      BranchId: 1, // Masuk ke Kantor Pusat
-      DivisionCode: 'DIV-IT', 
-      DivisionName: 'Information Technology', 
-      Status: 'active', 
-      CreatedAt: new Date(), 
-      UpdatedAt: new Date() 
-    },
-    { 
-      DivisionId: 2, 
-      BranchId: 2,
-      DivisionCode: 'DIV-KES', 
-      DivisionName: 'Kesehatan', 
-      Status: 'active', 
-      CreatedAt: new Date(), 
-      UpdatedAt: new Date() 
-    },
-    { 
-      DivisionId: 3, 
+  // B. DIVISION (Divisi)
+  await knex("mst_divisions").insert([
+    {
+      DivisionId: 1,
       BranchId: 1,
-      DivisionCode: 'DIV-ELEKTRO', 
-      DivisionName: 'Elektro', 
-      Status: 'active', 
-      CreatedAt: new Date(), 
-      UpdatedAt: new Date() 
+      DivisionCode: "DIV-IT",
+      DivisionName: "Information Technology",
+      Status: "active",
+      CreatedAt: new Date(),
+      UpdatedAt: new Date(),
     },
-    { 
-      DivisionId: 4, 
+    {
+      DivisionId: 2,
       BranchId: 1,
-      DivisionCode: 'DIV-LISTRIK', 
-      DivisionName: 'Listrik', 
-      Status: 'active', 
-      CreatedAt: new Date(), 
-      UpdatedAt: new Date() 
+      DivisionCode: "DIV-HR",
+      DivisionName: "Human Resources",
+      Status: "active",
+      CreatedAt: new Date(),
+      UpdatedAt: new Date(),
     },
-     { 
-      DivisionId: 5, 
-      BranchId: 2,
-      DivisionCode: 'SDM', 
-      DivisionName: 'Sumber Daya Manusia', 
-      Status: 'active', 
-      CreatedAt: new Date(), 
-      UpdatedAt: new Date() 
-    },
-    { 
-      DivisionId: 6, 
-      BranchId: 1,
-      DivisionCode: 'CS', 
-      DivisionName: 'Customer Service', 
-      Status: 'active', 
-      CreatedAt: new Date(), 
-      UpdatedAt: new Date() 
-    }
   ]);
-};
+
+  // C. DEPARTMENT (Departemen)
+  await knex("mst_departments").insert([
+    {
+      DepartmentId: 1,
+      DivisionId: 1,
+      DepartmentCode: "DEPT-DEV",
+      DepartmentName: "Software Development",
+      Status: "active",
+      CreatedAt: new Date(),
+      UpdatedAt: new Date(),
+    },
+    {
+      DepartmentId: 2,
+      DivisionId: 2,
+      DepartmentCode: "DEPT-REC",
+      DepartmentName: "Recruitment",
+      Status: "active",
+      CreatedAt: new Date(),
+      UpdatedAt: new Date(),
+    },
+  ]);
+
+  // D. POSITION (Jabatan)
+  await knex("mst_positions").insert([
+    {
+      PositionId: 1,
+      PositionCode: "POS-DIR",
+      PositionName: "Direktur Utama",
+      Status: "active",
+      CreatedAt: new Date(),
+      UpdatedAt: new Date(),
+    },
+    {
+      PositionId: 2,
+      PositionCode: "POS-MGR",
+      PositionName: "Manager",
+      Status: "active",
+      CreatedAt: new Date(),
+      UpdatedAt: new Date(),
+    },
+  ]);
+
+  // E. WORK UNIT (Unit Kerja)
+  await knex("mst_work_units").insert([
+    {
+      WorkUnitId: 1,
+      DepartmentId: 1,
+      WorkUnitCode: "WU-PST",
+      WorkUnitName: "Unit Pusat Utama",
+      Status: "active",
+      CreatedAt: new Date(),
+      UpdatedAt: new Date(),
+    },
+  ]);
+
+  console.log("Master Data berhasil di-reset dan diisi ulang!");
+}
