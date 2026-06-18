@@ -5,28 +5,28 @@ const deleteDocument = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const vaDocumentId = Array.isArray(oPayload.DocumentId)
-      ? oPayload.DocumentId
-      : [oPayload.DocumentId];
+    const vaDocumentId = Array.isArray(oPayload.document_id)
+      ? oPayload.document_id
+      : [oPayload.document_id];
     const dNow = new Date();
 
     if (!vaDocumentId.length || vaDocumentId.some((nDocumentId) => !nDocumentId)) {
       const oResult = {
         status: "error",
-        message: "DocumentId is required",
+        message: "document_id is required",
       };
 
       return res.status(422).json(oResult);
     }
 
     const oData = {
-      Status: "nonactive",
-      UpdatedAt: dNow,
+      status: "nonactive",
+      updated_at: dNow,
     };
 
     const nUpdated = await DB("trx_documents")
-      .whereIn("DocumentId", vaDocumentId)
-      .where("Status", "active")
+      .whereIn("document_id", vaDocumentId)
+      .where("status", "active")
       .update(oData);
 
     if (nUpdated === 0) {
@@ -42,7 +42,7 @@ const deleteDocument = async (req, res) => {
       status: "success",
       message: "Document deleted successfully",
       data: {
-        DocumentId: vaDocumentId,
+        document_id: vaDocumentId,
         ...oData,
       },
     };

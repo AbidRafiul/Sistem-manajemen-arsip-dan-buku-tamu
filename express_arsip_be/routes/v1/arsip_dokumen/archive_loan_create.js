@@ -5,18 +5,18 @@ const createArchiveLoan = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const nDocumentId = oPayload.DocumentId;
-    const cBorrowerName = oPayload.BorrowerName;
-    const dLoanDate = oPayload.LoanDate;
-    const dExpectedReturnDate = oPayload.ExpectedReturnDate;
-    const cPurpose = oPayload.Purpose || null;
+    const nDocumentId = oPayload.document_id;
+    const cBorrowerName = oPayload.borrower_name;
+    const dLoanDate = oPayload.loan_date;
+    const dExpectedReturnDate = oPayload.expected_return_date;
+    const cPurpose = oPayload.purpose || null;
     const dNow = new Date();
 
     // Validasi wajib
     if (!nDocumentId || !cBorrowerName || !dLoanDate || !dExpectedReturnDate) {
       const oResult = {
         status: "error",
-        message: "DocumentId, BorrowerName, LoanDate, dan ExpectedReturnDate wajib diisi",
+        message: "document_id, borrower_name, loan_date, dan expected_return_date wajib diisi",
       };
       return res.status(422).json(oResult);
     }
@@ -32,8 +32,8 @@ const createArchiveLoan = async (req, res) => {
 
     // Verifikasi dokumen aktif
     const oDocument = await DB("trx_documents")
-      .where("DocumentId", nDocumentId)
-      .where("Status", "active")
+      .where("document_id", nDocumentId)
+      .where("status", "active")
       .first();
 
     if (!oDocument) {
@@ -46,32 +46,32 @@ const createArchiveLoan = async (req, res) => {
 
     // Cek apakah dokumen sedang dipinjam (status = borrowed)
     const oActiveLoan = await DB("trx_archive_loans")
-      .where("DocumentId", nDocumentId)
-      .where("Status", "borrowed")
+      .where("document_id", nDocumentId)
+      .where("status", "borrowed")
       .first();
 
     if (oActiveLoan) {
       const oResult = {
         status: "error",
-        message: `Dokumen sedang dipinjam oleh ${oActiveLoan.BorrowerName} sejak ${oActiveLoan.LoanDate}. Tidak dapat mengajukan peminjaman baru.`,
+        message: `Dokumen sedang dipinjam oleh ${oActiveLoan.borrower_name} sejak ${oActiveLoan.loan_date}. Tidak dapat mengajukan peminjaman baru.`,
       };
       return res.status(422).json(oResult);
     }
 
     const oData = {
-      DocumentId: nDocumentId,
-      BorrowerName: cBorrowerName,
-      LoanDate: dLoanDate,
-      ExpectedReturnDate: dExpectedReturnDate,
-      ReturnDate: null,
-      Purpose: cPurpose,
-      Status: "pending",
-      ApprovedBy: null,
-      ApprovedAt: null,
-      ApprovalNotes: null,
-      IsOverdue: 0,
-      CreatedAt: dNow,
-      UpdatedAt: dNow,
+      document_id: nDocumentId,
+      borrower_name: cBorrowerName,
+      loan_date: dLoanDate,
+      expected_return_date: dExpectedReturnDate,
+      return_date: null,
+      purpose: cPurpose,
+      status: "pending",
+      approved_by: null,
+      approved_at: null,
+      approval_notes: null,
+      is_overdue: 0,
+      created_at: dNow,
+      updated_at: dNow,
     };
 
     const [nLoanId] = await DB("trx_archive_loans").insert(oData);
@@ -80,7 +80,7 @@ const createArchiveLoan = async (req, res) => {
       status: "success",
       message: "Pengajuan peminjaman arsip berhasil dibuat dan menunggu approval",
       data: {
-        LoanId: nLoanId,
+        loan_id: nLoanId,
         ...oData,
       },
     };

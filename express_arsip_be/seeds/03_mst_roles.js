@@ -3,6 +3,8 @@
  * @returns { Promise<void> } 
  */
 export const seed = async function(knex) {
+  await knex.raw('SET FOREIGN_KEY_CHECKS = 0;');
+
   await knex('mst_roles').whereIn('RoleCode', [
     'ADM', 'PMN', 'SKR', 'STF_ARS', 'STF_UMM', 'RSP', 'AUD'
   ]).del();
@@ -18,4 +20,6 @@ export const seed = async function(knex) {
     { RoleCode: 'RSP', RoleName: 'Resepsionis', Description: 'Input buku tamu', Status: 'active', CreatedAt: dNow, UpdatedAt: dNow },
     { RoleCode: 'AUD', RoleName: 'Auditor', Description: 'Akses audit trail', Status: 'active', CreatedAt: dNow, UpdatedAt: dNow }
   ]);
+
+  await knex.raw('SET FOREIGN_KEY_CHECKS = 1;');
 };

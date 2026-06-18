@@ -5,9 +5,9 @@ const getArchiveLoans = async (req, res) => {
   const oQuery = req.query;
 
   try {
-    const nLoanId = oQuery.LoanId;
-    const nDocumentId = oQuery.DocumentId;
-    const cStatus = oQuery.Status;
+    const nLoanId = oQuery.loan_id;
+    const nDocumentId = oQuery.document_id;
+    const cStatus = oQuery.status;
     const vaAllowedStatus = [
       "pending",
       "approved",
@@ -26,32 +26,32 @@ const getArchiveLoans = async (req, res) => {
     }
 
     const oData = DB("trx_archive_loans as l")
-      .leftJoin("trx_documents as d", "l.DocumentId", "d.DocumentId")
+      .leftJoin("trx_documents as d", "l.document_id", "d.document_id")
       .select(
-        "l.LoanId",
-        "l.DocumentId",
-        "d.DocumentName",
-        "d.DocumentNumber",
-        "l.BorrowerName",
-        "l.LoanDate",
-        "l.ReturnDate",
-        "l.Purpose",
-        "l.Status",
-        "l.CreatedAt",
-        "l.UpdatedAt"
+        "l.loan_id",
+        "l.document_id",
+        "d.document_name",
+        "d.document_number",
+        "l.borrower_name",
+        "l.loan_date",
+        "l.return_date",
+        "l.purpose",
+        "l.status",
+        "l.created_at",
+        "l.updated_at"
       )
-      .orderBy("l.LoanId", "desc");
+      .orderBy("l.loan_id", "desc");
 
     if (nLoanId) {
-      oData.where("l.LoanId", nLoanId);
+      oData.where("l.loan_id", nLoanId);
     }
 
     if (nDocumentId) {
-      oData.where("l.DocumentId", nDocumentId);
+      oData.where("l.document_id", nDocumentId);
     }
 
     if (cStatus) {
-      oData.where("l.Status", cStatus);
+      oData.where("l.status", cStatus);
     }
 
     const vaData = await oData;
