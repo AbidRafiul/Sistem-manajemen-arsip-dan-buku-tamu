@@ -1,0 +1,38 @@
+[33m76822f5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfix/login-session-crash[m[33m, [m[1;32mfeat/user-management[m[33m)[m HEAD@{0}: checkout: moving from feat/master-data to fix/login-session-crash
+[33mbdfdbb3[m[33m ([m[1;32mfeat/master-data[m[33m)[m HEAD@{1}: reset: moving to HEAD
+[33mbdfdbb3[m[33m ([m[1;32mfeat/master-data[m[33m)[m HEAD@{2}: commit (merge): chore: finish resolving conflicts in login.js
+[33mf330c6b[m HEAD@{3}: commit (merge): chore: resolve previous merge conflicts from main
+[33m1eea0b9[m HEAD@{4}: checkout: moving from main to feat/master-data
+[33m1f1e762[m[33m ([m[1;32mmain[m[33m)[m HEAD@{5}: commit: chore: update package-lock.json
+[33m185734e[m[33m ([m[1;31morigin/main[m[33m)[m HEAD@{6}: pull origin main: Fast-forward
+[33mb985198[m HEAD@{7}: checkout: moving from feat/user-management to main
+[33m76822f5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfix/login-session-crash[m[33m, [m[1;32mfeat/user-management[m[33m)[m HEAD@{8}: checkout: moving from fix/login-session-crash to feat/user-management
+[33m76822f5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfix/login-session-crash[m[33m, [m[1;32mfeat/user-management[m[33m)[m HEAD@{9}: commit: fix: resolve user_create transaction bug, flexible Joi role validation, and dynamic login navigation
+[33m59b8358[m[33m ([m[1;31morigin/fix/login-session-crash[m[33m)[m HEAD@{10}: checkout: moving from feat/master-data to fix/login-session-crash
+[33m1eea0b9[m HEAD@{11}: commit: fixing bug master data
+[33ma57204a[m HEAD@{12}: checkout: moving from fix/login-session-crash to feat/master-data
+[33m59b8358[m[33m ([m[1;31morigin/fix/login-session-crash[m[33m)[m HEAD@{13}: commit: fix(auth): add missing parse import to resolve 500 error on login session
+[33ma57204a[m HEAD@{14}: checkout: moving from feat/master-data to fix/login-session-crash
+[33ma57204a[m HEAD@{15}: merge main: Merge made by the 'ort' strategy.
+[33m0a11c45[m HEAD@{16}: checkout: moving from main to feat/master-data
+[33mb985198[m HEAD@{17}: pull origin main: Fast-forward
+[33me09b0c8[m HEAD@{18}: checkout: moving from feat/master-data to main
+[33m0a11c45[m HEAD@{19}: commit: feat(user-management): implement soft delete & update role configuration
+[33m291e6fe[m[33m ([m[1;31morigin/feat/master-data[m[33m)[m HEAD@{20}: commit (merge): chore: merge main and resolve conflicts in routes
+[33mf0bb5ca[m HEAD@{21}: checkout: moving from main to feat/master-data
+[33me09b0c8[m HEAD@{22}: pull origin main: Fast-forward
+[33mbbebf5d[m HEAD@{23}: checkout: moving from feat/master-data to main
+[33mf0bb5ca[m HEAD@{24}: commit: feat: complete CRUD and relations for master data organisasi and arsip
+[33m9f1cac3[m HEAD@{25}: commit: Selesai master organization (position and work unit)
+[33mfb6412f[m HEAD@{26}: commit: CRUD untuk master data branch, division, dan department
+[33m68324d9[m HEAD@{27}: merge main: Merge made by the 'ort' strategy.
+[33m31d0576[m HEAD@{28}: checkout: moving from main to feat/master-data
+[33mbbebf5d[m HEAD@{29}: pull origin main: Fast-forward
+[33m4461f6a[m HEAD@{30}: checkout: moving from feat/master-data to main
+[33m31d0576[m HEAD@{31}: commit: setup 17 tabel migration dan routing api master data
+[33me4de9eb[m[33m ([m[1;31morigin/feat/setup-minio[m[33m, [m[1;32mfeat/setup-minio[m[33m)[m HEAD@{32}: checkout: moving from feat/setup-minio to feat/master-data
+[33me4de9eb[m[33m ([m[1;31morigin/feat/setup-minio[m[33m, [m[1;32mfeat/setup-minio[m[33m)[m HEAD@{33}: reset: moving to HEAD
+[33me4de9eb[m[33m ([m[1;31morigin/feat/setup-minio[m[33m, [m[1;32mfeat/setup-minio[m[33m)[m HEAD@{34}: commit: setup konfigurasi minio dan helper upload otomatis
+[33m4461f6a[m HEAD@{35}: checkout: moving from main to feat/setup-minio
+[33m4461f6a[m HEAD@{36}: reset: moving to origin/main
+[33m248420a[m HEAD@{37}: commit (initial): Sinkronisasi ulang Git lokal
