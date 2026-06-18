@@ -9,7 +9,7 @@ import { uploadFileToMinio } from "../../../core/components/tools/minio_helper.j
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
-router.post("/", upload.fields([{ name: "PhotoFace", maxCount: 1 }, { name: "PhotoIdentity", maxCount: 1 }]), async (req, res) => {
+router.post("/", upload.fields([{ name: "SelfieFile", maxCount: 1 }, { name: "IdentityFile", maxCount: 1 }, { name: "PhotoFace", maxCount: 1 }, { name: "PhotoIdentity", maxCount: 1 }]), async (req, res) => {
   const { body: oPayload } = req;
   const username = req?.auth?.username || "";
 
@@ -29,7 +29,14 @@ router.post("/", upload.fields([{ name: "PhotoFace", maxCount: 1 }, { name: "Pho
         VisitNotes: Joi.string().optional().allow(null, "").label("VisitNotes"),
         CheckInTime: Joi.string().required().label("CheckInTime"),
       },
-      {},
+      {
+        "string.base": "{#label} harus berupa string",
+        "string.email": "{#label} harus berupa email yang valid",
+        "string.empty": "{#label} tidak boleh kosong",
+        "string.max": "{#label} tidak boleh lebih dari {#limit} karakter",
+        "any.required": "{#label} wajib diisi",
+        "any.only": "{#label} tidak valid",
+      },
       oPayload,
       { allowUnknown: true }
     );
@@ -55,8 +62,8 @@ router.post("/", upload.fields([{ name: "PhotoFace", maxCount: 1 }, { name: "Pho
       CheckInTime,
     } = oPayload;
 
-    const photoFaceFile = req.files?.PhotoFace?.[0] || null;
-    const photoIdentityFile = req.files?.PhotoIdentity?.[0] || null;
+    const photoFaceFile = req.files?.SelfieFile?.[0] || req.files?.PhotoFace?.[0] || null;
+    const photoIdentityFile = req.files?.IdentityFile?.[0] || req.files?.PhotoIdentity?.[0] || null;
     const todayPath = formatDateSystem(new Date(), "yyyyMMdd");
 
     let PhotoFace = null;
@@ -73,28 +80,28 @@ router.post("/", upload.fields([{ name: "PhotoFace", maxCount: 1 }, { name: "Pho
     const QRToken = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
     const oData = {
-      GuestName,
-      PhoneNumber,
-      GuestEmail,
-      GuestCompany,
-      GuestPosition,
-      IdentityType,
-      IdentityNumber,
-      VisitPurposeId,
-      HostUserId,
-      HostName,
-      VisitNotes,
-      PhotoFace,
-      PhotoIdentity,
-      VisitCode: VisitCode,
-      QRToken,
-      CheckInTime: CheckInTime,
-      Status: "in",
-      ApprovalStatus: "pending",
-      CreatedAt: formatDateSystem(),
+      guest_name: GuestName,
+      phone_number: PhoneNumber,
+      guest_email: GuestEmail,
+      guest_company: GuestCompany,
+      guest_position: GuestPosition,
+      identity_type: IdentityType,
+      identity_number: IdentityNumber,
+      visit_purpose_id: VisitPurposeId,
+      host_user_id: HostUserId,
+      host_name: HostName,
+      visit_notes: VisitNotes,
+      photo_face: PhotoFace,
+      photo_identity: PhotoIdentity,
+      visit_code: VisitCode,
+      qr_token: QRToken,
+      check_in_time: CheckInTime,
+      status: "Rencana", 
+      approval_status: "pending",
+      created_at: formatDateSystem(),
     };
 
-    const [VisitationId] = await DB("trx_visitations").insert(oData);
+    const [VisitationId] = await DB("tr_visitations").insert(oData);
 
     try {
       if (HostUserId) {
@@ -110,7 +117,19 @@ router.post("/", upload.fields([{ name: "PhotoFace", maxCount: 1 }, { name: "Pho
       Logging(e, { file: "visit_registrasi.js", func: "notify", request: { HostUserId }, response: "notify failed", user: username });
     }
 
-    return res.status(200).json({ status: "00", message: "Registrasi berhasil", data: { VisitCode, QRToken, VisitationId }, datetime: formatDateSystem() });
+    return res.status(200).json({
+      status: "00",
+      message: "Registrasi berhasil",
+      data: {
+        visit_code: VisitCode,
+        qr_token: QRToken,
+        visitation_id: VisitationId,
+        guest_name: GuestName,
+        guest_company: GuestCompany || "-",
+        qr_image_url: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${QRToken}`
+      },
+      datetime: formatDateSystem()
+    });
   } catch (error) {
     const oResult = { status: "01", message: "Sistem sedang maintenance harap tunggu sebentar", datetime: formatDateSystem() };
     Logging(error, { file: "visit_registrasi.js", func: "registrasi", request: req.body, response: oResult, user: username });

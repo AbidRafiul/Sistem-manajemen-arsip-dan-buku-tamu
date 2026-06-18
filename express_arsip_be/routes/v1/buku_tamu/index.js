@@ -1,6 +1,5 @@
 import express from "express";
 
-// Import sub-router modular hasil bentukan VS Code AI
 import VisitCheckin from "./visit_checkin.js";
 import VisitCheckout from "./visit_checkout.js";
 import VisitRegistrasi from "./visit_registrasi.js";
@@ -12,7 +11,6 @@ import VisitQRScan from "./visit_qr_scan.js";
 
 const router = express.Router();
 
-// Menghubungkan alamat URL endpoint sesuai instruksi spesifikasi dokumen Page 9
 router.use("/visit_checkin", VisitCheckin);
 router.use("/visit_checkout", VisitCheckout);
 router.use("/visit_registrasi", VisitRegistrasi);

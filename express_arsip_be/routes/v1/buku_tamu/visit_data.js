@@ -1,34 +1,75 @@
 import express from "express";
+import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { formatDateSystem } from "../components/tools/general.js";
 
 const router = express.Router();
 
 router.post("/", async (req, res) => {
+  const { body: oPayload } = req;
   try {
-    const today = formatDateSystem(new Date(), "yyyy-MM-dd");
+    const page = parseInt(oPayload.page || 1, 10) || 1;
+    const limit = parseInt(oPayload.limit || 20, 10) || 20;
+    const offset = (page - 1) * limit;
 
-    const [{ today_total }] = await DB.raw("SELECT COUNT(*) as today_total FROM trx_visitations WHERE DATE(CheckInTime)=?", [today]);
-    const [{ today_in }] = await DB.raw("SELECT COUNT(*) as today_in FROM trx_visitations WHERE DATE(CheckInTime)=? AND Status='in'", [today]);
-    const [{ today_out }] = await DB.raw("SELECT COUNT(*) as today_out FROM trx_visitations WHERE DATE(CheckInTime)=? AND Status='out'", [today]);
-    const [{ pending_approval }] = await DB.raw("SELECT COUNT(*) as pending_approval FROM trx_visitations WHERE ApprovalStatus='pending'");
+    const q = DB("tr_visitations as t")
+      .select(
+        "t.*",
+        "mp.visit_purpose_name as VisitPurposeName", 
+        "u.Fullname as HostFullname"
+      )
+      .leftJoin("mst_visit_purpose as mp", "t.visit_purpose_id", "mp.visit_purpose_id")
+      .leftJoin("user_credential as u", "t.host_user_id", "u.UniqueId");
 
-    const chart_per_hour_raw = await DB.raw("SELECT HOUR(CheckInTime) as hour, COUNT(*) as count FROM trx_visitations WHERE DATE(CheckInTime)=? GROUP BY HOUR(CheckInTime) ORDER BY hour", [today]);
-    const chart_per_hour = chart_per_hour_raw[0].map(r => ({ hour: r.hour, count: r.count }));
+    const qCount = DB("tr_visitations as t").count({ total: '*' });
 
-    const chart_per_purpose_raw = await DB.raw(
-      "SELECT mp.VisitPurposeName as purpose, COUNT(*) as count FROM trx_visitations t LEFT JOIN mst_visit_purpose mp ON t.VisitPurposeId = mp.VisitPurposeId WHERE DATE(t.CheckInTime) = ? GROUP BY t.VisitPurposeId", 
-      [today]
-    );
-    const chart_per_purpose = chart_per_purpose_raw[0].map(r => ({ purpose: r.purpose, count: r.count }));
+    if (oPayload.Status) {
+      q.where("t.status", oPayload.Status);
+      qCount.where("t.status", oPayload.Status);
+    }
+    if (oPayload.ApprovalStatus) {
+      q.where("t.approval_status", oPayload.ApprovalStatus);
+      qCount.where("t.approval_status", oPayload.ApprovalStatus);
+    }
+    if (oPayload.GuestName) {
+      q.where("t.guest_name", "like", `%${oPayload.GuestName}%`);
+      qCount.where("t.guest_name", "like", `%${oPayload.GuestName}%`);
+    }
+    if (oPayload.VisitPurposeId) {
+      q.where("t.visit_purpose_id", oPayload.VisitPurposeId);
+      qCount.where("t.visit_purpose_id", oPayload.VisitPurposeId);
+    }
 
-    const recent_10 = await DB("trx_visitations").select("VisitationId", "GuestName", "VisitCode", "CheckInTime", "Status").orderBy("CheckInTime", "desc").limit(10);
+    if (oPayload.TanggalMulai && oPayload.TanggalSelesai) {
+      const start = oPayload.TanggalMulai + " 00:00:00";
+      const end = oPayload.TanggalSelesai + " 23:59:59";
+      q.whereBetween("t.check_in_time", [start, end]);
+      qCount.whereBetween("t.check_in_time", [start, end]);
+    }
 
-    return res.status(200).json({
-      status: "00",
-      message: "OK",
-      data: { today_total: today_total || 0, today_in: today_in || 0, today_out: today_out || 0, pending_approval: pending_approval || 0, chart_per_hour, chart_per_purpose, recent_10 },
-      datetime: formatDateSystem(),
+    const totalObj = await qCount.first();
+    const rows = await q.orderBy("t.check_in_time", "desc").limit(limit).offset(offset);
+
+    const cBaseUrl = `${process.env.APP_SERVER || 'http://localhost'}:${process.env.APP_PORT || '8000'}`;
+    for (const r of rows) {
+      if (r.photo_face) {
+        r.PhotoFaceUrl = r.photo_face.startsWith('http') ? r.photo_face : `${cBaseUrl}/uploads/${r.photo_face}`;
+      } else {
+        r.PhotoFaceUrl = null;
+      }
+      
+      if (r.photo_identity) {
+        r.PhotoIdentityUrl = r.photo_identity.startsWith('http') ? r.photo_identity : `${cBaseUrl}/uploads/${r.photo_identity}`;
+      } else {
+        r.PhotoIdentityUrl = null;
+      }
+    }
+
+    return res.status(200).json({ 
+      status: "00", 
+      message: "OK", 
+      data: { total: totalObj?.total || 0, page, limit, rows }, 
+      datetime: formatDateSystem() 
     });
   } catch (error) {
     console.error(error);

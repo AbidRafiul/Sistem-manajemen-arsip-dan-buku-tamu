@@ -9,10 +9,10 @@ router.post("/", async (req, res) => {
   if (!QRToken) return res.status(400).json({ status: "99", message: "QRToken wajib", datetime: formatDateSystem() });
 
   try {
-    const record = await DB("trx_visitations").where("QRToken", QRToken).first();
+    const record = await DB("tr_visitations").where("qr_token", QRToken).first();
     if (!record) return res.status(404).json({ status: "03", message: "Tamu tidak ditemukan", datetime: formatDateSystem() });
 
-    const canCheckout = record.Status === "in";
+    const canCheckout = record.status === "Sedang Berkunjung";
     return res.status(200).json({ status: "00", message: "OK", data: { record, canCheckout }, datetime: formatDateSystem() });
   } catch (error) {
     console.error(error);

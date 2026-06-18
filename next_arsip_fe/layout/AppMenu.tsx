@@ -36,6 +36,24 @@ const archiveDocumentItems: AppMenuItem[] = [
     }
 ];
 
+const guestBookItems: AppMenuItem[] = [
+    {
+        label: 'Monitoring Tamu',
+        icon: 'pi pi-desktop',
+        to: '/buku_tamu/monitoring'
+    },
+    {
+        label: 'Registrasi Kunjungan',
+        icon: 'pi pi-user-plus',
+        to: '/buku_tamu/registrasi'
+    },
+    {
+        label: 'Riwayat Tamu',
+        icon: 'pi pi-list',
+        to: '/buku_tamu/checkout'
+    }
+];
+
 const ensureArchiveDocumentMenu = (menu: AppMenuItem[]) => {
     const hasItem = (items: AppMenuItem[] = [], toPath: string): boolean => {
         return items.some((item) => item.to === toPath || hasItem(item.items || [], toPath));
@@ -90,6 +108,36 @@ const ensureCorrespondenceMenu = (menu: AppMenuItem[]) => {
     ];
 };
 
+const ensureGuestBookMenu = (menu: AppMenuItem[]) => {
+    const hasItem = (items: AppMenuItem[] = [], toPath: string): boolean => {
+        return items.some((item) => item.to === toPath || hasItem(item.items || [], toPath));
+    };
+
+    const hasAll = guestBookItems.every((reqItem) => hasItem(menu, reqItem.to || ''));
+    if (hasAll) return menu;
+
+    const guestBookGroup = menu.find((item) => {
+        const label = item.label?.toLowerCase();
+        return label === 'buku tamu' || label === 'guest book';
+    });
+
+    if (guestBookGroup) {
+        const existingTos = (guestBookGroup.items || []).map(item => item.to);
+        const missingItems = guestBookItems.filter(item => !existingTos.includes(item.to));
+        guestBookGroup.items = [...(guestBookGroup.items || []), ...missingItems];
+        return menu;
+    }
+
+    return [
+        ...menu,
+        {
+            label: 'BUKU TAMU',
+            icon: 'pi pi-id-card',
+            items: guestBookItems
+        }
+    ];
+};
+
 const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
     return menu.filter((item) => item.label?.toLowerCase() !== 'korespondensi');
 };
@@ -122,11 +170,14 @@ const AppMenu = () => {
                 throw new Error('Invalid menu data');
             }
 
-            const normalizedMenu = ensureArchiveDocumentMenu(
-                ensureCorrespondenceMenu(
-                    removeLegacyCorrespondenceMenu(JSON.parse(JSON.stringify(vaData.data)))
+            const normalizedMenu = ensureGuestBookMenu(
+                    ensureArchiveDocumentMenu(
+                        ensureCorrespondenceMenu(
+                            removeLegacyCorrespondenceMenu(JSON.parse(JSON.stringify(vaData.data)))
+                        )
                 )
             );
+            
             const menu: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
             const menu2: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
 
@@ -264,7 +315,6 @@ const AppMenu = () => {
             <ul className="layout-menu">
                 {state.load
                     ? [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((item, i) => (
-                        // 🎯 FIX WARNING KEY: Ditambahkan key unik berbasis index `i` pada wrapper <li> loading
                         <li className="my-3" key={`menu-skeleton-${i}`}>
                             <Skeleton className="py-4" />
                         </li>
