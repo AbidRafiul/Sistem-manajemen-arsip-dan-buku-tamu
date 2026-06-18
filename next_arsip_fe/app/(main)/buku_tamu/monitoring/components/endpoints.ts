@@ -1,0 +1,1 @@
+export const apiEndpointMonitoring = '/buku_tamu/visit_monitoring';

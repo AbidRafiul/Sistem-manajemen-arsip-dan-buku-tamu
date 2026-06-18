@@ -3,7 +3,7 @@ import multer from "multer";
 import crypto from "crypto";
 import Joi from "joi";
 import { formatDateSystem } from "../components/tools/general.js";
-import { Logging, validatePayload } from "../components/tools/servertool.js"; // 💡 Menghapus getLastFaktur karena diganti generator dinamis
+import { Logging, validatePayload } from "../components/tools/servertool.js"; 
 import DB from "../../../core/config/knex.js";
 import { uploadFileToMinio } from "../../../core/components/tools/minio_helper.js";
 
@@ -14,10 +14,10 @@ const upload = multer({ storage });
 router.post(
   "/",
   upload.fields([
+    { name: "SelfieFile", maxCount: 1 },
+    { name: "IdentityFile", maxCount: 1 },
     { name: "PhotoFace", maxCount: 1 },
-    { name: "photoFace", maxCount: 1 },
-    { name: "PhotoIdentity", maxCount: 1 },
-    { name: "photoIdentity", maxCount: 1 },
+    { name: "PhotoIdentity", maxCount: 1 }
   ]),
   async (req, res) => {
     const { body: oPayload } = req;
@@ -56,7 +56,6 @@ router.post(
           message: cValidation || "Terdapat kesalahan pada data anda",
           datetime: formatDateSystem(),
         };
-
         return res.status(422).json(oResult);
       }
 
@@ -74,8 +73,8 @@ router.post(
         VisitNotes,
       } = oPayload;
 
-      const photoFaceFile = req.files?.PhotoFace?.[0] || req.files?.photoFace?.[0] || null;
-      const photoIdentityFile = req.files?.PhotoIdentity?.[0] || req.files?.photoIdentity?.[0] || null;
+      const photoFaceFile = req.files?.SelfieFile?.[0] || req.files?.PhotoFace?.[0] || null;
+      const photoIdentityFile = req.files?.IdentityFile?.[0] || req.files?.PhotoIdentity?.[0] || null;
       const todayPath = formatDateSystem(new Date(), "yyyyMMdd");
 
       let PhotoFace = null;
@@ -107,41 +106,43 @@ router.post(
           : Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
       const oData = {
-        GuestName,
-        PhoneNumber,
-        GuestEmail,
-        GuestCompany,
-        GuestPosition,
-        IdentityType,
-        IdentityNumber,
-        VisitPurposeId,
-        HostUserId,
-        HostName,
-        VisitNotes,
-        PhotoFace,
-        PhotoIdentity,
-        VisitCode,
-        QRToken,
-        CheckInTime: formatDateSystem(),
-        Status: "in",
-        ApprovalStatus: "approved",
-        CreatedAt: formatDateSystem(),
+        guest_name: GuestName,
+        phone_number: PhoneNumber,
+        guest_email: GuestEmail,
+        guest_company: GuestCompany,
+        guest_position: GuestPosition,
+        identity_type: IdentityType,
+        identity_number: IdentityNumber,
+        visit_purpose_id: VisitPurposeId,
+        host_user_id: HostUserId,
+        host_name: HostName,
+        visit_notes: VisitNotes,
+        photo_face: PhotoFace,
+        photo_identity: PhotoIdentity,
+        visit_code: VisitCode,
+        qr_token: QRToken,
+        check_in_time: formatDateSystem(),
+        status: "Sedang Berkunjung",
+        approval_status: "approved",
+        created_at: formatDateSystem(),
       };
 
-      const [VisitationId] = await DB("trx_visitations").insert(oData);
+      const [VisitationId] = await DB("tr_visitations").insert(oData);
 
       return res.status(200).json({
         status: "00",
         message: "Check-in berhasil",
         data: {
-          VisitCode,
-          QRToken,
-          VisitationId,
+          visit_code: VisitCode,
+          qr_token: QRToken,
+          visitation_id: VisitationId,
+          guest_name: GuestName,
+          guest_company: GuestCompany || "-",
+          qr_image_url: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${QRToken}`
         },
         datetime: formatDateSystem(),
       });
     } catch (error) {
- 
       console.error("❌ [Database Error Log]:", error); 
 
       const oResult = {

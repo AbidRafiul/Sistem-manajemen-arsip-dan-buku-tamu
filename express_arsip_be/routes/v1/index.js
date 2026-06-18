@@ -15,6 +15,7 @@ import {
   validateBaseToken,
   validateSignature,
 } from "../../middleware/validate_header.js";
+
 const router = express.Router();
 
 // Auth
@@ -23,7 +24,6 @@ router.use("/auth/login", Login);
 router.use("/auth/reset-password", [validateAccessToken], ResetPassword);
 
 // Modul-Modul Aplikasi
-
 router.use(
   "/setup",
   Setup
@@ -40,7 +40,7 @@ router.use(
   "/master",
   [validateAccessToken, validateSignature, contextMiddleware],
   MasterData
-)
+);
 
 // Arsip Dokumen
 router.use(
@@ -60,6 +60,6 @@ router.use(
   "/correspondence",
   [validateAccessToken, validateSignature, contextMiddleware],
   SuratMasuk
-)
+);
 
 export default router;

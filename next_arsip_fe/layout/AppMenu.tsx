@@ -14,88 +14,168 @@
     import { Skeleton } from 'primereact/skeleton';
 
     interface MenuState {
-        searchVal: string;
-        filteredMenu: AppMenuItem[];
-        load: boolean;
-        menu: AppMenuItem[];
-    }
+    searchVal: string;
+    filteredMenu: AppMenuItem[];
+    load: boolean;
+    menu: AppMenuItem[];
+}
 
-    const mailInMenu: AppMenuItem = {
-        label: 'Mail In',
-        icon: 'pi pi-inbox',
-        to: '/correspondence/mail-in'
-    };
-
-    const archiveDocumentItems: AppMenuItem[] = [
+const mailInMenu: AppMenuItem = {
+    label: 'Surat Masuk',
+    icon: 'pi pi-inbox',
+    to: '/correspondence/mail-in',
+    items: [
         {
-            label: 'Dokumen Arsip',
-            icon: 'pi pi-folder-open',
-            to: '/edms/archive_document'
+            label: 'Rekap Surat Masuk',
+            icon: 'pi pi-th-large',
+            to: '/correspondence/mail-in'
         },
         {
-            label: 'Peminjaman Arsip',
-            icon: 'pi pi-share-alt',
-            to: '/edms/archive_loan'
+            label: 'Data Surat Masuk',
+            icon: 'pi pi-envelope',
+            to: '/correspondence/mail-in/data'
+        },
+        {
+            label: 'Disposisi Surat',
+            icon: 'pi pi-send',
+            to: '/correspondence/mail-in/disposition'
+        },
+    ]
+};
+
+const archiveDocumentItems: AppMenuItem[] = [
+    {
+        label: 'Dokumen Arsip',
+        icon: 'pi pi-folder-open',
+        to: '/edms/archive_document'
+    },
+    {
+        label: 'Peminjaman Arsip',
+        icon: 'pi pi-share-alt',
+        to: '/edms/archive_loan'
+    }
+];
+
+const guestBookItems: AppMenuItem[] = [
+    {
+        label: 'Monitoring Tamu',
+        icon: 'pi pi-desktop',
+        to: '/buku_tamu/monitoring'
+    },
+    {
+        label: 'Registrasi Kunjungan',
+        icon: 'pi pi-user-plus',
+        to: '/buku_tamu/registrasi'
+    },
+    {
+        label: 'Riwayat Tamu',
+        icon: 'pi pi-list',
+        to: '/buku_tamu/checkout'
+    }
+];
+
+const ensureArchiveDocumentMenu = (menu: AppMenuItem[]) => {
+    const hasItem = (items: AppMenuItem[] = [], toPath: string): boolean => {
+        return items.some((item) => item.to === toPath || hasItem(item.items || [], toPath));
+    };
+
+    const hasAll = archiveDocumentItems.every((reqItem) => hasItem(menu, reqItem.to || ''));
+    if (hasAll) return menu;
+
+    const archiveGroup = menu.find((item) => {
+        const label = item.label?.toLowerCase();
+        return label === 'arsip dokumen' || label === 'edms' || label === 'arsip';
+    });
+
+    if (archiveGroup) {
+        const existingTos = (archiveGroup.items || []).map(item => item.to);
+        const missingItems = archiveDocumentItems.filter(item => !existingTos.includes(item.to));
+        archiveGroup.items = [...(archiveGroup.items || []), ...missingItems];
+        return menu;
+    }
+
+    return [
+        ...menu,
+        {
+            label: 'ARSIP DOKUMEN',
+            icon: 'pi pi-folder',
+            items: archiveDocumentItems
         }
     ];
+};
 
-    const ensureArchiveDocumentMenu = (menu: AppMenuItem[]) => {
-        const hasItem = (items: AppMenuItem[] = [], toPath: string): boolean => {
-            return items.some((item) => item.to === toPath || hasItem(item.items || [], toPath));
-        };
+const ensureCorrespondenceMenu = (menu: AppMenuItem[]) => {
+    const cleanMailInItems = (items: AppMenuItem[] = []): AppMenuItem[] => {
+        return items
+            .filter((item) => {
+                const label = item.label?.toLowerCase();
+                const path = item.to || '';
+                return label !== 'mail in' && !path.startsWith('/correspondence/mail-in');
+            })
+            .map((item) => {
+                const childItems = cleanMailInItems(item.items || []);
+                const nextItem = { ...item };
 
-        const hasAll = archiveDocumentItems.every((reqItem) => hasItem(menu, reqItem.to || ''));
-        if (hasAll) return menu;
+                if (childItems.length > 0) {
+                    nextItem.items = childItems;
+                } else {
+                    delete nextItem.items;
+                }
 
-        const archiveGroup = menu.find((item) => {
-            const label = item.label?.toLowerCase();
-            return label === 'arsip dokumen' || label === 'edms' || label === 'arsip';
-        });
+                return nextItem;
+            });
+    };
 
-        if (archiveGroup) {
-            const existingTos = (archiveGroup.items || []).map((item) => item.to);
-            const missingItems = archiveDocumentItems.filter((item) => !existingTos.includes(item.to));
-            archiveGroup.items = [...(archiveGroup.items || []), ...missingItems];
-            return menu;
+    const correspondence = menu.find((item) => item.label?.toLowerCase() === 'correspondence');
+
+    if (correspondence) {
+        correspondence.items = [...cleanMailInItems(correspondence.items || []), mailInMenu];
+        return menu;
+    }
+
+    return [
+        ...menu,
+        {
+            label: 'Correspondence',
+            icon: 'pi pi-envelope',
+            items: [mailInMenu]
         }
+    ];
+};
 
-        return [
-            ...menu,
-            {
-                label: 'ARSIP DOKUMEN',
-                icon: 'pi pi-folder',
-                items: archiveDocumentItems
-            }
-        ];
+const ensureGuestBookMenu = (menu: AppMenuItem[]) => {
+    const hasItem = (items: AppMenuItem[] = [], toPath: string): boolean => {
+        return items.some((item) => item.to === toPath || hasItem(item.items || [], toPath));
     };
 
-    const ensureCorrespondenceMenu = (menu: AppMenuItem[]) => {
-        const hasMailIn = (items: AppMenuItem[] = []): boolean => {
-            return items.some((item) => item.to === mailInMenu.to || hasMailIn(item.items || []));
-        };
+    const hasAll = guestBookItems.every((reqItem) => hasItem(menu, reqItem.to || ''));
+    if (hasAll) return menu;
 
-        if (hasMailIn(menu)) return menu;
+    const guestBookGroup = menu.find((item) => {
+        const label = item.label?.toLowerCase();
+        return label === 'buku tamu' || label === 'guest book';
+    });
 
-        const correspondence = menu.find((item) => item.label?.toLowerCase() === 'correspondence');
+    if (guestBookGroup) {
+        const existingTos = (guestBookGroup.items || []).map(item => item.to);
+        const missingItems = guestBookItems.filter(item => !existingTos.includes(item.to));
+        guestBookGroup.items = [...(guestBookGroup.items || []), ...missingItems];
+        return menu;
+    }
 
-        if (correspondence) {
-            correspondence.items = [...(correspondence.items || []), mailInMenu];
-            return menu;
+    return [
+        ...menu,
+        {
+            label: 'BUKU TAMU',
+            icon: 'pi pi-id-card',
+            items: guestBookItems
         }
+    ];
+};
 
-        return [
-            ...menu,
-            {
-                label: 'Correspondence',
-                icon: 'pi pi-envelope',
-                items: [mailInMenu]
-            }
-        ];
-    };
-
-    const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
-        return menu.filter((item) => item.label?.toLowerCase() !== 'korespondensi');
-    };
+const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
+    return menu.filter((item) => item.label?.toLowerCase() !== 'korespondensi');
+};
 
     const AppMenu = () => {
         // HAPUS DUMMY, PAKAI SESSION ASLI DARI NEXT-AUTH
@@ -230,57 +310,69 @@
                 .filter((item): item is AppMenuItem => item !== null);
         };
 
-        useEffect(() => {
-            const filtered = searchMenuByLabel(state.menu, state.searchVal);
-            setState((prev) => ({ ...prev, filteredMenu: filtered }));
-        }, [state.menu, state.searchVal]);
+    useEffect(() => {
+        const filtered = searchMenuByLabel(state.menu, state.searchVal);
+        setState(prev => ({ ...prev, filteredMenu: filtered }));
+    }, [state.menu, state.searchVal]);
 
-        return (
-            <MenuProvider>
-                <div
-                    style={{
-                        display: 'flex',
-                        width: '100%',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        position: 'sticky',
-                        top: '0',
-                        padding: '10px 0',
-                        zIndex: '9999'
-                    }}
-                >
-                    <span className="block w-full p-input-icon-left">
-                        <i className="pi pi-search" />
-                        <InputText
-                            type="search"
-                            ref={searchRef}
-                            className="w-full"
-                            value={state.searchVal}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                const keyword = e.target.value;
-                                const filtered = searchMenuByLabel(state.menu, keyword);
-                                setState((prev) => ({
-                                    ...prev,
-                                    searchVal: keyword,
-                                    filteredMenu: filtered
-                                }));
-                            }}
-                            placeholder="Search..."
-                        />
-                    </span>
-                </div>
-                <ul className="layout-menu">
-                    {state.load
-                        ? [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((item, i) => (
-                            //FIX WARNING KEY: Ditambahkan key unik berbasis index `i` pada wrapper <li> loading
-                            <li className="my-3" key={`menu-skeleton-${i}`}>
-                                <Skeleton className="py-4" />
-                            </li>
-                        ))
-                        : state.filteredMenu?.map((item, i) => (!item.separator ? <AppMenuitem load={state.load} item={item} root={true} index={i} key={item.label || `menu-item-${i}`} /> : <li className="menu-separator" key={`separator-${i}`}></li>))}
-                </ul>
-            </MenuProvider>
-        );
-    };
+    return (
+        <MenuProvider>
+            <div
+                style={{
+                    display: "flex",
+                    width: "100%",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    position: "sticky",
+                    top: "0",
+                    padding: "10px 0",
+                    zIndex: "9999"
+                }}
+            >
+                <span className="block w-full p-input-icon-left">
+                    <i className="pi pi-search" />
+                    <InputText
+                        type="search"
+                        ref={searchRef}
+                        className="w-full"
+                        value={state.searchVal}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                            const keyword = e.target.value;
+                            const filtered = searchMenuByLabel(state.menu, keyword);
+                            setState(prev => ({
+                                ...prev,
+                                searchVal: keyword,
+                                filteredMenu: filtered
+                            }));
+                        }}
+                        placeholder="Search..."
+                    />
+                </span>
+            </div>
+            <ul className="layout-menu">
+                {state.load
+                    ? [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((item, i) => (
+                        <li className="my-3" key={`menu-skeleton-${i}`}>
+                            <Skeleton className="py-4" />
+                        </li>
+                    ))
+                    : state.filteredMenu?.map((item, i) => (
+                        !item.separator ? (
+                            <AppMenuitem
+                                load={state.load}
+                                item={item}
+                                root={true}
+                                index={i}
+                                key={item.label || `menu-item-${i}`}
+                            />
+                        ) : (
+                            <li className="menu-separator" key={`separator-${i}`}></li>
+                        )
+                    ))
+                }
+            </ul>
+        </MenuProvider>
+    );
+};
 
-    export default AppMenu;
+export default AppMenu;

@@ -1,13 +1,17 @@
 import React from 'react';
 import AppConfig from '../../layout/AppConfig';
 import { RootLayoutProps } from '@/types/layout';
-import { Metadata } from 'next';
+import { Metadata, Viewport } from 'next';
+
+export const viewport: Viewport = {
+    initialScale: 1,
+    width: 'device-width'
+};
 
 export const metadata: Metadata = {
     title: 'Standart',
     description: 'Dashboard Standart',
     robots: { index: false, follow: false },
-    viewport: { initialScale: 1, width: 'device-width' },
     // openGraph: {
     //     type: 'website',
     //     title: 'PrimeReact SAKAI-REACT',

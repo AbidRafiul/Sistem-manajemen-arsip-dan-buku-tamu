@@ -236,7 +236,7 @@ const LoginPage = () => {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    padding: clamp(1.5rem, 4vw, 3rem);
+                    padding: clamp(1rem, 2.5vw, 2rem);
                     color: var(--login-text);
                     background: radial-gradient(circle at 75% 80%, rgba(0, 83, 56, 0.12), transparent 28rem), radial-gradient(circle at 16% 10%, rgba(79, 70, 229, 0.13), transparent 24rem), linear-gradient(135deg, #f8f9ff 0%, #f8fafc 100%);
                     font-family:
@@ -262,8 +262,8 @@ const LoginPage = () => {
                 }
 
                 .login-card {
-                    width: min(100%, 1180px);
-                    min-height: min(760px, calc(100vh - 4rem));
+                    width: min(100%, 1040px);
+                    min-height: min(620px, calc(100vh - 2rem));
                     display: grid;
                     grid-template-columns: minmax(0, 1fr) minmax(420px, 0.94fr);
                     background: var(--login-surface-card);
@@ -277,14 +277,14 @@ const LoginPage = () => {
 
                 .login-brand-panel {
                     min-height: 100%;
-                    padding: clamp(2rem, 4vw, 3.5rem);
+                    padding: clamp(1.75rem, 3vw, 2.75rem);
                     color: #ffffff;
                     background: linear-gradient(160deg, rgba(53, 37, 205, 0.95), rgba(79, 70, 229, 0.95)), #3525cd;
                     position: relative;
                     overflow: hidden;
                     display: flex;
                     flex-direction: column;
-                    gap: 2rem;
+                    gap: 1.4rem;
                 }
 
                 .login-brand-panel::before {
@@ -332,7 +332,7 @@ const LoginPage = () => {
 
                 .brand-copy {
                     max-width: 560px;
-                    margin-top: clamp(0.5rem, 3vh, 2rem);
+                    margin-top: clamp(0.25rem, 1.8vh, 1rem);
                 }
 
                 .brand-kicker {
@@ -348,24 +348,24 @@ const LoginPage = () => {
                     margin: 0;
                     max-width: 500px;
                     color: #ffffff;
-                    font-size: clamp(2.35rem, 5vw, 4.2rem);
-                    line-height: 1.04;
+                    font-size: clamp(2.2rem, 4vw, 3.55rem);
+                    line-height: 1.02;
                     font-weight: 800;
                     letter-spacing: 0;
                 }
 
                 .brand-copy p:not(.brand-kicker) {
-                    margin: 1.75rem 0 0;
+                    margin: 1.4rem 0 0;
                     max-width: 520px;
                     color: rgba(255, 255, 255, 0.88);
-                    font-size: clamp(1rem, 1.45vw, 1.25rem);
-                    line-height: 1.65;
+                    font-size: clamp(0.95rem, 1.25vw, 1.12rem);
+                    line-height: 1.55;
                     font-weight: 500;
                 }
 
                 .archive-preview {
                     flex: 1;
-                    min-height: 220px;
+                    min-height: 145px;
                     margin: 0 -1.5rem;
                     border-radius: 1.5rem;
                     opacity: 0.22;
@@ -383,7 +383,7 @@ const LoginPage = () => {
                     gap: 0.9rem 1rem;
                     align-items: center;
                     width: min(100%, 470px);
-                    padding: 1.35rem 1.5rem;
+                    padding: 1.05rem 1.2rem;
                     border: 1px solid rgba(255, 255, 255, 0.22);
                     border-radius: 1.25rem;
                     background: rgba(255, 255, 255, 0.11);
@@ -444,12 +444,12 @@ const LoginPage = () => {
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
-                    padding: clamp(2rem, 5vw, 4.5rem);
+                    padding: clamp(2rem, 4vw, 3.5rem);
                     background: rgba(255, 255, 255, 0.96);
                 }
 
                 .form-heading {
-                    margin-bottom: 2.25rem;
+                    margin-bottom: 1.75rem;
                 }
 
                 .form-eyebrow {
@@ -465,7 +465,7 @@ const LoginPage = () => {
                 .form-heading h2 {
                     margin: 0;
                     color: var(--login-text);
-                    font-size: clamp(2rem, 3vw, 2.45rem);
+                    font-size: clamp(1.8rem, 2.5vw, 2.2rem);
                     line-height: 1.14;
                     font-weight: 800;
                     letter-spacing: 0;
@@ -483,7 +483,7 @@ const LoginPage = () => {
                 .login-form {
                     display: flex;
                     flex-direction: column;
-                    gap: 1.25rem;
+                    gap: 1rem;
                 }
 
                 .field-group {
@@ -524,7 +524,7 @@ const LoginPage = () => {
                 }
 
                 .input-shell {
-                    min-height: 3.75rem;
+                    min-height: 3.35rem;
                     display: grid;
                     grid-template-columns: 1.25rem 1fr;
                     align-items: center;
@@ -557,26 +557,43 @@ const LoginPage = () => {
 
                 .input-shell .p-inputtext,
                 .input-shell .p-password,
+                .input-shell .p-inputwrapper,
+                .input-shell .p-icon-field,
                 .input-shell .password-input {
                     width: 100%;
                 }
 
+                .input-shell .p-password,
+                .input-shell .p-inputwrapper,
+                .input-shell .p-icon-field {
+                    display: flex;
+                    align-items: center;
+                    min-height: 0;
+                    background: transparent !important;
+                    border: 0 !important;
+                    border-radius: 0 !important;
+                    box-shadow: none !important;
+                }
+
                 .input-shell .p-inputtext,
                 .input-shell .password-input {
-                    height: 3.5rem;
+                    height: 3.1rem;
                     padding: 0;
                     color: var(--login-text);
-                    background: transparent;
-                    border: 0;
-                    box-shadow: none;
+                    background: transparent !important;
+                    border: 0 !important;
+                    border-radius: 0 !important;
+                    box-shadow: none !important;
                     font-size: 1rem;
                     font-weight: 500;
                 }
 
                 .input-shell .p-inputtext:enabled:focus,
+                .input-shell .p-inputtext:enabled:hover,
                 .input-shell .password-input:enabled:focus {
-                    box-shadow: none;
-                    border: 0;
+                    background: transparent !important;
+                    box-shadow: none !important;
+                    border: 0 !important;
                 }
 
                 .input-shell .p-inputtext::placeholder,
@@ -585,17 +602,12 @@ const LoginPage = () => {
                     font-weight: 500;
                 }
 
-                .password-shell .p-password {
-                    display: flex;
-                    align-items: center;
-                }
-
                 .password-shell .p-icon-field {
                     width: 100%;
                 }
 
                 .password-shell .p-password-input {
-                    padding-right: 2.3rem;
+                    padding-right: 2.3rem !important;
                 }
 
                 .field-error {
@@ -642,7 +654,7 @@ const LoginPage = () => {
                 .signin-button,
                 .sso-button {
                     width: 100%;
-                    min-height: 4.2rem;
+                    min-height: 3.8rem;
                     display: inline-flex;
                     align-items: center;
                     justify-content: center;
@@ -689,7 +701,7 @@ const LoginPage = () => {
                     font-weight: 700;
                     letter-spacing: 0.08em;
                     text-transform: uppercase;
-                    margin: 1rem 0 0.15rem;
+                    margin: 0.7rem 0 0.05rem;
                 }
 
                 .divider::before,
@@ -718,7 +730,7 @@ const LoginPage = () => {
                     align-items: center;
                     justify-content: center;
                     gap: clamp(1rem, 2vw, 2rem);
-                    margin-top: 2.6rem;
+                    margin-top: 2rem;
                     flex-wrap: wrap;
                 }
 
