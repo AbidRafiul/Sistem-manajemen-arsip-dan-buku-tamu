@@ -1,16 +1,17 @@
 'use client'
 
+import formUpload from "@/lib/axios/formData";
 import postData from "@/lib/axios/postData";
 import { showError, showSuccess } from "@/lib/tools/generalTools";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
-import { InputNumber } from "primereact/inputnumber";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { useEffect } from "react";
-import { apiEndpointCreate, apiEndpointDelete, apiEndpointGet, apiEndpointUpdate } from "../endpoints";
+import { apiEndpointCreate, apiEndpointDelete, apiEndpointGet, apiEndpointUpdate, apiEndpointUpload } from "../endpoints";
 import { FormProps, initValue } from "../interfaces";
+import { mapIncomingLetterPayload } from "../mappers";
 
 const statusOptions = [
     { label: "Baru", value: "baru" },
@@ -19,6 +20,8 @@ const statusOptions = [
     { label: "Selesai", value: "selesai" },
 ];
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
 const Form = ({
     state,
     setState,
@@ -26,7 +29,26 @@ const Form = ({
     toast,
     getData
 }: FormProps) => {
-    const nullableNumber = (value: number | null) => value || null;
+    const getIncomingLetterId = (res: any, input: initValue) => {
+        return res?.data?.data?.incoming_letter_id
+            || res?.data?.data?.IncomingLetterId
+            || input.IncomingLetterId;
+    };
+
+    const uploadLetterFile = async (input: initValue, incomingLetterId: number | null) => {
+        if (!input.LetterFile || !incomingLetterId) return;
+
+        const formData = new FormData();
+        formData.append("incoming_letter_id", String(incomingLetterId));
+        formData.append("File", input.LetterFile);
+
+        const uploadedBy = input.UpdatedBy || input.CreatedBy;
+        if (uploadedBy) {
+            formData.append("UploadedBy", String(uploadedBy));
+        }
+
+        await formUpload(apiEndpointUpload, formData, {});
+    };
 
     const handleSave = async (input: initValue) => {
         setState((p) => ({ ...p, load: true }));
@@ -34,33 +56,20 @@ const Form = ({
         try {
             const isEdit = Boolean(state.edit);
             const cEndPoint = isEdit ? apiEndpointUpdate : apiEndpointCreate;
-
-            const oBody: Record<string, any> = {
-                AgendaNumber: input.AgendaNumber,
-                LetterNumber: input.LetterNumber,
-                LetterDate: input.LetterDate,
-                ReceivedDate: input.ReceivedDate,
-                SenderName: input.SenderName,
-                SenderInstitution: input.SenderInstitution || null,
-                Subject: input.Subject,
-                AttachmentDescription: input.AttachmentDescription || null,
-                LetterTypeId: nullableNumber(input.LetterTypeId),
-                DocumentTypeId: nullableNumber(input.DocumentTypeId),
-                ArchiveClassificationId: nullableNumber(input.ArchiveClassificationId),
-                ConfidentialityLevelId: nullableNumber(input.ConfidentialityLevelId),
-            };
-
-            if (isEdit) {
-                oBody.IncomingLetterId = input.IncomingLetterId;
-                oBody.Status = input.Status;
-                oBody.UpdatedBy = nullableNumber(input.UpdatedBy);
-            } else {
-                oBody.CreatedBy = nullableNumber(input.CreatedBy);
-                oBody.UpdatedBy = nullableNumber(input.UpdatedBy);
-            }
+            const oBody = mapIncomingLetterPayload(input, isEdit);
 
             const vaData = await postData(cEndPoint, oBody);
             const res = vaData.data;
+            const incomingLetterId = getIncomingLetterId(vaData, input);
+
+            if (input.LetterFile) {
+                try {
+                    await uploadLetterFile(input, incomingLetterId);
+                } catch (error: any) {
+                    const e = error?.response?.data || error;
+                    showError(toast, e?.message || "Surat tersimpan, tapi file gagal diupload");
+                }
+            }
 
             showSuccess(toast, res?.message || "Berhasil Menyimpan Data");
             formik.resetForm();
@@ -84,7 +93,7 @@ const Form = ({
             }
 
             for (const letter of state.selectedLetters) {
-                await postData(apiEndpointDelete, { IncomingLetterId: letter.IncomingLetterId });
+                await postData(apiEndpointDelete, { incoming_letter_id: letter.IncomingLetterId });
             }
 
             showSuccess(toast, "Surat masuk berhasil dihapus");
@@ -196,16 +205,6 @@ const Form = ({
                             />
                             {getFormErrorMessage("SenderName")}
                         </div>
-                        <div className="col-12 md:col-6">
-                            <label htmlFor="SenderInstitution">Instansi Pengirim</label>
-                            <InputText
-                                id="SenderInstitution"
-                                className="w-full mt-2"
-                                value={formik.values.SenderInstitution}
-                                onChange={(e) => formik.setFieldValue("SenderInstitution", e.target.value)}
-                            />
-                            {getFormErrorMessage("SenderInstitution")}
-                        </div>
                         <div className="col-12">
                             <label htmlFor="Subject">Perihal</label>
                             <InputText
@@ -217,7 +216,7 @@ const Form = ({
                             {getFormErrorMessage("Subject")}
                         </div>
                         <div className="col-12">
-                            <label htmlFor="AttachmentDescription">Keterangan Lampiran</label>
+                            <label htmlFor="AttachmentDescription">Lampiran</label>
                             <InputTextarea
                                 id="AttachmentDescription"
                                 className="w-full mt-2"
@@ -227,49 +226,29 @@ const Form = ({
                             />
                             {getFormErrorMessage("AttachmentDescription")}
                         </div>
-                        <div className="col-12 md:col-3">
-                            <label htmlFor="LetterTypeId">Letter Type ID</label>
-                            <InputNumber
-                                inputId="LetterTypeId"
-                                className="w-full mt-2"
-                                value={formik.values.LetterTypeId}
-                                onValueChange={(e) => formik.setFieldValue("LetterTypeId", e.value || null)}
-                                useGrouping={false}
+                        <div className="col-12">
+                            <label htmlFor="LetterFile">Upload File Surat</label>
+                            <input
+                                id="LetterFile"
+                                type="file"
+                                className="w-full mt-2 p-inputtext p-component"
+                                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0] || null;
+
+                                    if (file && file.size > MAX_FILE_SIZE) {
+                                        e.target.value = "";
+                                        formik.setFieldValue("LetterFile", null);
+                                        showError(toast, "Ukuran file maksimal 10 MB");
+                                        return;
+                                    }
+
+                                    formik.setFieldValue("LetterFile", file);
+                                }}
                             />
-                            {getFormErrorMessage("LetterTypeId")}
-                        </div>
-                        <div className="col-12 md:col-3">
-                            <label htmlFor="DocumentTypeId">Document Type ID</label>
-                            <InputNumber
-                                inputId="DocumentTypeId"
-                                className="w-full mt-2"
-                                value={formik.values.DocumentTypeId}
-                                onValueChange={(e) => formik.setFieldValue("DocumentTypeId", e.value || null)}
-                                useGrouping={false}
-                            />
-                            {getFormErrorMessage("DocumentTypeId")}
-                        </div>
-                        <div className="col-12 md:col-3">
-                            <label htmlFor="ArchiveClassificationId">Archive Class ID</label>
-                            <InputNumber
-                                inputId="ArchiveClassificationId"
-                                className="w-full mt-2"
-                                value={formik.values.ArchiveClassificationId}
-                                onValueChange={(e) => formik.setFieldValue("ArchiveClassificationId", e.value || null)}
-                                useGrouping={false}
-                            />
-                            {getFormErrorMessage("ArchiveClassificationId")}
-                        </div>
-                        <div className="col-12 md:col-3">
-                            <label htmlFor="ConfidentialityLevelId">Confidentiality ID</label>
-                            <InputNumber
-                                inputId="ConfidentialityLevelId"
-                                className="w-full mt-2"
-                                value={formik.values.ConfidentialityLevelId}
-                                onValueChange={(e) => formik.setFieldValue("ConfidentialityLevelId", e.value || null)}
-                                useGrouping={false}
-                            />
-                            {getFormErrorMessage("ConfidentialityLevelId")}
+                            <small className="text-color-secondary block mt-2">
+                                PDF, Word, Excel, JPG, atau PNG maksimal 10 MB.
+                            </small>
                         </div>
                         {state.edit && (
                             <div className="col-12 md:col-6">
