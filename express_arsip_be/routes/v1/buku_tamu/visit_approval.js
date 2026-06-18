@@ -13,11 +13,12 @@ router.post("/", async (req, res) => {
 
   try {
     const { VisitationId, action, ApprovalNotes } = oPayload;
+    
     if (!VisitationId || !action) {
       return res.status(400).json({ status: "99", message: "VisitationId dan action wajib", datetime: formatDateSystem() });
     }
 
-    if (!["master", "admin", "resepsionis"].includes(userRole)) {
+    if (!["master", "admin", "pimpinan"].includes(userRole?.toLowerCase())) {
       return res.status(403).json({ status: "99", message: "Akses ditolak", datetime: formatDateSystem() });
     }
 
@@ -25,7 +26,13 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ status: "99", message: "Action tidak valid", datetime: formatDateSystem() });
     }
 
-    await DB("trx_visitations").where("VisitationId", VisitationId).update({ ApprovalStatus: action, ApprovalNotes: ApprovalNotes, UpdatedAt: formatDateSystem() });
+    await DB("tr_visitations")
+      .where("visitation_id", VisitationId)
+      .update({ 
+        approval_status: action, 
+        approval_notes: ApprovalNotes, 
+        updated_at: formatDateSystem() 
+      });
 
     return res.status(200).json({ status: "00", message: "OK", datetime: formatDateSystem() });
   } catch (error) {
