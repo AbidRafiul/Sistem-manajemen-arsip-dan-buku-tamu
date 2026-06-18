@@ -9,15 +9,19 @@ import { useState } from 'react';
 import { SessionProvider } from 'next-auth/react';
 import NextTopLoader from 'nextjs-toploader';
 import { RootLayoutProps } from '@/types/layout';
-import { Metadata } from 'next';
+import { Metadata, Viewport } from 'next';
 import './tailwind.css';
 import './global.css';
+
+export const viewport: Viewport = {
+    initialScale: 1,
+    width: 'device-width'
+};
 
 export const metadata: Metadata = {
     title: 'Standart',
     description: 'Dashboard Standart',
     robots: { index: false, follow: false },
-    viewport: { initialScale: 1, width: 'device-width' },
     // openGraph: {
     //     type: 'website',
     //     title: 'PrimeReact SAKAI-REACT',

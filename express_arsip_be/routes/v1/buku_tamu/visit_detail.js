@@ -2,7 +2,6 @@ import express from "express";
 import DB from "../../../core/config/knex.js";
 import { formatDateSystem } from "../components/tools/general.js";
 
-
 const router = express.Router();
 
 router.post("/", async (req, res) => {
@@ -12,30 +11,31 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ status: "01", message: "VisitationId wajib diisi" });
     }
 
-    const row = await DB("trx_visitations as t")
+    const row = await DB("tr_visitations as t")
       .select(
         "t.*",
-        "mp.Name as VisitPurposeName",
+        "mp.visit_purpose_name as VisitPurposeName",
         "u.Fullname as HostFullname"
       )
-      .leftJoin("mst_visit_purposes as mp", "t.VisitPurposeId", "mp.Id")
-      .leftJoin("user_credential as u", "t.HostUserId", "u.UniqueId")
-      .where("t.VisitationId", oPayload.VisitationId)
+      .leftJoin("mst_visit_purpose as mp", "t.visit_purpose_id", "mp.visit_purpose_id")
+      .leftJoin("user_credential as u", "t.host_user_id", "u.UniqueId")
+      .where("t.visitation_id", oPayload.VisitationId)
       .first();
 
     if (!row) {
       return res.status(404).json({ status: "01", message: "Data tidak ditemukan" });
     }
 
-    const cBaseUrl = `${process.env.APP_SERVER}:${process.env.APP_PORT}`;
-    if (row.PhotoFace) {
-      row.PhotoFaceUrl = `${cBaseUrl}/uploads/${row.PhotoFace}`;
+    const cBaseUrl = `${process.env.APP_SERVER || 'http://localhost'}:${process.env.APP_PORT || '8000'}`;
+    
+    if (row.photo_face) {
+      row.PhotoFaceUrl = row.photo_face.startsWith('http') ? row.photo_face : `${cBaseUrl}/uploads/${row.photo_face}`;
     } else {
       row.PhotoFaceUrl = null;
     }
 
-    if (row.PhotoIdentity) {
-      row.PhotoIdentityUrl = `${cBaseUrl}/uploads/${row.PhotoIdentity}`;
+    if (row.photo_identity) {
+      row.PhotoIdentityUrl = row.photo_identity.startsWith('http') ? row.photo_identity : `${cBaseUrl}/uploads/${row.photo_identity}`;
     } else {
       row.PhotoIdentityUrl = null;
     }

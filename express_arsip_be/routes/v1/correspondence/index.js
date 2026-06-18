@@ -14,6 +14,15 @@ import incomingLetterUpdate from "./incoming_letter_update.js";
 //Endpoint POST - incoming-letter-delete
 import incomingLetterDelete from "./incoming_letter_delete.js";
 
+//Endpoint POST - incoming-file-upload
+import incomingLetterUpload from "./incoming_letter_upload.js";
+
+//Endpoint POST - incoming-file-download
+import incomingLetterFileDownload from "./incoming_letter_file_download.js";
+
+//Endpoint POST - disposition-reference-data
+import dispositionReferenceData from "./disposition_reference_data.js";
+
 //Endpoint - letter-diposition-create
 import letterDispositionCreate from "./letter_disposition_create.js";
 
@@ -37,6 +46,9 @@ router.use("/incoming-letter-create", incomingLetterCreate);
 router.use("/incoming-letter-detail", incomingLetterDetail);
 router.use("/incoming-letter-update", incomingLetterUpdate);
 router.use("/incoming-letter-delete", incomingLetterDelete);
+router.use("/incoming-file-upload", incomingLetterUpload);
+router.use("/incoming-file-download", incomingLetterFileDownload);
+router.use("/disposition-reference-data", dispositionReferenceData);
 router.use("/letter-disposition-create", letterDispositionCreate)
 router.use("/incoming-letter-tracking-data", incomingLetterTrackingData)
 router.use("/letter-disposition-data", letterDispositionData)

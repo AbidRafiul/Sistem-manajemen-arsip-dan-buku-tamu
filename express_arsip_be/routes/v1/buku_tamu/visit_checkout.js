@@ -1,6 +1,6 @@
 import express from "express";
 import Joi from "joi";
-import { formatDateSystem, status } from "../components/tools/general.js";
+import { formatDateSystem } from "../components/tools/general.js";
 import { Logging, validatePayload } from "../components/tools/servertool.js";
 import DB from "../../../core/config/knex.js";
 
@@ -32,7 +32,7 @@ router.post("/", async (req, res) => {
 
     if (cValidation) {
       const oResult = {
-        status: status.BAD_REQUEST,
+        status: "99",
         message: cValidation || "Terdapat kesalahan pada data anda",
         datetime: formatDateSystem(),
       };
@@ -52,21 +52,21 @@ router.post("/", async (req, res) => {
 
     if (!QRToken && !VisitCode && !VisitationId) {
       return res.status(400).json({
-        status: status.BAD_REQUEST,
+        status: "99",
         message: "QRToken, VisitCode, atau VisitationId wajib diisi salah satu",
         datetime: formatDateSystem(),
       });
     }
 
-    const query = DB("trx_visitations").where("Status", "in").andWhere(function () {
+    const query = DB("tr_visitations").where("status", "Sedang Berkunjung").andWhere(function () {
       if (QRToken) {
-        this.orWhere("QRToken", QRToken);
+        this.orWhere("qr_token", QRToken);
       }
       if (VisitCode) {
-        this.orWhere("VisitCode", VisitCode);
+        this.orWhere("visit_code", VisitCode);
       }
       if (VisitationId) {
-        this.orWhere("VisitationId", VisitationId);
+        this.orWhere("visitation_id", VisitationId);
       }
     });
 
@@ -74,39 +74,39 @@ router.post("/", async (req, res) => {
 
     if (!record) {
       return res.status(404).json({
-        status: status.NOT_FOUND,
-        message: "Tamu dengan data yang diberikan dan status 'in' tidak ditemukan",
+        status: "44",
+        message: "Tamu dengan data yang diberikan dan status 'Sedang Berkunjung' tidak ditemukan",
         datetime: formatDateSystem(),
       });
     }
 
     const updateData = {
-      Status: "out",
-      CheckOutTime: formatDateSystem(),
+      status: "Selesai",
+      check_out_time: formatDateSystem(),
     };
 
     if (VisitNotes) {
-      const existingNotes = record.VisitNotes ? String(record.VisitNotes).trim() : "";
-      updateData.VisitNotes = existingNotes
+      const existingNotes = record.visit_notes ? String(record.visit_notes).trim() : "";
+      updateData.visit_notes = existingNotes
         ? `${existingNotes}\n${VisitNotes}`
         : VisitNotes;
     }
 
-    await DB("trx_visitations").where("VisitationId", record.VisitationId).update(updateData);
+    await DB("tr_visitations").where("visitation_id", record.visitation_id).update(updateData);
 
     return res.status(200).json({
-      status: status.SUKSES,
+      status: "00",
       message: "Check-out berhasil",
       data: {
-        VisitationId: record.VisitationId,
-        VisitCode: record.VisitCode,
-        QRToken: record.QRToken,
+        visitation_id: record.visitation_id,
+        visit_code: record.visit_code,
+        qr_token: record.qr_token,
       },
       datetime: formatDateSystem(),
     });
   } catch (error) {
     const oResult = {
-      status: status.GAGAL,
+      status: "01",
       message: "Sistem sedang maintenance harap tunggu sebentar",
       datetime: formatDateSystem(),
     };

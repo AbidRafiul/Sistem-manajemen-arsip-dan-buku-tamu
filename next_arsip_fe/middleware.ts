@@ -13,11 +13,11 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const publicPaths = ['/auth/login', '/auth/register'];
+  const publicPaths = ['/auth/login', '/auth/register', '/buku_tamu'];
   const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
 
   if (isPublicPath) {
-    return NextResponse.next();
+    return NextResponse.next(); 
   }
 
   try {
@@ -56,6 +56,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|assets|images).*)',
+    '/((?!api|_next|favicon.ico|sitemap.xml|robots.txt|assets|images|.*\\..*).*)',
   ],
 };
