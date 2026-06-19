@@ -99,21 +99,11 @@ const LoginPage = () => {
                         <div className="brand-copy">
                             <p className="brand-kicker">Enterprise document control</p>
                             <h1>Secure, Scale, and Search.</h1>
-                            <p>
-                                Kelola arsip dan buku tamu dalam satu ruang kerja yang cepat,
-                                presisi, dan siap untuk kebutuhan operasional harian.
-                            </p>
+                            <p>Kelola arsip dan buku tamu dalam satu ruang kerja yang cepat, presisi, dan siap untuk kebutuhan operasional harian.</p>
                         </div>
 
                         <div className="archive-preview" aria-hidden="true">
-                            <Image
-                                src="/login.svg"
-                                alt=""
-                                fill
-                                priority
-                                sizes="420px"
-                                className="archive-preview-image"
-                            />
+                            <Image src="/login.svg" alt="" fill priority sizes="420px" className="archive-preview-image" />
                         </div>
 
                         <div className="security-card">
@@ -164,13 +154,7 @@ const LoginPage = () => {
                             <div className="field-group">
                                 <div className="label-row">
                                     <label htmlFor="password">Password</label>
-                                    <button
-                                        type="button"
-                                        className="link-button"
-                                        onClick={() =>
-                                            handleUnavailableAction('Fitur lupa password belum tersedia di sistem ini.')
-                                        }
-                                    >
+                                    <button type="button" className="link-button" onClick={() => handleUnavailableAction('Fitur lupa password belum tersedia di sistem ini.')}>
                                         Lupa password?
                                     </button>
                                 </div>
@@ -200,22 +184,12 @@ const LoginPage = () => {
 
                             <div className="form-options">
                                 <div className="remember-row">
-                                    <Checkbox
-                                        inputId="remember_me"
-                                        checked={Boolean(formik.values.remember_me)}
-                                        onChange={(e) => formik.setFieldValue('remember_me', Boolean(e.checked))}
-                                        disabled={state.load}
-                                    />
+                                    <Checkbox inputId="remember_me" checked={Boolean(formik.values.remember_me)} onChange={(e) => formik.setFieldValue('remember_me', Boolean(e.checked))} disabled={state.load} />
                                     <label htmlFor="remember_me">Ingat saya selama 30 hari</label>
                                 </div>
                             </div>
 
-                            <Button
-                                loading={state.load}
-                                disabled={state.load}
-                                type="submit"
-                                className="signin-button"
-                            >
+                            <Button loading={state.load} disabled={state.load} type="submit" className="signin-button">
                                 <i className="pi pi-sign-in" aria-hidden="true" />
                                 <span>Masuk ke DocArchive</span>
                             </Button>
@@ -224,35 +198,20 @@ const LoginPage = () => {
                                 <span>atau lanjutkan dengan</span>
                             </div>
 
-                            <Button
-                                type="button"
-                                className="sso-button"
-                                onClick={() =>
-                                    handleUnavailableAction('SSO belum dikonfigurasi untuk proyek ini.')
-                                }
-                            >
+                            <Button type="button" className="sso-button" onClick={() => handleUnavailableAction('SSO belum dikonfigurasi untuk proyek ini.')}>
                                 <i className="pi pi-sitemap" aria-hidden="true" />
                                 <span>Masuk dengan SSO</span>
                             </Button>
                         </form>
 
                         <nav className="login-links" aria-label="Login links">
-                            <button
-                                type="button"
-                                onClick={() => handleUnavailableAction('Privacy policy belum tersedia.')}
-                            >
+                            <button type="button" onClick={() => handleUnavailableAction('Privacy policy belum tersedia.')}>
                                 Privacy Policy
                             </button>
-                            <button
-                                type="button"
-                                onClick={() => handleUnavailableAction('Terms of service belum tersedia.')}
-                            >
+                            <button type="button" onClick={() => handleUnavailableAction('Terms of service belum tersedia.')}>
                                 Terms of Service
                             </button>
-                            <button
-                                type="button"
-                                onClick={() => handleUnavailableAction('Hubungi administrator sistem untuk bantuan akses.')}
-                            >
+                            <button type="button" onClick={() => handleUnavailableAction('Hubungi administrator sistem untuk bantuan akses.')}>
                                 Support
                             </button>
                         </nav>
@@ -279,11 +238,15 @@ const LoginPage = () => {
                     justify-content: center;
                     padding: clamp(1rem, 2.5vw, 2rem);
                     color: var(--login-text);
-                    background:
-                        radial-gradient(circle at 75% 80%, rgba(0, 83, 56, 0.12), transparent 28rem),
-                        radial-gradient(circle at 16% 10%, rgba(79, 70, 229, 0.13), transparent 24rem),
-                        linear-gradient(135deg, #f8f9ff 0%, #f8fafc 100%);
-                    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                    background: radial-gradient(circle at 75% 80%, rgba(0, 83, 56, 0.12), transparent 28rem), radial-gradient(circle at 16% 10%, rgba(79, 70, 229, 0.13), transparent 24rem), linear-gradient(135deg, #f8f9ff 0%, #f8fafc 100%);
+                    font-family:
+                        Inter,
+                        ui-sans-serif,
+                        system-ui,
+                        -apple-system,
+                        BlinkMacSystemFont,
+                        'Segoe UI',
+                        sans-serif;
                     position: relative;
                     overflow: hidden;
                 }
@@ -316,9 +279,7 @@ const LoginPage = () => {
                     min-height: 100%;
                     padding: clamp(1.75rem, 3vw, 2.75rem);
                     color: #ffffff;
-                    background:
-                        linear-gradient(160deg, rgba(53, 37, 205, 0.95), rgba(79, 70, 229, 0.95)),
-                        #3525cd;
+                    background: linear-gradient(160deg, rgba(53, 37, 205, 0.95), rgba(79, 70, 229, 0.95)), #3525cd;
                     position: relative;
                     overflow: hidden;
                     display: flex;
@@ -330,9 +291,7 @@ const LoginPage = () => {
                     content: '';
                     position: absolute;
                     inset: 0;
-                    background:
-                        linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
-                        linear-gradient(0deg, rgba(255, 255, 255, 0.09) 1px, transparent 1px);
+                    background: linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px), linear-gradient(0deg, rgba(255, 255, 255, 0.09) 1px, transparent 1px);
                     background-size: 54px 54px;
                     opacity: 0.15;
                 }
@@ -575,7 +534,10 @@ const LoginPage = () => {
                     background: #eff4ff;
                     border: 1px solid var(--login-outline);
                     border-radius: 0.85rem;
-                    transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+                    transition:
+                        border-color 160ms ease,
+                        box-shadow 160ms ease,
+                        background 160ms ease;
                 }
 
                 .input-shell:focus-within {
@@ -700,7 +662,10 @@ const LoginPage = () => {
                     border-radius: 0.85rem;
                     font-size: 1rem;
                     font-weight: 800;
-                    transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+                    transition:
+                        transform 160ms ease,
+                        box-shadow 160ms ease,
+                        background 160ms ease;
                 }
 
                 .signin-button {

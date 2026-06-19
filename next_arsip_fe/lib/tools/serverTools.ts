@@ -108,7 +108,7 @@ const routeMiddleware = async (searchUrl: string) => {
 
             if (!menu) {
                 console.warn("[RouteMiddleware] Backend merespon, tetapi data menu kosong.");
-                return '00';
+                return '00'; 
             }
 
             let urlFix = searchUrl;
@@ -125,12 +125,11 @@ const routeMiddleware = async (searchUrl: string) => {
         } catch (error: any) {
             // Log pencatatan error di terminal server secara rapi (Berguna untuk dokumentasi projek)
             console.error("[RouteMiddleware Error]:", error?.message);
-
+            
             if (error?.response?.status == '401') {
                 return '99';
             }
-
-            return '00';
+            return '00'; 
         }
     } else {
         return '99';

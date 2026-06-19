@@ -2,8 +2,11 @@ import axios from 'axios';
 import { logout } from '../tools/serverTools';
 import { signOut } from "next-auth/react";
 
+// Pastikan NEXT_PUBLIC_API_DIR_PATH di .env lo isinya 'http://localhost:8000/api/v1'
+// Di getData.ts
 const Axios = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_DIR_PATH,
+    // UBAH BARIS INI SEMENTARA:
+    baseURL: 'http://localhost:8000/api/v1', 
     headers: {
         'Content-Type': 'application/json',
     },
@@ -30,22 +33,23 @@ async function getData(endpoint: string, params: Record<string, any> = {}, custo
             }
         });
 
-        const apiEndpoint = query.toString() ? `${endpoint}?${query.toString()}` : endpoint;
+        // Hapus slash di depan kalau ada, biar gak numpuk sama baseURL
+        const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
+        const apiEndpoint = query.toString() ? `${cleanEndpoint}?${query.toString()}` : cleanEndpoint;
 
-        const header = {
-            'X-ENDPOINT': apiEndpoint,
-            'X-Custom-Header': JSON.stringify({
-                'X-Level': "1",
-                ...customHeader
-            }),
+        // PERBAIKAN: Bikin header jadi flat, jangan dibungkus X-Custom-Header
+        const headers: Record<string, string> = {
+            'X-ENDPOINT': endpoint,
+            'X-Level': "1",
+            ...customHeader // x-uniqueid dan Authorization masuk langsung ke sini
         };
 
-        const response = await Axios.get('', {
-            headers: header,
-        });
+        // PERBAIKAN: Masukkan apiEndpoint ke sini, bukan ''
+        const response = await Axios.get(apiEndpoint, { headers });
         return response;
+        
     } catch (error: any) {
-        console.log(error)
+        console.log("Error GET Data:", error?.response?.data || error);
         if (error?.response?.status == 401) {
             logout(null, true);
         }

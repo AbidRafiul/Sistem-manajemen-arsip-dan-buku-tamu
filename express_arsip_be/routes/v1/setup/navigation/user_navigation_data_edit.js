@@ -28,7 +28,8 @@ router.post("/", async (req, res) => {
         }
 
         const cValidation = await validatePayload({
-            UniqueId: Joi.string().required().label("UniqueId"),
+            // 🚨 UBAH DI SINI: Dari Username jadi UserId
+            UserId: Joi.alternatives().try(Joi.number(), Joi.string()).required().label("UserId"),
         }, {
             "string.base": "{#label} harus berupa string",
             "string.empty": "{#label} tidak boleh kosong",
@@ -48,7 +49,7 @@ router.post("/", async (req, res) => {
                 func: "get",
                 request: oPayload,
                 response: oResult,
-                user: req.auth.username || ""
+                user: req?.auth?.username || ""
             })
 
             return res.status(422).json(oResult);
@@ -56,7 +57,7 @@ router.post("/", async (req, res) => {
 
         let oNavigation = await DB('user_navigation')
             .select('Menu as menu')
-            .where('UniqueId', oPayload.UniqueId)
+            .where('UserId', oPayload.UserId)
             .first();
 
         // fallback ke mst_navigation kalau tidak ada
@@ -67,7 +68,6 @@ router.post("/", async (req, res) => {
                 .first();
         }
 
-
         if (!oNavigation?.menu) {
             return res.status(400).json({
                 status: status.GAGAL,
@@ -76,9 +76,10 @@ router.post("/", async (req, res) => {
             });
         }
 
-        const oUser = await DB('user_credential')
-            .select('Role')
-            .where('UniqueId', oPayload.UniqueId)
+        // UBAH NAMA TABEL DI SINI (tambah huruf s) sesuai screenshot DB lo
+        const oUser = await DB('mst_user_roles') 
+            .select('Role') // Note: Jika error "Unknown column Role", pastikan kolomnya Role atau RoleId ya Kapten
+            .where('UserId', oPayload.UserId)
             .first();
 
         if (!oUser?.Role || oUser?.Role == 'superadmin') {
@@ -105,7 +106,6 @@ router.post("/", async (req, res) => {
             data: JSON.parse(oMst.menu),
             menu: JSON.parse(oNavigation.menu),
         });
-
 
     } catch (error) {
         const oResult = {

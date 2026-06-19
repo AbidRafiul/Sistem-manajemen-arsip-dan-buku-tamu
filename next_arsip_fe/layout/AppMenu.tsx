@@ -1,16 +1,19 @@
-/* eslint-disable @next/next/no-img-element */
-'use client'
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import AppMenuitem from './AppMenuitem';
-import { LayoutContext } from './context/layoutcontext';
-import { MenuProvider } from './context/menucontext';
-import { useSession } from 'next-auth/react';
-import postData from '@/lib/axios/postData';
-import { InputText } from 'primereact/inputtext';
-import { AppMenuItem } from '@/types';
-import { Skeleton } from 'primereact/skeleton';
+    /* eslint-disable @next/next/no-img-element */
+    'use client';
+    import React, { useContext, useEffect, useRef, useState } from 'react';
+    import AppMenuitem from './AppMenuitem';
+    import { LayoutContext } from './context/layoutcontext';
+    import { MenuProvider } from './context/menucontext';
 
-interface MenuState {
+    //HIDUPKAN LAGI IMPORT NEXT-AUTH
+    import { useSession } from 'next-auth/react';
+
+    import postData from '@/lib/axios/postData';
+    import { InputText } from 'primereact/inputtext';
+    import { AppMenuItem } from '@/types';
+    import { Skeleton } from 'primereact/skeleton';
+
+    interface MenuState {
     searchVal: string;
     filteredMenu: AppMenuItem[];
     load: boolean;
@@ -174,136 +177,161 @@ const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
     return menu.filter((item) => item.label?.toLowerCase() !== 'korespondensi');
 };
 
-const AppMenu = () => {
-    const { data: session } = useSession();
-    const { layoutConfig } = useContext(LayoutContext);
-    const searchRef = useRef<HTMLInputElement>(null);
-    const lastPressTime = useRef<number>(0);
+    const AppMenu = () => {
+        // HAPUS DUMMY, PAKAI SESSION ASLI DARI NEXT-AUTH
+        const { data: session } = useSession();
 
-    const [state, setState] = useState<MenuState>({
-        searchVal: "",
-        filteredMenu: [],
-        load: true,
-        menu: []
-    });
+        const { layoutConfig } = useContext(LayoutContext);
+        const searchRef = useRef<HTMLInputElement>(null);
+        const lastPressTime = useRef<number>(0);
 
-    useEffect(() => {
-        if (session?.user) {
-            getMenu(session.user.uniqueId || '');
-        }
-    }, [session]);
+        const [state, setState] = useState<MenuState>({
+            searchVal: '',
+            filteredMenu: [],
+            load: true,
+            menu: []
+        });
 
-    const getMenu = async (uniqueId: string) => {
-        setState(prev => ({ ...prev, load: true }));
-        try {
-            const { data: vaData } = await postData('/setup/nav/user-data', { UniqueId: uniqueId });
+        //  AMBIL UserId DARI SESSION UNTUK DIKIRIM KE BACKEND
+        useEffect(() => {
+            const user = session?.user as any;
 
-            if (!vaData?.data) {
-                throw new Error('Invalid menu data');
+            if (user) {
+                // Kita log untuk memastikan UserId sudah ada
+                console.log('ISI SESSION USER:', user);
+
+                // Gunakan UserId (sesuai yang kita pasang di session tadi)
+                const activeId = user.UserId || user.id;
+
+                if (activeId) {
+                    getMenu(activeId);
+                }
             }
+        }, [session]);
 
-            const normalizedMenu = ensureGuestBookMenu(
-                    ensureArchiveDocumentMenu(
-                        ensureCorrespondenceMenu(
-                            removeLegacyCorrespondenceMenu(JSON.parse(JSON.stringify(vaData.data)))
-                        )
-                )
-            );
-            
-            const menu: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
-            const menu2: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
+       const getMenu = async (userId: string | number) => {
+            setState((prev) => ({ ...prev, load: true }));
+            try {
+                const { data: vaData } = await postData('setup/nav/user-data', { UserId: userId });
+                
+                // 1. Log data mentah untuk debugging di Console Browser
+                console.log("🚀 MENTAHAN DARI BACKEND:", vaData);
 
-            setState(prev => ({
-                ...prev,
-                filteredMenu: menu2,
-                menu: menu
-            }));
-        } catch (error) {
-            console.error("Error loading menu:", error);
-            setState(prev => ({
-                ...prev,
-                filteredMenu: [],
-                menu: []
-            }));
-        } finally {
-            setState(prev => ({ ...prev, load: false }));
-        }
-    };
-
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.ctrlKey && e.key.toLowerCase() === "f") {
-                const now = Date.now();
-
-                if (now - lastPressTime.current < 1000) {
-                    lastPressTime.current = 0;
-                    return;
+                if (!vaData?.data) {
+                    throw new Error('Data menu tidak ditemukan dari backend');
                 }
 
-                e.preventDefault();
-                lastPressTime.current = now;
-                searchRef.current?.focus();
-                searchRef.current?.select();
+                // 2. Filter Anti-Crash: Pastikan menu adalah Array
+                let menuArray = vaData.data;
+                
+                // Kalau MySQL ngirim string, kita bongkar dulu jadi Array
+                if (typeof menuArray === 'string') {
+                    try {
+                        menuArray = JSON.parse(menuArray);
+                    } catch (e) {
+                        console.error("Gagal memecah string menu dari database:", e);
+                        menuArray = [];
+                    }
+                }
+
+                // Pengaman ekstra: Kalau ternyata tetap bukan array, paksa jadi array kosong
+                if (!Array.isArray(menuArray)) {
+                    console.error("Format menu tidak valid (bukan array):", menuArray);
+                    menuArray = [];
+                }
+
+                // 3. Olah data yang sudah dipastikan aman
+                const normalizedMenu = ensureArchiveDocumentMenu(ensureCorrespondenceMenu(removeLegacyCorrespondenceMenu(menuArray)));
+                const menu: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
+                const menu2: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
+
+                setState((prev) => ({
+                    ...prev,
+                    filteredMenu: menu2,
+                    menu: menu
+                }));
+            } catch (error) {
+                console.error('Error loading menu:', error);
+                setState((prev) => ({
+                    ...prev,
+                    filteredMenu: [],
+                    menu: []
+                }));
+            } finally {
+                setState((prev) => ({ ...prev, load: false }));
             }
         };
 
-        window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    }, []);
+        useEffect(() => {
+            const handleKeyDown = (e: KeyboardEvent) => {
+                if (e.ctrlKey && e.key.toLowerCase() === 'f') {
+                    const now = Date.now();
 
-    const searchMenuByLabel = (
-        menu: AppMenuItem[] | undefined,
-        keyword: string,
-        parentIndexes: number[] = []
-    ): AppMenuItem[] => {
-        if (!Array.isArray(menu) || menu.length === 0) return [];
+                    if (now - lastPressTime.current < 1000) {
+                        lastPressTime.current = 0;
+                        return;
+                    }
 
-        const lowerKeyword = keyword?.toLowerCase() || "";
-
-        if (!lowerKeyword.trim()) {
-            return menu.map((item, idx) => {
-                const newItem: AppMenuItem = {
-                    ...item,
-                    indexPath: [...parentIndexes, idx],
-                };
-
-                if (item.items && item.items.length > 0) {
-                    newItem.items = searchMenuByLabel(item.items, "", [...parentIndexes, idx]);
+                    e.preventDefault();
+                    lastPressTime.current = now;
+                    searchRef.current?.focus();
+                    searchRef.current?.select();
                 }
+            };
 
-                return newItem;
-            });
-        }
+            window.addEventListener('keydown', handleKeyDown);
+            return () => window.removeEventListener('keydown', handleKeyDown);
+        }, []);
 
-        return menu
-            .map((item, idx): AppMenuItem | null => {
-                const isMatch = item.label?.toLowerCase().includes(lowerKeyword);
-                const childMatches = searchMenuByLabel(item.items || [], keyword, [...parentIndexes, idx]);
+        const searchMenuByLabel = (menu: AppMenuItem[] | undefined, keyword: string, parentIndexes: number[] = []): AppMenuItem[] => {
+            if (!Array.isArray(menu) || menu.length === 0) return [];
 
-                if (isMatch) {
+            const lowerKeyword = keyword?.toLowerCase() || '';
+
+            if (!lowerKeyword.trim()) {
+                return menu.map((item, idx) => {
                     const newItem: AppMenuItem = {
                         ...item,
                         indexPath: [...parentIndexes, idx]
                     };
-                    if (item.items && item.items.length > 0) {
-                        newItem.items = childMatches;
-                    }
-                    return newItem;
-                } else if (childMatches.length > 0) {
-                    const newItem: AppMenuItem = {
-                        ...item,
-                        indexPath: [...parentIndexes, idx]
-                    };
-                    if (item.items && item.items.length > 0) {
-                        newItem.items = childMatches;
-                    }
-                    return newItem;
-                }
 
-                return null;
-            })
-            .filter((item): item is AppMenuItem => item !== null);
-    };
+                    if (item.items && item.items.length > 0) {
+                        newItem.items = searchMenuByLabel(item.items, '', [...parentIndexes, idx]);
+                    }
+
+                    return newItem;
+                });
+            }
+
+            return menu
+                .map((item, idx): AppMenuItem | null => {
+                    const isMatch = item.label?.toLowerCase().includes(lowerKeyword);
+                    const childMatches = searchMenuByLabel(item.items || [], keyword, [...parentIndexes, idx]);
+
+                    if (isMatch) {
+                        const newItem: AppMenuItem = {
+                            ...item,
+                            indexPath: [...parentIndexes, idx]
+                        };
+                        if (item.items && item.items.length > 0) {
+                            newItem.items = childMatches;
+                        }
+                        return newItem;
+                    } else if (childMatches.length > 0) {
+                        const newItem: AppMenuItem = {
+                            ...item,
+                            indexPath: [...parentIndexes, idx]
+                        };
+                        if (item.items && item.items.length > 0) {
+                            newItem.items = childMatches;
+                        }
+                        return newItem;
+                    }
+
+                    return null;
+                })
+                .filter((item): item is AppMenuItem => item !== null);
+        };
 
     useEffect(() => {
         const filtered = searchMenuByLabel(state.menu, state.searchVal);
