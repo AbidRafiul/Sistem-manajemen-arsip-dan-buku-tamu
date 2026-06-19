@@ -1,189 +1,287 @@
+const getExactColumnNames = async (knex, tableName) => {
+    const [columns] = await knex.raw('SHOW FULL COLUMNS FROM ??', [tableName]);
+    return columns.map((column) => column.Field);
+};
+
+const renameColumnCompat = async (knex, tableName, from, to) => {
+    const columns = await getExactColumnNames(knex, tableName);
+
+    // MariaDB treats column lookups case-insensitively, so compare the names
+    // exactly to make case-only renames (ID -> id) safe and idempotent.
+    if (!columns.includes(from)) {
+        if (columns.includes(to)) return;
+        throw new Error(`Column ${tableName}.${from} tidak ditemukan`);
+    }
+
+    const [rows] = await knex.raw('SHOW CREATE TABLE ??', [tableName]);
+    const createSql = rows[0]['Create Table'];
+    const quotedFrom = `\`${from.replaceAll('`', '``')}\``;
+    const columnLine = createSql
+        .split('\n')
+        .map((line) => line.trim())
+        .find((line) => line.startsWith(`${quotedFrom} `));
+
+    if (!columnLine) {
+        throw new Error(`Definisi column ${tableName}.${from} tidak ditemukan`);
+    }
+
+    // Reuse the exact definition emitted by MariaDB so defaults, collation,
+    // comments, unsigned and auto_increment remain unchanged.
+    const definition = columnLine
+        .slice(quotedFrom.length)
+        .trim()
+        .replace(/,$/, '');
+
+    await knex.raw(
+        `ALTER TABLE ?? CHANGE COLUMN ?? ?? ${definition}`,
+        [tableName, from, to],
+    );
+};
+
+const ensureForeignKey = async (
+    knex,
+    constraintName,
+    tableName,
+    columnName,
+    referencedTable,
+    referencedColumn,
+) => {
+    const [rows] = await knex.raw(
+        `SELECT CONSTRAINT_NAME
+         FROM information_schema.KEY_COLUMN_USAGE
+         WHERE CONSTRAINT_SCHEMA = DATABASE()
+           AND TABLE_NAME = ?
+           AND CONSTRAINT_NAME = ?
+           AND REFERENCED_TABLE_NAME IS NOT NULL`,
+        [tableName, constraintName],
+    );
+
+    if (rows.length) return;
+
+    await knex.raw(
+        `ALTER TABLE ?? ADD CONSTRAINT ?? FOREIGN KEY (??)
+         REFERENCES ?? (??) ON DELETE NO ACTION ON UPDATE NO ACTION`,
+        [
+            tableName,
+            constraintName,
+            columnName,
+            referencedTable,
+            referencedColumn,
+        ],
+    );
+};
+
+const renameTableCompat = async (knex, from, to) => {
+    const hasFrom = await knex.schema.hasTable(from);
+    const hasTo = await knex.schema.hasTable(to);
+
+    if (hasFrom) {
+        await knex.schema.renameTable(from, to);
+        return;
+    }
+
+    if (!hasTo) {
+        throw new Error(`Table ${from} maupun ${to} tidak ditemukan`);
+    }
+};
+
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
 export async function up(knex) {
     // 0. Rename Tabel tr_visitations -> trx_visitations
-    await knex.schema.renameTable('tr_visitations', 'trx_visitations');
+    await renameTableCompat(knex, 'tr_visitations', 'trx_visitations');
 
     // 1. Table: access_token
-    await knex.raw('ALTER TABLE `access_token` RENAME COLUMN `ID` TO `id`');
-    await knex.raw('ALTER TABLE `access_token` RENAME COLUMN `Token` TO `token`');
-    await knex.raw('ALTER TABLE `access_token` RENAME COLUMN `Expired` TO `expired`');
-    await knex.raw('ALTER TABLE `access_token` RENAME COLUMN `Datetime` TO `datetime`');
+    await renameColumnCompat(knex, 'access_token', 'ID', 'id');
+    await renameColumnCompat(knex, 'access_token', 'Token', 'token');
+    await renameColumnCompat(knex, 'access_token', 'Expired', 'expired');
+    await renameColumnCompat(knex, 'access_token', 'Datetime', 'datetime');
 
     // 2. Table: config
-    await knex.raw('ALTER TABLE `config` RENAME COLUMN `Id` TO `id`');
-    await knex.raw('ALTER TABLE `config` RENAME COLUMN `Kode` TO `kode`');
-    await knex.raw('ALTER TABLE `config` RENAME COLUMN `Keterangan` TO `keterangan`');
+    await renameColumnCompat(knex, 'config', 'Id', 'id');
+    await renameColumnCompat(knex, 'config', 'Kode', 'kode');
+    await renameColumnCompat(knex, 'config', 'Keterangan', 'keterangan');
 
     // 3. Table: log
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `ID` TO `id`');
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `Tgl` TO `tgl`');
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `Controller` TO `controller`');
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `Function` TO `function`');
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `Request` TO `request`');
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `Response` TO `response`');
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `Stack` TO `stack`');
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `User` TO `user`');
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `DateTime` TO `datetime`');
+    await renameColumnCompat(knex, 'log', 'ID', 'id');
+    await renameColumnCompat(knex, 'log', 'Tgl', 'tgl');
+    await renameColumnCompat(knex, 'log', 'Controller', 'controller');
+    await renameColumnCompat(knex, 'log', 'Function', 'function');
+    await renameColumnCompat(knex, 'log', 'Request', 'request');
+    await renameColumnCompat(knex, 'log', 'Response', 'response');
+    await renameColumnCompat(knex, 'log', 'Stack', 'stack');
+    await renameColumnCompat(knex, 'log', 'User', 'user');
+    await renameColumnCompat(knex, 'log', 'DateTime', 'datetime');
 
     // 4. Table: mst_audit_trails
-    await knex.raw('ALTER TABLE `mst_audit_trails` RENAME COLUMN `Id` TO `id`');
-    await knex.raw('ALTER TABLE `mst_audit_trails` RENAME COLUMN `Username` TO `username`');
-    await knex.raw('ALTER TABLE `mst_audit_trails` RENAME COLUMN `Role` TO `role`');
-    await knex.raw('ALTER TABLE `mst_audit_trails` RENAME COLUMN `Action` TO `action`');
-    await knex.raw('ALTER TABLE `mst_audit_trails` RENAME COLUMN `IpAddress` TO `ip_address`');
-    await knex.raw('ALTER TABLE `mst_audit_trails` RENAME COLUMN `UserAgent` TO `user_agent`');
-    await knex.raw('ALTER TABLE `mst_audit_trails` RENAME COLUMN `Status` TO `status`');
-    await knex.raw('ALTER TABLE `mst_audit_trails` RENAME COLUMN `CreatedAt` TO `created_at`');
+    await renameColumnCompat(knex, 'mst_audit_trails', 'Id', 'id');
+    await renameColumnCompat(knex, 'mst_audit_trails', 'Username', 'username');
+    await renameColumnCompat(knex, 'mst_audit_trails', 'Role', 'role');
+    await renameColumnCompat(knex, 'mst_audit_trails', 'Action', 'action');
+    await renameColumnCompat(knex, 'mst_audit_trails', 'IpAddress', 'ip_address');
+    await renameColumnCompat(knex, 'mst_audit_trails', 'UserAgent', 'user_agent');
+    await renameColumnCompat(knex, 'mst_audit_trails', 'Status', 'status');
+    await renameColumnCompat(knex, 'mst_audit_trails', 'CreatedAt', 'created_at');
 
     // 5. Table: mst_branches
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `BranchId` TO `branch_id`');
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `BranchCode` TO `branch_code`');
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `BranchName` TO `branch_name`');
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `Address` TO `address`');
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `Telp` TO `telp`');
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `Email` TO `email`');
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `Status` TO `status`');
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `CreatedAt` TO `created_at`');
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `UpdatedAt` TO `updated_at`');
+    await renameColumnCompat(knex, 'mst_branches', 'BranchId', 'branch_id');
+    await renameColumnCompat(knex, 'mst_branches', 'BranchCode', 'branch_code');
+    await renameColumnCompat(knex, 'mst_branches', 'BranchName', 'branch_name');
+    await renameColumnCompat(knex, 'mst_branches', 'Address', 'address');
+    await renameColumnCompat(knex, 'mst_branches', 'Telp', 'telp');
+    await renameColumnCompat(knex, 'mst_branches', 'Email', 'email');
+    await renameColumnCompat(knex, 'mst_branches', 'Status', 'status');
+    await renameColumnCompat(knex, 'mst_branches', 'CreatedAt', 'created_at');
+    await renameColumnCompat(knex, 'mst_branches', 'UpdatedAt', 'updated_at');
 
     // 6. Table: mst_divisions
-    await knex.raw('ALTER TABLE `mst_divisions` RENAME COLUMN `DivisionId` TO `division_id`');
-    await knex.raw('ALTER TABLE `mst_divisions` RENAME COLUMN `BranchId` TO `branch_id`');
-    await knex.raw('ALTER TABLE `mst_divisions` RENAME COLUMN `DivisionCode` TO `division_code`');
-    await knex.raw('ALTER TABLE `mst_divisions` RENAME COLUMN `DivisionName` TO `division_name`');
-    await knex.raw('ALTER TABLE `mst_divisions` RENAME COLUMN `Description` TO `description`');
-    await knex.raw('ALTER TABLE `mst_divisions` RENAME COLUMN `Status` TO `status`');
-    await knex.raw('ALTER TABLE `mst_divisions` RENAME COLUMN `CreatedAt` TO `created_at`');
-    await knex.raw('ALTER TABLE `mst_divisions` RENAME COLUMN `UpdatedAt` TO `updated_at`');
+    await renameColumnCompat(knex, 'mst_divisions', 'DivisionId', 'division_id');
+    await renameColumnCompat(knex, 'mst_divisions', 'BranchId', 'branch_id');
+    await renameColumnCompat(knex, 'mst_divisions', 'DivisionCode', 'division_code');
+    await renameColumnCompat(knex, 'mst_divisions', 'DivisionName', 'division_name');
+    await renameColumnCompat(knex, 'mst_divisions', 'Description', 'description');
+    await renameColumnCompat(knex, 'mst_divisions', 'Status', 'status');
+    await renameColumnCompat(knex, 'mst_divisions', 'CreatedAt', 'created_at');
+    await renameColumnCompat(knex, 'mst_divisions', 'UpdatedAt', 'updated_at');
 
     // 7. Table: mst_departments
-    await knex.raw('ALTER TABLE `mst_departments` RENAME COLUMN `DepartmentId` TO `department_id`');
-    await knex.raw('ALTER TABLE `mst_departments` RENAME COLUMN `DivisionId` TO `division_id`');
-    await knex.raw('ALTER TABLE `mst_departments` RENAME COLUMN `DepartmentCode` TO `department_code`');
-    await knex.raw('ALTER TABLE `mst_departments` RENAME COLUMN `DepartmentName` TO `department_name`');
-    await knex.raw('ALTER TABLE `mst_departments` RENAME COLUMN `Description` TO `description`');
-    await knex.raw('ALTER TABLE `mst_departments` RENAME COLUMN `Status` TO `status`');
-    await knex.raw('ALTER TABLE `mst_departments` RENAME COLUMN `CreatedAt` TO `created_at`');
-    await knex.raw('ALTER TABLE `mst_departments` RENAME COLUMN `UpdatedAt` TO `updated_at`');
+    await renameColumnCompat(knex, 'mst_departments', 'DepartmentId', 'department_id');
+    await renameColumnCompat(knex, 'mst_departments', 'DivisionId', 'division_id');
+    await renameColumnCompat(knex, 'mst_departments', 'DepartmentCode', 'department_code');
+    await renameColumnCompat(knex, 'mst_departments', 'DepartmentName', 'department_name');
+    await renameColumnCompat(knex, 'mst_departments', 'Description', 'description');
+    await renameColumnCompat(knex, 'mst_departments', 'Status', 'status');
+    await renameColumnCompat(knex, 'mst_departments', 'CreatedAt', 'created_at');
+    await renameColumnCompat(knex, 'mst_departments', 'UpdatedAt', 'updated_at');
 
     // 8. Table: mst_positions
-    await knex.raw('ALTER TABLE `mst_positions` RENAME COLUMN `PositionId` TO `position_id`');
-    await knex.raw('ALTER TABLE `mst_positions` RENAME COLUMN `PositionCode` TO `position_code`');
-    await knex.raw('ALTER TABLE `mst_positions` RENAME COLUMN `PositionName` TO `position_name`');
-    await knex.raw('ALTER TABLE `mst_positions` RENAME COLUMN `PositionLevel` TO `position_level`');
-    await knex.raw('ALTER TABLE `mst_positions` RENAME COLUMN `Description` TO `description`');
-    await knex.raw('ALTER TABLE `mst_positions` RENAME COLUMN `Status` TO `status`');
-    await knex.raw('ALTER TABLE `mst_positions` RENAME COLUMN `CreatedAt` TO `created_at`');
-    await knex.raw('ALTER TABLE `mst_positions` RENAME COLUMN `UpdatedAt` TO `updated_at`');
+    await renameColumnCompat(knex, 'mst_positions', 'PositionId', 'position_id');
+    await renameColumnCompat(knex, 'mst_positions', 'PositionCode', 'position_code');
+    await renameColumnCompat(knex, 'mst_positions', 'PositionName', 'position_name');
+    await renameColumnCompat(knex, 'mst_positions', 'PositionLevel', 'position_level');
+    await renameColumnCompat(knex, 'mst_positions', 'Description', 'description');
+    await renameColumnCompat(knex, 'mst_positions', 'Status', 'status');
+    await renameColumnCompat(knex, 'mst_positions', 'CreatedAt', 'created_at');
+    await renameColumnCompat(knex, 'mst_positions', 'UpdatedAt', 'updated_at');
 
     // 9. Table: mst_work_units
-    await knex.raw('ALTER TABLE `mst_work_units` RENAME COLUMN `WorkUnitId` TO `work_unit_id`');
-    await knex.raw('ALTER TABLE `mst_work_units` RENAME COLUMN `DepartmentId` TO `department_id`');
-    await knex.raw('ALTER TABLE `mst_work_units` RENAME COLUMN `WorkUnitCode` TO `work_unit_code`');
-    await knex.raw('ALTER TABLE `mst_work_units` RENAME COLUMN `WorkUnitName` TO `work_unit_name`');
-    await knex.raw('ALTER TABLE `mst_work_units` RENAME COLUMN `Description` TO `description`');
-    await knex.raw('ALTER TABLE `mst_work_units` RENAME COLUMN `Status` TO `status`');
-    await knex.raw('ALTER TABLE `mst_work_units` RENAME COLUMN `CreatedAt` TO `created_at`');
-    await knex.raw('ALTER TABLE `mst_work_units` RENAME COLUMN `UpdatedAt` TO `updated_at`');
+    await renameColumnCompat(knex, 'mst_work_units', 'WorkUnitId', 'work_unit_id');
+    await renameColumnCompat(knex, 'mst_work_units', 'DepartmentId', 'department_id');
+    await renameColumnCompat(knex, 'mst_work_units', 'WorkUnitCode', 'work_unit_code');
+    await renameColumnCompat(knex, 'mst_work_units', 'WorkUnitName', 'work_unit_name');
+    await renameColumnCompat(knex, 'mst_work_units', 'Description', 'description');
+    await renameColumnCompat(knex, 'mst_work_units', 'Status', 'status');
+    await renameColumnCompat(knex, 'mst_work_units', 'CreatedAt', 'created_at');
+    await renameColumnCompat(knex, 'mst_work_units', 'UpdatedAt', 'updated_at');
 
     // 10. Table: mst_users
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `UserId` TO `user_id`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `Fullname` TO `fullname`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `Username` TO `username`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `Email` TO `email`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `Telp` TO `telp`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `Password` TO `password`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `BranchId` TO `branch_id`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `DivisionId` TO `division_id`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `DepartmentId` TO `department_id`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `PositionId` TO `position_id`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `WorkUnitId` TO `work_unit_id`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `FailedLoginAttempts` TO `failed_login_attempts`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `LastLoginAt` TO `last_login_at`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `Status` TO `status`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `CreatedAt` TO `created_at`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `UpdatedAt` TO `updated_at`');
+    await renameColumnCompat(knex, 'mst_users', 'UserId', 'user_id');
+    await renameColumnCompat(knex, 'mst_users', 'Fullname', 'fullname');
+    await renameColumnCompat(knex, 'mst_users', 'Username', 'username');
+    await renameColumnCompat(knex, 'mst_users', 'Email', 'email');
+    await renameColumnCompat(knex, 'mst_users', 'Telp', 'telp');
+    await renameColumnCompat(knex, 'mst_users', 'Password', 'password');
+    await renameColumnCompat(knex, 'mst_users', 'BranchId', 'branch_id');
+    await renameColumnCompat(knex, 'mst_users', 'DivisionId', 'division_id');
+    await renameColumnCompat(knex, 'mst_users', 'DepartmentId', 'department_id');
+    await renameColumnCompat(knex, 'mst_users', 'PositionId', 'position_id');
+    await renameColumnCompat(knex, 'mst_users', 'WorkUnitId', 'work_unit_id');
+    await renameColumnCompat(knex, 'mst_users', 'FailedLoginAttempts', 'failed_login_attempts');
+    await renameColumnCompat(knex, 'mst_users', 'LastLoginAt', 'last_login_at');
+    await renameColumnCompat(knex, 'mst_users', 'Status', 'status');
+    await renameColumnCompat(knex, 'mst_users', 'CreatedAt', 'created_at');
+    await renameColumnCompat(knex, 'mst_users', 'UpdatedAt', 'updated_at');
 
     // 11. Table: mst_roles
-    await knex.raw('ALTER TABLE `mst_roles` RENAME COLUMN `RoleId` TO `role_id`');
-    await knex.raw('ALTER TABLE `mst_roles` RENAME COLUMN `RoleCode` TO `role_code`');
-    await knex.raw('ALTER TABLE `mst_roles` RENAME COLUMN `RoleName` TO `role_name`');
-    await knex.raw('ALTER TABLE `mst_roles` RENAME COLUMN `Description` TO `description`');
-    await knex.raw('ALTER TABLE `mst_roles` RENAME COLUMN `Status` TO `status`');
-    await knex.raw('ALTER TABLE `mst_roles` RENAME COLUMN `CreatedAt` TO `created_at`');
-    await knex.raw('ALTER TABLE `mst_roles` RENAME COLUMN `UpdatedAt` TO `updated_at`');
+    await renameColumnCompat(knex, 'mst_roles', 'RoleId', 'role_id');
+    await renameColumnCompat(knex, 'mst_roles', 'RoleCode', 'role_code');
+    await renameColumnCompat(knex, 'mst_roles', 'RoleName', 'role_name');
+    await renameColumnCompat(knex, 'mst_roles', 'Description', 'description');
+    await renameColumnCompat(knex, 'mst_roles', 'Status', 'status');
+    await renameColumnCompat(knex, 'mst_roles', 'CreatedAt', 'created_at');
+    await renameColumnCompat(knex, 'mst_roles', 'UpdatedAt', 'updated_at');
 
     // 12. Table: mst_user_roles
-    await knex.raw('ALTER TABLE `mst_user_roles` RENAME COLUMN `UserRoleId` TO `user_role_id`');
-    await knex.raw('ALTER TABLE `mst_user_roles` RENAME COLUMN `UserId` TO `user_id`');
-    await knex.raw('ALTER TABLE `mst_user_roles` RENAME COLUMN `RoleId` TO `role_id`');
-    await knex.raw('ALTER TABLE `mst_user_roles` RENAME COLUMN `IsPrimary` TO `is_primary`');
-    await knex.raw('ALTER TABLE `mst_user_roles` RENAME COLUMN `Status` TO `status`');
-    await knex.raw('ALTER TABLE `mst_user_roles` RENAME COLUMN `CreatedAt` TO `created_at`');
-    await knex.raw('ALTER TABLE `mst_user_roles` RENAME COLUMN `UpdatedAt` TO `updated_at`');
+    await renameColumnCompat(knex, 'mst_user_roles', 'UserRoleId', 'user_role_id');
+    await renameColumnCompat(knex, 'mst_user_roles', 'UserId', 'user_id');
+    await renameColumnCompat(knex, 'mst_user_roles', 'RoleId', 'role_id');
+    await renameColumnCompat(knex, 'mst_user_roles', 'IsPrimary', 'is_primary');
+    await renameColumnCompat(knex, 'mst_user_roles', 'Status', 'status');
+    await renameColumnCompat(knex, 'mst_user_roles', 'CreatedAt', 'created_at');
+    await renameColumnCompat(knex, 'mst_user_roles', 'UpdatedAt', 'updated_at');
 
     // 13. Table: mst_menus
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `MenuId` TO `menu_id`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `ParentMenuId` TO `parent_menu_id`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `MenuCode` TO `menu_code`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `MenuName` TO `menu_name`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `MenuPath` TO `menu_path`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `MenuIcon` TO `menu_icon`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `SortOrder` TO `sort_order`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `IsActive` TO `is_active`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `CreatedAt` TO `created_at`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `UpdatedAt` TO `updated_at`');
+    await renameColumnCompat(knex, 'mst_menus', 'MenuId', 'menu_id');
+    await renameColumnCompat(knex, 'mst_menus', 'ParentMenuId', 'parent_menu_id');
+    await renameColumnCompat(knex, 'mst_menus', 'MenuCode', 'menu_code');
+    await renameColumnCompat(knex, 'mst_menus', 'MenuName', 'menu_name');
+    await renameColumnCompat(knex, 'mst_menus', 'MenuPath', 'menu_path');
+    await renameColumnCompat(knex, 'mst_menus', 'MenuIcon', 'menu_icon');
+    await renameColumnCompat(knex, 'mst_menus', 'SortOrder', 'sort_order');
+    await renameColumnCompat(knex, 'mst_menus', 'IsActive', 'is_active');
+    await renameColumnCompat(knex, 'mst_menus', 'CreatedAt', 'created_at');
+    await renameColumnCompat(knex, 'mst_menus', 'UpdatedAt', 'updated_at');
 
     // 14. Table: mst_role_menus
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `RoleMenuId` TO `role_menu_id`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `RoleId` TO `role_id`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `MenuId` TO `menu_id`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `CanView` TO `can_view`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `CanCreate` TO `can_create`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `CanUpdate` TO `can_update`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `CanDelete` TO `can_delete`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `CanApprove` TO `can_approve`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `CreatedAt` TO `created_at`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `UpdatedAt` TO `updated_at`');
+    await renameColumnCompat(knex, 'mst_role_menus', 'RoleMenuId', 'role_menu_id');
+    await renameColumnCompat(knex, 'mst_role_menus', 'RoleId', 'role_id');
+    await renameColumnCompat(knex, 'mst_role_menus', 'MenuId', 'menu_id');
+    await renameColumnCompat(knex, 'mst_role_menus', 'CanView', 'can_view');
+    await renameColumnCompat(knex, 'mst_role_menus', 'CanCreate', 'can_create');
+    await renameColumnCompat(knex, 'mst_role_menus', 'CanUpdate', 'can_update');
+    await renameColumnCompat(knex, 'mst_role_menus', 'CanDelete', 'can_delete');
+    await renameColumnCompat(knex, 'mst_role_menus', 'CanApprove', 'can_approve');
+    await renameColumnCompat(knex, 'mst_role_menus', 'CreatedAt', 'created_at');
+    await renameColumnCompat(knex, 'mst_role_menus', 'UpdatedAt', 'updated_at');
 
     // 15. Table: mst_navigation
-    await knex.raw('ALTER TABLE `mst_navigation` RENAME COLUMN `Id` TO `id`');
-    await knex.raw('ALTER TABLE `mst_navigation` RENAME COLUMN `Menu` TO `menu`');
-    await knex.raw('ALTER TABLE `mst_navigation` RENAME COLUMN `Role` TO `role`');
-    await knex.raw('ALTER TABLE `mst_navigation` RENAME COLUMN `CreatedAt` TO `created_at`');
+    await renameColumnCompat(knex, 'mst_navigation', 'Id', 'id');
+    await renameColumnCompat(knex, 'mst_navigation', 'Menu', 'menu');
+    await renameColumnCompat(knex, 'mst_navigation', 'Role', 'role');
+    await renameColumnCompat(knex, 'mst_navigation', 'CreatedAt', 'created_at');
 
     // 16. Table: user_navigation
-    await knex.raw('ALTER TABLE `user_navigation` RENAME COLUMN `Id` TO `id`');
-    await knex.raw('ALTER TABLE `user_navigation` RENAME COLUMN `UserId` TO `user_id`');
-    await knex.raw('ALTER TABLE `user_navigation` RENAME COLUMN `Menu` TO `menu`');
-    await knex.raw('ALTER TABLE `user_navigation` RENAME COLUMN `CreatedAt` TO `created_at`');
-    await knex.raw('ALTER TABLE `user_navigation` RENAME COLUMN `UpdatedAt` TO `updated_at`');
+    await renameColumnCompat(knex, 'user_navigation', 'Id', 'id');
+    await renameColumnCompat(knex, 'user_navigation', 'UserId', 'user_id');
+    await renameColumnCompat(knex, 'user_navigation', 'Menu', 'menu');
+    await renameColumnCompat(knex, 'user_navigation', 'CreatedAt', 'created_at');
+    await renameColumnCompat(knex, 'user_navigation', 'UpdatedAt', 'updated_at');
 
     // 17. Table: user_credential
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `Id` TO `id`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `UniqueId` TO `unique_id`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `Username` TO `username`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `Fullname` TO `fullname`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `Telp` TO `telp`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `Role` TO `role`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `Password` TO `password`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `Status` TO `status`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `CreatedAt` TO `created_at`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `UpdatedAt` TO `updated_at`');
+    await renameColumnCompat(knex, 'user_credential', 'Id', 'id');
+    await renameColumnCompat(knex, 'user_credential', 'UniqueId', 'unique_id');
+    await renameColumnCompat(knex, 'user_credential', 'Username', 'username');
+    await renameColumnCompat(knex, 'user_credential', 'Fullname', 'fullname');
+    await renameColumnCompat(knex, 'user_credential', 'Telp', 'telp');
+    await renameColumnCompat(knex, 'user_credential', 'Role', 'role');
+    await renameColumnCompat(knex, 'user_credential', 'Password', 'password');
+    await renameColumnCompat(knex, 'user_credential', 'Status', 'status');
+    await renameColumnCompat(knex, 'user_credential', 'CreatedAt', 'created_at');
+    await renameColumnCompat(knex, 'user_credential', 'UpdatedAt', 'updated_at');
 
     // 18. Table: nomor_faktur
-    await knex.raw('ALTER TABLE `nomor_faktur` RENAME COLUMN `Kode` TO `kode`');
-    await knex.raw('ALTER TABLE `nomor_faktur` RENAME COLUMN `Id` TO `id`');
+    await renameColumnCompat(knex, 'nomor_faktur', 'Kode', 'kode');
+    await renameColumnCompat(knex, 'nomor_faktur', 'Id', 'id');
 
     // 19. Table: mst_visit_purpose
-    await knex.raw('ALTER TABLE `mst_visit_purpose` RENAME COLUMN `Description` TO `description`');
-    await knex.raw('ALTER TABLE `mst_visit_purpose` RENAME COLUMN `Status` TO `status`');
+    await renameColumnCompat(knex, 'mst_visit_purpose', 'Description', 'description');
+    await renameColumnCompat(knex, 'mst_visit_purpose', 'Status', 'status');
 
     // 20. Table: trx_visitations
-    await knex.raw('ALTER TABLE `trx_visitations` RENAME COLUMN `Status` TO `status`');
+    await renameColumnCompat(knex, 'trx_visitations', 'Status', 'status');
+
+    // A failed earlier run using Knex's renameColumn may have dropped this FK
+    // before it failed to recreate it. Restore it idempotently.
+    await ensureForeignKey(
+        knex,
+        'mst_divisions_branchid_foreign',
+        'mst_divisions',
+        'branch_id',
+        'mst_branches',
+        'branch_id',
+    );
 }
 
 /**
@@ -191,164 +289,164 @@ export async function up(knex) {
  * @returns { Promise<void> }
  */
 export async function down(knex) {
-    await knex.raw('ALTER TABLE `trx_visitations` RENAME COLUMN `status` TO `Status`');
+    await renameColumnCompat(knex, 'trx_visitations', 'status', 'Status');
 
-    await knex.raw('ALTER TABLE `mst_visit_purpose` RENAME COLUMN `description` TO `Description`');
-    await knex.raw('ALTER TABLE `mst_visit_purpose` RENAME COLUMN `status` TO `Status`');
+    await renameColumnCompat(knex, 'mst_visit_purpose', 'description', 'Description');
+    await renameColumnCompat(knex, 'mst_visit_purpose', 'status', 'Status');
 
-    await knex.raw('ALTER TABLE `nomor_faktur` RENAME COLUMN `kode` TO `Kode`');
-    await knex.raw('ALTER TABLE `nomor_faktur` RENAME COLUMN `id` TO `Id`');
+    await renameColumnCompat(knex, 'nomor_faktur', 'kode', 'Kode');
+    await renameColumnCompat(knex, 'nomor_faktur', 'id', 'Id');
 
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `id` TO `Id`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `unique_id` TO `UniqueId`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `username` TO `Username`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `fullname` TO `Fullname`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `telp` TO `Telp`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `role` TO `Role`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `password` TO `Password`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `status` TO `Status`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `created_at` TO `CreatedAt`');
-    await knex.raw('ALTER TABLE `user_credential` RENAME COLUMN `updated_at` TO `UpdatedAt`');
+    await renameColumnCompat(knex, 'user_credential', 'id', 'Id');
+    await renameColumnCompat(knex, 'user_credential', 'unique_id', 'UniqueId');
+    await renameColumnCompat(knex, 'user_credential', 'username', 'Username');
+    await renameColumnCompat(knex, 'user_credential', 'fullname', 'Fullname');
+    await renameColumnCompat(knex, 'user_credential', 'telp', 'Telp');
+    await renameColumnCompat(knex, 'user_credential', 'role', 'Role');
+    await renameColumnCompat(knex, 'user_credential', 'password', 'Password');
+    await renameColumnCompat(knex, 'user_credential', 'status', 'Status');
+    await renameColumnCompat(knex, 'user_credential', 'created_at', 'CreatedAt');
+    await renameColumnCompat(knex, 'user_credential', 'updated_at', 'UpdatedAt');
 
-    await knex.raw('ALTER TABLE `user_navigation` RENAME COLUMN `id` TO `Id`');
-    await knex.raw('ALTER TABLE `user_navigation` RENAME COLUMN `user_id` TO `UserId`');
-    await knex.raw('ALTER TABLE `user_navigation` RENAME COLUMN `menu` TO `Menu`');
-    await knex.raw('ALTER TABLE `user_navigation` RENAME COLUMN `created_at` TO `CreatedAt`');
-    await knex.raw('ALTER TABLE `user_navigation` RENAME COLUMN `updated_at` TO `UpdatedAt`');
+    await renameColumnCompat(knex, 'user_navigation', 'id', 'Id');
+    await renameColumnCompat(knex, 'user_navigation', 'user_id', 'UserId');
+    await renameColumnCompat(knex, 'user_navigation', 'menu', 'Menu');
+    await renameColumnCompat(knex, 'user_navigation', 'created_at', 'CreatedAt');
+    await renameColumnCompat(knex, 'user_navigation', 'updated_at', 'UpdatedAt');
 
-    await knex.raw('ALTER TABLE `mst_navigation` RENAME COLUMN `id` TO `Id`');
-    await knex.raw('ALTER TABLE `mst_navigation` RENAME COLUMN `menu` TO `Menu`');
-    await knex.raw('ALTER TABLE `mst_navigation` RENAME COLUMN `role` TO `Role`');
-    await knex.raw('ALTER TABLE `mst_navigation` RENAME COLUMN `created_at` TO `CreatedAt`');
+    await renameColumnCompat(knex, 'mst_navigation', 'id', 'Id');
+    await renameColumnCompat(knex, 'mst_navigation', 'menu', 'Menu');
+    await renameColumnCompat(knex, 'mst_navigation', 'role', 'Role');
+    await renameColumnCompat(knex, 'mst_navigation', 'created_at', 'CreatedAt');
 
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `role_menu_id` TO `RoleMenuId`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `role_id` TO `RoleId`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `menu_id` TO `MenuId`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `can_view` TO `CanView`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `can_create` TO `CanCreate`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `can_update` TO `CanUpdate`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `can_delete` TO `CanDelete`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `can_approve` TO `CanApprove`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `created_at` TO `CreatedAt`');
-    await knex.raw('ALTER TABLE `mst_role_menus` RENAME COLUMN `updated_at` TO `UpdatedAt`');
+    await renameColumnCompat(knex, 'mst_role_menus', 'role_menu_id', 'RoleMenuId');
+    await renameColumnCompat(knex, 'mst_role_menus', 'role_id', 'RoleId');
+    await renameColumnCompat(knex, 'mst_role_menus', 'menu_id', 'MenuId');
+    await renameColumnCompat(knex, 'mst_role_menus', 'can_view', 'CanView');
+    await renameColumnCompat(knex, 'mst_role_menus', 'can_create', 'CanCreate');
+    await renameColumnCompat(knex, 'mst_role_menus', 'can_update', 'CanUpdate');
+    await renameColumnCompat(knex, 'mst_role_menus', 'can_delete', 'CanDelete');
+    await renameColumnCompat(knex, 'mst_role_menus', 'can_approve', 'CanApprove');
+    await renameColumnCompat(knex, 'mst_role_menus', 'created_at', 'CreatedAt');
+    await renameColumnCompat(knex, 'mst_role_menus', 'updated_at', 'UpdatedAt');
 
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `menu_id` TO `MenuId`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `parent_menu_id` TO `ParentMenuId`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `menu_code` TO `MenuCode`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `menu_name` TO `MenuName`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `menu_path` TO `MenuPath`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `menu_icon` TO `MenuIcon`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `sort_order` TO `SortOrder`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `is_active` TO `IsActive`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `created_at` TO `CreatedAt`');
-    await knex.raw('ALTER TABLE `mst_menus` RENAME COLUMN `updated_at` TO `UpdatedAt`');
+    await renameColumnCompat(knex, 'mst_menus', 'menu_id', 'MenuId');
+    await renameColumnCompat(knex, 'mst_menus', 'parent_menu_id', 'ParentMenuId');
+    await renameColumnCompat(knex, 'mst_menus', 'menu_code', 'MenuCode');
+    await renameColumnCompat(knex, 'mst_menus', 'menu_name', 'MenuName');
+    await renameColumnCompat(knex, 'mst_menus', 'menu_path', 'MenuPath');
+    await renameColumnCompat(knex, 'mst_menus', 'menu_icon', 'MenuIcon');
+    await renameColumnCompat(knex, 'mst_menus', 'sort_order', 'SortOrder');
+    await renameColumnCompat(knex, 'mst_menus', 'is_active', 'IsActive');
+    await renameColumnCompat(knex, 'mst_menus', 'created_at', 'CreatedAt');
+    await renameColumnCompat(knex, 'mst_menus', 'updated_at', 'UpdatedAt');
 
-    await knex.raw('ALTER TABLE `mst_user_roles` RENAME COLUMN `user_role_id` TO `UserRoleId`');
-    await knex.raw('ALTER TABLE `mst_user_roles` RENAME COLUMN `user_id` TO `UserId`');
-    await knex.raw('ALTER TABLE `mst_user_roles` RENAME COLUMN `role_id` TO `RoleId`');
-    await knex.raw('ALTER TABLE `mst_user_roles` RENAME COLUMN `is_primary` TO `IsPrimary`');
-    await knex.raw('ALTER TABLE `mst_user_roles` RENAME COLUMN `status` TO `Status`');
-    await knex.raw('ALTER TABLE `mst_user_roles` RENAME COLUMN `created_at` TO `CreatedAt`');
-    await knex.raw('ALTER TABLE `mst_user_roles` RENAME COLUMN `updated_at` TO `UpdatedAt`');
+    await renameColumnCompat(knex, 'mst_user_roles', 'user_role_id', 'UserRoleId');
+    await renameColumnCompat(knex, 'mst_user_roles', 'user_id', 'UserId');
+    await renameColumnCompat(knex, 'mst_user_roles', 'role_id', 'RoleId');
+    await renameColumnCompat(knex, 'mst_user_roles', 'is_primary', 'IsPrimary');
+    await renameColumnCompat(knex, 'mst_user_roles', 'status', 'Status');
+    await renameColumnCompat(knex, 'mst_user_roles', 'created_at', 'CreatedAt');
+    await renameColumnCompat(knex, 'mst_user_roles', 'updated_at', 'UpdatedAt');
 
-    await knex.raw('ALTER TABLE `mst_roles` RENAME COLUMN `role_id` TO `RoleId`');
-    await knex.raw('ALTER TABLE `mst_roles` RENAME COLUMN `role_code` TO `RoleCode`');
-    await knex.raw('ALTER TABLE `mst_roles` RENAME COLUMN `role_name` TO `RoleName`');
-    await knex.raw('ALTER TABLE `mst_roles` RENAME COLUMN `description` TO `Description`');
-    await knex.raw('ALTER TABLE `mst_roles` RENAME COLUMN `status` TO `Status`');
-    await knex.raw('ALTER TABLE `mst_roles` RENAME COLUMN `created_at` TO `CreatedAt`');
-    await knex.raw('ALTER TABLE `mst_roles` RENAME COLUMN `updated_at` TO `UpdatedAt`');
+    await renameColumnCompat(knex, 'mst_roles', 'role_id', 'RoleId');
+    await renameColumnCompat(knex, 'mst_roles', 'role_code', 'RoleCode');
+    await renameColumnCompat(knex, 'mst_roles', 'role_name', 'RoleName');
+    await renameColumnCompat(knex, 'mst_roles', 'description', 'Description');
+    await renameColumnCompat(knex, 'mst_roles', 'status', 'Status');
+    await renameColumnCompat(knex, 'mst_roles', 'created_at', 'CreatedAt');
+    await renameColumnCompat(knex, 'mst_roles', 'updated_at', 'UpdatedAt');
 
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `user_id` TO `UserId`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `fullname` TO `Fullname`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `username` TO `Username`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `email` TO `Email`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `telp` TO `Telp`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `password` TO `Password`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `branch_id` TO `BranchId`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `division_id` TO `DivisionId`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `department_id` TO `DepartmentId`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `position_id` TO `PositionId`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `work_unit_id` TO `WorkUnitId`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `failed_login_attempts` TO `FailedLoginAttempts`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `last_login_at` TO `LastLoginAt`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `status` TO `Status`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `created_at` TO `CreatedAt`');
-    await knex.raw('ALTER TABLE `mst_users` RENAME COLUMN `updated_at` TO `UpdatedAt`');
+    await renameColumnCompat(knex, 'mst_users', 'user_id', 'UserId');
+    await renameColumnCompat(knex, 'mst_users', 'fullname', 'Fullname');
+    await renameColumnCompat(knex, 'mst_users', 'username', 'Username');
+    await renameColumnCompat(knex, 'mst_users', 'email', 'Email');
+    await renameColumnCompat(knex, 'mst_users', 'telp', 'Telp');
+    await renameColumnCompat(knex, 'mst_users', 'password', 'Password');
+    await renameColumnCompat(knex, 'mst_users', 'branch_id', 'BranchId');
+    await renameColumnCompat(knex, 'mst_users', 'division_id', 'DivisionId');
+    await renameColumnCompat(knex, 'mst_users', 'department_id', 'DepartmentId');
+    await renameColumnCompat(knex, 'mst_users', 'position_id', 'PositionId');
+    await renameColumnCompat(knex, 'mst_users', 'work_unit_id', 'WorkUnitId');
+    await renameColumnCompat(knex, 'mst_users', 'failed_login_attempts', 'FailedLoginAttempts');
+    await renameColumnCompat(knex, 'mst_users', 'last_login_at', 'LastLoginAt');
+    await renameColumnCompat(knex, 'mst_users', 'status', 'Status');
+    await renameColumnCompat(knex, 'mst_users', 'created_at', 'CreatedAt');
+    await renameColumnCompat(knex, 'mst_users', 'updated_at', 'UpdatedAt');
 
-    await knex.raw('ALTER TABLE `mst_work_units` RENAME COLUMN `work_unit_id` TO `WorkUnitId`');
-    await knex.raw('ALTER TABLE `mst_work_units` RENAME COLUMN `department_id` TO `DepartmentId`');
-    await knex.raw('ALTER TABLE `mst_work_units` RENAME COLUMN `work_unit_code` TO `WorkUnitCode`');
-    await knex.raw('ALTER TABLE `mst_work_units` RENAME COLUMN `work_unit_name` TO `WorkUnitName`');
-    await knex.raw('ALTER TABLE `mst_work_units` RENAME COLUMN `description` TO `Description`');
-    await knex.raw('ALTER TABLE `mst_work_units` RENAME COLUMN `status` TO `Status`');
-    await knex.raw('ALTER TABLE `mst_work_units` RENAME COLUMN `created_at` TO `CreatedAt`');
-    await knex.raw('ALTER TABLE `mst_work_units` RENAME COLUMN `updated_at` TO `UpdatedAt`');
+    await renameColumnCompat(knex, 'mst_work_units', 'work_unit_id', 'WorkUnitId');
+    await renameColumnCompat(knex, 'mst_work_units', 'department_id', 'DepartmentId');
+    await renameColumnCompat(knex, 'mst_work_units', 'work_unit_code', 'WorkUnitCode');
+    await renameColumnCompat(knex, 'mst_work_units', 'work_unit_name', 'WorkUnitName');
+    await renameColumnCompat(knex, 'mst_work_units', 'description', 'Description');
+    await renameColumnCompat(knex, 'mst_work_units', 'status', 'Status');
+    await renameColumnCompat(knex, 'mst_work_units', 'created_at', 'CreatedAt');
+    await renameColumnCompat(knex, 'mst_work_units', 'updated_at', 'UpdatedAt');
 
-    await knex.raw('ALTER TABLE `mst_positions` RENAME COLUMN `position_id` TO `PositionId`');
-    await knex.raw('ALTER TABLE `mst_positions` RENAME COLUMN `position_code` TO `PositionCode`');
-    await knex.raw('ALTER TABLE `mst_positions` RENAME COLUMN `position_name` TO `PositionName`');
-    await knex.raw('ALTER TABLE `mst_positions` RENAME COLUMN `position_level` TO `PositionLevel`');
-    await knex.raw('ALTER TABLE `mst_positions` RENAME COLUMN `description` TO `Description`');
-    await knex.raw('ALTER TABLE `mst_positions` RENAME COLUMN `status` TO `Status`');
-    await knex.raw('ALTER TABLE `mst_positions` RENAME COLUMN `created_at` TO `CreatedAt`');
-    await knex.raw('ALTER TABLE `mst_positions` RENAME COLUMN `updated_at` TO `UpdatedAt`');
+    await renameColumnCompat(knex, 'mst_positions', 'position_id', 'PositionId');
+    await renameColumnCompat(knex, 'mst_positions', 'position_code', 'PositionCode');
+    await renameColumnCompat(knex, 'mst_positions', 'position_name', 'PositionName');
+    await renameColumnCompat(knex, 'mst_positions', 'position_level', 'PositionLevel');
+    await renameColumnCompat(knex, 'mst_positions', 'description', 'Description');
+    await renameColumnCompat(knex, 'mst_positions', 'status', 'Status');
+    await renameColumnCompat(knex, 'mst_positions', 'created_at', 'CreatedAt');
+    await renameColumnCompat(knex, 'mst_positions', 'updated_at', 'UpdatedAt');
 
-    await knex.raw('ALTER TABLE `mst_departments` RENAME COLUMN `department_id` TO `DepartmentId`');
-    await knex.raw('ALTER TABLE `mst_departments` RENAME COLUMN `division_id` TO `DivisionId`');
-    await knex.raw('ALTER TABLE `mst_departments` RENAME COLUMN `department_code` TO `DepartmentCode`');
-    await knex.raw('ALTER TABLE `mst_departments` RENAME COLUMN `department_name` TO `DepartmentName`');
-    await knex.raw('ALTER TABLE `mst_departments` RENAME COLUMN `description` TO `Description`');
-    await knex.raw('ALTER TABLE `mst_departments` RENAME COLUMN `status` TO `Status`');
-    await knex.raw('ALTER TABLE `mst_departments` RENAME COLUMN `created_at` TO `CreatedAt`');
-    await knex.raw('ALTER TABLE `mst_departments` RENAME COLUMN `updated_at` TO `UpdatedAt`');
+    await renameColumnCompat(knex, 'mst_departments', 'department_id', 'DepartmentId');
+    await renameColumnCompat(knex, 'mst_departments', 'division_id', 'DivisionId');
+    await renameColumnCompat(knex, 'mst_departments', 'department_code', 'DepartmentCode');
+    await renameColumnCompat(knex, 'mst_departments', 'department_name', 'DepartmentName');
+    await renameColumnCompat(knex, 'mst_departments', 'description', 'Description');
+    await renameColumnCompat(knex, 'mst_departments', 'status', 'Status');
+    await renameColumnCompat(knex, 'mst_departments', 'created_at', 'CreatedAt');
+    await renameColumnCompat(knex, 'mst_departments', 'updated_at', 'UpdatedAt');
 
-    await knex.raw('ALTER TABLE `mst_divisions` RENAME COLUMN `division_id` TO `DivisionId`');
-    await knex.raw('ALTER TABLE `mst_divisions` RENAME COLUMN `branch_id` TO `BranchId`');
-    await knex.raw('ALTER TABLE `mst_divisions` RENAME COLUMN `division_code` TO `DivisionCode`');
-    await knex.raw('ALTER TABLE `mst_divisions` RENAME COLUMN `division_name` TO `DivisionName`');
-    await knex.raw('ALTER TABLE `mst_divisions` RENAME COLUMN `description` TO `Description`');
-    await knex.raw('ALTER TABLE `mst_divisions` RENAME COLUMN `status` TO `Status`');
-    await knex.raw('ALTER TABLE `mst_divisions` RENAME COLUMN `created_at` TO `CreatedAt`');
-    await knex.raw('ALTER TABLE `mst_divisions` RENAME COLUMN `updated_at` TO `UpdatedAt`');
+    await renameColumnCompat(knex, 'mst_divisions', 'division_id', 'DivisionId');
+    await renameColumnCompat(knex, 'mst_divisions', 'branch_id', 'BranchId');
+    await renameColumnCompat(knex, 'mst_divisions', 'division_code', 'DivisionCode');
+    await renameColumnCompat(knex, 'mst_divisions', 'division_name', 'DivisionName');
+    await renameColumnCompat(knex, 'mst_divisions', 'description', 'Description');
+    await renameColumnCompat(knex, 'mst_divisions', 'status', 'Status');
+    await renameColumnCompat(knex, 'mst_divisions', 'created_at', 'CreatedAt');
+    await renameColumnCompat(knex, 'mst_divisions', 'updated_at', 'UpdatedAt');
 
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `branch_id` TO `BranchId`');
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `branch_code` TO `BranchCode`');
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `branch_name` TO `BranchName`');
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `address` TO `Address`');
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `telp` TO `Telp`');
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `email` TO `Email`');
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `status` TO `Status`');
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `created_at` TO `CreatedAt`');
-    await knex.raw('ALTER TABLE `mst_branches` RENAME COLUMN `updated_at` TO `UpdatedAt`');
+    await renameColumnCompat(knex, 'mst_branches', 'branch_id', 'BranchId');
+    await renameColumnCompat(knex, 'mst_branches', 'branch_code', 'BranchCode');
+    await renameColumnCompat(knex, 'mst_branches', 'branch_name', 'BranchName');
+    await renameColumnCompat(knex, 'mst_branches', 'address', 'Address');
+    await renameColumnCompat(knex, 'mst_branches', 'telp', 'Telp');
+    await renameColumnCompat(knex, 'mst_branches', 'email', 'Email');
+    await renameColumnCompat(knex, 'mst_branches', 'status', 'Status');
+    await renameColumnCompat(knex, 'mst_branches', 'created_at', 'CreatedAt');
+    await renameColumnCompat(knex, 'mst_branches', 'updated_at', 'UpdatedAt');
 
-    await knex.raw('ALTER TABLE `mst_audit_trails` RENAME COLUMN `id` TO `Id`');
-    await knex.raw('ALTER TABLE `mst_audit_trails` RENAME COLUMN `username` TO `Username`');
-    await knex.raw('ALTER TABLE `mst_audit_trails` RENAME COLUMN `role` TO `Role`');
-    await knex.raw('ALTER TABLE `mst_audit_trails` RENAME COLUMN `action` TO `Action`');
-    await knex.raw('ALTER TABLE `mst_audit_trails` RENAME COLUMN `ip_address` TO `IpAddress`');
-    await knex.raw('ALTER TABLE `mst_audit_trails` RENAME COLUMN `user_agent` TO `UserAgent`');
-    await knex.raw('ALTER TABLE `mst_audit_trails` RENAME COLUMN `status` TO `Status`');
-    await knex.raw('ALTER TABLE `mst_audit_trails` RENAME COLUMN `created_at` TO `CreatedAt`');
+    await renameColumnCompat(knex, 'mst_audit_trails', 'id', 'Id');
+    await renameColumnCompat(knex, 'mst_audit_trails', 'username', 'Username');
+    await renameColumnCompat(knex, 'mst_audit_trails', 'role', 'Role');
+    await renameColumnCompat(knex, 'mst_audit_trails', 'action', 'Action');
+    await renameColumnCompat(knex, 'mst_audit_trails', 'ip_address', 'IpAddress');
+    await renameColumnCompat(knex, 'mst_audit_trails', 'user_agent', 'UserAgent');
+    await renameColumnCompat(knex, 'mst_audit_trails', 'status', 'Status');
+    await renameColumnCompat(knex, 'mst_audit_trails', 'created_at', 'CreatedAt');
 
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `id` TO `ID`');
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `tgl` TO `Tgl`');
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `controller` TO `Controller`');
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `function` TO `Function`');
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `request` TO `Request`');
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `response` TO `Response`');
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `stack` TO `Stack`');
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `user` TO `User`');
-    await knex.raw('ALTER TABLE `log` RENAME COLUMN `datetime` TO `DateTime`');
+    await renameColumnCompat(knex, 'log', 'id', 'ID');
+    await renameColumnCompat(knex, 'log', 'tgl', 'Tgl');
+    await renameColumnCompat(knex, 'log', 'controller', 'Controller');
+    await renameColumnCompat(knex, 'log', 'function', 'Function');
+    await renameColumnCompat(knex, 'log', 'request', 'Request');
+    await renameColumnCompat(knex, 'log', 'response', 'Response');
+    await renameColumnCompat(knex, 'log', 'stack', 'Stack');
+    await renameColumnCompat(knex, 'log', 'user', 'User');
+    await renameColumnCompat(knex, 'log', 'datetime', 'DateTime');
 
-    await knex.raw('ALTER TABLE `config` RENAME COLUMN `id` TO `Id`');
-    await knex.raw('ALTER TABLE `config` RENAME COLUMN `kode` TO `Kode`');
-    await knex.raw('ALTER TABLE `config` RENAME COLUMN `keterangan` TO `Keterangan`');
+    await renameColumnCompat(knex, 'config', 'id', 'Id');
+    await renameColumnCompat(knex, 'config', 'kode', 'Kode');
+    await renameColumnCompat(knex, 'config', 'keterangan', 'Keterangan');
 
-    await knex.raw('ALTER TABLE `access_token` RENAME COLUMN `id` TO `ID`');
-    await knex.raw('ALTER TABLE `access_token` RENAME COLUMN `token` TO `Token`');
-    await knex.raw('ALTER TABLE `access_token` RENAME COLUMN `expired` TO `Expired`');
-    await knex.raw('ALTER TABLE `access_token` RENAME COLUMN `datetime` TO `Datetime`');
+    await renameColumnCompat(knex, 'access_token', 'id', 'ID');
+    await renameColumnCompat(knex, 'access_token', 'token', 'Token');
+    await renameColumnCompat(knex, 'access_token', 'expired', 'Expired');
+    await renameColumnCompat(knex, 'access_token', 'datetime', 'Datetime');
 
     await knex.schema.renameTable('trx_visitations', 'tr_visitations');
 }

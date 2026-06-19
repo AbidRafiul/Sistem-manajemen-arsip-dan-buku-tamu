@@ -145,7 +145,7 @@ router.post("/", async (req, res) => {
         .setProtectedHeader({ alg: "HS512" })
         .sign(secretKey);
 
-      recordAuditTrail(oUser.Username, String(roleId), "LOGIN", req);
+      await recordAuditTrail(oUser.username, String(roleId), "LOGIN", req);
 
       // 7. UBAHAN CUMA DI RETURN INI 
       // Ditambahin key `data` isinya objek `credential`, biar Frontend & NextAuth gampang bacanya

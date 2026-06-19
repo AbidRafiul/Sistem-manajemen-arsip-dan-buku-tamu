@@ -12,13 +12,13 @@ export const recordAuditTrail = async (username, role, action, req, status = "SU
       : req?.ip || req?.connection?.remoteAddress || "Unknown";
       
     await DB("mst_audit_trails").insert({
-      Username: username,
-      Role: role,
-      Action: action,
-      IpAddress: cIp,
-      UserAgent: req?.headers?.["user-agent"] || "Unknown",
-      Status: status,
-      CreatedAt: formatDateSystem()
+      username,
+      role,
+      action,
+      ip_address: cIp,
+      user_agent: req?.headers?.["user-agent"] || "Unknown",
+      status,
+      created_at: formatDateSystem()
     });
   } catch (error) {
     console.error("Gagal mencatat audit trail:", error);
