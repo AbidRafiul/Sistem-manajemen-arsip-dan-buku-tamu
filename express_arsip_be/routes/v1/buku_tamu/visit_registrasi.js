@@ -106,11 +106,11 @@ router.post("/", upload.fields([{ name: "SelfieFile", maxCount: 1 }, { name: "Id
     try {
       if (HostUserId) {
         await DB("notifications").insert({
-          UserId: HostUserId,
-          Title: "Booking Tamu",
-          Body: `Anda memiliki booking tamu dari ${GuestName}`,
-          Data: JSON.stringify({ VisitationId, VisitCode }),
-          CreatedAt: formatDateSystem(),
+          user_id: HostUserId,
+          title: "Booking Tamu",
+          body: `Anda memiliki booking tamu dari ${GuestName}`,
+          data: JSON.stringify({ VisitationId, VisitCode }),
+          created_at: formatDateSystem(),
         });
       }
     } catch (e) {

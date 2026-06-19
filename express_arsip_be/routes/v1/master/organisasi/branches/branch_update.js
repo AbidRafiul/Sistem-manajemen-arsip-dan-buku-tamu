@@ -6,9 +6,9 @@ import { Logging, validatePayload } from "../../../components/tools/servertool.j
 
 const router = express.Router();
 
-router.put("/:BranchId", async (req, res) => {
+router.put("/:branch_id", async (req, res) => {
   const { body: oPayload } = req;
-  const cBranchId = req.params.BranchId;
+  const cBranchId = req.params.branch_id;
   const cUsername = req?.auth?.username || "";
 
   try {
@@ -18,8 +18,8 @@ router.put("/:BranchId", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        BranchCode: Joi.string().required().label("Kode Branch"),
-        BranchName: Joi.string().required().label("Nama Branch"),
+        branch_code: Joi.string().required().label("Kode Branch"),
+        branch_name: Joi.string().required().label("Nama Branch"),
       },
       { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
       oPayload
@@ -32,11 +32,11 @@ router.put("/:BranchId", async (req, res) => {
     }
 
     const nUpdated = await DB("mst_branches")
-      .where("BranchId", cBranchId)
+      .where("branch_id", cBranchId)
       .update({
-        BranchCode: oPayload.BranchCode,
-        BranchName: oPayload.BranchName,
-        UpdatedAt: new Date(),
+        branch_code: oPayload.branch_code,
+        branch_name: oPayload.branch_name,
+        updated_at: new Date(),
       });
 
     if (!nUpdated) return res.status(404).json({ message: "Data tidak ditemukan", datetime: formatDateSystem() });

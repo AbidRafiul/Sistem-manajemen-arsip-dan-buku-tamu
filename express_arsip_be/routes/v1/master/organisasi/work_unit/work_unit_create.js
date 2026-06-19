@@ -17,10 +17,10 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        DepartmentId: Joi.number().required().label("ID Departemen"),
-        WorkUnitCode: Joi.string().max(45).required().label("Kode Unit Kerja"),
-        WorkUnitName: Joi.string().max(45).required().label("Nama Unit Kerja"),
-        Description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
+        department_id: Joi.number().required().label("ID Departemen"),
+        work_unit_code: Joi.string().max(45).required().label("Kode Unit Kerja"),
+        work_unit_name: Joi.string().max(45).required().label("Nama Unit Kerja"),
+        description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
       },
       { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
       oPayload
@@ -34,13 +34,13 @@ router.post("/", async (req, res) => {
 
     const dNow = new Date();
     await DB("mst_work_units").insert({
-      DepartmentId: oPayload.DepartmentId,
-      WorkUnitCode: oPayload.WorkUnitCode,
-      WorkUnitName: oPayload.WorkUnitName,
-      Description: oPayload.Description || null,
-      Status: "active",
-      CreatedAt: dNow,
-      UpdatedAt: dNow,
+      department_id: oPayload.department_id,
+      work_unit_code: oPayload.work_unit_code,
+      work_unit_name: oPayload.work_unit_name,
+      description: oPayload.description || null,
+      status: "active",
+      created_at: dNow,
+      updated_at: dNow,
     });
 
     return res.status(201).json({ status: status.SUKSES, message: "Berhasil ditambahkan!", datetime: formatDateSystem() });

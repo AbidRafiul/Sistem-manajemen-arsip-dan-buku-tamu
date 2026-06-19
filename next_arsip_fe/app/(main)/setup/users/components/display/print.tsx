@@ -1,6 +1,6 @@
 'use client'
 
-import PreviewCustom from "@/app/components/printComponents/previewCustom"
+import PreviewCustom from "@/app/components/print_components/previewCustom"
 import { TableProps } from "../interfaces"
 import { AddPageInfo } from "@/lib/tools/printTools/accPdf";
 import { CustomTableParams } from "@/types/print-tools";

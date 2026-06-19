@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { body: oPayload } = req;
-  const username_actor = req?.auth?.username || "Unknown"; // Ngambil dari token JWT
+  const cUsernameActor = req?.auth?.username || "Unknown"; // Ngambil dari token JWT
 
   try {
     // 1. Validasi Input User
@@ -39,9 +39,16 @@ router.post("/", async (req, res) => {
     }
 
     // 2. Cari Data User di Database
-    const oUser = await DB("user_credential")
-      .where("Username", oPayload.username)
-      .select("UniqueId", "Password", "Role", "Username")
+    const oUser = await DB("mst_users")
+      .leftJoin("mst_user_roles", "mst_users.user_id", "mst_user_roles.user_id")
+      .leftJoin("mst_roles", "mst_user_roles.role_id", "mst_roles.role_id")
+      .select(
+        "mst_users.user_id",
+        "mst_users.username",
+        "mst_users.password",
+        "mst_roles.role_name as role"
+      )
+      .where("mst_users.username", oPayload.username)
       .first();
 
     if (!oUser) {
@@ -53,10 +60,10 @@ router.post("/", async (req, res) => {
     }
 
     // 3. Verifikasi Password Lama
-    const secret = process.env.USER_SECRET;
-    const cOldPassword = process.env.USER_KEY + oUser.UniqueId + oPayload.old_password;
+    const cSecret = process.env.USER_SECRET;
+    const cOldPassword = process.env.USER_KEY + oUser.username + oPayload.old_password;
 
-    if (!hashEquals(hmac(cOldPassword, secret, "sha512"), oUser.Password)) {
+    if (!hashEquals(hmac(cOldPassword, cSecret, "sha512"), oUser.password)) {
       return res.status(400).json({
         status: status.GAGAL,
         message: "Password lama salah!",
@@ -65,18 +72,18 @@ router.post("/", async (req, res) => {
     }
 
     // 4. Hash (Sandikan) Password Baru
-    const cNewPassword = process.env.USER_KEY + oUser.UniqueId + oPayload.new_password;
-    const hashedNewPassword = hmac(cNewPassword, secret, "sha512");
+    const cNewPassword = process.env.USER_KEY + oUser.username + oPayload.new_password;
+    const cHashedNewPassword = hmac(cNewPassword, cSecret, "sha512");
 
     // 5. Update Database dengan Password Baru
-    await DB("user_credential")
-      .where("Username", oUser.Username)
+    await DB("mst_users")
+      .where("username", oUser.username)
       .update({
-        Password: hashedNewPassword
+        password: cHashedNewPassword
       });
 
     // 6. Catat Aktivitas ke CCTV
-    recordAuditTrail(oUser.Username, oUser.Role, "RESET_PASSWORD", req);
+    recordAuditTrail(oUser.username, String(oUser.role || ""), "RESET_PASSWORD", req);
 
     return res.status(200).json({
       status: status.SUKSES,
@@ -84,19 +91,19 @@ router.post("/", async (req, res) => {
       datetime: formatDateSystem(),
     });
 
-  } catch (error) {
+  } catch (oError) {
     const oResult = {
       status: status.BAD_REQUEST,
       message: "Sistem sedang maintenance harap tunggu sebentar",
       datetime: formatDateSystem(),
     };
 
-    Logging(error, {
+    Logging(oError, {
       file: "reset_password.js",
       func: "POST /",
       request: oPayload,
       response: oResult,
-      user: username_actor,
+      user: cUsernameActor,
     });
 
     return res.status(500).json(oResult);

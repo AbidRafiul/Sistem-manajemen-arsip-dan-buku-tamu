@@ -9,7 +9,7 @@ import dynamic from 'next/dynamic';
 import PrintPageSettingWithoutExcel from "./printPageSettingWithoutExcel";
 // import PDFViewer from '@/app/components/printComponents/pdfViewer'
 const PDFViewer = dynamic(
-    () => import('@/app/components/printComponents/pdfViewer'),
+    () => import('@/app/components/print_components/pdfViewer'),
     { ssr: false }
 );
 

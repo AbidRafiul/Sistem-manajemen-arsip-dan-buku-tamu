@@ -38,8 +38,8 @@ router.post("/", async (req, res) => {
             return res.status(422).json(oResult);
         }
         const vaData = await DB("config")
-            .whereIn("Kode", oPayload.Kode)
-            .select("Kode", "Keterangan");
+            .whereIn("kode", oPayload.Kode)
+            .select("kode", "keterangan");
 
         if (!vaData || vaData.length < 1) {
             const oResult = {
@@ -61,10 +61,10 @@ router.post("/", async (req, res) => {
 
         const oFormatted = {};
         vaData.forEach((row) => {
-            oFormatted[row.Kode] = row.Keterangan;
+            oFormatted[row.kode] = row.keterangan;
 
-            if (row.Kode == "msLogoPerusahaan") {
-                oFormatted['msLogoPerusahaan'] = `${process.env.APP_SERVER}:${process.env.APP_PORT}/uploads/config/logo_perusahaan/${row.Keterangan}`
+            if (row.kode == "msLogoPerusahaan") {
+                oFormatted['msLogoPerusahaan'] = `${process.env.APP_SERVER}:${process.env.APP_PORT}/uploads/config/logo_perusahaan/${row.keterangan}`
             }
         });
 
