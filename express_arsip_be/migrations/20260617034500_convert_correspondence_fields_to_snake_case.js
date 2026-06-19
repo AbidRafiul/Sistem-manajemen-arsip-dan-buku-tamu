@@ -155,8 +155,8 @@ export async function up(knex) {
       table.foreign("document_type_id").references("DocumentTypeId").inTable("mst_document_type");
       table.foreign("archive_classification_id").references("ArchiveClassificationId").inTable("mst_archive_classifications");
       table.foreign("confidentiality_level_id").references("ConfidentialityLevelId").inTable("mst_confidentiality_levels");
-      table.foreign("created_by").references("UserId").inTable("mst_users");
-      table.foreign("updated_by").references("UserId").inTable("mst_users");
+      table.foreign("created_by").references("user_id").inTable("mst_users");
+      table.foreign("updated_by").references("user_id").inTable("mst_users");
     });
   }
 
@@ -164,18 +164,18 @@ export async function up(knex) {
     await knex.schema.table("trx_letter_dispositions", (table) => {
       table.foreign("incoming_letter_id").references("incoming_letter_id").inTable("trx_incoming_letters").onDelete("CASCADE");
       table.foreign("parent_disposition_id").references("disposition_id").inTable("trx_letter_dispositions");
-      table.foreign("from_user_id").references("UserId").inTable("mst_users");
-      table.foreign("to_user_id").references("UserId").inTable("mst_users");
+      table.foreign("from_user_id").references("user_id").inTable("mst_users");
+      table.foreign("to_user_id").references("user_id").inTable("mst_users");
       table.foreign("disposition_instruction_id").references("disposition_instruction_id").inTable("mst_disposition_instructions");
-      table.foreign("created_by").references("UserId").inTable("mst_users");
-      table.foreign("updated_by").references("UserId").inTable("mst_users");
+      table.foreign("created_by").references("user_id").inTable("mst_users");
+      table.foreign("updated_by").references("user_id").inTable("mst_users");
     });
   }
 
   if (convertedIncomingLetterFiles) {
     await knex.schema.table("trx_incoming_letter_files", (table) => {
       table.foreign("incoming_letter_id").references("incoming_letter_id").inTable("trx_incoming_letters").onDelete("CASCADE");
-      table.foreign("uploaded_by").references("UserId").inTable("mst_users");
+      table.foreign("uploaded_by").references("user_id").inTable("mst_users");
     });
   }
 
@@ -183,9 +183,9 @@ export async function up(knex) {
     await knex.schema.table("trx_incoming_letter_trackings", (table) => {
       table.foreign("incoming_letter_id").references("incoming_letter_id").inTable("trx_incoming_letters").onDelete("CASCADE");
       table.foreign("disposition_id").references("disposition_id").inTable("trx_letter_dispositions");
-      table.foreign("from_user_id").references("UserId").inTable("mst_users");
-      table.foreign("to_user_id").references("UserId").inTable("mst_users");
-      table.foreign("created_by").references("UserId").inTable("mst_users");
+      table.foreign("from_user_id").references("user_id").inTable("mst_users");
+      table.foreign("to_user_id").references("user_id").inTable("mst_users");
+      table.foreign("created_by").references("user_id").inTable("mst_users");
     });
   }
 }

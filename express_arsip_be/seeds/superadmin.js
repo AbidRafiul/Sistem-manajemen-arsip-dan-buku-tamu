@@ -43,11 +43,6 @@ export async function seed(knex) {
     UpdatedAt: dDatetime,
   });
 
-<<<<<<< HEAD
-  await knex("user_credential").where('Id', 1).del();
-  await knex("user_credential").insert(oData);
-};
-=======
   // 3. TANAM KE mst_user_roles (Sesuai struktur screenshot lo)
   await knex("mst_user_roles").insert({
     UserId: insertedUserId, 
@@ -70,4 +65,3 @@ export async function seed(knex) {
     });
   }
 }
->>>>>>> fix/login-session-crash

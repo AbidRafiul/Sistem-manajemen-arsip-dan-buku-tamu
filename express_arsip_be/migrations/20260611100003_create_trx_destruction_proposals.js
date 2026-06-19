@@ -8,57 +8,57 @@ export async function up(knex) {
     table.charset("utf8mb4");
     table.collate("utf8mb4_unicode_ci");
 
-    table.increments("ProposalId").primary();
+    table.increments("proposal_id").primary();
 
     // FK ke dokumen yang diusulkan musnah
     table
-      .integer("DocumentId")
+      .integer("document_id")
       .unsigned()
       .notNullable()
-      .references("DocumentId")
+      .references("document_id")
       .inTable("trx_documents")
       .onDelete("NO ACTION")
       .onUpdate("NO ACTION");
 
     // FK ke jadwal retensi yang menjadi dasar pemusnahan
     table
-      .integer("RetentionScheduleId")
+      .integer("retention_schedule_id")
       .unsigned()
       .nullable()
-      .references("RetentionScheduleId")
+      .references("retention_schedule_id")
       .inTable("mst_retention_schedule")
       .onDelete("NO ACTION")
       .onUpdate("NO ACTION");
 
     // Alasan pemusnahan
-    table.text("ProposalReason").notNullable();
+    table.text("proposal_reason").notNullable();
 
     // Yang mengusulkan (username)
-    table.string("ProposedBy", 50).notNullable();
+    table.string("proposed_by", 50).notNullable();
 
     // Waktu pengajuan
-    table.datetime("ProposedAt").notNullable();
+    table.datetime("proposed_at").notNullable();
 
     // Status workflow: draft → submitted → approved/rejected → executed
     table
-      .enu("Status", ["draft", "submitted", "approved", "rejected", "executed"])
+      .enu("status", ["draft", "submitted", "approved", "rejected", "executed"])
       .notNullable()
       .defaultTo("submitted");
 
     // Reviewer (yang approve/reject)
-    table.string("ReviewedBy", 50).nullable();
-    table.datetime("ReviewedAt").nullable();
-    table.text("ReviewNotes").nullable();
+    table.string("reviewed_by", 50).nullable();
+    table.datetime("reviewed_at").nullable();
+    table.text("review_notes").nullable();
 
     // Pelaksana pemusnahan
-    table.string("ExecutedBy", 50).nullable();
-    table.datetime("ExecutedAt").nullable();
+    table.string("executed_by", 50).nullable();
+    table.datetime("executed_at").nullable();
 
     // Path file berita acara pemusnahan
-    table.text("BeritaAcaraPath").nullable();
+    table.text("berita_acara_path").nullable();
 
-    table.datetime("CreatedAt").notNullable();
-    table.datetime("UpdatedAt").notNullable();
+    table.datetime("created_at").notNullable();
+    table.datetime("updated_at").notNullable();
   });
 }
 

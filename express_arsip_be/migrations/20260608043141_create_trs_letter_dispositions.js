@@ -41,16 +41,16 @@ export async function up(knex) {
       .references("disposition_id")
       .inTable("trx_letter_dispositions");
 
-    table.foreign("from_user_id").references("UserId").inTable("mst_users");
-    table.foreign("to_user_id").references("UserId").inTable("mst_users");
+    table.foreign("from_user_id").references("user_id").inTable("mst_users");
+    table.foreign("to_user_id").references("user_id").inTable("mst_users");
 
     table
       .foreign("disposition_instruction_id")
       .references("disposition_instruction_id")
       .inTable("mst_disposition_instructions");
 
-    table.foreign("created_by").references("UserId").inTable("mst_users");
-    table.foreign("updated_by").references("UserId").inTable("mst_users");
+    table.foreign("created_by").references("user_id").inTable("mst_users");
+    table.foreign("updated_by").references("user_id").inTable("mst_users");
   });
 }
 

@@ -25,7 +25,7 @@ export async function up(knex) {
       .inTable("trx_incoming_letters")
       .onDelete("CASCADE");
 
-    table.foreign("uploaded_by").references("UserId").inTable("mst_users");
+    table.foreign("uploaded_by").references("user_id").inTable("mst_users");
   });
 }
 

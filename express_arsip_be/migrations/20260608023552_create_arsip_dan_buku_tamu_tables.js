@@ -5,194 +5,193 @@
 export async function up(knex) {
   // 1. Tabel-tabel Master Tanpa Foreign Key Dependencies
   await knex.schema.createTable('mst_roles', (table) => {
-    table.increments('RoleId').primary();
-    table.string('RoleCode', 45).notNullable().unique();
-    table.string('RoleName', 100).notNullable();
-    table.text('Description').nullable();
-    table.enu('Status', ['active', 'nonactive']).notNullable().defaultTo('active');
-    table.datetime('CreatedAt').notNullable();
-    table.datetime('UpdatedAt').notNullable();
+    table.increments('role_id').primary();
+    table.string('role_code', 45).notNullable().unique();
+    table.string('role_name', 100).notNullable();
+    table.text('description').nullable();
+    table.enu('status', ['active', 'nonactive']).notNullable().defaultTo('active');
+    table.datetime('created_at').notNullable();
+    table.datetime('updated_at').notNullable();
   });
 
   await knex.schema.createTable('mst_branches', (table) => {
-    table.increments('BranchId').primary();
-    table.string('BranchCode', 50).notNullable().unique();
-    table.string('BranchName', 100).notNullable();
-    table.text('Address').nullable();
-    table.string('Telp', 45).nullable();
-    table.string('Email', 150).nullable();
-    table.enu('Status', ['active', 'nonactive']).notNullable().defaultTo('active');
-    table.datetime('CreatedAt').notNullable();
-    table.datetime('UpdatedAt').notNullable();
+    table.increments('branch_id').primary();
+    table.string('branch_code', 50).notNullable().unique();
+    table.string('branch_name', 100).notNullable();
+    table.text('address').nullable();
+    table.string('telp', 45).nullable();
+    table.string('email', 150).nullable();
+    table.enu('status', ['active', 'nonactive']).notNullable().defaultTo('active');
+    table.datetime('created_at').notNullable();
+    table.datetime('updated_at').notNullable();
   });
 
   await knex.schema.createTable('mst_positions', (table) => {
-    table.increments('PositionId').primary();
-    table.string('PositionCode', 50).notNullable().unique();
-    table.string('PositionName', 100).notNullable();
-    table.integer('PositionLevel').nullable();
-    table.text('Description').nullable();
-    table.enu('Status', ['active', 'nonactive']).notNullable().defaultTo('active');
-    table.datetime('CreatedAt').notNullable();
-    table.datetime('UpdatedAt').notNullable();
+    table.increments('position_id').primary();
+    table.string('position_code', 50).notNullable().unique();
+    table.string('position_name', 100).notNullable();
+    table.integer('position_level').nullable();
+    table.text('description').nullable();
+    table.enu('status', ['active', 'nonactive']).notNullable().defaultTo('active');
+    table.datetime('created_at').notNullable();
+    table.datetime('updated_at').notNullable();
   });
 
   await knex.schema.createTable('mst_archive_classifications', (table) => {
-    table.increments('ArchiveClassificationId').primary();
-    table.string('ClassificationCode', 45).notNullable().unique();
-    table.string('ClassificationName', 45).notNullable();
-    table.string('Description', 45).nullable();
-    table.enu('Status', ['active', 'nonactive']).notNullable().defaultTo('active');
-    table.datetime('CreatedAt').notNullable();
-    table.datetime('UpdatedAt').notNullable();
+    table.increments('archive_classification_id').primary();
+    table.string('classification_code', 45).notNullable().unique();
+    table.string('classification_name', 45).notNullable();
+    table.string('description', 45).nullable();
+    table.enu('status', ['active', 'nonactive']).notNullable().defaultTo('active');
+    table.datetime('created_at').notNullable();
+    table.datetime('updated_at').notNullable();
   });
 
   await knex.schema.createTable('mst_document_type', (table) => {
-    table.increments('DocumentTypeId').primary();
-    table.string('DocumentTypeCode', 45).notNullable().unique();
-    table.string('DocumentTypeName', 45).notNullable();
-    table.string('Description', 45).nullable();
-    table.enu('Status', ['active', 'nonactive']).notNullable().defaultTo('active');
-    table.datetime('CreatedAt').notNullable();
-    table.datetime('UpdatedAt').notNullable();
+    table.increments('document_type_id').primary();
+    table.string('document_type_code', 45).notNullable().unique();
+    table.string('document_type_name', 45).notNullable();
+    table.string('description', 45).nullable();
+    table.enu('status', ['active', 'nonactive']).notNullable().defaultTo('active');
+    table.datetime('created_at').notNullable();
+    table.datetime('updated_at').notNullable();
   });
 
   await knex.schema.createTable('mst_confidentiality_levels', (table) => {
-    table.increments('ConfidentialityLevelId').primary();
-    table.string('ConfidentialityLevelCode', 45).notNullable().unique();
-    table.string('ConfidentialityLevelName', 100).notNullable();
-    table.integer('ConfidentialityLevel').notNullable();
-    table.string('Description', 45).nullable();
-    table.enu('Status', ['active', 'nonactive']).notNullable().defaultTo('active');
-    table.datetime('CreatedAt').notNullable();
-    table.datetime('UpdatedAt').notNullable();
+    table.increments('confidentiality_level_id').primary();
+    table.string('confidentiality_level_code', 45).notNullable().unique();
+    table.string('confidentiality_level_name', 100).notNullable();
+    table.integer('confidentiality_level').notNullable();
+    table.string('description', 45).nullable();
+    table.enu('status', ['active', 'nonactive']).notNullable().defaultTo('active');
+    table.datetime('created_at').notNullable();
+    table.datetime('updated_at').notNullable();
   });
 
   await knex.schema.createTable('mst_visit_purpose', (table) => {
-    table.integer('VisitPurposeId').primary(); // Sesuai SQL Workbench: INT NOT NULL tanpa AI
-    table.string('VisitPurposeCode', 45).notNullable().unique();
-    table.string('VisitPurposeName', 45).notNullable();
-    table.string('Description', 45).nullable();
-    table.enu('Status', ['active', 'nonactive']).notNullable().defaultTo('active');
-    table.datetime('CreatedAt').notNullable();
-    table.datetime('UpdatedAt').notNullable();
+    table.integer('visit_purpose_id').primary(); // Sesuai SQL Workbench: INT NOT NULL tanpa AI
+    table.string('visit_purpose_code', 45).notNullable().unique();
+    table.string('visit_purpose_name', 45).notNullable();
+    table.string('description', 45).nullable();
+    table.enu('status', ['active', 'nonactive']).notNullable().defaultTo('active');
+    table.datetime('created_at').notNullable();
+    table.datetime('updated_at').notNullable();
   });
 
   // 2. Self-Referencing Table (Menus)
   await knex.schema.createTable('mst_menus', (table) => {
-    table.increments('MenuId').primary();
-    table.integer('ParentMenuId').unsigned().nullable().references('MenuId').inTable('mst_menus').onDelete('NO ACTION').onUpdate('NO ACTION');
-    table.string('MenuCode', 45).notNullable().unique();
-    table.string('MenuName', 45).notNullable();
-    table.string('MenuPath', 255).nullable();
-    table.string('MenuIcon', 100).nullable();
-    table.integer('SortOrder').notNullable().defaultTo(0);
-    table.tinyint('IsActive').notNullable().defaultTo(1);
-    table.datetime('CreatedAt').notNullable();
-    table.datetime('UpdatedAt').notNullable();
+    table.increments('menu_id').primary();
+    table.integer('parent_menu_id').unsigned().nullable().references('menu_id').inTable('mst_menus').onDelete('NO ACTION').onUpdate('NO ACTION');
+    table.string('menu_code', 45).notNullable().unique();
+    table.string('menu_name', 45).notNullable();
+    table.string('menu_path', 255).nullable();
+    table.string('menu_icon', 100).nullable();
+    table.integer('sort_order').notNullable().defaultTo(0);
+    table.tinyint('is_active').notNullable().defaultTo(1);
+    table.datetime('created_at').notNullable();
+    table.datetime('updated_at').notNullable();
   });
 
   // 3. Tabel dengan Single Dependency
   await knex.schema.createTable('mst_divisions', (table) => {
-    table.increments('DivisionId').primary();
-    table.integer('BranchId').unsigned().notNullable().references('BranchId').inTable('mst_branches').onDelete('NO ACTION').onUpdate('NO ACTION');
-    table.string('DivisionCode', 45).notNullable().unique();
-    table.string('DivisionName', 45).notNullable();
-    table.string('Description', 45).nullable();
-    table.enu('Status', ['active', 'nonactive']).notNullable().defaultTo('active');
-    table.datetime('CreatedAt').notNullable();
-    table.datetime('UpdatedAt').notNullable();
+    table.increments('division_id').primary();
+    table.integer('branch_id').unsigned().notNullable().references('branch_id').inTable('mst_branches').onDelete('NO ACTION').onUpdate('NO ACTION');
+    table.string('division_code', 45).notNullable().unique();
+    table.string('division_name', 45).notNullable();
+    table.string('description', 45).nullable();
+    table.enu('status', ['active', 'nonactive']).notNullable().defaultTo('active');
+    table.datetime('created_at').notNullable();
+    table.datetime('updated_at').notNullable();
   });
 
   await knex.schema.createTable('mst_document_categories', (table) => {
-    table.increments('DocumentCategoryId').primary();
-    table.integer('ArchiveClassificationId').unsigned().notNullable().references('ArchiveClassificationId').inTable('mst_archive_classifications').onDelete('NO ACTION').onUpdate('NO ACTION');
-    table.string('DocumentCategoryCode', 45).notNullable().unique();
-    table.string('DocumentCategoryName', 45).notNullable();
-    table.string('Description', 45).nullable();
-    table.enu('Status', ['active', 'nonactive']).notNullable().defaultTo('active');
-    table.datetime('CreatedAt').notNullable();
-    table.datetime('UpdatedAt').notNullable();
+    table.increments('document_category_id').primary();
+    table.integer('archive_classification_id').unsigned().notNullable().references('archive_classification_id').inTable('mst_archive_classifications').onDelete('NO ACTION').onUpdate('NO ACTION');
+    table.string('document_category_code', 45).notNullable().unique();
+    table.string('document_category_name', 45).notNullable();
+    table.string('description', 45).nullable();
+    table.enu('status', ['active', 'nonactive']).notNullable().defaultTo('active');
+    table.datetime('created_at').notNullable();
+    table.datetime('updated_at').notNullable();
   });
 
   await knex.schema.createTable('mst_role_menus', (table) => {
-    table.increments('RoleMenuId').primary();
-    table.integer('RoleId').unsigned().notNullable().references('RoleId').inTable('mst_roles').onDelete('NO ACTION').onUpdate('NO ACTION');
-    table.integer('MenuId').unsigned().notNullable().references('MenuId').inTable('mst_menus').onDelete('NO ACTION').onUpdate('NO ACTION');
-    table.tinyint('CanView').notNullable().defaultTo(1);
-    table.tinyint('CanCreate').notNullable().defaultTo(0);
-    table.tinyint('CanUpdate').notNullable().defaultTo(0);
-    table.tinyint('CanDelete').notNullable().defaultTo(0);
-    table.tinyint('CanApprove').notNullable().defaultTo(0);
-    table.datetime('CreatedAt').notNullable();
-    table.datetime('UpdatedAt').notNullable();
+    table.increments('role_menu_id').primary();
+    table.integer('role_id').unsigned().notNullable().references('role_id').inTable('mst_roles').onDelete('NO ACTION').onUpdate('NO ACTION');
+    table.integer('menu_id').unsigned().notNullable().references('menu_id').inTable('mst_menus').onDelete('NO ACTION').onUpdate('NO ACTION');
+    table.tinyint('can_view').notNullable().defaultTo(1);
+    table.tinyint('can_create').notNullable().defaultTo(0);
+    table.tinyint('can_update').notNullable().defaultTo(0);
+    table.tinyint('can_delete').notNullable().defaultTo(0);
+    table.tinyint('can_approve').notNullable().defaultTo(0);
+    table.datetime('created_at').notNullable();
+    table.datetime('updated_at').notNullable();
   });
 
   // 4. Tabel dengan Multi Dependency / Bertingkat
   await knex.schema.createTable('mst_departments', (table) => {
-    table.increments('DepartmentId').primary();
-    table.integer('DivisionId').unsigned().notNullable().references('DivisionId').inTable('mst_divisions').onDelete('NO ACTION').onUpdate('NO ACTION');
-    table.string('DepartmentCode', 50).notNullable().unique();
-    table.string('DepartmentName', 150).notNullable();
-    table.text('Description').nullable();
-    table.enu('Status', ['active', 'nonactive']).notNullable().defaultTo('active');
-    table.datetime('CreatedAt').notNullable();
-    table.datetime('UpdatedAt').notNullable();
+    table.increments('department_id').primary();
+    table.integer('division_id').unsigned().notNullable().references('division_id').inTable('mst_divisions').onDelete('NO ACTION').onUpdate('NO ACTION');
+    table.string('department_code', 50).notNullable().unique();
+    table.string('department_name', 150).notNullable();
+    table.text('description').nullable();
+    table.enu('status', ['active', 'nonactive']).notNullable().defaultTo('active');
+    table.datetime('created_at').notNullable();
+    table.datetime('updated_at').notNullable();
   });
 
   await knex.schema.createTable('mst_retention_schedule', (table) => {
-    table.increments('RetentionScheduleId').primary();
-    table.integer('DocumentCategoryId').unsigned().notNullable().references('DocumentCategoryId').inTable('mst_document_categories').onDelete('NO ACTION').onUpdate('NO ACTION');
-    table.string('RetentionCode', 45).notNullable().unique();
-    table.string('RetentionName', 45).notNullable();
-    table.integer('RetentionYears').notNullable();
-    table.string('RetentionAction', 45).notNullable();
-    table.string('Description', 45).nullable();
-    table.enu('Status', ['active', 'nonactive']).notNullable().defaultTo('active');
-    table.datetime('CreatedAt').notNullable();
-    table.datetime('UpdatedAt').notNullable();
+    table.increments('retention_schedule_id').primary();
+    table.integer('document_category_id').unsigned().notNullable().references('document_category_id').inTable('mst_document_categories').onDelete('NO ACTION').onUpdate('NO ACTION');
+    table.string('retention_code', 45).notNullable().unique();
+    table.string('retention_name', 45).notNullable();
+    table.integer('retention_years').notNullable();
+    table.string('retention_action', 45).notNullable();
+    table.string('description', 45).nullable();
+    table.enu('status', ['active', 'nonactive']).notNullable().defaultTo('active');
+    table.datetime('created_at').notNullable();
+    table.datetime('updated_at').notNullable();
   });
 
   await knex.schema.createTable('mst_work_units', (table) => {
-    table.increments('WorkUnitId').primary();
-    table.integer('DepartmentId').unsigned().notNullable().references('DepartmentId').inTable('mst_departments').onDelete('NO ACTION').onUpdate('NO ACTION');
-    table.string('WorkUnitCode', 45).notNullable().unique();
-    table.string('WorkUnitName', 45).notNullable();
-    table.string('Description', 45).nullable();
-    table.enu('Status', ['active', 'nonactive']).notNullable();
-    table.datetime('CreatedAt').notNullable();
-    table.datetime('UpdatedAt').notNullable();
+    table.increments('work_unit_id').primary();
+    table.integer('department_id').unsigned().notNullable().references('department_id').inTable('mst_departments').onDelete('NO ACTION').onUpdate('NO ACTION');
+    table.string('work_unit_code', 45).notNullable().unique();
+    table.string('work_unit_name', 45).notNullable();
+    table.string('description', 45).nullable();
+    table.enu('status', ['active', 'nonactive']).notNullable();
+    table.datetime('created_at').notNullable();
+    table.datetime('updated_at').notNullable();
   });
 
   // 5. Master Users & User Roles (Paling akhir karena bergantung pada cabang, divisi, dll)
   await knex.schema.createTable('mst_users', (table) => {
-    table.increments('UserId').primary();
-    table.string('Fullname', 45).notNullable();
-    table.string('Username', 45).notNullable().unique();
-    table.string('Email', 45).nullable();
-    table.string('Telp', 45).nullable();
-    table.string('Password', 100).notNullable();
-    table.integer('BranchId').unsigned().notNullable().references('BranchId').inTable('mst_branches').onDelete('NO ACTION').onUpdate('NO ACTION');
-    table.integer('DivisionId').unsigned().notNullable().references('DivisionId').inTable('mst_divisions').onDelete('NO ACTION').onUpdate('NO ACTION');
-    table.integer('DepartmentId').unsigned().notNullable().references('DepartmentId').inTable('mst_departments').onDelete('NO ACTION').onUpdate('NO ACTION');
-    table.integer('PositionId').unsigned().notNullable().references('PositionId').inTable('mst_positions').onDelete('NO ACTION').onUpdate('NO ACTION');
-    table.integer('WorkUnitId').unsigned().notNullable().references('WorkUnitId').inTable('mst_work_units').onDelete('NO ACTION').onUpdate('NO ACTION');
-    table.integer('FailedLoginAttempts').nullable().defaultTo(0);
-    table.datetime('LastLoginAt').nullable();
-    table.enu('Status', ['active', 'nonactive']).notNullable().defaultTo('active');
-    table.datetime('CreatedAt').notNullable();
-    table.datetime('UpdatedAt').notNullable();
+    table.increments('user_id').primary();
+    table.string('fullname', 45).notNullable();
+    table.string('username', 45).notNullable().unique();
+    table.string('email', 45).nullable();
+    table.string('telp', 45).nullable();
+    table.string('password', 100).notNullable();
+    table.integer('branch_id').unsigned().notNullable().references('branch_id').inTable('mst_branches').onDelete('NO ACTION').onUpdate('NO ACTION');
+    table.integer('division_id').unsigned().notNullable().references('division_id').inTable('mst_divisions').onDelete('NO ACTION').onUpdate('NO ACTION');
+    table.integer('department_id').unsigned().notNullable().references('department_id').inTable('mst_departments').onDelete('NO ACTION').onUpdate('NO ACTION');
+    table.integer('position_id').unsigned().notNullable().references('position_id').inTable('mst_positions').onDelete('NO ACTION').onUpdate('NO ACTION');
+    table.integer('work_unit_id').unsigned().notNullable().references('work_unit_id').inTable('mst_work_units').onDelete('NO ACTION').onUpdate('NO ACTION');
+    table.integer('failed_login_attempts').nullable().defaultTo(0);
+    table.datetime('last_login_at').nullable();
+    table.enu('status', ['active', 'nonactive']).notNullable().defaultTo('active');
+    table.datetime('created_at').notNullable();
+    table.datetime('updated_at').notNullable();
   });
 
   await knex.schema.createTable('mst_user_roles', (table) => {
-    table.increments('UserRoleId').primary();
-    // Perbaikan: Diubah menjadi kolom biasa bermitra FK ke mst_users karena rancangan virtual kolom sebelumnya error
-    table.integer('UserId').unsigned().notNullable().references('UserId').inTable('mst_users').onDelete('NO ACTION').onUpdate('NO ACTION');
-    table.integer('RoleId').unsigned().notNullable().references('RoleId').inTable('mst_roles').onDelete('NO ACTION').onUpdate('NO ACTION');
-    table.tinyint('IsPrimary').nullable().defaultTo(0);
-    table.enu('Status', ['active', 'nonactive']).notNullable().defaultTo('active');
-    table.datetime('CreatedAt').notNullable(); 
-    table.datetime('UpdatedAt').notNullable();
+    table.increments('user_role_id').primary();
+    table.integer('user_id').unsigned().notNullable().references('user_id').inTable('mst_users').onDelete('NO ACTION').onUpdate('NO ACTION');
+    table.integer('role_id').unsigned().notNullable().references('role_id').inTable('mst_roles').onDelete('NO ACTION').onUpdate('NO ACTION');
+    table.tinyint('is_primary').nullable().defaultTo(0);
+    table.enu('status', ['active', 'nonactive']).notNullable().defaultTo('active');
+    table.datetime('created_at').notNullable(); 
+    table.datetime('updated_at').notNullable();
   });
 };
 

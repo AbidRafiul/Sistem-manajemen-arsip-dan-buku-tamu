@@ -4,22 +4,24 @@
  */
 export async function up(knex) {
   await knex.schema.createTable("trx_document_versions", (table) => {
-    table.increments("VersionId").primary();
+    table.charset("utf8mb4");
+    table.collate("utf8mb4_unicode_ci");
+
+    table.increments("version_id").primary();
     table
-      .integer("DocumentId")
+      .integer("document_id")
       .unsigned()
       .notNullable()
-      .references("DocumentId")
+      .references("document_id")
       .inTable("trx_documents")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
-    table.integer("VersionNumber").notNullable();
-    table.text("ChangeNotes").nullable();
-    table.string("FilePath").notNullable();
-    table.datetime("CreatedAt").notNullable();
-    table.datetime("UpdatedAt").notNullable();
-    table.charset("utf8mb4");
-    table.collate("utf8mb4_unicode_ci");
+      
+    table.integer("version_number").notNullable();
+    table.text("change_notes").nullable();
+    table.string("file_path").notNullable();
+    table.datetime("created_at").notNullable();
+    table.datetime("updated_at").notNullable();
   });
 }
 
