@@ -5,15 +5,15 @@ import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
-router.delete("/:DivisionId", async (req, res) => {
-  const cDivisionId = req.params.DivisionId;
+router.delete("/:division_id", async (req, res) => {
+  const cDivisionId = req.params.division_id;
   const cUsername = req?.auth?.username || "";
   const oPayload = { id: cDivisionId };
 
   try {
     const nUpdated = await DB("mst_divisions")
-      .where("DivisionId", cDivisionId)
-      .update({ Status: "nonactive", UpdatedAt: new Date() });
+      .where("division_id", cDivisionId)
+      .update({ status: "nonactive", updated_at: new Date() });
 
     if (!nUpdated) return res.status(404).json({ message: "Data tidak ditemukan", datetime: formatDateSystem() });
     return res.status(200).json({ status: status.SUKSES, message: "Berhasil dihapus!", datetime: formatDateSystem() });

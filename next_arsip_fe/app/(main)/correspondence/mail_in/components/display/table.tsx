@@ -71,7 +71,7 @@ const Table = ({
 
         try {
             const res = await postData(apiEndpointDetail, {
-                incoming_letter_id: rowData.IncomingLetterId,
+                incoming_letter_id: rowData.incoming_letter_id,
             });
 
             setState((p) => ({
@@ -187,23 +187,23 @@ const Table = ({
                 className="p-button-sm"
                 onClick={() => {
                     formik.setValues({
-                        IncomingLetterId: rowData.IncomingLetterId,
-                        AgendaNumber: rowData.AgendaNumber,
-                        LetterNumber: rowData.LetterNumber,
-                        LetterDate: rowData.LetterDate?.slice(0, 10) || "",
-                        ReceivedDate: rowData.ReceivedDate?.slice(0, 10) || "",
-                        SenderName: rowData.SenderName,
-                        SenderInstitution: rowData.SenderInstitution || "",
-                        Subject: rowData.Subject,
-                        AttachmentDescription: rowData.AttachmentDescription || "",
-                        LetterFile: null,
-                        LetterTypeId: rowData.LetterTypeId,
-                        DocumentTypeId: rowData.DocumentTypeId,
-                        ArchiveClassificationId: rowData.ArchiveClassificationId,
-                        ConfidentialityLevelId: rowData.ConfidentialityLevelId,
-                        Status: rowData.Status,
-                        CreatedBy: rowData.CreatedBy,
-                        UpdatedBy: rowData.UpdatedBy,
+                        incoming_letter_id: rowData.incoming_letter_id,
+                        agenda_number: rowData.agenda_number,
+                        letter_number: rowData.letter_number,
+                        letter_date: rowData.letter_date?.slice(0, 10) || "",
+                        received_date: rowData.received_date?.slice(0, 10) || "",
+                        sender_name: rowData.sender_name,
+                        sender_institution: rowData.sender_institution || "",
+                        subject: rowData.subject,
+                        attachment_description: rowData.attachment_description || "",
+                        letter_file: null,
+                        letter_type_id: rowData.letter_type_id,
+                        document_type_id: rowData.document_type_id,
+                        archive_classification_id: rowData.archive_classification_id,
+                        confidentiality_level_id: rowData.confidentiality_level_id,
+                        status: rowData.status,
+                        created_by: rowData.created_by,
+                        updated_by: rowData.updated_by,
                     });
 
                     setState((p) => ({ ...p, add: false, delete: false, edit: true }));
@@ -225,7 +225,7 @@ const Table = ({
     const statusBodyTemplate = (rowData: TableData) => {
         type SeverityType = "success" | "warning" | "danger" | "info";
 
-        const status = rowData.Status?.toLowerCase() as IncomingLetterStatus;
+        const status = rowData.status?.toLowerCase() as IncomingLetterStatus;
         const statusConfig: Record<string, { label: string; severity: SeverityType }> = {
             baru: { label: "Baru", severity: "info" },
             diproses: { label: "Diproses", severity: "warning" },
@@ -233,7 +233,7 @@ const Table = ({
             selesai: { label: "Selesai", severity: "success" },
         };
 
-        const config = statusConfig[status] || { label: rowData.Status, severity: "info" as SeverityType };
+        const config = statusConfig[status] || { label: rowData.status, severity: "info" as SeverityType };
 
         return <Tag value={config.label} severity={config.severity} />;
     };
@@ -309,26 +309,26 @@ const Table = ({
                     selectionMode="multiple"
                     rows={10}
                     header={headerTemplate}
-                    globalFilterFields={["AgendaNumber", "LetterNumber", "SenderName", "SenderInstitution", "Subject", "Status"]}
+                    globalFilterFields={["agenda_number", "letter_number", "sender_name", "sender_institution", "subject", "status"]}
                     filters={state.filters}
                     loading={state.load}
                     selection={state.selectedLetters}
                     onSelectionChange={(e) => setState((p) => ({ ...p, selectedLetters: e.value }))}
-                    dataKey="IncomingLetterId"
+                    dataKey="incoming_letter_id"
                     emptyMessage="Data Kosong"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data"
                 >
                     <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
-                    <Column field="AgendaNumber" header="No Agenda" sortable />
-                    <Column field="LetterNumber" header="No Surat" sortable />
-                    <Column field="ReceivedDate" header="Tanggal Terima" sortable body={(rowData) => formatDateCalendar(rowData.ReceivedDate)} />
-                    <Column field="SenderName" header="Pengirim" sortable />
-                    <Column field="SenderInstitution" header="Instansi" />
-                    <Column field="Subject" header="Perihal" />
-                    <Column field="LetterTypeName" header="Jenis Surat" />
+                    <Column field="agenda_number" header="No Agenda" sortable />
+                    <Column field="letter_number" header="No Surat" sortable />
+                    <Column field="received_date" header="Tanggal Terima" sortable body={(rowData) => formatDateCalendar(rowData.received_date)} />
+                    <Column field="sender_name" header="Pengirim" sortable />
+                    <Column field="sender_institution" header="Instansi" />
+                    <Column field="subject" header="Perihal" />
+                    <Column field="letter_type_name" header="Jenis Surat" />
                     <Column body={statusBodyTemplate} header="Status" sortable />
-                    <Column field="CreatedAt" sortable body={(rowData) => formatDateCalendar(rowData.CreatedAt)} header="Datetime" />
+                    <Column field="created_at" sortable body={(rowData) => formatDateCalendar(rowData.created_at)} header="Datetime" />
                     <Column headerStyle={{ textAlign: "center" }} header="Action" body={actionBodyTemplate} />
                 </DataTable>
             </div>
@@ -355,7 +355,7 @@ const Table = ({
                                     <h3 className="m-0">{detailLetter?.subject || "-"}</h3>
                                     <small className="text-color-secondary">{detailLetter?.agenda_number || "-"} / {detailLetter?.letter_number || "-"}</small>
                                 </div>
-                                {detailLetter?.status && statusBodyTemplate({ Status: detailLetter.status } as TableData)}
+                                {detailLetter?.status && statusBodyTemplate({ status: detailLetter.status } as TableData)}
                             </div>
 
                             <div className="grid">

@@ -7,9 +7,9 @@ const dispositionReferenceData = async (req, res) => {
   try {
     const [vaUsers, vaInstructions] = await Promise.all([
       DB("mst_users")
-        .select("UserId", "Fullname", "Username", "PositionId", "Status")
-        .where("Status", "active")
-        .orderBy("Fullname", "asc"),
+        .select("user_id", "fullname", "username", "position_id", "status")
+        .where("status", "active")
+        .orderBy("fullname", "asc"),
       DB("mst_disposition_instructions")
         .select(
           "disposition_instruction_id",

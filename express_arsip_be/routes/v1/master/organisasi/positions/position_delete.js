@@ -5,15 +5,15 @@ import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
-router.delete("/:PositionId", async (req, res) => {
-  const cPositionId = req.params.PositionId;
+router.delete("/:position_id", async (req, res) => {
+  const cPositionId = req.params.position_id;
   const cUsername = req?.auth?.username || "";
   const oPayload = { id: cPositionId };
 
   try {
     const nUpdated = await DB("mst_positions")
-      .where("PositionId", cPositionId)
-      .update({ Status: "nonactive", UpdatedAt: new Date() });
+      .where("position_id", cPositionId)
+      .update({ status: "nonactive", updated_at: new Date() });
 
     if (!nUpdated) return res.status(404).json({ message: "Data tidak ditemukan", datetime: formatDateSystem() });
     return res.status(200).json({ status: status.SUKSES, message: "Berhasil dihapus!", datetime: formatDateSystem() });

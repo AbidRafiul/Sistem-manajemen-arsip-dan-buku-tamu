@@ -23,22 +23,22 @@
 const mailInMenu: AppMenuItem = {
     label: 'Surat Masuk',
     icon: 'pi pi-inbox',
-    to: '/correspondence/mail-in',
+    to: '/correspondence/mail_in',
     items: [
         {
             label: 'Rekap Surat Masuk',
             icon: 'pi pi-th-large',
-            to: '/correspondence/mail-in'
+            to: '/correspondence/mail_in'
         },
         {
             label: 'Data Surat Masuk',
             icon: 'pi pi-envelope',
-            to: '/correspondence/mail-in/data'
+            to: '/correspondence/mail_in/data'
         },
         {
             label: 'Disposisi Surat',
             icon: 'pi pi-send',
-            to: '/correspondence/mail-in/disposition'
+            to: '/correspondence/mail_in/disposition'
         },
     ]
 };
@@ -110,7 +110,7 @@ const ensureCorrespondenceMenu = (menu: AppMenuItem[]) => {
             .filter((item) => {
                 const label = item.label?.toLowerCase();
                 const path = item.to || '';
-                return label !== 'mail in' && !path.startsWith('/correspondence/mail-in');
+                return label !== 'mail in' && !path.startsWith('/correspondence/mail_in');
             })
             .map((item) => {
                 const childItems = cleanMailInItems(item.items || []);
