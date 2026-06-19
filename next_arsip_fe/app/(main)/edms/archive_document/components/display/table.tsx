@@ -250,7 +250,7 @@ const Table = ({
                 onSelectionChange={(e) => setState((p) => ({ ...p, selectedDocuments: e.value }))}
                 rows={10}
                 header={headerTemplate}
-                globalFilterFields={['document_name', 'document_number', 'pic_name', 'status']}
+                globalFilterFields={['document_name', 'document_number', 'pic_name', 'status', 'document_type_name', 'document_category_name', 'confidentiality_level_name']}
                 filters={state.filters}
                 loading={state.load}
                 className="p-datatable-striped p-datatable-gridlines text-sm"
@@ -258,6 +258,9 @@ const Table = ({
                 <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
                 <Column field="document_number" header="Document Number" sortable />
                 <Column field="document_name" header="Document Name" sortable />
+                <Column field="document_type_name" header="Type" sortable />
+                <Column field="document_category_name" header="Category" sortable />
+                <Column field="confidentiality_level_name" header="Confidentiality" sortable />
                 <Column field="pic_name" header="PIC" sortable />
                 <Column field="document_date" header="Document Date" sortable body={rowData => formatDateCalendar(rowData.document_date)} />
                 <Column field="expired_date" header="Expired Date" sortable body={rowData => formatDateCalendar(rowData.expired_date)} />
