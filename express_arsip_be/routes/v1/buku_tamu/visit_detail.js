@@ -11,14 +11,14 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ status: "01", message: "VisitationId wajib diisi" });
     }
 
-    const row = await DB("tr_visitations as t")
+    const row = await DB("trx_visitations as t")
       .select(
         "t.*",
         "mp.visit_purpose_name as VisitPurposeName",
-        "u.Fullname as HostFullname"
+        "u.fullname as HostFullname"
       )
       .leftJoin("mst_visit_purpose as mp", "t.visit_purpose_id", "mp.visit_purpose_id")
-      .leftJoin("user_credential as u", "t.host_user_id", "u.UniqueId")
+      .leftJoin("mst_users as u", "t.host_user_id", "u.user_id")
       .where("t.visitation_id", oPayload.VisitationId)
       .first();
 

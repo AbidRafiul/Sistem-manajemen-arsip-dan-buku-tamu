@@ -17,17 +17,18 @@ router.post("/", async (req, res) => {
   try {
     // JOIN murni cuma buat ngambil Role dari mst_user_roles
     const vaData = await DB("mst_users as mu")
+      .leftJoin("mst_user_roles as mur", "mu.user_id", "mur.user_id")
+      .leftJoin("mst_roles as mr", "mur.role_id", "mr.role_id")
       .select(
-        "mu.UserId",
-        "mu.Username",
-        "mu.Fullname",
-        "mu.Telp",
-        "mu.Status",
-        "mu.CreatedAt",
-        "mur.RoleId as Role", 
+        "mu.user_id as user_id",
+        "mu.username as username",
+        "mu.fullname as fullname",
+        "mu.telp as telp",
+        "mu.status as status",
+        "mu.created_at as created_at",
+        "mr.role_name as role", 
       )
-      .leftJoin("mst_user_roles as mur", "mu.UserId", "mur.UserId")
-      .orderBy("mu.CreatedAt", "desc");
+      .orderBy("mu.created_at", "desc");
 
     return res.status(200).json({
       status: status.SUKSES,

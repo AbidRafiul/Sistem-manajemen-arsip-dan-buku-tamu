@@ -241,7 +241,7 @@ const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
                 }
 
                 // 3. Olah data yang sudah dipastikan aman
-                const normalizedMenu = ensureArchiveDocumentMenu(ensureCorrespondenceMenu(removeLegacyCorrespondenceMenu(menuArray)));
+                const normalizedMenu = ensureGuestBookMenu(ensureArchiveDocumentMenu(ensureCorrespondenceMenu(removeLegacyCorrespondenceMenu(menuArray))));
                 const menu: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
                 const menu2: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
 

@@ -63,8 +63,8 @@ router.post("/", async (req, res) => {
     }
 
     const oNavigation = await DB("user_navigation")
-      .select("Menu as menu")
-      .where("UserId", oPayload.UserId)
+      .select("menu")
+      .where("user_id", oPayload.UserId)
       .first();
       
     // 2. Definisikan vaData dari hasil query

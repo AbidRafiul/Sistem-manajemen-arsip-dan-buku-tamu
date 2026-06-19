@@ -56,15 +56,15 @@ router.post("/", async (req, res) => {
         }
 
         let oNavigation = await DB('user_navigation')
-            .select('Menu as menu')
-            .where('UserId', oPayload.UserId)
+            .select('menu')
+            .where('user_id', oPayload.UserId)
             .first();
 
         // fallback ke mst_navigation kalau tidak ada
         if (!oNavigation?.menu) {
             oNavigation = await DB('mst_navigation')
-                .select('Menu as menu')
-                .where('Role', 'master')
+                .select('menu')
+                .where('role', 'master')
                 .first();
         }
 
@@ -76,19 +76,19 @@ router.post("/", async (req, res) => {
             });
         }
 
-        // UBAH NAMA TABEL DI SINI (tambah huruf s) sesuai screenshot DB lo
         const oUser = await DB('mst_user_roles') 
-            .select('Role') // Note: Jika error "Unknown column Role", pastikan kolomnya Role atau RoleId ya Kapten
-            .where('UserId', oPayload.UserId)
+            .leftJoin('mst_roles', 'mst_user_roles.role_id', 'mst_roles.role_id')
+            .select('mst_roles.role_name as role')
+            .where('mst_user_roles.user_id', oPayload.UserId)
             .first();
 
-        if (!oUser?.Role || oUser?.Role == 'superadmin') {
-            oUser.Role = 'master'
+        if (!oUser?.role || oUser?.role == 'superadmin') {
+            oUser.role = 'master';
         }
 
         const oMst = await DB('mst_navigation')
-            .select('Menu as menu')
-            .where('Role', oUser?.Role)
+            .select('menu')
+            .where('role', oUser?.role)
             .first();
 
         if (!oMst?.menu) {

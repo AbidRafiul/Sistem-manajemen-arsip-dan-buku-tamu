@@ -15,9 +15,9 @@ const db = knex({
 
 async function main() {
   try {
-    const userNav = await db("user_navigation").where("UniqueId", "USR000000").first();
+    const userNav = await db("user_navigation").where("UserId", 1).first();
     if (!userNav) {
-      console.log("User navigation for USR000000 not found!");
+      console.log("User navigation for UserId 1 not found!");
       return;
     }
 
@@ -39,7 +39,7 @@ async function main() {
     });
 
     await db("user_navigation")
-      .where("UniqueId", "USR000000")
+      .where("UserId", 1)
       .update({
         Menu: JSON.stringify(filteredMenu),
         UpdatedAt: new Date()
