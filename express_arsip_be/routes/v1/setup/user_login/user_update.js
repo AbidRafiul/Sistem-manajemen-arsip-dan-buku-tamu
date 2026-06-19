@@ -28,26 +28,24 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        // 🔥 UBAH 1: TargetUsername diganti jadi UserId
-        UserId: Joi.number().required().label("UserId"), 
-        Fullname: Joi.string().max(100).required().label("Fullname"),
-        Username: Joi.string().max(100).required().label("Username"),
-        Telp: Joi.string()
+        user_id: Joi.number().required().label("user_id"), 
+        fullname: Joi.string().max(100).required().label("fullname"),
+        username: Joi.string().max(100).required().label("username"),
+        telp: Joi.string()
           .pattern(/^[0-9]+$/)
           .max(13)
           .required()
-          .label("Telp"),
-        Role: Joi.any().required(),
-        Password: Joi.string().optional().allow(''),
-        Status: Joi.string().required().label("Status"),
+          .label("telp"),
+        role: Joi.any().required(),
+        password: Joi.string().optional().allow(''),
+        status: Joi.string().required().label("status"),
       },
       { "any.required": "{#label} wajib diisi" },
       oPayload,
       {
-        uniqueField: ["Username", "Telp"],
+        uniqueField: ["username", "telp"],
         table: "mst_users",
-        // 🔥 UBAH 2: Excluded field sesuaikan dengan UserId
-        excludedField: "UserId", 
+        excludedField: "user_id", 
         allowUnknown: true,
       },
     );
@@ -63,45 +61,35 @@ router.post("/", async (req, res) => {
 
     // Siapkan data update mst_users
     const oDataUser = {
-      Fullname: oPayload.Fullname,
-      Username: oPayload.Username, // Update username jika berubah
-      Telp: oPayload.Telp,
-      Status: oPayload.Status == "1" ? "active" : "nonactive",
-      UpdatedAt: formatDateSystem(),
+      fullname: oPayload.fullname,
+      username: oPayload.username, // Update username jika berubah
+      telp: oPayload.telp,
+      status: (oPayload.status == "1" || oPayload.status == "active") ? "active" : "nonactive",
+      updated_at: formatDateSystem(),
     };
 
-    if (oPayload.Password) {
+    if (oPayload.password) {
       const cPassword =
-        process.env.USER_KEY + oPayload.Username + oPayload.Password;
+        process.env.USER_KEY + oPayload.username + oPayload.password;
       const secret = process.env.USER_SECRET;
-      oDataUser["Password"] = hmac(cPassword, secret, "sha512");
+      oDataUser["password"] = hmac(cPassword, secret, "sha512");
     }
 
     // TRANSAKSI UPDATE
     await DB.transaction(async (trx) => {
-      // 🔥 UBAH 3: Langsung ambil UserId dari payload, nggak perlu query nyari Username lagi
-      const userId = oPayload.UserId;
+      const userId = oPayload.user_id;
 
       // 2. Update mst_users
       await trx("mst_users")
-        .where("UserId", userId)
+        .where("user_id", userId)
         .update(oDataUser);
 
-      // 3. Update mst_user_roles (pake UserId)
+      // 3. Update mst_user_roles (pake user_id)
       await trx("mst_user_roles")
-        .where("UserId", userId)
+        .where("user_id", userId)
         .update({
-            RoleId: oPayload.Role || null,
+            role_id: oPayload.role || null,
         });
-
-      // UBAH 4: Diberi comment sementara agar Knex tidak error karena update object kosong
-      /*
-      await trx("user_navigation")
-        .where("UserId", userId) 
-        .update({ 
-             // Kalau menu perlu diupdate berdasarkan Role, tarik lagi dari mst_navigation
-        });
-      */
     });
 
     return res

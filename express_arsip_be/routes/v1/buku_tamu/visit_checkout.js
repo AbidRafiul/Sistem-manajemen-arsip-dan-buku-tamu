@@ -58,7 +58,7 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const query = DB("tr_visitations").where("status", "Sedang Berkunjung").andWhere(function () {
+    const query = DB("trx_visitations").where("status", "Sedang Berkunjung").andWhere(function () {
       if (QRToken) {
         this.orWhere("qr_token", QRToken);
       }
@@ -92,7 +92,7 @@ router.post("/", async (req, res) => {
         : VisitNotes;
     }
 
-    await DB("tr_visitations").where("visitation_id", record.visitation_id).update(updateData);
+    await DB("trx_visitations").where("visitation_id", record.visitation_id).update(updateData);
 
     return res.status(200).json({
       status: "00",

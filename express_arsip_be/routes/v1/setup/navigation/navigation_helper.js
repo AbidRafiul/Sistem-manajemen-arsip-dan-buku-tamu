@@ -230,16 +230,18 @@ const querySafely = async (queryBuilder) => {
 };
 
 const getUser = async (DB, uniqueId) => {
-  return await querySafely(() => DB("user_credential")
-    .select("UniqueId", "Username", "Role")
-    .where("UniqueId", uniqueId)
+  return await querySafely(() => DB("mst_users")
+    .leftJoin("mst_user_roles", "mst_users.user_id", "mst_user_roles.user_id")
+    .leftJoin("mst_roles", "mst_user_roles.role_id", "mst_roles.role_id")
+    .select("mst_users.user_id as user_id", "mst_users.username as username", "mst_roles.role_name as role")
+    .where("mst_users.user_id", uniqueId)
     .first());
 };
 
 const getLegacyUserMenu = async (DB, uniqueId) => {
   const navigation = await querySafely(() => DB("user_navigation")
-    .select("Menu as menu")
-    .where("UniqueId", uniqueId)
+    .select("menu")
+    .where("user_id", uniqueId)
     .first());
 
   return normalizeLegacyMenu(navigation?.menu);
@@ -248,62 +250,62 @@ const getLegacyUserMenu = async (DB, uniqueId) => {
 const getLegacyRoleMenu = async (DB, role) => {
   const aliases = roleAliases(role);
   const navigation = await querySafely(() => DB("mst_navigation")
-    .select("Menu as menu")
-    .whereIn("Role", aliases)
-    .orderByRaw(`CASE WHEN Role = ? THEN 0 ELSE 1 END`, [role || ""])
+    .select("menu")
+    .whereIn("role", aliases)
+    .orderByRaw(`CASE WHEN role = ? THEN 0 ELSE 1 END`, [role || ""])
     .first());
 
   return normalizeLegacyMenu(navigation?.menu);
 };
 
 const getRbacMenu = async (DB, user) => {
-  if (!user?.Username && !user?.Role) return [];
+  if (!user?.username && !user?.role) return [];
 
   let rows = [];
 
-  if (user?.Username) {
+  if (user?.username) {
     rows = await querySafely(() => DB("mst_menus as m")
       .distinct(
-        "m.MenuId",
-        "m.ParentMenuId",
-        "m.MenuName",
-        "m.MenuPath",
-        "m.MenuIcon",
-        "m.SortOrder",
+        "m.menu_id as MenuId",
+        "m.parent_menu_id as ParentMenuId",
+        "m.menu_name as MenuName",
+        "m.menu_path as MenuPath",
+        "m.menu_icon as MenuIcon",
+        "m.sort_order as SortOrder",
       )
-      .join("mst_role_menus as rm", "rm.MenuId", "m.MenuId")
-      .join("mst_roles as r", "r.RoleId", "rm.RoleId")
-      .join("mst_user_roles as ur", "ur.RoleId", "r.RoleId")
-      .join("mst_users as u", "u.UserId", "ur.UserId")
-      .where("u.Username", user.Username)
-      .where("m.IsActive", 1)
-      .where("rm.CanView", 1)
-      .where("r.Status", "active")
-      .where("ur.Status", "active")
-      .orderBy("m.SortOrder", "asc")) || [];
+      .join("mst_role_menus as rm", "rm.menu_id", "m.menu_id")
+      .join("mst_roles as r", "r.role_id", "rm.role_id")
+      .join("mst_user_roles as ur", "ur.role_id", "r.role_id")
+      .join("mst_users as u", "u.user_id", "ur.user_id")
+      .where("u.username", user.username)
+      .where("m.is_active", 1)
+      .where("rm.can_view", 1)
+      .where("r.status", "active")
+      .where("ur.status", "active")
+      .orderBy("m.sort_order", "asc")) || [];
   }
 
-  if (rows.length < 1 && user?.Role) {
+  if (rows.length < 1 && user?.role) {
     rows = await querySafely(() => DB("mst_menus as m")
       .distinct(
-        "m.MenuId",
-        "m.ParentMenuId",
-        "m.MenuName",
-        "m.MenuPath",
-        "m.MenuIcon",
-        "m.SortOrder",
+        "m.menu_id as MenuId",
+        "m.parent_menu_id as ParentMenuId",
+        "m.menu_name as MenuName",
+        "m.menu_path as MenuPath",
+        "m.menu_icon as MenuIcon",
+        "m.sort_order as SortOrder",
       )
-      .join("mst_role_menus as rm", "rm.MenuId", "m.MenuId")
-      .join("mst_roles as r", "r.RoleId", "rm.RoleId")
+      .join("mst_role_menus as rm", "rm.menu_id", "m.menu_id")
+      .join("mst_roles as r", "r.role_id", "rm.role_id")
       .where((builder) => {
         builder
-          .whereIn("r.RoleCode", roleAliases(user.Role))
-          .orWhereIn("r.RoleName", roleAliases(user.Role));
+          .whereIn("r.role_code", roleAliases(user.role))
+          .orWhereIn("r.role_name", roleAliases(user.role));
       })
-      .where("m.IsActive", 1)
-      .where("rm.CanView", 1)
-      .where("r.Status", "active")
-      .orderBy("m.SortOrder", "asc")) || [];
+      .where("m.is_active", 1)
+      .where("rm.can_view", 1)
+      .where("r.status", "active")
+      .orderBy("m.sort_order", "asc")) || [];
   }
 
   return rows.length ? buildTree(rows) : [];
@@ -322,7 +324,7 @@ const getNavigationMenu = async (DB, uniqueId) => {
     return { menu: ensureArchiveDocumentMenu(rbacMenu), source: "mst_role_menus", user };
   }
 
-  const legacyRoleMenu = await getLegacyRoleMenu(DB, user?.Role);
+  const legacyRoleMenu = await getLegacyRoleMenu(DB, user?.role);
   if (legacyRoleMenu.length) {
     return { menu: ensureArchiveDocumentMenu(legacyRoleMenu), source: "mst_navigation", user };
   }

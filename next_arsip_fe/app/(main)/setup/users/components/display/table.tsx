@@ -46,7 +46,8 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
             Auditor: 'warning'
         };
 
-        return <Tag value={rowData.Role} severity={roleColors[rowData.Role] || 'info'} className="text-sm" />;
+        const roleStr = String(rowData.role);
+        return <Tag value={roleStr} severity={roleColors[roleStr as keyof RoleColors] || 'info'} className="text-sm" />;
     };
 
     const actionBodyTemplate = (rowData: TableData) => (
@@ -70,7 +71,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
             <Button
                 icon="pi pi-wrench"
                 onClick={() => {
-                    getNav?.(rowData?.userId || '');
+                    getNav?.(rowData?.user_id || '');
                 }}
                 severity="warning"
                 outlined
@@ -123,7 +124,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                                 data: state.data.map((v) => {
                                     return {
                                         ...v,
-                                        CreatedAt: formatDateCalendar(v.CreatedAt)
+                                        created_at: formatDateCalendar(v.created_at)
                                     };
                                 }),
                                 show: true,
@@ -159,32 +160,32 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                     selectionMode={'multiple'}
                     rows={10}
                     header={headerTemplate}
-                    globalFilterFields={['Fullname', 'Username', 'Telp', 'Role']}
+                    globalFilterFields={['fullname', 'username', 'telp', 'role']}
                     filters={state.filters}
                     loading={state.load}
                     selection={state.selectedUsers}
                     onSelectionChange={(e) => setState((p) => ({ ...p, selectedUsers: e.value }))}
-                    dataKey="UserId"
+                    dataKey="user_id"
                     emptyMessage="Data Kosong"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data"
                 >
                     <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
-                    <Column field="UserId" header="UserId"></Column>
-                    <Column field="Fullname" header="Name"></Column>
-                    <Column field="Username" header="Username"></Column>
-                    <Column field="Telp" header="Phone"></Column>
-                    <Column field="Role" body={roleBodyTemplate} header="Role"></Column>
+                    <Column field="user_id" header="UserId"></Column>
+                    <Column field="fullname" header="Name"></Column>
+                    <Column field="username" header="Username"></Column>
+                    <Column field="telp" header="Phone"></Column>
+                    <Column field="role" body={roleBodyTemplate} header="Role"></Column>
                     <Column
-                        field="Status"
+                        field="status"
                         body={(rowData) => {
                             // Karena di DB nilainya 'active' (string), bukan '1'
-                            const isActive = rowData.Status === 'active';
+                            const isActive = rowData.status === 'active';
                             return <Tag value={isActive ? 'Active' : 'Inactive'} severity={isActive ? 'success' : 'danger'} className="text-sm" />;
                         }}
                         header="Status"
                     ></Column>
-                    <Column field="CreatedAt" sortable body={(rowData) => formatDateCalendar(rowData.CreatedAt)} header="Datetime"></Column>
+                    <Column field="created_at" sortable body={(rowData) => formatDateCalendar(rowData.created_at)} header="Datetime"></Column>
                     <Column headerStyle={{ textAlign: 'center' }} header="Action" body={actionBodyTemplate}></Column>
                 </DataTable>
             </div>

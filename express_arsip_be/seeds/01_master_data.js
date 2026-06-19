@@ -12,7 +12,7 @@ export async function seed(knex) {
   await knex("mst_user_roles").truncate();
   await knex("user_navigation").truncate();
   await knex("mst_users").truncate();
-    await knex('user_credential').truncate();
+  await knex('user_credential').truncate();
 
   // 3. HIDUPKAN kembali Foreign Key Check
   await knex.raw("SET FOREIGN_KEY_CHECKS = 1;");
@@ -22,97 +22,97 @@ export async function seed(knex) {
   // A. BRANCH (Cabang)
   await knex("mst_branches").insert([
     {
-      BranchId: 1,
-      BranchCode: "BR-001",
-      BranchName: "Kantor Pusat",
-      Status: "active",
-      CreatedAt: new Date(),
-      UpdatedAt: new Date(),
+      branch_id: 1,
+      branch_code: "BR-001",
+      branch_name: "Kantor Pusat",
+      status: "active",
+      created_at: new Date(),
+      updated_at: new Date(),
     },
     {
-      BranchId: 2,
-      BranchCode: "BR-002",
-      BranchName: "Kantor Cabang",
-      Status: "active",
-      CreatedAt: new Date(),
-      UpdatedAt: new Date(),
+      branch_id: 2,
+      branch_code: "BR-002",
+      branch_name: "Kantor Cabang",
+      status: "active",
+      created_at: new Date(),
+      updated_at: new Date(),
     },
   ]);
 
   // B. DIVISION (Divisi)
   await knex("mst_divisions").insert([
     {
-      DivisionId: 1,
-      BranchId: 1,
-      DivisionCode: "DIV-IT",
-      DivisionName: "Information Technology",
-      Status: "active",
-      CreatedAt: new Date(),
-      UpdatedAt: new Date(),
+      division_id: 1,
+      branch_id: 1,
+      division_code: "DIV-IT",
+      division_name: "Information Technology",
+      status: "active",
+      created_at: new Date(),
+      updated_at: new Date(),
     },
     {
-      DivisionId: 2,
-      BranchId: 1,
-      DivisionCode: "DIV-HR",
-      DivisionName: "Human Resources",
-      Status: "active",
-      CreatedAt: new Date(),
-      UpdatedAt: new Date(),
+      division_id: 2,
+      branch_id: 1,
+      division_code: "DIV-HR",
+      division_name: "Human Resources",
+      status: "active",
+      created_at: new Date(),
+      updated_at: new Date(),
     },
   ]);
 
   // C. DEPARTMENT (Departemen)
   await knex("mst_departments").insert([
     {
-      DepartmentId: 1,
-      DivisionId: 1,
-      DepartmentCode: "DEPT-DEV",
-      DepartmentName: "Software Development",
-      Status: "active",
-      CreatedAt: new Date(),
-      UpdatedAt: new Date(),
+      department_id: 1,
+      division_id: 1,
+      department_code: "DEPT-DEV",
+      department_name: "Software Development",
+      status: "active",
+      created_at: new Date(),
+      updated_at: new Date(),
     },
     {
-      DepartmentId: 2,
-      DivisionId: 2,
-      DepartmentCode: "DEPT-REC",
-      DepartmentName: "Recruitment",
-      Status: "active",
-      CreatedAt: new Date(),
-      UpdatedAt: new Date(),
+      department_id: 2,
+      division_id: 2,
+      department_code: "DEPT-REC",
+      department_name: "Recruitment",
+      status: "active",
+      created_at: new Date(),
+      updated_at: new Date(),
     },
   ]);
 
   // D. POSITION (Jabatan)
   await knex("mst_positions").insert([
     {
-      PositionId: 1,
-      PositionCode: "POS-DIR",
-      PositionName: "Direktur Utama",
-      Status: "active",
-      CreatedAt: new Date(),
-      UpdatedAt: new Date(),
+      position_id: 1,
+      position_code: "POS-DIR",
+      position_name: "Direktur Utama",
+      status: "active",
+      created_at: new Date(),
+      updated_at: new Date(),
     },
     {
-      PositionId: 2,
-      PositionCode: "POS-MGR",
-      PositionName: "Manager",
-      Status: "active",
-      CreatedAt: new Date(),
-      UpdatedAt: new Date(),
+      position_id: 2,
+      position_code: "POS-MGR",
+      position_name: "Manager",
+      status: "active",
+      created_at: new Date(),
+      updated_at: new Date(),
     },
   ]);
 
   // E. WORK UNIT (Unit Kerja)
   await knex("mst_work_units").insert([
     {
-      WorkUnitId: 1,
-      DepartmentId: 1,
-      WorkUnitCode: "WU-PST",
-      WorkUnitName: "Unit Pusat Utama",
-      Status: "active",
-      CreatedAt: new Date(),
-      UpdatedAt: new Date(),
+      work_unit_id: 1,
+      department_id: 1,
+      work_unit_code: "WU-PST",
+      work_unit_name: "Unit Pusat Utama",
+      status: "active",
+      created_at: new Date(),
+      updated_at: new Date(),
     },
   ]);
 

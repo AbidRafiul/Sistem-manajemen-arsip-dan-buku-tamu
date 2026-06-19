@@ -7,31 +7,29 @@ import { RefObject } from "react";
 import { DataRekap } from "@/types/print-tools";
 
 export interface initValue {
-    userId?: string | number; // Dibuat opsional
-    UserId?: string | number; // 🔥 DITAMBAHKAN agar TypeScript tidak error saat edit
-    Fullname: string
-    Username: string
-    Password: string
-    Telp: string
-    Status: '0' | '1',
-    Role: UserRole,
-    BranchId?: string | number;
-    PositionId?: string | number;
-    DivisionId?: string | number;
-    DepartmentId?: string | number;
-    WorkUnitId?: string | number;
+    user_id?: string | number;
+    fullname: string
+    username: string
+    password?: string
+    telp: string
+    status: '0' | '1' | 'active' | 'nonactive',
+    role: UserRole | number | string,
+    branch_id?: string | number;
+    position_id?: string | number;
+    division_id?: string | number;
+    department_id?: string | number;
+    work_unit_id?: string | number;
 }
 
 export interface TableData {
-    userId?: string | number; 
-    UserId?: string | number; // 🔥 DITAMBAHKAN karena dari DB kolomnya "UserId"
-    Fullname: string
-    Username: string
-    Password: string
-    Telp: string
-    Status: '0' | '1' | 'active' | 'nonactive', // Menyesuaikan nilai dari DB jika perlu
-    Role: UserRole,
-    CreatedAt: Date
+    user_id?: string | number;
+    fullname: string
+    username: string
+    password?: string
+    telp: string
+    status: '0' | '1' | 'active' | 'nonactive',
+    role: UserRole | number | string,
+    created_at: Date
 }
 
 export interface NavState {

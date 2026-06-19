@@ -92,19 +92,18 @@ export const validateSignature = async (req, res, next) => {
 
     // 🔥 PERBAIKAN: Ganti "user_credential" jadi "mst_users"
     const oUser = await DB("mst_users")
-      // 1. Join user_roles pake UserId (bukan Username)
-      .leftJoin("mst_user_roles", "mst_users.UserId", "mst_user_roles.UserId")
+      // 1. Join user_roles pake user_id (bukan username)
+      .leftJoin("mst_user_roles", "mst_users.user_id", "mst_user_roles.user_id")
       // 2. Join mst_roles buat dapetin nama jabatannya
-      .leftJoin("mst_roles", "mst_user_roles.RoleId", "mst_roles.RoleId")
+      .leftJoin("mst_roles", "mst_user_roles.role_id", "mst_roles.role_id")
       .select(
-        "mst_users.Username",
-        "mst_users.Fullname",
-        // Asumsi nama kolom di mst_roles adalah RoleName, kalau namanya 'Role' atau 'RoleCode', sesuaikan aja ya!
-        "mst_roles.RoleName as Role", 
-        "mst_users.Telp",
-        "mst_users.UserId as UniqueId"
+        "mst_users.username",
+        "mst_users.fullname",
+        "mst_roles.role_name as Role", 
+        "mst_users.telp",
+        "mst_users.user_id as UniqueId"
       )
-      .where("mst_users.UserId", cUserUnique)
+      .where("mst_users.user_id", cUserUnique)
       .first();
 
     if (!oUser) {
