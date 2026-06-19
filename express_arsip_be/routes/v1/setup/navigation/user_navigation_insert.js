@@ -58,15 +58,15 @@ router.post("/", async (req, res) => {
 
         await DB('user_navigation')
             .insert({
-                UserId: oPayload.UserId,
-                Menu: oPayload.Menu,
-                CreatedAt: formatDateSystem(),
-                UpdatedAt: formatDateSystem()
+                user_id: oPayload.UserId,
+                menu: oPayload.Menu,
+                created_at: formatDateSystem(),
+                updated_at: formatDateSystem()
             })
-            .onConflict('UserId')
+            .onConflict('user_id')
             .merge({
-                Menu: oPayload.Menu,
-                UpdatedAt: formatDateSystem()
+                menu: oPayload.Menu,
+                updated_at: formatDateSystem()
             });
 
         return res.status(200).json({

@@ -70,30 +70,30 @@ router.post("/", async (req, res) => {
 
     // 1. CARI USER DI TABEL BARU (mst_users)
     const oUser = await DB("mst_users")
-      .where("Username", oPayload.username)
+      .where("username", oPayload.username)
       .select(
-        "UserId", // Pengganti UniqueId
-        "Password",
-        "Username",
-        "Fullname",
-        "Status",
-        "Telp",
-        "CreatedAt",
+        "user_id", // Pengganti UniqueId
+        "password",
+        "username",
+        "fullname",
+        "status",
+        "telp",
+        "created_at",
       )
       .first();
 
     if (oUser) {
       const dDatetime = formatDateSystem(
-        oUser.CreatedAt,
+        oUser.created_at,
         "yyyy-MM-dd HH:mm:ss",
       );
       const secret = process.env.USER_SECRET;
 
       // 2. LOGIKA HASHING BARU (UniqueId diganti Username)
       const cPassword =
-        process.env.USER_KEY + oUser.Username + oPayload.password;
+        process.env.USER_KEY + oUser.username + oPayload.password;
 
-      if (!hashEquals(hmac(cPassword, secret, "sha512"), oUser.Password)) {
+      if (!hashEquals(hmac(cPassword, secret, "sha512"), oUser.password)) {
         return res.status(400).json({
           status: status.GAGAL,
           message: "Password salah",
@@ -102,7 +102,7 @@ router.post("/", async (req, res) => {
       }
 
       // 3. CEK STATUS BARU (Sekarang pakai ENUM 'active')
-      if (oUser.Status !== "active") {
+      if (oUser.status !== "active") {
         return res.status(400).json({
           status: status.GAGAL,
           message: "User belum aktif",
@@ -112,8 +112,8 @@ router.post("/", async (req, res) => {
 
       // 4. AMBIL MENU DARI TABEL BARU (Pakai UserId)
       const oNavigation = await DB("user_navigation")
-        .select("Menu as menu")
-        .where("UserId", oUser.UserId)
+        .select("menu")
+        .where("user_id", oUser.user_id)
         .first();
 
       if (!oNavigation || !oNavigation.menu) {
@@ -126,16 +126,16 @@ router.post("/", async (req, res) => {
 
       // 5. AMBIL JABATAN DARI TABEL ROLE (Pakai UserId)
       const oUserRole = await DB("mst_user_roles")
-        .where("UserId", oUser.UserId)
+        .where("user_id", oUser.user_id)
         .first();
 
-      const roleId = oUserRole ? oUserRole.RoleId : null;
+      const roleId = oUserRole ? oUserRole.role_id : null;
 
       // 6. BUNGKUS PAYLOAD JWT BARU
       const credential = {
-        UserId: oUser.UserId, // HURUF BESAR: Biar NextAuth & AppMenu.tsx lo mulus baca UserId
-        username: oUser.Username,
-        name: oUser.Fullname, // UBAH fullname JADI name: NextAuth butuh 'name' buat profile
+        UserId: oUser.user_id, // HURUF BESAR: Biar NextAuth & AppMenu.tsx lo mulus baca UserId
+        username: oUser.username,
+        name: oUser.fullname, // UBAH fullname JADI name: NextAuth butuh 'name' buat profile
         roleId: roleId,
       };
 

@@ -101,7 +101,7 @@ router.post("/", upload.fields([{ name: "SelfieFile", maxCount: 1 }, { name: "Id
       created_at: formatDateSystem(),
     };
 
-    const [VisitationId] = await DB("tr_visitations").insert(oData);
+    const [VisitationId] = await DB("trx_visitations").insert(oData);
 
     try {
       if (HostUserId) {

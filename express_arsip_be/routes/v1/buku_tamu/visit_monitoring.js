@@ -8,26 +8,26 @@ router.post("/", async (req, res) => {
   try {
     const today = formatDateSystem(new Date(), "yyyy-MM-dd");
 
-    const rawTotal = await DB.raw("SELECT COUNT(*) as count FROM tr_visitations WHERE DATE(check_in_time) = ?", [today]);
+    const rawTotal = await DB.raw("SELECT COUNT(*) as count FROM trx_visitations WHERE DATE(check_in_time) = ?", [today]);
     const today_total = rawTotal[0][0]?.count || 0;
 
-    const rawIn = await DB.raw("SELECT COUNT(*) as count FROM tr_visitations WHERE DATE(check_in_time) = ? AND status = 'Sedang Berkunjung'", [today]);
+    const rawIn = await DB.raw("SELECT COUNT(*) as count FROM trx_visitations WHERE DATE(check_in_time) = ? AND status = 'Sedang Berkunjung'", [today]);
     const today_in = rawIn[0][0]?.count || 0;
 
-    const rawOut = await DB.raw("SELECT COUNT(*) as count FROM tr_visitations WHERE DATE(check_in_time) = ? AND status = 'Selesai'", [today]);
+    const rawOut = await DB.raw("SELECT COUNT(*) as count FROM trx_visitations WHERE DATE(check_in_time) = ? AND status = 'Selesai'", [today]);
     const today_out = rawOut[0][0]?.count || 0;
 
-    const rawPending = await DB.raw("SELECT COUNT(*) as count FROM tr_visitations WHERE approval_status = 'pending'");
+    const rawPending = await DB.raw("SELECT COUNT(*) as count FROM trx_visitations WHERE approval_status = 'pending'");
     const pending_approval = rawPending[0][0]?.count || 0;
 
     const rawWeekly = await DB.raw(
-      "SELECT DAYNAME(check_in_time) as day, COUNT(*) as count FROM tr_visitations WHERE check_in_time >= DATE_SUB(NOW(), INTERVAL 5 DAY) GROUP BY DAYNAME(check_in_time) ORDER BY MIN(check_in_time)"
+      "SELECT DAYNAME(check_in_time) as day, COUNT(*) as count FROM trx_visitations WHERE check_in_time >= DATE_SUB(NOW(), INTERVAL 5 DAY) GROUP BY DAYNAME(check_in_time) ORDER BY MIN(check_in_time)"
     );
     const chart_mingguan = (rawWeekly[0] || []).map(r => r.count);
     while (chart_mingguan.length < 5) chart_mingguan.push(0);
 
     const rawPurpose = await DB.raw(
-      "SELECT COALESCE(mp.visit_purpose_name, 'Lainnya') as purpose, COUNT(*) as count FROM tr_visitations t LEFT JOIN mst_visit_purpose mp ON t.visit_purpose_id = mp.visit_purpose_id WHERE DATE(t.check_in_time) = ? GROUP BY t.visit_purpose_id",
+      "SELECT COALESCE(mp.visit_purpose_name, 'Lainnya') as purpose, COUNT(*) as count FROM trx_visitations t LEFT JOIN mst_visit_purpose mp ON t.visit_purpose_id = mp.visit_purpose_id WHERE DATE(t.check_in_time) = ? GROUP BY t.visit_purpose_id",
       [today]
     );
 
@@ -39,7 +39,7 @@ router.post("/", async (req, res) => {
       chart_tujuan_data.push(0);
     }
 
-    const recent_10 = await DB("tr_visitations")
+    const recent_10 = await DB("trx_visitations")
       .select("visitation_id", "guest_name", "visit_code", "check_in_time", "status")
       .orderBy("check_in_time", "desc")
       .limit(10);

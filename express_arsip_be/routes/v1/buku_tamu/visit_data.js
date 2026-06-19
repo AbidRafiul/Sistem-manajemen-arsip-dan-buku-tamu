@@ -12,16 +12,16 @@ router.post("/", async (req, res) => {
     const limit = parseInt(oPayload.limit || 20, 10) || 20;
     const offset = (page - 1) * limit;
 
-    const q = DB("tr_visitations as t")
+    const q = DB("trx_visitations as t")
       .select(
         "t.*",
         "mp.visit_purpose_name as VisitPurposeName", 
-        "u.Fullname as HostFullname"
+        "u.fullname as HostFullname"
       )
       .leftJoin("mst_visit_purpose as mp", "t.visit_purpose_id", "mp.visit_purpose_id")
-      .leftJoin("user_credential as u", "t.host_user_id", "u.UniqueId");
+      .leftJoin("mst_users as u", "t.host_user_id", "u.user_id");
 
-    const qCount = DB("tr_visitations as t").count({ total: '*' });
+    const qCount = DB("trx_visitations as t").count({ total: '*' });
 
     if (oPayload.Status) {
       q.where("t.status", oPayload.Status);

@@ -54,54 +54,54 @@ const Page = () => {
 
     const formik = useFormik({
         initialValues: {
-            userId: '',
-            Fullname: '',
-            Username: '',
-            Password: '',
-            Telp: '',
-            Status: '0',
-            Role: 'superadmin',
+            user_id: '',
+            fullname: '',
+            username: '',
+            password: '',
+            telp: '',
+            status: '0',
+            role: 'superadmin',
         },
         validate: (data: initValue) => {
             let errors = {} as initValue;
             // Validasi name
-            if (!data.Fullname) {
-                errors.Fullname = 'Nama wajib diisi';
-            } else if (data.Fullname.length < 3) {
-                errors.Fullname = 'Nama harus terdiri dari minimal 3 karakter';
-            } else if (!/^[a-zA-Z\s]+$/.test(data.Fullname)) {
-                errors.Fullname = 'Nama hanya boleh berisi huruf dan spasi';
+            if (!data.fullname) {
+                errors.fullname = 'Nama wajib diisi';
+            } else if (data.fullname.length < 3) {
+                errors.fullname = 'Nama harus terdiri dari minimal 3 karakter';
+            } else if (!/^[a-zA-Z\s]+$/.test(data.fullname)) {
+                errors.fullname = 'Nama hanya boleh berisi huruf dan spasi';
             }
 
             // Validasi username
-            if (!data.Username) {
-                errors.Username = 'Username wajib diisi';
+            if (!data.username) {
+                errors.username = 'Username wajib diisi';
             }
 
             // Validasi password
-            if (!data.Password && !state.edit) {
-                errors.Password = 'Password wajib diisi';
+            if (!data.password && !state.edit) {
+                errors.password = 'Password wajib diisi';
             }
 
-            if (data.Password) {
-                if (data.Password.length < 8) {
-                    errors.Password = 'Password harus terdiri dari minimal 8 karakter';
-                } else if (!/[A-Z]/.test(data.Password)) {
-                    errors.Password = 'Password harus mengandung huruf besar';
-                } else if (!/[a-z]/.test(data.Password)) {
-                    errors.Password = 'Password harus mengandung huruf kecil';
-                } else if (!/[0-9]/.test(data.Password)) {
-                    errors.Password = 'Password harus mengandung angka';
-                } else if (!/[\W_]/.test(data.Password)) {
-                    errors.Password = 'Password harus mengandung simbol';
+            if (data.password) {
+                if (data.password.length < 8) {
+                    errors.password = 'Password harus terdiri dari minimal 8 karakter';
+                } else if (!/[A-Z]/.test(data.password)) {
+                    errors.password = 'Password harus mengandung huruf besar';
+                } else if (!/[a-z]/.test(data.password)) {
+                    errors.password = 'Password harus mengandung huruf kecil';
+                } else if (!/[0-9]/.test(data.password)) {
+                    errors.password = 'Password harus mengandung angka';
+                } else if (!/[\W_]/.test(data.password)) {
+                    errors.password = 'Password harus mengandung simbol';
                 }
             }
 
             // Validasi no_hp
-            if (!data.Telp) {
-                errors.Telp = 'Nomor HP wajib diisi';
-            } else if (!/^(08|(\+62))\d{8,13}$/.test(data.Telp)) {
-                errors.Telp = 'Nomor HP harus dimulai dengan 08 dan panjang 9-13 digit';
+            if (!data.telp) {
+                errors.telp = 'Nomor HP wajib diisi';
+            } else if (!/^(08|(\+62))\d{8,13}$/.test(data.telp)) {
+                errors.telp = 'Nomor HP harus dimulai dengan 08 dan panjang 9-13 digit';
             }
 
             console.log(errors)
@@ -137,7 +137,7 @@ const Page = () => {
             const headers = {
                 'X-Level': '1',
             };
-            const vaData = await postData(apiEndpointGetNavDataEdit, { userId: userId }, headers);
+            const vaData = await postData(apiEndpointGetNavDataEdit, { UserId: userId }, headers);
             let res = vaData.data;
             console.log(res);
             setNavBar((p) => ({
@@ -164,7 +164,7 @@ const Page = () => {
             const res = await postData(
                 apiEndpointUpdateNav,
                 {
-                    userId: navBar.userId,
+                    UserId: navBar.userId,
                     Menu: JSON.stringify(navBar.menu),
                 },
 

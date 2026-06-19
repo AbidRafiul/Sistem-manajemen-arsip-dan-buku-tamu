@@ -26,18 +26,18 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        Fullname: Joi.string().max(100).required().label("Fullname"),
-        Username: Joi.string().max(100).required().label("Username"),
-        Telp: Joi.string()
+        fullname: Joi.string().max(100).required().label("fullname"),
+        username: Joi.string().max(100).required().label("username"),
+        telp: Joi.string()
           .pattern(/^[0-9]+$/)
           .max(13)
           .required()
-          .label("Telp"),
-        Role: Joi.alternatives()
+          .label("telp"),
+        role: Joi.alternatives()
           .try(Joi.string(), Joi.number())
           .required()
-          .label("Role"),
-        Password: Joi.string()
+          .label("role"),
+        password: Joi.string()
           .min(8)
           .pattern(
             new RegExp(
@@ -45,8 +45,8 @@ router.post("/", async (req, res) => {
             ),
           )
           .required()
-          .label("Password"),
-        Status: Joi.string().required().label("Status"),
+          .label("password"),
+        status: Joi.string().required().label("status"),
       },
       {
         "string.base": "{#label} harus berupa string",
@@ -55,7 +55,7 @@ router.post("/", async (req, res) => {
       },
       oPayload,
       {
-        uniqueField: ["Username", "Telp"],
+        uniqueField: ["username", "telp"],
         table: "mst_users", // Validasi langsung cek ke mst_users
         allowUnknown: true,
       },
@@ -79,15 +79,15 @@ router.post("/", async (req, res) => {
 
     // HASH PASSWORD PAKAI USERNAME SEBAGAI SALT
     let hashedPassword = "";
-    if (oPayload.Password) {
+    if (oPayload.password) {
       const cPassword =
-        process.env.USER_KEY + oPayload.Username + oPayload.Password;
+        process.env.USER_KEY + oPayload.username + oPayload.password;
       const secret = process.env.USER_SECRET;
       hashedPassword = hmac(cPassword, secret, "sha512");
     }
 
     // 1. SIAPKAN INPUT ROLE (Menangani superadmin ke master)
-    let inputRole = oPayload.Role;
+    let inputRole = oPayload.role;
     if (inputRole == "superadmin" || inputRole == "admin") {
       inputRole = "master";
     }
@@ -95,8 +95,8 @@ router.post("/", async (req, res) => {
     // 2. CARI ROLE DATA TERLEBIH DAHULU SEBELUM TRANSAKSI
     // Mencari berdasarkan ID (angka) atau RoleName (string)
     const roleData = await DB("mst_roles")
-      .where("RoleId", inputRole)
-      .orWhere("RoleName", inputRole)
+      .where("role_id", inputRole)
+      .orWhere("role_name", inputRole)
       .first();
 
     if (!roleData) {
@@ -110,8 +110,8 @@ router.post("/", async (req, res) => {
     // 3. CARI NAVIGASI
     // Karena roleData sudah ketemu, kita pasti bisa mengambil RoleName-nya
     const oNavigation = await DB("mst_navigation")
-      .select("Menu as menu")
-      .where("Role", roleData.RoleName)
+      .select("menu")
+      .where("role", roleData.role_name)
       .first();
 
     // 4. VALIDASI NAVIGASI
@@ -127,34 +127,34 @@ router.post("/", async (req, res) => {
     await DB.transaction(async (trx) => {
       // Masuk ke mst_users (Buku Induk)
       const [newUserId] = await trx("mst_users").insert({
-        Fullname: oPayload.Fullname,
-        Username: oPayload.Username,
-        Telp: oPayload.Telp,
-        Password: hashedPassword,
-        Status: oPayload.Status == "1" ? "active" : "nonactive",
-        BranchId: oPayload.BranchId,
-        PositionId: oPayload.PositionId,
-        DivisionId: oPayload.DivisionId,
-        DepartmentId: oPayload.DepartmentId,
-        WorkUnitId: oPayload.WorkUnitId,
-        CreatedAt: formatDateSystem(),
-        UpdatedAt: formatDateSystem(),
+        fullname: oPayload.fullname,
+        username: oPayload.username,
+        telp: oPayload.telp,
+        password: hashedPassword,
+        status: (oPayload.status == "1" || oPayload.status == "active") ? "active" : "nonactive",
+        branch_id: oPayload.branch_id,
+        position_id: oPayload.position_id,
+        division_id: oPayload.division_id,
+        department_id: oPayload.department_id,
+        work_unit_id: oPayload.work_unit_id,
+        created_at: formatDateSystem(),
+        updated_at: formatDateSystem(),
       });
 
       // Masuk ke mst_user_roles (Relasi Jabatan)
-      // Pakai roleData.RoleId dari pencarian di atas
+      // Pakai roleData.role_id dari pencarian di atas
       await trx("mst_user_roles").insert({
-        UserId: newUserId,
-        RoleId: roleData.RoleId, 
+        user_id: newUserId,
+        role_id: roleData.role_id, 
       });
 
       // Masuk ke user_navigation (Nampan Menu Spesifik)
       // Pakai oNavigation.menu dari pencarian di atas
       await trx("user_navigation").insert({
-        UserId: newUserId,
-        Menu: oNavigation.menu,
-        CreatedAt: formatDateSystem(),
-        UpdatedAt: formatDateSystem(),
+        user_id: newUserId,
+        menu: oNavigation.menu,
+        created_at: formatDateSystem(),
+        updated_at: formatDateSystem(),
       });
     });
 

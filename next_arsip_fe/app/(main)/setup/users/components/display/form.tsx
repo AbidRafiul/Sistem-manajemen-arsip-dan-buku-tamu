@@ -70,8 +70,7 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
         setState((p) => ({ ...p, load: true }));
 
         try {
-            // 🔥 FIX 1: Tangkap ID baik U besar maupun u kecil
-            const idUser = input.UserId || input.userId;
+            const idUser = input.user_id;
             const isEdit = Boolean(idUser);
 
             console.log('INPUT DATA YANG DIKIRIM:', input);
@@ -82,28 +81,27 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
             const oHeaders: Record<string, string> = {
                 'X-Level': '1',
                 'X-Credential': JSON.stringify({
-                    Username: input.Username,
-                    Password: input.Password
+                    username: input.username,
+                    password: input.password
                 })
             };
 
             const oBody: Record<string, any> = {
-                Fullname: input.Fullname,
-                Username: input.Username,
-                Password: input.Password,
-                Telp: input.Telp,
-                Status: input.Status,
-                Role: input.Role,
-                BranchId: input.BranchId,
-                PositionId: input.PositionId,
-                DivisionId: input.DivisionId,
-                DepartmentId: input.DepartmentId,
-                WorkUnitId: input.WorkUnitId
+                fullname: input.fullname,
+                username: input.username,
+                password: input.password,
+                telp: input.telp,
+                status: input.status,
+                role: input.role,
+                branch_id: input.branch_id,
+                position_id: input.position_id,
+                division_id: input.division_id,
+                department_id: input.department_id,
+                work_unit_id: input.work_unit_id
             };
 
-            // 🔥 FIX 2: Kirim UserId ke backend untuk acuan update
             if (isEdit) {
-                oBody['UserId'] = idUser;
+                oBody['user_id'] = idUser;
             }
 
             const vaData = await postData(cEndPoint, oBody, oHeaders);
@@ -133,7 +131,7 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
 
             const vaUserId = state.selectedUsers.map((v: any) => {
                 console.log('Object Row:', v);
-                return v.UserId;
+                return v.user_id;
             });
 
             const finalPayload = { userId: vaUserId.map(Number) };
@@ -208,91 +206,91 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
                 <form onSubmit={formik?.handleSubmit} className="flex gap-2 flex-column">
                     <div className="flex md:flex-row flex-column gap-2 w-full">
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="name">Name</label>
+                            <label htmlFor="fullname">Name</label>
                             <div className="p-inputgroup">
                                 <InputText
-                                    id="name"
-                                    name="name"
-                                    value={formik?.values.Fullname}
+                                    id="fullname"
+                                    name="fullname"
+                                    value={formik?.values.fullname}
                                     style={{ padding: '1rem' }}
                                     placeholder="Fullname"
                                     onChange={(e) => {
-                                        formik?.setFieldValue('Fullname', e.target.value);
+                                        formik?.setFieldValue('fullname', e.target.value);
                                     }}
-                                    className={isFormFieldInvalid('Fullname') ? 'p-invalid' : ''}
+                                    className={isFormFieldInvalid('fullname') ? 'p-invalid' : ''}
                                 />
                             </div>
-                            {isFormFieldInvalid('Fullname') ? getFormErrorMessage('Fullname') : ''}
+                            {isFormFieldInvalid('fullname') ? getFormErrorMessage('fullname') : ''}
                         </div>
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="Username">Username</label>
+                            <label htmlFor="username">Username</label>
                             <div className="p-inputgroup">
                                 <InputText
-                                    id="Username"
-                                    name="Username"
-                                    value={formik?.values.Username}
+                                    id="username"
+                                    name="username"
+                                    value={formik?.values.username}
                                     style={{ padding: '1rem' }}
                                     placeholder="Username"
                                     onChange={(e) => {
-                                        formik?.setFieldValue('Username', e.target.value);
+                                        formik?.setFieldValue('username', e.target.value);
                                     }}
-                                    className={isFormFieldInvalid('Username') ? 'p-invalid' : ''}
+                                    className={isFormFieldInvalid('username') ? 'p-invalid' : ''}
                                 />
                             </div>
-                            {isFormFieldInvalid('Username') ? getFormErrorMessage('Username') : ''}
+                            {isFormFieldInvalid('username') ? getFormErrorMessage('username') : ''}
                         </div>
                     </div>
 
                     <div className="flex md:flex-row flex-column gap-2 w-full">
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="Telp">Telp</label>
+                            <label htmlFor="telp">Telp</label>
                             <div className="p-inputgroup">
                                 <InputText
-                                    id="Telp"
-                                    name="Telp"
+                                    id="telp"
+                                    name="telp"
                                     keyfilter={'int'}
-                                    value={formik?.values.Telp}
+                                    value={formik?.values.telp}
                                     style={{ padding: '1rem' }}
                                     onChange={(e) => {
-                                        formik?.setFieldValue('Telp', e.target.value);
+                                        formik?.setFieldValue('telp', e.target.value);
                                     }}
                                     placeholder="089222333444"
-                                    className={isFormFieldInvalid('Telp') ? 'p-invalid' : ''}
+                                    className={isFormFieldInvalid('telp') ? 'p-invalid' : ''}
                                 />
                             </div>
-                            {isFormFieldInvalid('Telp') ? getFormErrorMessage('Telp') : ''}
+                            {isFormFieldInvalid('telp') ? getFormErrorMessage('telp') : ''}
                         </div>
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="Password">Password</label>
+                        <label htmlFor="password">Password</label>
                         <div className="p-inputgroup">
                             <Password
-                                id="Password"
-                                name="Password"
+                                id="password"
+                                name="password"
                                 toggleMask
-                                value={formik?.values.Password}
+                                value={formik?.values.password}
                                 onChange={(e) => {
-                                    formik?.setFieldValue('Password', e.target.value);
+                                    formik?.setFieldValue('password', e.target.value);
                                 }}
-                                className={isFormFieldInvalid('Password') ? 'p-invalid' : ''}
+                                className={isFormFieldInvalid('password') ? 'p-invalid' : ''}
                             />
                         </div>
-                        {isFormFieldInvalid('Password') ? getFormErrorMessage('Password') : ''}
+                        {isFormFieldInvalid('password') ? getFormErrorMessage('password') : ''}
                     </div>
 
                     <div className="grid">
                         {/* Cabang */}
                         <div className="col-12 md:col-6 field">
-                            <label htmlFor="BranchId">Cabang</label>
+                            <label htmlFor="branch_id">Cabang</label>
                             <Dropdown
-                                id="BranchId"
-                                name="BranchId"
-                                value={formik?.values.BranchId}
+                                id="branch_id"
+                                name="branch_id"
+                                value={formik?.values.branch_id}
                                 options={masterData?.branches || []}
                                 optionLabel="name"
                                 optionValue="id"
-                                onChange={(e) => formik?.setFieldValue('BranchId', e.value)}
+                                onChange={(e) => formik?.setFieldValue('branch_id', e.value)}
                                 placeholder="Pilih Cabang"
                                 className="w-full"
                             />
@@ -300,15 +298,15 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
 
                         {/* Posisi */}
                         <div className="col-12 md:col-6 field">
-                            <label htmlFor="PositionId">Posisi</label>
+                            <label htmlFor="position_id">Posisi</label>
                             <Dropdown
-                                id="PositionId"
-                                name="PositionId"
-                                value={formik?.values.PositionId}
+                                id="position_id"
+                                name="position_id"
+                                value={formik?.values.position_id}
                                 options={masterData?.positions || []}
                                 optionLabel="name"
                                 optionValue="id"
-                                onChange={(e) => formik?.setFieldValue('PositionId', e.value)}
+                                onChange={(e) => formik?.setFieldValue('position_id', e.value)}
                                 placeholder="Pilih Posisi"
                                 className="w-full"
                             />
@@ -316,15 +314,15 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
 
                         {/* Divisi */}
                         <div className="col-12 md:col-6 field">
-                            <label htmlFor="DivisionId">Divisi</label>
+                            <label htmlFor="division_id">Divisi</label>
                             <Dropdown
-                                id="DivisionId"
-                                name="DivisionId"
-                                value={formik?.values.DivisionId}
+                                id="division_id"
+                                name="division_id"
+                                value={formik?.values.division_id}
                                 options={masterData?.divisions || []}
                                 optionLabel="name"
                                 optionValue="id"
-                                onChange={(e) => formik?.setFieldValue('DivisionId', e.value)}
+                                onChange={(e) => formik?.setFieldValue('division_id', e.value)}
                                 placeholder="Pilih Divisi"
                                 className="w-full"
                             />
@@ -332,15 +330,15 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
 
                         {/* Departemen */}
                         <div className="col-12 md:col-6 field">
-                            <label htmlFor="DepartmentId">Departemen</label>
+                            <label htmlFor="department_id">Departemen</label>
                             <Dropdown
-                                id="DepartmentId"
-                                name="DepartmentId"
-                                value={formik?.values.DepartmentId}
+                                id="department_id"
+                                name="department_id"
+                                value={formik?.values.department_id}
                                 options={masterData?.departments || []}
                                 optionLabel="name"
                                 optionValue="id"
-                                onChange={(e) => formik?.setFieldValue('DepartmentId', e.value)}
+                                onChange={(e) => formik?.setFieldValue('department_id', e.value)}
                                 placeholder="Pilih Departemen"
                                 className="w-full"
                             />
@@ -348,70 +346,69 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
 
                         {/* Unit Kerja */}
                         <div className="col-12 md:col-6 field">
-                            <label htmlFor="WorkUnitId">Unit Kerja</label>
+                            <label htmlFor="work_unit_id">Unit Kerja</label>
                             <Dropdown
-                                id="WorkUnitId"
-                                name="WorkUnitId"
-                                value={formik?.values.WorkUnitId}
+                                id="work_unit_id"
+                                name="work_unit_id"
+                                value={formik?.values.work_unit_id}
                                 options={masterData?.workUnits || []}
                                 optionLabel="name"
                                 optionValue="id"
-                                onChange={(e) => formik?.setFieldValue('WorkUnitId', e.value)}
+                                onChange={(e) => formik?.setFieldValue('work_unit_id', e.value)}
                                 placeholder="Pilih Unit Kerja"
                                 className="w-full"
                             />
                         </div>
                     </div>
 
-                    {formik.values.Role == 'superadmin' && state.edit ? (
+                    {formik.values.role == 'superadmin' && state.edit ? (
                         ''
                     ) : (
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="Role">Role</label>
+                            <label htmlFor="role">Role</label>
                             <div className="p-inputgroup">
                                 <Dropdown
-                                    id="Role"
-                                    name="Role"
+                                    id="role"
+                                    name="role"
                                     options={[
-                                        // GANTI value DENGAN ANGKA ID DARI TABEL mst_roles LO
                                         { label: 'Administrator', value: 1 },
                                         { label: 'Pimpinan', value: 2 },
                                         { label: 'Sekretaris', value: 3 },
                                         { label: 'Staff Arsip', value: 4 },
                                         { label: 'Staff Umum', value: 5 },
-                                        { label: 'Resepsionis', value: 6 }, //  Sekarang mengirimkan angka 6 ke backend
+                                        { label: 'Resepsionis', value: 6 },
                                         { label: 'Auditor', value: 7 }
                                     ]}
-                                    value={formik?.values.Role}
+                                    value={formik?.values.role}
                                     onChange={(e) => {
-                                        formik?.setFieldValue('Role', e.value);
+                                        formik?.setFieldValue('role', e.value);
                                     }}
-                                    className={isFormFieldInvalid('Role') ? 'p-invalid' : ''}
+                                    className={isFormFieldInvalid('role') ? 'p-invalid' : ''}
                                 />
                             </div>
-                            {isFormFieldInvalid('Role') ? getFormErrorMessage('Role') : ''}
+                            {isFormFieldInvalid('role') ? getFormErrorMessage('role') : ''}
                         </div>
                     )}
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="Status">Status</label>
+                        <label htmlFor="status">Status</label>
                         <div className="p-inputgroup">
                             <Dropdown
-                                id="Status"
-                                name="Status"
+                                id="status"
+                                name="status"
                                 optionValue="kode"
                                 optionLabel="label"
                                 options={[
                                     { kode: '0', label: 'nonactive' },
                                     { kode: '1', label: 'active' }
                                 ]}
-                                value={formik?.values.Status}
+                                value={formik?.values.status}
                                 onChange={(e) => {
-                                    formik?.setFieldValue('Status', e.value);
+                                    formik?.setFieldValue('status', e.value);
                                 }}
-                                className={isFormFieldInvalid('Status') ? 'p-invalid' : ''}
+                                className={isFormFieldInvalid('status') ? 'p-invalid' : ''}
                             />
                         </div>
-                        {isFormFieldInvalid('Status') ? getFormErrorMessage('Status') : ''}
+                        {isFormFieldInvalid('status') ? getFormErrorMessage('status') : ''}
                     </div>
                     <Button type="submit" label={state?.edit ? 'Update' : 'Save'} className="mt-2" loading={state?.load} />
                 </form>
@@ -437,8 +434,8 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
                                 `You are going to delete all this selected ${state.selectedUsers.length} units`
                             ) : (
                                 <>
-                                    You are going to delete this unit as follow : <strong>{state.selectedUsers[0]?.userId || ''}</strong>
-                                    {`(${state.selectedUsers[0]?.Fullname})`}.
+                                    You are going to delete this unit as follow : <strong>{state.selectedUsers[0]?.user_id || ''}</strong>
+                                    {`(${state.selectedUsers[0]?.fullname})`}.
                                 </>
                             )}
                             <br />
