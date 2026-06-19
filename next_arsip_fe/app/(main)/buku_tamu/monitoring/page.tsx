@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import { Toast } from "primereact/toast";
-import React, { useEffect, useRef, useState } from "react";
-import postData from "@/lib/axios/postData";
-import { apiEndpointMonitoring } from "./components/endpoints";
-import { DashboardStats } from "./components/interfaces";
-import ChartDisplay from "./components/display/chart";
+import { Toast } from 'primereact/toast';
+import React, { useEffect, useRef, useState } from 'react';
+import postData from '@/lib/axios/postData';
+import { apiEndpointMonitoring } from './components/endpoints';
+import { DashboardStats } from './components/interfaces';
+import ChartDisplay from './components/display/chart';
 
 const MonitoringPage: React.FC = () => {
     const toast = useRef<Toast>(null);
@@ -27,7 +27,6 @@ const MonitoringPage: React.FC = () => {
                 setStats(response.data.data);
             }
         } catch (error: any) {
-           
             setStats({
                 total_tamu_hari_ini: 24,
                 sedang_berkunjung: 5,
@@ -41,43 +40,6 @@ const MonitoringPage: React.FC = () => {
         }
     };
 
-<<<<<<< HEAD
-    const fetchMonitoring = async () => {
-        try {
-            const response = await postData(apiEndpointMonitoring);
-            setState((p) => ({ ...p, statData: response.data.data || null }));
-        } catch (error: any) {
-            console.log('[Silent Filter] Statistik monitoring belum siap di backend Express.');
-        }
-    };
-
-    const loadVisitPurpose = async () => {
-        try {
-            const response = await postData(apiEndpointGetPurpose);
-            const resContent = response?.data;
-            setState((p) => ({ ...p, visitPurposeData: resContent?.data || resContent || [] }));
-        } catch (error: any) {
-            console.log('[Silent Filter] Dropdown Visit Purpose belum siap di backend Express.');
-        }
-    };
-
-    const loadHostUsers = async () => {
-        try {
-            const response = await postData(apiEndpointGetUser);
-            const resContent = response?.data;
-            setState((p) => ({ ...p, hostUserData: resContent?.data || resContent || [] }));
-        } catch (error: any) {
-            console.log('[Silent Filter] Dropdown Host Users belum siap di backend Express.');
-        }
-    };
-
-    const fetchAll = async () => {
-        await fetchMonitoring();
-        await getData(apiEndpointGet, state.statusFilter ? { Status: state.statusFilter } : {});
-    };
-
-=======
->>>>>>> main
     useEffect(() => {
         fetchMonitoringData();
         const interval = setInterval(() => {
@@ -89,21 +51,16 @@ const MonitoringPage: React.FC = () => {
     return (
         <div className="p-4 bg-slate-50 min-h-screen">
             <Toast ref={toast} position="top-right" />
-            
+
             <div className="flex justify-content-between align-items-center mb-4">
                 <h4 className="m-0 font-bold text-slate-800">Dashboard Monitoring Buku Tamu</h4>
-                <button 
-                    onClick={fetchMonitoringData} 
-                    className="p-button p-component p-button-outlined p-button-sm flex gap-2 align-items-center bg-white px-3 py-2 border-round border-300 hover:surface-100" 
-                    disabled={load}
-                >
+                <button onClick={fetchMonitoringData} className="p-button p-component p-button-outlined p-button-sm flex gap-2 align-items-center bg-white px-3 py-2 border-round border-300 hover:surface-100" disabled={load}>
                     <i className={`pi pi-refresh ${load ? 'pi-spin' : ''}`}></i>
                     <span>Refresh</span>
                 </button>
             </div>
 
             <div className="grid">
-
                 <div className="col-12 md:col-4">
                     <div className="card shadow-2 border-round p-4 bg-white flex align-items-center justify-content-between">
                         <div>

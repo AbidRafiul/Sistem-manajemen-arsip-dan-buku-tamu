@@ -195,13 +195,18 @@ async function postCRUD(request: NextRequest, token: any, a2fCookie: string) {
             ...customHeader
         };
 
-        // Handle X-Level = 1
-        if (customHeader['X-Level'] && customHeader['X-Level'] == '1') {
+        // 🔥 FIX MUTLAK: Selalu bongkar KTP (Token) dan pasang ke Header
+        try {
             const secret = new TextEncoder().encode(process.env.USER_KEY);
-            const { payload } = await jwtVerify<A2FPayload>(a2fCookie, secret);
-            const userPayload = payload;
+            const { payload } = await jwtVerify<any>(a2fCookie, secret);
+            // Pakai huruf kecil 'x-uniqueid' biar aman dari satpam Express
+            requestHeaders['x-uniqueid'] = String(payload.userId || payload.UserId || payload.id || '');
+        } catch (e) {
+            console.error("Gagal membaca cookie A2F:", e);
+        }
 
-            requestHeaders['X-UniqueId'] = userPayload.uniqueId ?? '';
+        // Handle X-Level = 1 (biarkan kosong jika tidak ada logika khusus lainnya)
+        if (customHeader['X-Level'] && customHeader['X-Level'] == '1') {
         }
 
         if (customHeader['X-Credential']) {
@@ -217,24 +222,19 @@ async function postCRUD(request: NextRequest, token: any, a2fCookie: string) {
         // ------------------------------------------
 
         const result = await axios.post(
-            targetUrl, // Gunakan variabel targetUrl
+            targetUrl,
             body,
             { headers: requestHeaders }
         );
 
         return NextResponse.json(result.data);
     } catch (err: any) {
-        // console.error("POST CRUD error:", err);
-
         if (err?.response?.status === 401) {
-            // Clear cookies on unauthorized
             const cookieStore = cookies();
             cookieStore.delete('_A2R');
             cookieStore.delete('_A2F');
-
             return NextResponse.json(err?.response?.data || { error: 'Unauthorized' }, { status: 401 });
         }
-
         return NextResponse.json(err?.response?.data || { error: 'Internal server error' }, { status: err?.response?.status || 500 });
     }
 }
@@ -270,12 +270,16 @@ async function getCRUD(request: NextRequest, token: any, a2fCookie: string) {
             ...customHeader
         };
 
-        if (customHeader['X-Level'] && customHeader['X-Level'] == '1') {
+        // 🔥 FIX MUTLAK: Selalu bongkar KTP (Token) dan pasang ke Header
+        try {
             const secret = new TextEncoder().encode(process.env.USER_KEY);
-            const { payload } = await jwtVerify<A2FPayload>(a2fCookie, secret);
-            const userPayload = payload;
+            const { payload } = await jwtVerify<any>(a2fCookie, secret);
+            requestHeaders['x-uniqueid'] = String(payload.userId || payload.UserId || payload.id || '');
+        } catch (e) {
+            console.error("Gagal membaca cookie A2F:", e);
+        }
 
-            requestHeaders['X-UniqueId'] = userPayload.uniqueId ?? '';
+        if (customHeader['X-Level'] && customHeader['X-Level'] == '1') {
         }
 
         delete requestHeaders['X-Level'];
@@ -287,10 +291,8 @@ async function getCRUD(request: NextRequest, token: any, a2fCookie: string) {
             const cookieStore = cookies();
             cookieStore.delete('_A2R');
             cookieStore.delete('_A2F');
-
             return NextResponse.json(err?.response?.data || { error: 'Unauthorized' }, { status: 401 });
         }
-
         return NextResponse.json(err?.response?.data || { error: 'Internal server error' }, { status: err?.response?.status || 500 });
     }
 }

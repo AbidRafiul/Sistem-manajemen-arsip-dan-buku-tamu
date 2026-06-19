@@ -209,16 +209,39 @@ const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
             }
         }, [session]);
 
-        const getMenu = async (userId: string | number) => {
+       const getMenu = async (userId: string | number) => {
             setState((prev) => ({ ...prev, load: true }));
             try {
                 const { data: vaData } = await postData('setup/nav/user-data', { UserId: userId });
+                
+                // 1. Log data mentah untuk debugging di Console Browser
+                console.log("🚀 MENTAHAN DARI BACKEND:", vaData);
 
                 if (!vaData?.data) {
-                    throw new Error('Invalid menu data');
+                    throw new Error('Data menu tidak ditemukan dari backend');
                 }
 
-                const normalizedMenu = ensureArchiveDocumentMenu(ensureCorrespondenceMenu(removeLegacyCorrespondenceMenu(JSON.parse(JSON.stringify(vaData.data)))));
+                // 2. Filter Anti-Crash: Pastikan menu adalah Array
+                let menuArray = vaData.data;
+                
+                // Kalau MySQL ngirim string, kita bongkar dulu jadi Array
+                if (typeof menuArray === 'string') {
+                    try {
+                        menuArray = JSON.parse(menuArray);
+                    } catch (e) {
+                        console.error("Gagal memecah string menu dari database:", e);
+                        menuArray = [];
+                    }
+                }
+
+                // Pengaman ekstra: Kalau ternyata tetap bukan array, paksa jadi array kosong
+                if (!Array.isArray(menuArray)) {
+                    console.error("Format menu tidak valid (bukan array):", menuArray);
+                    menuArray = [];
+                }
+
+                // 3. Olah data yang sudah dipastikan aman
+                const normalizedMenu = ensureArchiveDocumentMenu(ensureCorrespondenceMenu(removeLegacyCorrespondenceMenu(menuArray)));
                 const menu: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
                 const menu2: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
 
