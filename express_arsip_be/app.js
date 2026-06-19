@@ -11,7 +11,7 @@ import Logger from "./middleware/logger.js";
 
 const app = express();
 
-// 🎯 1. BEBASKAN ASAL PORT (Izinkan port 3000 Frontend Next.js masuk langsung)
+// 1. BEBASKAN ASAL PORT (Izinkan port 3000 Frontend Next.js masuk langsung)
 app.use(
   cors({
     origin: process.env.ORIGIN1 || "http://localhost:3000",
@@ -20,29 +20,33 @@ app.use(
       "Content-Type",
       "Authorization",
       "X-Timestamp",
+      "x-timestamp",
+      "X-Uniqueid",
+      "x-uniqueid",
       "X-Signature",
       "X-Credential",
       "X-Endpoint",
       "X-ENDPOINT",
       "x-endpoint",
+      "x-level",
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     optionSuccessStatus: 200,
-  })
+  }),
 );
 
 app.use(Logger);
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
-// 🎯 2. MATIKAN SEMENTARA VALIDATOR TIMESTAMP GLOBAL AGAR TIDAK REPOT DI POSTMAN/FRONTEND
+//  2. MATIKAN SEMENTARA VALIDATOR TIMESTAMP GLOBAL AGAR TIDAK REPOT DI POSTMAN/FRONTEND
 app.use(
   "/api/v1",
   [secureHeader], // Kita lepas dulu validateTimestamp yang bikin oranye "Missing timestamp header"
-  APIV1
+  APIV1,
 );
 
-app.use('/uploads', express.static('public/uploads'));
+app.use("/uploads", express.static("public/uploads"));
 
 app.use((req, res, next) => {
   console.log(req.url);

@@ -28,7 +28,8 @@ router.post("/", async (req, res) => {
         }
 
         const cValidation = await validatePayload({
-            UniqueId: Joi.string().required().label("UniqueId"),
+            // UBAH DI SINI: Dari Username jadi UserId
+            UserId: Joi.alternatives().try(Joi.number(), Joi.string()).required().label("UserId"),
             Menu: Joi.string().required().label("Menu"),
         }, {
             "string.base": "{#label} harus berupa string",
@@ -49,7 +50,7 @@ router.post("/", async (req, res) => {
                 func: "insert",
                 request: oPayload,
                 response: oResult,
-                user: req.auth.username || ""
+                user: req?.auth?.username || ""
             })
 
             return res.status(422).json(oResult);
@@ -57,12 +58,12 @@ router.post("/", async (req, res) => {
 
         await DB('user_navigation')
             .insert({
-                UniqueId: oPayload.UniqueId,
+                UserId: oPayload.UserId,
                 Menu: oPayload.Menu,
                 CreatedAt: formatDateSystem(),
                 UpdatedAt: formatDateSystem()
             })
-            .onConflict('UniqueId')
+            .onConflict('UserId')
             .merge({
                 Menu: oPayload.Menu,
                 UpdatedAt: formatDateSystem()

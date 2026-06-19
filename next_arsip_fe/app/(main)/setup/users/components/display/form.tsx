@@ -8,10 +8,52 @@ import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { apiEndpointCreate, apiEndpointDelete, apiEndpointGet, apiEndpointUpdate } from '../endpoints';
 import { showError, showSuccess } from '@/lib/tools/generalTools';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import postData from '@/lib/axios/postData';
+import getData from '@/lib/axios/getData'; // 🔥 1. IMPORT UTILITY GET DATA BARU
 
-const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
+const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps) => {
+    const [masterData, setMasterData] = useState<any>({
+        branches: [],
+        positions: [],
+        divisions: [],
+        departments: [],
+        workUnits: []
+    });
+
+    useEffect(() => {
+        if (state.add || state.edit) {
+            const vaEndpoints = [
+                { key: 'branches', path: '/master/organisasi/branches' },
+                { key: 'positions', path: '/master/organisasi/positions' },
+                { key: 'divisions', path: '/master/organisasi/divisions' },
+                { key: 'departments', path: '/master/organisasi/department' },
+                { key: 'workUnits', path: '/master/organisasi/work-unit' }
+            ];
+
+            const token = localStorage.getItem('token');
+            const myUserId = '1'; // Sesuai UserId superadmin di database
+
+            vaEndpoints.forEach((oItem) => {
+                // 🔥 2. UBAH MENJADI GE-TDATA
+                // Parameter: (endpoint, params/query, customHeader)
+                getData(
+                    oItem.path,
+                    {}, // params kosong karena kita tidak melakukan filter query url
+                    {
+                        Authorization: `Bearer ${token}`,
+                        'x-uniqueid': myUserId,
+                        'x-timestamp': new Date().toISOString()
+                    }
+                )
+                    .then((oRes) => {
+                        setMasterData((prev: any) => ({ ...prev, [oItem.key]: oRes.data.data }));
+                    })
+                    .catch((e) => console.error(`Error loading ${oItem.key}:`, e));
+            });
+        }
+    }, [state.add, state.edit]);
+
     const fetchComponentData = async () => {
         setState((p) => ({ ...p, load: true }));
 
@@ -28,7 +70,12 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
         setState((p) => ({ ...p, load: true }));
 
         try {
-            const isEdit = Boolean(input.UniqueId);
+            // 🔥 FIX 1: Tangkap ID baik U besar maupun u kecil
+            const idUser = input.UserId || input.userId;
+            const isEdit = Boolean(idUser);
+
+            console.log('INPUT DATA YANG DIKIRIM:', input);
+            console.log('APAKAH INI EDIT?', isEdit);
 
             const cEndPoint = isEdit ? apiEndpointUpdate : apiEndpointCreate;
 
@@ -42,15 +89,21 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
 
             const oBody: Record<string, any> = {
                 Fullname: input.Fullname,
-                Username: input.Username,   
+                Username: input.Username,
                 Password: input.Password,
                 Telp: input.Telp,
                 Status: input.Status,
-                Role: input.Role
+                Role: input.Role,
+                BranchId: input.BranchId,
+                PositionId: input.PositionId,
+                DivisionId: input.DivisionId,
+                DepartmentId: input.DepartmentId,
+                WorkUnitId: input.WorkUnitId
             };
 
+            // 🔥 FIX 2: Kirim UserId ke backend untuk acuan update
             if (isEdit) {
-                oBody['UniqueId'] = input.UniqueId;
+                oBody['UserId'] = idUser;
             }
 
             const vaData = await postData(cEndPoint, oBody, oHeaders);
@@ -59,7 +112,9 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
             showSuccess(toast, res.data?.message || 'Berhasil Menyimpan Data');
             formik.resetForm();
             setState((p) => ({ ...p, add: false, edit: false, delete: false }));
-            await getData(apiEndpointGet);
+
+            // Refresh data setelah save/update
+            await postData(apiEndpointGet, {});
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || 'Terjadi Kesalahan');
@@ -67,23 +122,41 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
             setState((p) => ({ ...p, load: false, submittedData: null }));
         }
     };
+
     const handleDelete = async () => {
         setState((p) => ({ ...p, load: true }));
 
         try {
-            if (state.selectedUsers.length < 1) {
-                showError(toast, 'Tidak Ada User yang Dipilih');
-                return;
-            }
+            console.log('STATE SELECTED USERS:', JSON.stringify(state.selectedUsers));
 
-            const vaUniqueId = state.selectedUsers.map((v) => v.UniqueId);
+            if (state.selectedUsers.length < 1) return;
 
-            const vaData = await postData(apiEndpointDelete, { UniqueId: vaUniqueId });
+            const vaUserId = state.selectedUsers.map((v: any) => {
+                console.log('Object Row:', v);
+                return v.UserId;
+            });
+
+            const finalPayload = { userId: vaUserId.map(Number) };
+            console.log('PAYLOAD FINAL KE BACKEND:', finalPayload);
+
+            const vaData = await postData(apiEndpointDelete, finalPayload);
             const res = vaData.data;
 
             showSuccess(toast, res.data?.message || 'Berhasil Menghapus Data');
-            setState((p) => ({ ...p, selectedUsers: [], add: false, edit: false, delete: false }));
-            await getData(apiEndpointGet);
+
+            // PERBAIKAN UTAMA:
+            // Tarik data terbaru menggunakan postData (karena backend butuh POST)
+            const refreshData = await postData(apiEndpointGet, {});
+
+            // Tutup modal & update isi tabel dengan data terbaru
+            setState((p) => ({
+                ...p,
+                selectedUsers: [],
+                add: false,
+                edit: false,
+                delete: false,
+                data: refreshData.data.data
+            }));
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || 'Terjadi Kesalahan');
@@ -119,10 +192,6 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
             handleSave(state.submittedData);
         }
     }, [state.submittedData]);
-
-    // useEffect(() => {
-    //     fetchComponentData()
-    // }, [])
 
     return (
         <>
@@ -195,7 +264,6 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                         </div>
                     </div>
 
-                    {/* {!state?.edit && ( */}
                     <div className="flex flex-column gap-2 w-full">
                         <label htmlFor="Password">Password</label>
                         <div className="p-inputgroup">
@@ -212,7 +280,89 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                         </div>
                         {isFormFieldInvalid('Password') ? getFormErrorMessage('Password') : ''}
                     </div>
-                    {/* )} */}
+
+                    <div className="grid">
+                        {/* Cabang */}
+                        <div className="col-12 md:col-6 field">
+                            <label htmlFor="BranchId">Cabang</label>
+                            <Dropdown
+                                id="BranchId"
+                                name="BranchId"
+                                value={formik?.values.BranchId}
+                                options={masterData?.branches || []}
+                                optionLabel="name"
+                                optionValue="id"
+                                onChange={(e) => formik?.setFieldValue('BranchId', e.value)}
+                                placeholder="Pilih Cabang"
+                                className="w-full"
+                            />
+                        </div>
+
+                        {/* Posisi */}
+                        <div className="col-12 md:col-6 field">
+                            <label htmlFor="PositionId">Posisi</label>
+                            <Dropdown
+                                id="PositionId"
+                                name="PositionId"
+                                value={formik?.values.PositionId}
+                                options={masterData?.positions || []}
+                                optionLabel="name"
+                                optionValue="id"
+                                onChange={(e) => formik?.setFieldValue('PositionId', e.value)}
+                                placeholder="Pilih Posisi"
+                                className="w-full"
+                            />
+                        </div>
+
+                        {/* Divisi */}
+                        <div className="col-12 md:col-6 field">
+                            <label htmlFor="DivisionId">Divisi</label>
+                            <Dropdown
+                                id="DivisionId"
+                                name="DivisionId"
+                                value={formik?.values.DivisionId}
+                                options={masterData?.divisions || []}
+                                optionLabel="name"
+                                optionValue="id"
+                                onChange={(e) => formik?.setFieldValue('DivisionId', e.value)}
+                                placeholder="Pilih Divisi"
+                                className="w-full"
+                            />
+                        </div>
+
+                        {/* Departemen */}
+                        <div className="col-12 md:col-6 field">
+                            <label htmlFor="DepartmentId">Departemen</label>
+                            <Dropdown
+                                id="DepartmentId"
+                                name="DepartmentId"
+                                value={formik?.values.DepartmentId}
+                                options={masterData?.departments || []}
+                                optionLabel="name"
+                                optionValue="id"
+                                onChange={(e) => formik?.setFieldValue('DepartmentId', e.value)}
+                                placeholder="Pilih Departemen"
+                                className="w-full"
+                            />
+                        </div>
+
+                        {/* Unit Kerja */}
+                        <div className="col-12 md:col-6 field">
+                            <label htmlFor="WorkUnitId">Unit Kerja</label>
+                            <Dropdown
+                                id="WorkUnitId"
+                                name="WorkUnitId"
+                                value={formik?.values.WorkUnitId}
+                                options={masterData?.workUnits || []}
+                                optionLabel="name"
+                                optionValue="id"
+                                onChange={(e) => formik?.setFieldValue('WorkUnitId', e.value)}
+                                placeholder="Pilih Unit Kerja"
+                                className="w-full"
+                            />
+                        </div>
+                    </div>
+
                     {formik.values.Role == 'superadmin' && state.edit ? (
                         ''
                     ) : (
@@ -223,13 +373,14 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                                     id="Role"
                                     name="Role"
                                     options={[
-                                        { label: 'Administrator', value: 'superadmin' },
-                                        { label: 'Pimpinan', value: 'Pimpinan' },
-                                        { label: 'Sekretaris', value: 'Sekretaris' },
-                                        { label: 'Staff Arsip', value: 'Staff Arsip' },
-                                        { label: 'Staff Umum', value: 'Staff Umum' },
-                                        { label: 'Resepsionis', value: 'Resepsionis' },
-                                        { label: 'Auditor', value: 'Auditor' }
+                                        // GANTI value DENGAN ANGKA ID DARI TABEL mst_roles LO
+                                        { label: 'Administrator', value: 1 },
+                                        { label: 'Pimpinan', value: 2 },
+                                        { label: 'Sekretaris', value: 3 },
+                                        { label: 'Staff Arsip', value: 4 },
+                                        { label: 'Staff Umum', value: 5 },
+                                        { label: 'Resepsionis', value: 6 }, //  Sekarang mengirimkan angka 6 ke backend
+                                        { label: 'Auditor', value: 7 }
                                     ]}
                                     value={formik?.values.Role}
                                     onChange={(e) => {
@@ -286,7 +437,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                                 `You are going to delete all this selected ${state.selectedUsers.length} units`
                             ) : (
                                 <>
-                                    You are going to delete this unit as follow : <strong>{state.selectedUsers[0]?.UniqueId || ''}</strong>
+                                    You are going to delete this unit as follow : <strong>{state.selectedUsers[0]?.userId || ''}</strong>
                                     {`(${state.selectedUsers[0]?.Fullname})`}.
                                 </>
                             )}

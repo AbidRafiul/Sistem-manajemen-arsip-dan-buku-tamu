@@ -23,11 +23,11 @@ router.post("/", async (req, res) => {
 
         const cValidation = await validatePayload(
             {
-                Role: Joi.string().required().label("Role"),
+                Role: Joi.number().required().label("Role"),
             },
             {
-                "string.base": "{#label} harus berupa string",
-                "string.empty": "{#label} tidak boleh kosong",
+                "number.base": "{#label} harus berupa number",
+                "number.empty": "{#label} tidak boleh kosong",
                 "any.required": "{#label} wajib diisi",
             },
             oPayload, {

@@ -1,5 +1,9 @@
 import express from "express";
-import { datetime, formatDateSystem, status } from "../../components/tools/general.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../components/tools/general.js";
 import Joi from "joi";
 import DB from "../../../../core/config/knex.js";
 import { Logging, validatePayload } from "../../components/tools/servertool.js";
@@ -7,91 +11,65 @@ import { Logging, validatePayload } from "../../components/tools/servertool.js";
 const router = express.Router();
 
 router.post("/", async (req, res) => {
-  const { body } = req;
-  const oPayload = body;
+  const { body: oPayload } = req;
   const username = req?.auth?.username || "";
 
   try {
-    // Validasi body kosong
-    if (!oPayload || Object.keys(oPayload).length < 1) {
+    if (!oPayload || !oPayload.userId || !Array.isArray(oPayload.userId)) {
       return res.status(400).json({
         status: status.BAD_REQUEST,
-        message: "Invalid request body",
+        message: "Invalid request body: userId (array) is required",
         datetime: formatDateSystem(),
       });
     }
 
-    // Validasi schema → hanya butuh kode
+    // 🔥 PERBAIKAN VALIDASI: Ganti Username jadi userId
     const cValidation = await validatePayload(
       {
-        UniqueId: Joi.array().required().label("UniqueId"),
+        userId: Joi.array().items(Joi.number()).required().label("UserId"),
       },
-      {
-        "string.base": "{#label} harus berupa string",
-        "string.empty": "{#label} tidak boleh kosong",
-        "string.max": "{#label} tidak boleh lebih dari {#limit} karakter",
-        "any.required": "{#label} wajib diisi",
-      },
-      oPayload
+      { "any.required": "{#label} wajib diisi" },
+      oPayload,
     );
 
-    if (cValidation) {
-      const oResult = {
+    if (cValidation)
+      return res.status(422).json({
         status: status.BAD_REQUEST,
-        message: cValidation || "Terdapat kesalahan pada data anda",
+        message: cValidation,
         datetime: datetime(),
-      };
-
-      Logging(null, {
-        file: "user_delete.js",
-        func: "delete",
-        request: oPayload,
-        response: oResult,
-        user: username,
       });
 
-      return res.status(422).json(oResult);
-    }
+    // 🔥 TRANSAKSI SOFT DELETE (Mencakup mst_users & mst_user_roles)
+    await DB.transaction(async (trx) => {
+      // 1. Nonaktifkan di mst_users
+      await trx("mst_users")
+        .whereIn("UserId", oPayload.userId)
+        .update({
+          Status: "nonactive",
+          UpdatedAt: formatDateSystem(),
+        });
 
-    // Hapus data berdasarkan kode
-    const updatedRows = await DB("user_credential")
-      .whereIn('UniqueId', oPayload.UniqueId)
-      .update({ Status: '0' }); 
-
-    // Jika tidak ada baris yang ter-update (berarti ID tidak ditemukan)
-    if (updatedRows === 0) {
-      return res.status(404).json({
-        status: status.NOT_FOUND,
-        message: "Data dengan kode tersebut tidak ditemukan",
-        datetime: formatDateSystem(),
-      });
-    } 
-
-      // await DB("user_navigation")
-      //   .whereIn('UniqueId', oPayload.UniqueId)
-      //   .del();
+      // 2. Nonaktifkan juga di mst_user_roles
+      await trx("mst_user_roles")
+        .whereIn("UserId", oPayload.userId)
+        .update({
+          Status: "nonactive",
+          UpdatedAt: formatDateSystem(),
+        });
+    });
 
     return res.status(200).json({
       status: status.SUKSES,
-      message: "Data berhasil dinonaktifkan (Soft Delete)",
+      message: "Data berhasil dinonaktifkan",
       datetime: formatDateSystem(),
     });
   } catch (error) {
-    const oResult = {
+    Logging(error, { file: "user_delete.js", func: "delete", request: oPayload, user: username });
+    return res.status(500).json({
       status: status.BAD_REQUEST,
-      message: "Sistem sedang maintenance harap tunggu sebentar",
+      message: "Sistem maintenance",
       datetime: datetime(),
-    };
-
-    Logging(error, {
-      file: "user_delete.js",
-      func: "delete",
-      request: oPayload,
-      response: oResult,
-      user: username,
     });
-
-    return res.status(500).json(oResult);
   }
 });
 

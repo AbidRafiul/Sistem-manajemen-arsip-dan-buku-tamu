@@ -1,6 +1,10 @@
 import express from "express";
 import DB from "../../../../../core/config/knex.js";
-import { status, formatDateSystem, datetime } from "../../../components/tools/general.js";
+import {
+  status,
+  formatDateSystem,
+  datetime,
+} from "../../../components/tools/general.js";
 import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
@@ -11,7 +15,7 @@ router.get("/", async (req, res) => {
 
   try {
     const vaData = await DB("mst_work_units")
-      .select("WorkUnitId", "DepartmentId", "WorkUnitCode", "WorkUnitName", "Description", "Status")
+      .select("WorkUnitId as id", "WorkUnitName as name", "Status")
       .where("Status", "active");
 
     return res.status(200).json({
@@ -21,8 +25,18 @@ router.get("/", async (req, res) => {
       data: vaData,
     });
   } catch (error) {
-    const oResult = { status: status.BAD_REQUEST, message: "Terjadi kesalahan sistem", datetime: formatDateSystem() };
-    Logging(error, { file: "work_unit_get.js", func: "get", request: oPayload, response: oResult, user: cUsername });
+    const oResult = {
+      status: status.BAD_REQUEST,
+      message: "Terjadi kesalahan sistem",
+      datetime: formatDateSystem(),
+    };
+    Logging(error, {
+      file: "work_unit_get.js",
+      func: "get",
+      request: oPayload,
+      response: oResult,
+      user: cUsername,
+    });
     return res.status(500).json(oResult);
   }
 });

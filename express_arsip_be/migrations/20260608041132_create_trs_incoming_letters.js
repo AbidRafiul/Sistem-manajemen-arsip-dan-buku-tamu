@@ -3,6 +3,32 @@
  * @returns { Promise<void> }
  */
 export async function up(knex) {
+  // =========================================================================
+  // HACK BYPASS PANEL ADMIN V2: Sapu bersih dua-duanya sebelum mulai
+  // =========================================================================
+  await knex.raw('SET FOREIGN_KEY_CHECKS = 0;'); 
+  
+  // HAPUS TABEL YANG NYANGKUT:
+  await knex.schema.dropTableIfExists("trx_incoming_letters"); 
+  await knex.schema.dropTableIfExists("mst_letter_types"); 
+
+  // Bikin ulang tabel mst_letter_types dengan tipe BIGINT UNSIGNED yang BENAR
+  await knex.schema.createTable("mst_letter_types", (table) => {
+    table.bigIncrements("letter_type_id").primary();
+    table.string("letter_type_code", 50).notNullable().unique();
+    table.string("letter_type_name", 150).notNullable();
+    table.enu("direction", ["incoming", "outgoing", "both"]).notNullable().defaultTo("both");
+    table.text("description").nullable();
+    table.enu("status", ["active", "nonactive"]).notNullable().defaultTo("active");
+    table.dateTime("created_at").notNullable().defaultTo(knex.fn.now());
+    table.dateTime("updated_at").notNullable().defaultTo(knex.fn.now());
+  });
+  
+  await knex.raw('SET FOREIGN_KEY_CHECKS = 1;'); 
+  // =========================================================================
+
+
+  // Bikin ulang trx_incoming_letters dengan bersih
   await knex.schema.createTable("trx_incoming_letters", (table) => {
     table.bigIncrements("incoming_letter_id").primary();
 
