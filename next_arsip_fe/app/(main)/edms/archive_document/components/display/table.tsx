@@ -204,11 +204,11 @@ const Table = ({
     }, []);
 
     return <>
-        <div className="card">
+        <div className="card shadow-xl rounded-2xl bg-white border border-slate-100 p-5">
             <div className="flex flex-column md:flex-row md:align-items-center justify-content-between gap-3 mb-4">
                 <div>
-                    <h3 className="text-2xl font-semibold mb-1">EDMS Archive Documents</h3>
-                    <span className="text-color-secondary">Kelola metadata dokumen dan pantau riwayat versi serta peminjaman arsip.</span>
+                    <h3 className="text-2xl font-bold text-slate-800 mb-1">EDMS Archive Documents</h3>
+                    <span className="text-slate-500 text-sm">Kelola metadata dokumen dan pantau riwayat versi serta peminjaman arsip.</span>
                 </div>
                 <div className="flex gap-2">
                     <Button
@@ -253,10 +253,7 @@ const Table = ({
                 globalFilterFields={['document_name', 'document_number', 'pic_name', 'status']}
                 filters={state.filters}
                 loading={state.load}
-                dataKey="document_id"
-                emptyMessage="Data Kosong"
-                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data"
+                className="p-datatable-striped p-datatable-gridlines text-sm"
             >
                 <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
                 <Column field="document_number" header="Document Number" sortable />
@@ -283,47 +280,47 @@ const Table = ({
             }}
         >
             <div className="flex flex-column gap-4">
-                <div className="grid">
+                <div className="grid text-sm">
                     <div className="col-12 md:col-6">
-                        <div className="text-color-secondary mb-1">Document Number</div>
-                        <div className="font-semibold">{state.detailData?.document?.document_number || '-'}</div>
+                        <div className="text-color-secondary mb-1 font-semibold">Document Number</div>
+                        <div className="font-semibold text-slate-800">{state.detailData?.document?.document_number || '-'}</div>
                     </div>
                     <div className="col-12 md:col-6">
-                        <div className="text-color-secondary mb-1">Document Name</div>
-                        <div className="font-semibold">{state.detailData?.document?.document_name || '-'}</div>
+                        <div className="text-color-secondary mb-1 font-semibold">Document Name</div>
+                        <div className="font-semibold text-slate-800">{state.detailData?.document?.document_name || '-'}</div>
                     </div>
                     <div className="col-12 md:col-4">
-                        <div className="text-color-secondary mb-1">PIC</div>
-                        <div>{state.detailData?.document?.pic_name || '-'}</div>
+                        <div className="text-color-secondary mb-1 font-semibold">PIC</div>
+                        <div className="text-slate-700">{state.detailData?.document?.pic_name || '-'}</div>
                     </div>
                     <div className="col-12 md:col-4">
-                        <div className="text-color-secondary mb-1">Document Date</div>
-                        <div>{state.detailData?.document?.document_date ? formatDateCalendar(state.detailData.document.document_date) : '-'}</div>
+                        <div className="text-color-secondary mb-1 font-semibold">Document Date</div>
+                        <div className="text-slate-700">{state.detailData?.document?.document_date ? formatDateCalendar(state.detailData.document.document_date) : '-'}</div>
                     </div>
                     <div className="col-12 md:col-4">
-                        <div className="text-color-secondary mb-1">Expired Date</div>
-                        <div>{state.detailData?.document?.expired_date ? formatDateCalendar(state.detailData.document.expired_date) : '-'}</div>
+                        <div className="text-color-secondary mb-1 font-semibold">Expired Date</div>
+                        <div className="text-slate-700">{state.detailData?.document?.expired_date ? formatDateCalendar(state.detailData.document.expired_date) : '-'}</div>
                     </div>
                 </div>
 
                 <Divider />
 
                 {/* Upload New Version Section */}
-                <div className="card border-1 border-dashed surface-border p-4 flex flex-column gap-3">
-                    <div className="font-semibold text-lg mb-1">Upload New Version</div>
+                <div className="card border-1 border-dashed surface-border p-4 flex flex-column gap-3 bg-slate-50 rounded-xl">
+                    <div className="font-semibold text-lg text-slate-800 mb-1">Upload New Version</div>
                     <div className="flex flex-column md:flex-row gap-3 align-items-end">
                         <div className="flex-1 w-full">
-                            <label className="block text-color-secondary mb-1 text-sm font-semibold">Select File</label>
+                            <label className="block text-color-secondary mb-1 text-xs font-semibold">Select File</label>
                             <input 
                                 type="file" 
-                                className="p-inputtext w-full text-sm" 
+                                className="p-inputtext w-full text-xs" 
                                 onChange={(e) => setNewVersionFile(e.target.files?.[0] || null)}
                             />
                         </div>
                         <div className="flex-2 w-full">
-                            <label className="block text-color-secondary mb-1 text-sm font-semibold">Change Notes</label>
+                            <label className="block text-color-secondary mb-1 text-xs font-semibold">Change Notes</label>
                             <InputText 
-                                className="w-full text-sm" 
+                                className="w-full text-xs" 
                                 placeholder="E.g., Update content, Fix typos..."
                                 value={changeNotes}
                                 onChange={(e) => setChangeNotes(e.target.value)}
@@ -349,10 +346,11 @@ const Table = ({
 
                 <DataTable
                     value={state.detailData?.versions || []}
-                    header={<div className="font-semibold">Version History</div>}
+                    header={<div className="font-semibold text-slate-800 text-base">Version History</div>}
                     rows={5}
                     paginator
                     emptyMessage="Belum ada versi dokumen"
+                    className="text-xs"
                 >
                     <Column field="version_number" header="Version" sortable />
                     <Column field="change_notes" header="Change Notes" />
@@ -364,10 +362,11 @@ const Table = ({
 
                 <DataTable
                     value={state.detailData?.loans || []}
-                    header={<div className="font-semibold">Loan History</div>}
+                    header={<div className="font-semibold text-slate-800 text-base">Loan History</div>}
                     rows={5}
                     paginator
                     emptyMessage="Belum ada riwayat peminjaman"
+                    className="text-xs"
                 >
                     <Column field="borrower_name" header="Borrower" sortable />
                     <Column field="loan_date" header="Loan Date" body={(rowData: LoanData) => formatDateCalendar(rowData.loan_date)} />
@@ -389,10 +388,10 @@ const Table = ({
             <div className="flex flex-column align-items-center text-center gap-4 py-4">
                 <i className="pi pi-exclamation-triangle text-red-500 text-6xl" />
                 <div>
-                    <h3 className="font-bold mb-2">
+                    <h3 className="font-bold text-slate-800 mb-2">
                         Delete {state.selectedDocuments.length > 1 ? `${state.selectedDocuments.length} documents` : "this document"}?
                     </h3>
-                    <p className="text-color-secondary">
+                    <p className="text-slate-500 text-sm">
                         {state.selectedDocuments.length > 1
                             ? `Dokumen yang dipilih akan dinonaktifkan.`
                             : `Dokumen ${state.selectedDocuments[0]?.document_number || ""} akan dinonaktifkan.`}
