@@ -17,8 +17,8 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        BranchCode: Joi.string().required().label("Kode Branch"),
-        BranchName: Joi.string().required().label("Nama Branch"),
+        branch_code: Joi.string().required().label("Kode Branch"),
+        branch_name: Joi.string().required().label("Nama Branch"),
       },
       { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
       oPayload
@@ -32,11 +32,11 @@ router.post("/", async (req, res) => {
 
     const dNow = new Date();
     await DB("mst_branches").insert({
-      BranchCode: oPayload.BranchCode,
-      BranchName: oPayload.BranchName,
-      Status: "active",
-      CreatedAt: dNow,
-      UpdatedAt: dNow,
+      branch_code: oPayload.branch_code,
+      branch_name: oPayload.branch_name,
+      status: "active",
+      created_at: dNow,
+      updated_at: dNow,
     });
 
     return res.status(201).json({ status: status.SUKSES, message: "Berhasil ditambahkan!", datetime: formatDateSystem() });

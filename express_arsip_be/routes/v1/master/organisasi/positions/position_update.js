@@ -6,9 +6,9 @@ import { Logging, validatePayload } from "../../../components/tools/servertool.j
 
 const router = express.Router();
 
-router.put("/:PositionId", async (req, res) => {
+router.put("/:position_id", async (req, res) => {
   const { body: oPayload } = req;
-  const cPositionId = req.params.PositionId;
+  const cPositionId = req.params.position_id;
   const cUsername = req?.auth?.username || "";
 
   try {
@@ -18,10 +18,10 @@ router.put("/:PositionId", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        PositionCode: Joi.string().max(50).required().label("Kode Jabatan"),
-        PositionName: Joi.string().max(100).required().label("Nama Jabatan"),
-        PositionLevel: Joi.number().required().label("Level Jabatan"),
-        Description: Joi.string().optional().allow(null, "").label("Deskripsi"),
+        position_code: Joi.string().max(50).required().label("Kode Jabatan"),
+        position_name: Joi.string().max(100).required().label("Nama Jabatan"),
+        position_level: Joi.number().required().label("Level Jabatan"),
+        description: Joi.string().optional().allow(null, "").label("Deskripsi"),
       },
       { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
       oPayload
@@ -34,13 +34,13 @@ router.put("/:PositionId", async (req, res) => {
     }
 
     const nUpdated = await DB("mst_positions")
-      .where("PositionId", cPositionId)
+      .where("position_id", cPositionId)
       .update({
-        PositionCode: oPayload.PositionCode,
-        PositionName: oPayload.PositionName,
-        PositionLevel: oPayload.PositionLevel,
-        Description: oPayload.Description || null,
-        UpdatedAt: new Date(),
+        position_code: oPayload.position_code,
+        position_name: oPayload.position_name,
+        position_level: oPayload.position_level,
+        description: oPayload.description || null,
+        updated_at: new Date(),
       });
 
     if (!nUpdated) return res.status(404).json({ message: "Data tidak ditemukan", datetime: formatDateSystem() });

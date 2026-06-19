@@ -17,10 +17,10 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        PositionCode: Joi.string().max(50).required().label("Kode Jabatan"),
-        PositionName: Joi.string().max(100).required().label("Nama Jabatan"),
-        PositionLevel: Joi.number().required().label("Level Jabatan"),
-        Description: Joi.string().optional().allow(null, "").label("Deskripsi"),
+        position_code: Joi.string().max(50).required().label("Kode Jabatan"),
+        position_name: Joi.string().max(100).required().label("Nama Jabatan"),
+        position_level: Joi.number().required().label("Level Jabatan"),
+        description: Joi.string().optional().allow(null, "").label("Deskripsi"),
       },
       { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
       oPayload
@@ -34,13 +34,13 @@ router.post("/", async (req, res) => {
 
     const dNow = new Date();
     await DB("mst_positions").insert({
-      PositionCode: oPayload.PositionCode,
-      PositionName: oPayload.PositionName,
-      PositionLevel: oPayload.PositionLevel,
-      Description: oPayload.Description || null,
-      Status: "active",
-      CreatedAt: dNow,
-      UpdatedAt: dNow,
+      position_code: oPayload.position_code,
+      position_name: oPayload.position_name,
+      position_level: oPayload.position_level,
+      description: oPayload.description || null,
+      status: "active",
+      created_at: dNow,
+      updated_at: dNow,
     });
 
     return res.status(201).json({ status: status.SUKSES, message: "Berhasil ditambahkan!", datetime: formatDateSystem() });
