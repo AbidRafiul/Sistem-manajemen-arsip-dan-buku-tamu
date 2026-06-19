@@ -314,25 +314,25 @@ const Table = ({
                     <div className="flex flex-column md:flex-row gap-3 align-items-end">
                         <div className="flex-1 w-full">
                             <label className="block text-color-secondary mb-1 text-xs font-semibold">Select File</label>
-                            <input 
-                                type="file" 
-                                className="p-inputtext w-full text-xs" 
+                            <input
+                                type="file"
+                                className="p-inputtext w-full text-xs"
                                 onChange={(e) => setNewVersionFile(e.target.files?.[0] || null)}
                             />
                         </div>
                         <div className="flex-2 w-full">
                             <label className="block text-color-secondary mb-1 text-xs font-semibold">Change Notes</label>
-                            <InputText 
-                                className="w-full text-xs" 
+                            <InputText
+                                className="w-full text-xs"
                                 placeholder="E.g., Update content, Fix typos..."
                                 value={changeNotes}
                                 onChange={(e) => setChangeNotes(e.target.value)}
                             />
                         </div>
                         <div className="align-self-end mt-2 md:mt-0">
-                            <Button 
-                                label="Upload" 
-                                icon="pi pi-upload" 
+                            <Button
+                                label="Upload"
+                                icon="pi pi-upload"
                                 size="small"
                                 disabled={!newVersionFile || !changeNotes.trim() || state.load}
                                 onClick={async () => {
