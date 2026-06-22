@@ -43,18 +43,18 @@ router.post("/", async (req, res) => {
     await DB.transaction(async (trx) => {
       // 1. Nonaktifkan di mst_users
       await trx("mst_users")
-        .whereIn("UserId", oPayload.userId)
+        .whereIn("user_id", oPayload.userId)
         .update({
-          Status: "nonactive",
-          UpdatedAt: formatDateSystem(),
+          status: "nonactive",
+          updated_at: formatDateSystem(),
         });
 
       // 2. Nonaktifkan juga di mst_user_roles
       await trx("mst_user_roles")
-        .whereIn("UserId", oPayload.userId)
+        .whereIn("user_id", oPayload.userId)
         .update({
-          Status: "nonactive",
-          UpdatedAt: formatDateSystem(),
+          status: "nonactive",
+          updated_at: formatDateSystem(),
         });
     });
 

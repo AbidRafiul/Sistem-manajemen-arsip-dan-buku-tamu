@@ -91,7 +91,7 @@ export const POST = async (req: NextRequest) => {
             const maxAge = credentials?.remember_me === '1' ? 60 * 60 * 24 : 60 * 60 * 7;
             const secret = new TextEncoder().encode(process.env.USER_KEY!);
             const payload = {
-                uid: userData.uniqueId,
+                uid: userData.UserId || userData.id,
                 name: userData.name,
             };
             const token = await new SignJWT(payload)

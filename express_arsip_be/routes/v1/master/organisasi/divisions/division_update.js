@@ -6,9 +6,9 @@ import { Logging, validatePayload } from "../../../components/tools/servertool.j
 
 const router = express.Router();
 
-router.put("/:DivisionId", async (req, res) => {
+router.put("/:division_id", async (req, res) => {
   const { body: oPayload } = req;
-  const cDivisionId = req.params.DivisionId;
+  const cDivisionId = req.params.division_id;
   const cUsername = req?.auth?.username || "";
 
   try {
@@ -18,9 +18,9 @@ router.put("/:DivisionId", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        DivisionCode: Joi.string().required().label("Kode Divisi"),
-        DivisionName: Joi.string().required().label("Nama Divisi"),
-        BranchId: Joi.number().required().label("ID Branch"),
+        division_code: Joi.string().required().label("Kode Divisi"),
+        division_name: Joi.string().required().label("Nama Divisi"),
+        branch_id: Joi.number().required().label("ID Branch"),
       },
       { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
       oPayload
@@ -33,12 +33,12 @@ router.put("/:DivisionId", async (req, res) => {
     }
 
     const nUpdated = await DB("mst_divisions")
-      .where("DivisionId", cDivisionId)
+      .where("division_id", cDivisionId)
       .update({
-        DivisionCode: oPayload.DivisionCode,
-        DivisionName: oPayload.DivisionName,
-        BranchId: oPayload.BranchId,
-        UpdatedAt: new Date(),
+        division_code: oPayload.division_code,
+        division_name: oPayload.division_name,
+        branch_id: oPayload.branch_id,
+        updated_at: new Date(),
       });
 
     if (!nUpdated) return res.status(404).json({ message: "Data tidak ditemukan", datetime: formatDateSystem() });

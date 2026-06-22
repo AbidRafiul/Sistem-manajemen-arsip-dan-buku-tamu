@@ -91,7 +91,7 @@ const incomingLetterUpload = async (req, res) => {
       file_name: oFile.originalname,
       file_mime_type: oFile.mimetype,
       file_size: oFile.size,
-      uploaded_by: oPayload.UploadedBy || null,
+      uploaded_by: oPayload.uploaded_by || oPayload.UploadedBy || null,
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -107,7 +107,7 @@ const incomingLetterUpload = async (req, res) => {
       current_status: oLetter.status,
       notes: `File ${oFile.originalname} berhasil diupload`,
       processed_at: dNow,
-      created_by: oPayload.UploadedBy || null,
+      created_by: oPayload.uploaded_by || oPayload.UploadedBy || null,
       created_at: dNow,
       updated_at: dNow,
     });

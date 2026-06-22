@@ -10,7 +10,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { apiEndpointGet } from "./components/endpoints";
 import { TableData } from "./components/interfaces";
 import { mapIncomingLetterRow } from "./components/mappers";
-import styles from "./mail-in-dashboard.module.css";
+import styles from "./mail_in_dashboard.module.css";
 
 type FilterKey = "all" | "needs_action" | "archived";
 
@@ -90,18 +90,18 @@ const Page = () => {
 
     const filteredLetters = useMemo(() => {
         if (activeFilter === "needs_action") {
-            return letters.filter((letter) => letter.Status !== "selesai");
+            return letters.filter((letter) => letter.status !== "selesai");
         }
 
         if (activeFilter === "archived") {
-            return letters.filter((letter) => letter.Status === "selesai");
+            return letters.filter((letter) => letter.status === "selesai");
         }
 
         return letters;
     }, [activeFilter, letters]);
 
-    const waitingDisposition = letters.filter((letter) => letter.Status === "baru" || letter.Status === "didisposisi").length;
-    const completedLetters = letters.filter((letter) => letter.Status === "selesai").length;
+    const waitingDisposition = letters.filter((letter) => letter.status === "baru" || letter.status === "didisposisi").length;
+    const completedLetters = letters.filter((letter) => letter.status === "selesai").length;
     const efficiency = letters.length ? Math.round((completedLetters / letters.length) * 100) : 0;
     const tableRows = filteredLetters.slice(0, 6);
     const recentLetters = letters.slice(0, 3);
@@ -129,7 +129,7 @@ const Page = () => {
                     <Button
                         label="Input Incoming Mail"
                         icon="pi pi-plus-circle"
-                        onClick={() => router.push("/correspondence/mail-in/data")}
+                        onClick={() => router.push("/correspondence/mail_in/data")}
                     />
                 </div>
             </section>
@@ -195,30 +195,30 @@ const Page = () => {
                         </thead>
                         <tbody>
                             {tableRows.map((letter) => {
-                                const status = String(letter.Status || "baru").toLowerCase();
+                                const status = String(letter.status || "baru").toLowerCase();
 
                                 return (
-                                    <tr key={letter.IncomingLetterId}>
+                                    <tr key={letter.incoming_letter_id}>
                                         <td>
                                             <div className={styles.senderCell}>
                                                 <span><i className="pi pi-file" /></span>
                                                 <div>
-                                                    <strong>{letter.AgendaNumber || letter.LetterNumber}</strong>
-                                                    <small>{letter.SenderInstitution || letter.SenderName || "-"}</small>
+                                                    <strong>{letter.agenda_number || letter.letter_number}</strong>
+                                                    <small>{letter.sender_institution || letter.sender_name || "-"}</small>
                                                 </div>
                                             </div>
                                         </td>
                                         <td>
-                                            <strong>{letter.Subject || "-"}</strong>
-                                            <small>{letter.LetterNumber || "-"}</small>
+                                            <strong>{letter.subject || "-"}</strong>
+                                            <small>{letter.letter_number || "-"}</small>
                                         </td>
                                         <td>
-                                            <strong>{formatDate(letter.ReceivedDate)}</strong>
-                                            <small>{formatTime(letter.ReceivedDate)}</small>
+                                            <strong>{formatDate(letter.received_date)}</strong>
+                                            <small>{formatTime(letter.received_date)}</small>
                                         </td>
                                         <td>
                                             <span className={`${styles.statusPill} ${statusClass[status] || styles.statusProcess}`}>
-                                                {statusLabel[status] || letter.Status}
+                                                {statusLabel[status] || letter.status}
                                             </span>
                                         </td>
                                         <td>
@@ -227,7 +227,7 @@ const Page = () => {
                                                 text
                                                 icon="pi pi-arrow-right"
                                                 tooltip="Buka data surat"
-                                                onClick={() => router.push("/correspondence/mail-in/data")}
+                                                onClick={() => router.push("/correspondence/mail_in/data")}
                                             />
                                         </td>
                                     </tr>
@@ -244,7 +244,7 @@ const Page = () => {
 
                 <div className={styles.tableFooter}>
                     <span>Showing {tableRows.length ? 1 : 0} to {tableRows.length} of {filteredLetters.length.toLocaleString("id-ID")} entries</span>
-                    <Button text label="Open Data Surat Masuk" icon="pi pi-list" onClick={() => router.push("/correspondence/mail-in/data")} />
+                    <Button text label="Open Data Surat Masuk" icon="pi pi-list" onClick={() => router.push("/correspondence/mail_in/data")} />
                 </div>
             </section>
 
@@ -252,11 +252,11 @@ const Page = () => {
                 <div className={styles.activity}>
                     <h2>Recent Activity</h2>
                     {recentLetters.map((letter) => (
-                        <div className={styles.activityItem} key={letter.IncomingLetterId}>
+                        <div className={styles.activityItem} key={letter.incoming_letter_id}>
                             <span />
                             <div>
-                                <strong>{letter.SenderName || letter.SenderInstitution || "Surat masuk"}</strong>
-                                <p>{letter.Subject || letter.LetterNumber}</p>
+                                <strong>{letter.sender_name || letter.sender_institution || "Surat masuk"}</strong>
+                                <p>{letter.subject || letter.letter_number}</p>
                             </div>
                         </div>
                     ))}
@@ -267,7 +267,7 @@ const Page = () => {
                     <h2>Disposition Queue</h2>
                     <strong>{dispositions.length.toLocaleString("id-ID")}</strong>
                     <p>Data diambil dari endpoint disposisi surat untuk memantau antrian tindak lanjut.</p>
-                    <Button text label="Lihat Disposisi" icon="pi pi-send" onClick={() => router.push("/correspondence/mail-in/disposition")} />
+                    <Button text label="Lihat Disposisi" icon="pi pi-send" onClick={() => router.push("/correspondence/mail_in/disposition")} />
                 </div>
             </section>
         </div>

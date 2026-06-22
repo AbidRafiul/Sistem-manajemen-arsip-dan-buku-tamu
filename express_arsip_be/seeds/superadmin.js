@@ -1,5 +1,14 @@
-import "dotenv/config";
-import { hmac, formatDateSystem } from "../routes/v1/components/tools/general.js";
+import crypto from 'crypto';
+
+// 1. Definisikan fungsi hmac agar tidak error "not defined"
+function hmac(data, key, algorithm = 'sha512') {
+    return crypto.createHmac(algorithm, key).update(data).digest('hex');
+}
+
+// 2. Definisikan fungsi formatDateSystem untuk format tanggal MariaDB
+function formatDateSystem() {
+    return new Date().toISOString().slice(0, 19).replace('T', ' ');
+}
 
 export async function seed(knex) {
   const username = "superadmin@admin.com";
@@ -7,18 +16,18 @@ export async function seed(knex) {
   const telp = "08100000000";
   const password = "Superadmin321!";
   
-  // Asumsi: RoleId untuk Superadmin di tabel mst_roles adalah 1
   const roleId = 1; 
 
-  // 1. CARI USER LAMA (Berdasarkan Username di mst_users)
-  const existingUser = await knex('mst_users').where('Username', username).first();
+  // 1. CARI USER LAMA (Ubah 'Username' menjadi 'username')
+  const existingUser = await knex('mst_users').where('username', username).first();
 
   if (existingUser) {
-    // Hapus relasi anak-anaknya dulu pakai UserId
-    await knex('mst_user_roles').where('UserId', existingUser.UserId).del();
-    await knex('user_navigation').where('UserId', existingUser.UserId).del();
+    // Hapus relasi anak-anaknya dulu (Ubah ke user_id dan unique_id sesuai migrasi tabel)
+    await knex('mst_user_roles').where('user_id', existingUser.user_id).del();
+    await knex('user_navigation').where('unique_id', existingUser.user_id).del();
+    
     // Baru hapus induknya
-    await knex('mst_users').where('UserId', existingUser.UserId).del();
+    await knex('mst_users').where('user_id', existingUser.user_id).del();
   }
 
   // Hashing Password baru
@@ -27,41 +36,41 @@ export async function seed(knex) {
   const secret = process.env.USER_SECRET;
   const hashedPassword = hmac(cPassword, secret, 'sha512');
 
-  // 2. TANAM KE mst_users & TANGKAP UserId-nya
+  // 2. TANAM KE mst_users & TANGKAP user_id-nya
   const [insertedUserId] = await knex("mst_users").insert({
-    Fullname: fullname,
-    Username: username,
-    Telp: telp,
-    Password: hashedPassword,
-    Status: "active", 
-    BranchId: 1,
-    DivisionId: 1,
-    DepartmentId: 1,
-    PositionId: 1,
-    WorkUnitId: 1,
-    CreatedAt: dDatetime,
-    UpdatedAt: dDatetime,
+    fullname: fullname,
+    username: username,
+    telp: telp,
+    password: hashedPassword,
+    status: "active", 
+    branch_id: 1,
+    division_id: 1,
+    department_id: 1, // Diperbaiki dari departemen_id menjadi department_id agar sesuai nama tabel mst_departments
+    position_id: 1,
+    work_unit_id: 1,
+    created_at: dDatetime,
+    updated_at: dDatetime,
   });
 
-  // 3. TANAM KE mst_user_roles (Sesuai struktur screenshot lo)
+  // 3. TANAM KE mst_user_roles 
   await knex("mst_user_roles").insert({
-    UserId: insertedUserId, 
-    RoleId: roleId,
-    IsPrimary: 1,      // Dari screenshot ada kolom ini
-    Status: 'active',  // Sesuaikan tipe datanya, kalau INT ganti jadi 1
-    CreatedAt: dDatetime,
-    UpdatedAt: dDatetime
+    user_id: insertedUserId, 
+    role_id: roleId,
+    is_primary: 1,      
+    status: 'active',  
+    created_at: dDatetime,
+    updated_at: dDatetime
   });
 
-  // 4. TANAM KE user_navigation (PENTING: Pastikan lo udah ganti UniqueId jadi UserId di DB)
-  const oNavigation = await knex("mst_navigation").where("Role", "Master").first();
+  // 4. TANAM KE user_navigation (Ubah 'Role' menjadi 'role' & 'Menu' menjadi 'menu')
+  const oNavigation = await knex("mst_navigation").where("role", "Master").first();
 
   if (oNavigation) {
     await knex("user_navigation").insert({
-      UserId: insertedUserId, // Sekarang sudah pakai UserId relasional yang benar
-      Menu: oNavigation.Menu,
-      CreatedAt: dDatetime,
-      UpdatedAt: dDatetime,
+      user_id: insertedUserId, // Sesuai struktur tabel user_navigation yang menggunakan unique_id
+      menu: oNavigation.menu,
+      created_at: dDatetime,
+      updated_at: dDatetime,
     });
   }
 }

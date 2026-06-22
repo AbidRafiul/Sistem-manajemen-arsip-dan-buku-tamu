@@ -12,23 +12,23 @@ import { initValue, State } from "../components/interfaces";
 import { mapIncomingLetterRow } from "../components/mappers";
 
 const initialValues: initValue = {
-    IncomingLetterId: null,
-    AgendaNumber: "",
-    LetterNumber: "",
-    LetterDate: "",
-    ReceivedDate: "",
-    SenderName: "",
-    SenderInstitution: "",
-    Subject: "",
-    AttachmentDescription: "",
-    LetterFile: null,
-    LetterTypeId: null,
-    DocumentTypeId: null,
-    ArchiveClassificationId: null,
-    ConfidentialityLevelId: null,
-    Status: "baru",
-    CreatedBy: null,
-    UpdatedBy: null,
+    incoming_letter_id: null,
+    agenda_number: "",
+    letter_number: "",
+    letter_date: "",
+    received_date: "",
+    sender_name: "",
+    sender_institution: "",
+    subject: "",
+    attachment_description: "",
+    letter_file: null,
+    letter_type_id: null,
+    document_type_id: null,
+    archive_classification_id: null,
+    confidentiality_level_id: null,
+    status: "baru",
+    created_by: null,
+    updated_by: null,
 };
 
 const Page = () => {
@@ -57,13 +57,13 @@ const Page = () => {
         validate: (data: initValue) => {
             const errors = {} as Partial<Record<keyof initValue, string>>;
 
-            if (!data.AgendaNumber) errors.AgendaNumber = "Nomor agenda wajib diisi";
-            if (!data.LetterNumber) errors.LetterNumber = "Nomor surat wajib diisi";
-            if (!data.LetterDate) errors.LetterDate = "Tanggal surat wajib diisi";
-            if (!data.ReceivedDate) errors.ReceivedDate = "Tanggal diterima wajib diisi";
-            if (!data.SenderName) errors.SenderName = "Pengirim wajib diisi";
-            if (!data.Subject) errors.Subject = "Perihal wajib diisi";
-            if (state.edit && !data.IncomingLetterId) errors.IncomingLetterId = "IncomingLetterId wajib diisi";
+            if (!data.agenda_number) errors.agenda_number = "Nomor agenda wajib diisi";
+            if (!data.letter_number) errors.letter_number = "Nomor surat wajib diisi";
+            if (!data.letter_date) errors.letter_date = "Tanggal surat wajib diisi";
+            if (!data.received_date) errors.received_date = "Tanggal diterima wajib diisi";
+            if (!data.sender_name) errors.sender_name = "Pengirim wajib diisi";
+            if (!data.subject) errors.subject = "Perihal wajib diisi";
+            if (state.edit && !data.incoming_letter_id) errors.incoming_letter_id = "incoming_letter_id wajib diisi";
 
             return errors;
         },

@@ -26,7 +26,7 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ status: "99", message: "Action tidak valid", datetime: formatDateSystem() });
     }
 
-    await DB("tr_visitations")
+    await DB("trx_visitations")
       .where("visitation_id", VisitationId)
       .update({ 
         approval_status: action, 

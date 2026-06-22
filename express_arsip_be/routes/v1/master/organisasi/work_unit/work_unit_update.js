@@ -6,9 +6,9 @@ import { Logging, validatePayload } from "../../../components/tools/servertool.j
 
 const router = express.Router();
 
-router.put("/:WorkUnitId", async (req, res) => {
+router.put("/:work_unit_id", async (req, res) => {
   const { body: oPayload } = req;
-  const cWorkUnitId = req.params.WorkUnitId;
+  const cWorkUnitId = req.params.work_unit_id;
   const cUsername = req?.auth?.username || "";
 
   try {
@@ -18,10 +18,10 @@ router.put("/:WorkUnitId", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        DepartmentId: Joi.number().required().label("ID Departemen"),
-        WorkUnitCode: Joi.string().max(45).required().label("Kode Unit Kerja"),
-        WorkUnitName: Joi.string().max(45).required().label("Nama Unit Kerja"),
-        Description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
+        department_id: Joi.number().required().label("ID Departemen"),
+        work_unit_code: Joi.string().max(45).required().label("Kode Unit Kerja"),
+        work_unit_name: Joi.string().max(45).required().label("Nama Unit Kerja"),
+        description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
       },
       { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
       oPayload
@@ -34,13 +34,13 @@ router.put("/:WorkUnitId", async (req, res) => {
     }
 
     const nUpdated = await DB("mst_work_units")
-      .where("WorkUnitId", cWorkUnitId)
+      .where("work_unit_id", cWorkUnitId)
       .update({
-        DepartmentId: oPayload.DepartmentId,
-        WorkUnitCode: oPayload.WorkUnitCode,
-        WorkUnitName: oPayload.WorkUnitName,
-        Description: oPayload.Description || null,
-        UpdatedAt: new Date(),
+        department_id: oPayload.department_id,
+        work_unit_code: oPayload.work_unit_code,
+        work_unit_name: oPayload.work_unit_name,
+        description: oPayload.description || null,
+        updated_at: new Date(),
       });
 
     if (!nUpdated) return res.status(404).json({ message: "Data tidak ditemukan", datetime: formatDateSystem() });

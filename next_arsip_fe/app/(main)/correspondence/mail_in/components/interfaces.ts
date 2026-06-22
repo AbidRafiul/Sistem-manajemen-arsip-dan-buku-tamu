@@ -7,45 +7,45 @@ import { RefObject } from "react";
 export type IncomingLetterStatus = "baru" | "diproses" | "didisposisi" | "selesai";
 
 export interface initValue {
-    IncomingLetterId: number | null;
-    AgendaNumber: string;
-    LetterNumber: string;
-    LetterDate: string;
-    ReceivedDate: string;
-    SenderName: string;
-    SenderInstitution: string;
-    Subject: string;
-    AttachmentDescription: string;
-    LetterFile: File | null;
-    LetterTypeId: number | null;
-    DocumentTypeId: number | null;
-    ArchiveClassificationId: number | null;
-    ConfidentialityLevelId: number | null;
-    Status: IncomingLetterStatus | string;
-    CreatedBy: number | null;
-    UpdatedBy: number | null;
+    incoming_letter_id: number | null;
+    agenda_number: string;
+    letter_number: string;
+    letter_date: string;
+    received_date: string;
+    sender_name: string;
+    sender_institution: string;
+    subject: string;
+    attachment_description: string;
+    letter_file: File | null;
+    letter_type_id: number | null;
+    document_type_id: number | null;
+    archive_classification_id: number | null;
+    confidentiality_level_id: number | null;
+    status: IncomingLetterStatus | string;
+    created_by: number | null;
+    updated_by: number | null;
 }
 
 export interface TableData {
-    IncomingLetterId: number;
-    AgendaNumber: string;
-    LetterNumber: string;
-    LetterDate: string;
-    ReceivedDate: string;
-    SenderName: string;
-    SenderInstitution: string | null;
-    Subject: string;
-    AttachmentDescription: string | null;
-    LetterTypeId: number | null;
-    LetterTypeName: string | null;
-    DocumentTypeId: number | null;
-    ArchiveClassificationId: number | null;
-    ConfidentialityLevelId: number | null;
-    Status: IncomingLetterStatus | string;
-    CreatedBy: number | null;
-    UpdatedBy: number | null;
-    CreatedAt: string;
-    UpdatedAt: string;
+    incoming_letter_id: number;
+    agenda_number: string;
+    letter_number: string;
+    letter_date: string;
+    received_date: string;
+    sender_name: string;
+    sender_institution: string | null;
+    subject: string;
+    attachment_description: string | null;
+    letter_type_id: number | null;
+    letter_type_name: string | null;
+    document_type_id: number | null;
+    archive_classification_id: number | null;
+    confidentiality_level_id: number | null;
+    status: IncomingLetterStatus | string;
+    created_by: number | null;
+    updated_by: number | null;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface IncomingLetterFile {

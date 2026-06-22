@@ -75,11 +75,11 @@ router.post("/", upload.any(), async (req, res) => {
         }
 
         const oldData = await DB("config")
-            .select("Kode", "Keterangan")
-            .where("Kode", "msLogoPerusahaan")
+            .select("kode", "keterangan")
+            .where("kode", "msLogoPerusahaan")
             .first();
 
-        let filename = oldData?.Keterangan || '';
+        let filename = oldData?.keterangan || '';
         const file = files[0];
 
         if (file) {
@@ -93,8 +93,8 @@ router.post("/", upload.any(), async (req, res) => {
             const filepath = path.join(uploadDir, filename);
 
             // hapus file lama kalau ada
-            const oldPath = path.join(uploadDir, oldData?.Keterangan || "");
-            if (oldData?.Keterangan && fs.existsSync(oldPath)) {
+            const oldPath = path.join(uploadDir, oldData?.keterangan || "");
+            if (oldData?.keterangan && fs.existsSync(oldPath)) {
                 fs.unlinkSync(oldPath);
             }
 
@@ -109,18 +109,16 @@ router.post("/", upload.any(), async (req, res) => {
             const cKeterangan = Keterangan[i] ?? null;
 
             const existing = await DB("config")
-                .select("Keterangan")
-                .where("Kode", cKode)
+                .select("keterangan")
+                .where("kode", cKode)
                 .first();
 
             if (existing) {
-                if (existing.kode !== cKode) {
-                    await DB("config")
-                        .where("Kode", cKode)
-                        .update({ Keterangan: cKeterangan });
-                }
+                await DB("config")
+                    .where("kode", cKode)
+                    .update({ keterangan: cKeterangan });
             } else {
-                await DB("config").insert({ Kode: cKode, Keterangan: cKeterangan });
+                await DB("config").insert({ kode: cKode, keterangan: cKeterangan });
             }
         }
 

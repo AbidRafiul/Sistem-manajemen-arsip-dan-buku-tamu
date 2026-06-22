@@ -16,25 +16,25 @@ const router = express.Router();
 //get Token
 router.get("/", async (req, res) => {
   try {
-    const accessToken = crypto.randomBytes(32).toString("hex");
+    const cAccessToken = crypto.randomBytes(32).toString("hex");
 
     await DB("access_token").insert({
-      Token: accessToken,
-      Expired: "0",
-      Datetime: datetimeIso(),
+      token: cAccessToken,
+      expired: "0",
+      datetime: datetimeIso(),
     });
 
     return res.status(200).json({
       status: status.SUKSES,
       message: "Token created",
       datetime: datetime(),
-      access_token: accessToken,
+      access_token: cAccessToken,
       token_type: "Bearer",
     });
-  } catch (error) {
-    console.log(error);
+  } catch (oError) {
+    console.log(oError);
 
-    Logging(error)
+    Logging(oError)
 
     return res.status(404).json({
       status: status.BAD_REQUEST,

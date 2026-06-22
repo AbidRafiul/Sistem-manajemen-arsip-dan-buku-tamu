@@ -127,7 +127,7 @@ router.post(
         created_at: formatDateSystem(),
       };
 
-      const [VisitationId] = await DB("tr_visitations").insert(oData);
+      const [VisitationId] = await DB("trx_visitations").insert(oData);
 
       return res.status(200).json({
         status: "00",

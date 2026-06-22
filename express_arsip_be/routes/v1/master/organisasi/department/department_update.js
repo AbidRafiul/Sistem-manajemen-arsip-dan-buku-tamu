@@ -6,9 +6,9 @@ import { Logging, validatePayload } from "../../../components/tools/servertool.j
 
 const router = express.Router();
 
-router.put("/:DepartmentId", async (req, res) => {
+router.put("/:department_id", async (req, res) => {
   const { body: oPayload } = req;
-  const cDepartmentId = req.params.DepartmentId;
+  const cDepartmentId = req.params.department_id;
   const cUsername = req?.auth?.username || "";
 
   try {
@@ -18,9 +18,9 @@ router.put("/:DepartmentId", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        DepartmentCode: Joi.string().required().label("Kode Departemen"),
-        DepartmentName: Joi.string().required().label("Nama Departemen"),
-        DivisionId: Joi.number().required().label("ID Divisi"),
+        department_code: Joi.string().required().label("Kode Departemen"),
+        department_name: Joi.string().required().label("Nama Departemen"),
+        division_id: Joi.number().required().label("ID Divisi"),
       },
       { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
       oPayload
@@ -33,12 +33,12 @@ router.put("/:DepartmentId", async (req, res) => {
     }
 
     const nUpdated = await DB("mst_departments")
-      .where("DepartmentId", cDepartmentId)
+      .where("department_id", cDepartmentId)
       .update({
-        DepartmentCode: oPayload.DepartmentCode,
-        DepartmentName: oPayload.DepartmentName,
-        DivisionId: oPayload.DivisionId,
-        UpdatedAt: new Date(),
+        department_code: oPayload.department_code,
+        department_name: oPayload.department_name,
+        division_id: oPayload.division_id,
+        updated_at: new Date(),
       });
 
     if (!nUpdated) return res.status(404).json({ message: "Data tidak ditemukan", datetime: formatDateSystem() });

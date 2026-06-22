@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { apiEndpointGet } from "../components/endpoints";
 import { TableData } from "../components/interfaces";
 import { mapIncomingLetterRow } from "../components/mappers";
-import styles from "../mail-in-dashboard.module.css";
+import styles from "../mail_in_dashboard.module.css";
 
 const dispositionEndpoint = "/correspondence/letter-disposition-data";
 const dispositionCreateEndpoint = "/correspondence/letter-disposition-create";
@@ -23,9 +23,9 @@ const dispositionReferenceEndpoint = "/correspondence/disposition-reference-data
 type DialogMode = "create" | "forward" | "process" | "complete";
 
 type UserOption = {
-    UserId: number;
-    Fullname: string;
-    Username: string;
+    user_id: number;
+    fullname: string;
+    username: string;
 };
 
 type InstructionOption = {
@@ -119,10 +119,10 @@ const Page = () => {
 
     const letterOptions = useMemo(() => {
         return letters
-            .filter((letter) => letter.Status !== "selesai")
+            .filter((letter) => letter.status !== "selesai")
             .map((letter) => ({
-                label: `${letter.AgendaNumber || letter.LetterNumber} - ${letter.Subject || "-"}`,
-                value: letter.IncomingLetterId,
+                label: `${letter.agenda_number || letter.letter_number} - ${letter.subject || "-"}`,
+                value: letter.incoming_letter_id,
             }));
     }, [letters]);
 
@@ -132,14 +132,14 @@ const Page = () => {
         setActionNote("");
         setForm({
             ...emptyForm,
-            incoming_letter_id: letter?.IncomingLetterId || null,
+            incoming_letter_id: letter?.incoming_letter_id || null,
         });
         setDialogMode("create");
     };
 
     const openForwardDialog = (disposition: Record<string, any>) => {
         setSelectedDisposition(disposition);
-        setSelectedLetter(letters.find((letter) => letter.IncomingLetterId === disposition.incoming_letter_id) || null);
+        setSelectedLetter(letters.find((letter) => letter.incoming_letter_id === disposition.incoming_letter_id) || null);
         setActionNote("");
         setForm({
             ...emptyForm,
@@ -152,7 +152,7 @@ const Page = () => {
 
     const openActionDialog = (mode: "process" | "complete", disposition: Record<string, any>) => {
         setSelectedDisposition(disposition);
-        setSelectedLetter(letters.find((letter) => letter.IncomingLetterId === disposition.incoming_letter_id) || null);
+        setSelectedLetter(letters.find((letter) => letter.incoming_letter_id === disposition.incoming_letter_id) || null);
         setActionNote("");
         setDialogMode(mode);
     };
@@ -232,13 +232,13 @@ const Page = () => {
 
     const statusSummary = useMemo(() => {
         return letters.reduce<Record<string, number>>((acc, letter) => {
-            const status = getStatus(letter.Status);
+            const status = getStatus(letter.status);
             acc[status] = (acc[status] || 0) + 1;
             return acc;
         }, {});
     }, [letters]);
 
-    const pendingLetters = letters.filter((letter) => letter.Status !== "selesai").slice(0, 6);
+    const pendingLetters = letters.filter((letter) => letter.status !== "selesai").slice(0, 6);
     const recentDispositions = dispositions.slice(0, 8);
     const renderStatus = (statusValue?: string) => {
         const status = getStatus(statusValue);
@@ -317,21 +317,21 @@ const Page = () => {
                             </thead>
                             <tbody>
                                 {pendingLetters.map((letter) => (
-                                    <tr key={letter.IncomingLetterId}>
+                                    <tr key={letter.incoming_letter_id}>
                                         <td>
-                                            <strong>{letter.AgendaNumber || letter.LetterNumber || "-"}</strong>
-                                            <small>{letter.SenderName || "-"}</small>
+                                            <strong>{letter.agenda_number || letter.letter_number || "-"}</strong>
+                                            <small>{letter.sender_name || "-"}</small>
                                         </td>
                                         <td>
-                                            <strong>{letter.Subject || "-"}</strong>
-                                            <small>{letter.AttachmentDescription || "Tanpa keterangan lampiran"}</small>
+                                            <strong>{letter.subject || "-"}</strong>
+                                            <small>{letter.attachment_description || "Tanpa keterangan lampiran"}</small>
                                         </td>
-                                        <td>{renderStatus(letter.Status)}</td>
+                                        <td>{renderStatus(letter.status)}</td>
                                         <td>
                                             <Button
                                                 size="small"
                                                 icon="pi pi-send"
-                                                label={letter.Status === "baru" ? "Disposisikan" : "Tambah"}
+                                                label={letter.status === "baru" ? "Disposisikan" : "Tambah"}
                                                 onClick={() => openCreateDialog(letter)}
                                             />
                                         </td>
@@ -512,8 +512,8 @@ const Page = () => {
                                 id="to_user_id"
                                 value={form.to_user_id}
                                 options={users}
-                                optionLabel="Fullname"
-                                optionValue="UserId"
+                                optionLabel="fullname"
+                                optionValue="user_id"
                                 onChange={(e) => setForm((prev) => ({ ...prev, to_user_id: e.value }))}
                                 placeholder="Pilih pimpinan/unit/staf"
                                 filter

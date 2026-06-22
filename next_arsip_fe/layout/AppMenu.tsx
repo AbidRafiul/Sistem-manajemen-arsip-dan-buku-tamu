@@ -23,22 +23,22 @@
 const mailInMenu: AppMenuItem = {
     label: 'Surat Masuk',
     icon: 'pi pi-inbox',
-    to: '/correspondence/mail-in',
+    to: '/correspondence/mail_in',
     items: [
         {
             label: 'Rekap Surat Masuk',
             icon: 'pi pi-th-large',
-            to: '/correspondence/mail-in'
+            to: '/correspondence/mail_in'
         },
         {
             label: 'Data Surat Masuk',
             icon: 'pi pi-envelope',
-            to: '/correspondence/mail-in/data'
+            to: '/correspondence/mail_in/data'
         },
         {
             label: 'Disposisi Surat',
             icon: 'pi pi-send',
-            to: '/correspondence/mail-in/disposition'
+            to: '/correspondence/mail_in/disposition'
         },
     ]
 };
@@ -110,7 +110,7 @@ const ensureCorrespondenceMenu = (menu: AppMenuItem[]) => {
             .filter((item) => {
                 const label = item.label?.toLowerCase();
                 const path = item.to || '';
-                return label !== 'mail in' && !path.startsWith('/correspondence/mail-in');
+                return label !== 'mail in' && !path.startsWith('/correspondence/mail_in');
             })
             .map((item) => {
                 const childItems = cleanMailInItems(item.items || []);
@@ -178,7 +178,6 @@ const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
 };
 
     const AppMenu = () => {
-        // HAPUS DUMMY, PAKAI SESSION ASLI DARI NEXT-AUTH
         const { data: session } = useSession();
 
         const { layoutConfig } = useContext(LayoutContext);
@@ -215,7 +214,7 @@ const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
                 const { data: vaData } = await postData('setup/nav/user-data', { UserId: userId });
                 
                 // 1. Log data mentah untuk debugging di Console Browser
-                console.log("🚀 MENTAHAN DARI BACKEND:", vaData);
+                console.log("MENTAHAN DARI BACKEND:", vaData);
 
                 if (!vaData?.data) {
                     throw new Error('Data menu tidak ditemukan dari backend');
@@ -241,7 +240,7 @@ const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
                 }
 
                 // 3. Olah data yang sudah dipastikan aman
-                const normalizedMenu = ensureArchiveDocumentMenu(ensureCorrespondenceMenu(removeLegacyCorrespondenceMenu(menuArray)));
+                const normalizedMenu = ensureGuestBookMenu(ensureArchiveDocumentMenu(ensureCorrespondenceMenu(removeLegacyCorrespondenceMenu(menuArray))));
                 const menu: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
                 const menu2: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
 
