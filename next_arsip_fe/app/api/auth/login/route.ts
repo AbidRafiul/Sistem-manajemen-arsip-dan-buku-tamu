@@ -69,9 +69,11 @@ export const POST = async (req: NextRequest) => {
             ) as { payload: any };
 
             const userData = {
-                id: userDecrypted?.uniqueId || userDecrypted?.username,
-                role: userDecrypted?.role,
-                name: userDecrypted?.fullname,
+                id: userDecrypted?.UserId || userDecrypted?.uniqueId || userDecrypted?.username,
+                role: userDecrypted?.role || userDecrypted?.roleCode,
+                roleCode: userDecrypted?.roleCode,
+                roleId: userDecrypted?.roleId,
+                name: userDecrypted?.fullname || userDecrypted?.name,
                 username: userDecrypted?.username,
                 UserId: userDecrypted?.UserId,
                 remember_me: credentials?.remember_me === '1',

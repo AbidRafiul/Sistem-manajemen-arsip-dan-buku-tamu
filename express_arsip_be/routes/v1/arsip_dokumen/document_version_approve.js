@@ -8,7 +8,12 @@ const approveDocumentVersion = async (req, res) => {
     const nVersionId = oPayload.version_id;
     const cStatus = oPayload.status;
     const cApprovalNotes = oPayload.approval_notes || null;
-    const cApprovedBy = req?.context?.Username || oPayload.approved_by || "system";
+    const cApprovedBy =
+      req?.auth?.username ||
+      req?.context?.username ||
+      req?.context?.Username ||
+      oPayload.approved_by ||
+      "system";
     const dNow = new Date();
 
     // Validasi input
@@ -85,7 +90,7 @@ const approveDocumentVersion = async (req, res) => {
       func: "approveDocumentVersion",
       request: oPayload,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.auth?.username || req?.context?.username || req?.context?.Username || "system",
     });
 
     return res.status(500).json(oResult);

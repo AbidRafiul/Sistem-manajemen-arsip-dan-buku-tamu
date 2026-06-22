@@ -39,7 +39,7 @@ router.post("/", async (req, res) => {
         datetime: datetime(),
       });
 
-    // 🔥 TRANSAKSI SOFT DELETE (Mencakup mst_users & mst_user_roles)
+    //  TRANSAKSI SOFT DELETE (Mencakup mst_users & mst_user_roles)
     await DB.transaction(async (trx) => {
       // 1. Nonaktifkan di mst_users
       await trx("mst_users")

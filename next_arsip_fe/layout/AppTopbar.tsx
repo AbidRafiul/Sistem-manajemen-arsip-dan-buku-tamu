@@ -11,6 +11,7 @@ import { formatDateCalendar } from '@/lib/tools/dateTools';
 
 const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     const { data: session } = useSession()
+    const activeRole = (session?.user as any)?.role || (session?.user as any)?.roleCode || 'Role belum terbaca';
     const { onMenuToggle } = useContext(LayoutContext);
     const menubuttonRef = useRef(null);
     const op = useRef<OverlayPanel>(null);
@@ -62,7 +63,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                         </span>
                         <span className="app-shell-profile-copy">
                             <strong>{session?.user?.name || 'Super Admin'}</strong>
-                            <small>Administrator</small>
+                            <small>{activeRole}</small>
                         </span>
                         <i className="pi pi-angle-down"></i>
                     </button>

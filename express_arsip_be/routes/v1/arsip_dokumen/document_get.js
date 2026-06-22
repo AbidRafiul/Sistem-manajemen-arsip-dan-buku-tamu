@@ -30,18 +30,18 @@ const getDocuments = async (req, res) => {
         "d.created_at",
         "d.updated_at",
         // Master joins
-        "dt.document_type_id",
-        "dt.document_type_name",
-        "dc.document_category_id",
-        "dc.document_category_name",
-        "ac.archive_classification_id",
-        "ac.classification_name",
-        "cl.confidentiality_level_id",
-        "cl.confidentiality_level_name",
-        "cl.confidentiality_level",
-        "rs.retention_schedule_id",
-        "rs.retention_name",
-        "rs.retention_years"
+        "dt.document_type_id as document_type_id",
+        "dt.document_type_name as document_type_name",
+        "dc.document_category_id as document_category_id",
+        "dc.document_category_name as document_category_name",
+        "ac.archive_classification_id as archive_classification_id",
+        "ac.classification_name as classification_name",
+        "cl.confidentiality_level_id as confidentiality_level_id",
+        "cl.confidentiality_level_name as confidentiality_level_name",
+        "cl.confidentiality_level as confidentiality_level",
+        "rs.retention_schedule_id as retention_schedule_id",
+        "rs.retention_name as retention_name",
+        "rs.retention_years as retention_years"
       )
       .leftJoin(
         "mst_document_type as dt",

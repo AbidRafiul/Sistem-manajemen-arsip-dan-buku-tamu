@@ -22,6 +22,9 @@ const authOptions = {
                         UserId: userData.UserId, // Tambahkan eksplisit
                         name: userData.fullname || userData.name,
                         username: userData.username,
+                        role: userData.role || userData.roleCode,
+                        roleCode: userData.roleCode,
+                        roleId: userData.roleId,
                         credential: userData.credential, // Pastikan ini ada
                         remember_me: userData.remember_me
                     };
@@ -48,6 +51,8 @@ const authOptions = {
                 token.id = anyUser.UserId || user.id;
                 token.id = user.id;
                 token.role = user.role;
+                (token as any).roleCode = (user as any).roleCode;
+                (token as any).roleId = (user as any).roleId;
                 token.uniqueId = user.uniqueId;
                 token.name = user.name;
                 token.username = user.username;
@@ -78,6 +83,8 @@ const authOptions = {
                 (session.user as any).UserId = token.id;
                 session.user.id = token.id as string;
                 session.user.role = token.role as string;
+                (session.user as any).roleCode = (token as any).roleCode;
+                (session.user as any).roleId = (token as any).roleId;
                 session.user.name = token.name as string;
                 session.user.username = token.username as string;
             }
