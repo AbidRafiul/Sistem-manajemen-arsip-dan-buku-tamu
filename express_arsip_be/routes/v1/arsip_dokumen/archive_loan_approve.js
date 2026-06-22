@@ -8,7 +8,12 @@ const approveArchiveLoan = async (req, res) => {
     const nLoanId = oPayload.loan_id;
     const cStatus = oPayload.status;
     const cApprovalNotes = oPayload.approval_notes || null;
-    const cApprovedBy = req?.context?.Username || oPayload.approved_by || "system";
+    const cApprovedBy =
+      req?.auth?.username ||
+      req?.context?.username ||
+      req?.context?.Username ||
+      oPayload.approved_by ||
+      "system";
     const dNow = new Date();
 
     if (!nLoanId) {
@@ -87,7 +92,7 @@ const approveArchiveLoan = async (req, res) => {
       func: "approveArchiveLoan",
       request: oPayload,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.auth?.username || req?.context?.username || req?.context?.Username || "system",
     });
 
     return res.status(500).json(oResult);

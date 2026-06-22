@@ -12,6 +12,11 @@ import { LoanData, TableProps } from "../interfaces";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
 import Form from "./form";
 
+const formatDateOnly = (value?: string | Date | null) => {
+    if (!value) return '-';
+    return formatDateCalendar(value, 'yyyy-MM-dd') || '-';
+};
+
 const Table = ({
     state,
     setState,
@@ -28,7 +33,10 @@ const Table = ({
     const [notes, setNotes] = useState('');
     const [targetStatus, setTargetStatus] = useState<'approved' | 'rejected' | ''>('');
 
-    const isAdmin = state.session?.user?.role === 'superadmin' || state.session?.user?.role === 'Administrator' || state.session?.user?.role === 'admin';
+    const sessionUser = state.session?.user as any;
+    const roleKey = String(sessionUser?.role || sessionUser?.roleCode || '').toLowerCase();
+    const roleId = Number(sessionUser?.roleId || 0);
+    const canApproveLoan = ['superadmin', 'administrator', 'admin', 'adm', 'pimpinan', 'pmn'].includes(roleKey) || [1, 2].includes(roleId);
 
     const headerTemplate = (
         <div className="flex flex-wrap align-items-center justify-content-between gap-3">
@@ -79,7 +87,7 @@ const Table = ({
                         setDetailDialog(true);
                     }}
                 />
-                {status === 'pending' && isAdmin && (
+                {status === 'pending' && canApproveLoan && (
                     <>
                         <Button
                             icon="pi pi-check"
@@ -227,9 +235,9 @@ const Table = ({
                         </div>
                     )} 
                 />
-                <Column field="loan_date" header="Loan Date" sortable body={rowData => formatDateCalendar(rowData.loan_date)} />
-                <Column field="expected_return_date" header="Expected Return" sortable body={rowData => rowData.expected_return_date ? formatDateCalendar(rowData.expected_return_date) : '-'} />
-                <Column field="return_date" header="Returned At" sortable body={rowData => rowData.return_date ? formatDateCalendar(rowData.return_date) : '-'} />
+                <Column field="loan_date" header="Loan Date" sortable body={rowData => formatDateOnly(rowData.loan_date)} />
+                <Column field="expected_return_date" header="Expected Return" sortable body={rowData => formatDateOnly(rowData.expected_return_date)} />
+                <Column field="return_date" header="Returned At" sortable body={rowData => formatDateOnly(rowData.return_date)} />
                 <Column body={statusTemplate} header="Status" style={{ width: '8rem', textAlign: 'center' }} />
                 <Column headerStyle={{ textAlign: 'center' }} header="Action" body={actionTemplate} style={{ width: '15rem' }} />
             </DataTable>
@@ -275,15 +283,15 @@ const Table = ({
                         </div>
                         <div className="col-12 md:col-4">
                             <div className="text-color-secondary mb-1 text-sm font-semibold">Loan Date</div>
-                            <div>{formatDateCalendar(selectedDetail.loan_date)}</div>
+                            <div>{formatDateOnly(selectedDetail.loan_date)}</div>
                         </div>
                         <div className="col-12 md:col-4">
                             <div className="text-color-secondary mb-1 text-sm font-semibold">Expected Return Date</div>
-                            <div>{selectedDetail.expected_return_date ? formatDateCalendar(selectedDetail.expected_return_date) : '-'}</div>
+                            <div>{formatDateOnly(selectedDetail.expected_return_date)}</div>
                         </div>
                         <div className="col-12 md:col-4">
                             <div className="text-color-secondary mb-1 text-sm font-semibold">Return Date</div>
-                            <div className="font-semibold text-primary">{selectedDetail.return_date ? formatDateCalendar(selectedDetail.return_date) : 'Not Returned Yet'}</div>
+                            <div className="font-semibold text-primary">{selectedDetail.return_date ? formatDateOnly(selectedDetail.return_date) : 'Not Returned Yet'}</div>
                         </div>
                         <div className="col-12">
                             <Divider />
@@ -299,15 +307,15 @@ const Table = ({
                                     <Divider />
                                 </div>
                                 <div className="col-12 md:col-6">
-                                    <div className="text-color-secondary mb-1 text-sm font-semibold">Reviewed By</div>
+                                    <div className="text-color-secondary mb-1 text-sm font-semibold">Approved/Rejected By</div>
                                     <div>{selectedDetail.approved_by}</div>
                                 </div>
                                 <div className="col-12 md:col-6">
-                                    <div className="text-color-secondary mb-1 text-sm font-semibold">Reviewed At</div>
+                                    <div className="text-color-secondary mb-1 text-sm font-semibold">Approved/Rejected At</div>
                                     <div>{selectedDetail.approved_at ? formatDateCalendar(selectedDetail.approved_at) : '-'}</div>
                                 </div>
                                 <div className="col-12 mt-2">
-                                    <div className="text-color-secondary mb-1 text-sm font-semibold">Reviewer Notes</div>
+                                    <div className="text-color-secondary mb-1 text-sm font-semibold">Approval Notes</div>
                                     <div className="p-3 bg-light border-round italic" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>{selectedDetail.approval_notes || 'No notes left.'}</div>
                                 </div>
                             </>

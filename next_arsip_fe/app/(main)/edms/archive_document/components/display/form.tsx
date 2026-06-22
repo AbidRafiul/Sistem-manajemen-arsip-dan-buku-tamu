@@ -27,9 +27,9 @@ const Form = ({
             formik?.resetForm();
         }}
     >
-        <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-3">
+        <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-3 text-sm">
             <div className="flex flex-column gap-2">
-                <label htmlFor="document_number">Document Number</label>
+                <label htmlFor="document_number" className="font-semibold text-slate-700">Document Number</label>
                 <InputText
                     id="document_number"
                     value={formik.values.document_number}
@@ -40,7 +40,7 @@ const Form = ({
             </div>
 
             <div className="flex flex-column gap-2">
-                <label htmlFor="document_name">Document Name</label>
+                <label htmlFor="document_name" className="font-semibold text-slate-700">Document Name</label>
                 <InputText
                     id="document_name"
                     value={formik.values.document_name}
@@ -52,7 +52,7 @@ const Form = ({
 
             <div className="grid">
                 <div className="col-12 md:col-6 flex flex-column gap-2">
-                    <label htmlFor="document_date">Document Date</label>
+                    <label htmlFor="document_date" className="font-semibold text-slate-700">Document Date</label>
                     <InputText
                         id="document_date"
                         type="date"
@@ -64,7 +64,7 @@ const Form = ({
                 </div>
 
                 <div className="col-12 md:col-6 flex flex-column gap-2">
-                    <label htmlFor="expired_date">Expired Date</label>
+                    <label htmlFor="expired_date" className="font-semibold text-slate-700">Expired Date</label>
                     <InputText
                         id="expired_date"
                         type="date"
@@ -76,7 +76,7 @@ const Form = ({
             </div>
 
             <div className="flex flex-column gap-2">
-                <label htmlFor="pic_name">PIC Name</label>
+                <label htmlFor="pic_name" className="font-semibold text-slate-700">PIC Name</label>
                 <InputText
                     id="pic_name"
                     value={formik.values.pic_name}

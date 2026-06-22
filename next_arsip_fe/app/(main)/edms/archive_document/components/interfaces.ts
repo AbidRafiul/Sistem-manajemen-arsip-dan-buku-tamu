@@ -24,6 +24,17 @@ export interface DocumentData {
     status: string
     created_at: string
     updated_at: string
+    document_type_id?: number | null
+    document_type_name?: string | null
+    document_category_id?: number | null
+    document_category_name?: string | null
+    classification_name?: string | null
+    confidentiality_level_id?: number | null
+    confidentiality_level_name?: string | null
+    confidentiality_level?: number | null
+    retention_schedule_id?: number | null
+    retention_name?: string | null
+    retention_years?: number | null
 }
 
 export interface VersionData {
