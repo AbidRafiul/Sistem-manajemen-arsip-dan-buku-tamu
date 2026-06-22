@@ -34,9 +34,14 @@ const getArchiveLoans = async (req, res) => {
         "d.document_number",
         "l.borrower_name",
         "l.loan_date",
+        "l.expected_return_date",
         "l.return_date",
         "l.purpose",
         "l.status",
+        "l.approved_by",
+        "l.approved_at",
+        "l.approval_notes",
+        "l.is_overdue",
         "l.created_at",
         "l.updated_at"
       )

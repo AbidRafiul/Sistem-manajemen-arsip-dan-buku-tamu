@@ -126,7 +126,13 @@ router.post("/", async (req, res) => {
 
       // 5. AMBIL JABATAN DARI TABEL ROLE (Pakai UserId)
       const oUserRole = await DB("mst_user_roles")
-        .where("user_id", oUser.user_id)
+        .leftJoin("mst_roles", "mst_user_roles.role_id", "mst_roles.role_id")
+        .select(
+          "mst_user_roles.role_id",
+          "mst_roles.role_code",
+          "mst_roles.role_name",
+        )
+        .where("mst_user_roles.user_id", oUser.user_id)
         .first();
 
       const roleId = oUserRole ? oUserRole.role_id : null;
@@ -135,8 +141,11 @@ router.post("/", async (req, res) => {
       const credential = {
         UserId: oUser.user_id, // HURUF BESAR: Biar NextAuth & AppMenu.tsx lo mulus baca UserId
         username: oUser.username,
+        fullname: oUser.fullname,
         name: oUser.fullname, // UBAH fullname JADI name: NextAuth butuh 'name' buat profile
         roleId: roleId,
+        role: oUserRole?.role_name || null,
+        roleCode: oUserRole?.role_code || null,
       };
 
       const secretKey = new TextEncoder().encode(process.env.USER_KEY);
