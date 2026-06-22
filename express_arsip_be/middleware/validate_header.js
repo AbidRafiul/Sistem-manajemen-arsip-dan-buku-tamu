@@ -90,7 +90,7 @@ export const validateSignature = async (req, res, next) => {
 
     const cUserUnique = req.headers["x-uniqueid"];
 
-    // 🔥 PERBAIKAN: Ganti "user_credential" jadi "mst_users"
+    //  PERBAIKAN: Ganti "user_credential" jadi "mst_users"
     const oUser = await DB("mst_users")
       // 1. Join user_roles pake user_id (bukan username)
       .leftJoin("mst_user_roles", "mst_users.user_id", "mst_user_roles.user_id")
@@ -99,7 +99,7 @@ export const validateSignature = async (req, res, next) => {
       .select(
         "mst_users.username",
         "mst_users.fullname",
-        "mst_roles.role_name as Role", 
+        "mst_roles.role_name as Role",
         "mst_users.telp",
         "mst_users.user_id as UniqueId"
       )
@@ -116,9 +116,9 @@ export const validateSignature = async (req, res, next) => {
 
     req.auth = {
       uniqueId: oUser.UniqueId,
-      username: oUser.Username,
-      telp: oUser.Telp,
-      fullname: oUser.Fullname,
+      username: oUser.username,
+      telp: oUser.telp,
+      fullname: oUser.fullname,
       role: oUser.Role,
     };
 
@@ -195,10 +195,10 @@ export const validateAccessToken = async (req, res, next) => {
   try {
     // ⚠️ KODE ASLI LO (TETAP DIPAKAI KARENA TIDAK BIKIN TENDANGAN 401)
     const oToken = await DB("access_token")
-      .select("ID as Id")
+      .select("id")
       .where({
-        Token: token,
-        Expired: "0",
+        token: token,
+        expired: "0",
       })
       .first();
 
@@ -212,7 +212,7 @@ export const validateAccessToken = async (req, res, next) => {
 
     // 💡 SEMENTARA GUE MATIKAN FITUR "TOKEN SEKALI PAKAI" INI BIAR DROPDOWN LO NGGAK ERROR
     // Karena kalau nyala, request ke-2 (positions) akan dibilang expired.
-    // await DB("access_token").where({ ID: oToken.Id }).update({ Expired: "1" }); 
+    // await DB("access_token").where({ id: oToken.id }).update({ expired: "1" }); 
 
     return next();
   } catch (error) {

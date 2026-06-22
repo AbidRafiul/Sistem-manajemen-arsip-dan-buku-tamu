@@ -49,9 +49,9 @@ const letterDispositionData = async (req, res) => {
         "tld.disposition_instruction_id",
         "mdi.disposition_instruction_id"
       )
-      .leftJoin("mst_users as from_user", "tld.from_user_id", "from_user.UserId")
-      .leftJoin("mst_users as to_user", "tld.to_user_id", "to_user.UserId")
-      .leftJoin("mst_users as processed_user", "tld.updated_by", "processed_user.UserId")
+      .leftJoin("mst_users as from_user", "tld.from_user_id", "from_user.user_id")
+      .leftJoin("mst_users as to_user", "tld.to_user_id", "to_user.user_id")
+      .leftJoin("mst_users as processed_user", "tld.updated_by", "processed_user.user_id")
       .select(
         "tld.disposition_id",
         "tld.incoming_letter_id",

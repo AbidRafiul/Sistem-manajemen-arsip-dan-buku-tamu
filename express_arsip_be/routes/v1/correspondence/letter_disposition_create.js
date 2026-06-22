@@ -67,13 +67,13 @@ const letterDispositionCreate = async (req, res) => {
       {
         field: "from_user_id",
         table: "mst_users",
-        key: "UserId",
+        key: "user_id",
         label: "User asal disposisi",
       },
       {
         field: "to_user_id",
         table: "mst_users",
-        key: "UserId",
+        key: "user_id",
         label: "User tujuan disposisi",
       },
       {
@@ -85,13 +85,13 @@ const letterDispositionCreate = async (req, res) => {
       {
         field: "created_by",
         table: "mst_users",
-        key: "UserId",
+        key: "user_id",
         label: "User pembuat",
       },
       {
         field: "updated_by",
         table: "mst_users",
-        key: "UserId",
+        key: "user_id",
         label: "User pengubah",
       },
     ];

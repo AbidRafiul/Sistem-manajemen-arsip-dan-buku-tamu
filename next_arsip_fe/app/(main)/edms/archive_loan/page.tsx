@@ -17,6 +17,12 @@ import {
 } from "./components/endpoints";
 import { initValue, State } from "./components/interfaces";
 
+const getLocalDateInputValue = () => {
+    const date = new Date();
+    const offsetMs = date.getTimezoneOffset() * 60 * 1000;
+    return new Date(date.getTime() - offsetMs).toISOString().slice(0, 10);
+};
+
 const Page = () => {
     const toast = useRef<Toast>(null);
     const { data: session } = useSession();
@@ -103,9 +109,10 @@ const Page = () => {
         try {
             const res = await postData(apiLoanCreate, {
                 document_id: input.document_id,
-                borrower_name: input.borrower_name,
+                borrower_name: input.borrower_name.trim(),
+                loan_date: getLocalDateInputValue(),
                 expected_return_date: input.expected_return_date,
-                purpose: input.purpose,
+                purpose: input.purpose.trim(),
             });
 
             showSuccess(toast, res.data?.message || 'Pengajuan peminjaman berhasil diajukan');

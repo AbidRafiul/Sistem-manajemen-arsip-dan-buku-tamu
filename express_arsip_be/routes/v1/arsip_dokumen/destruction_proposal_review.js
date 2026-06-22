@@ -8,7 +8,12 @@ const reviewDestructionProposal = async (req, res) => {
     const nProposalId = oPayload.proposal_id;
     const cStatus = oPayload.status;
     const cReviewNotes = oPayload.review_notes || null;
-    const cReviewedBy = req?.context?.Username || oPayload.reviewed_by || "system";
+    const cReviewedBy =
+      req?.auth?.username ||
+      req?.context?.username ||
+      req?.context?.Username ||
+      oPayload.reviewed_by ||
+      "system";
     const dNow = new Date();
 
     if (!nProposalId) {
@@ -83,7 +88,7 @@ const reviewDestructionProposal = async (req, res) => {
       func: "reviewDestructionProposal",
       request: oPayload,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.auth?.username || req?.context?.username || req?.context?.Username || "system",
     });
 
     return res.status(500).json(oResult);
