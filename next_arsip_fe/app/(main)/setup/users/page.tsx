@@ -1,5 +1,6 @@
 'use client'
 import postData from "@/lib/axios/postData";
+import apiGetData from "@/lib/axios/getData";
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
 import { showError, showSuccess } from "@/lib/tools/generalTools";
@@ -11,14 +12,22 @@ import Form from "./components/display/form";
 import { useSession } from "next-auth/react";
 import { DataRekap } from "@/types/print-tools";
 import Print from "./components/display/print";
-import { apiEndpointGetNavDataEdit, apiEndpointUpdateNav } from "./components/endpoints";
+import { 
+    apiEndpointGetNavDataEdit, 
+    apiEndpointUpdateNav, 
+    apiEndpointCreate, 
+    apiEndpointUpdate, 
+    apiEndpointDelete, 
+    apiEndpointGet 
+} from "./components/endpoints";
 import NavForm from "./components/display/navbar";
 
 const Page = () => {
     const toast = useRef<Toast>(null)
     const { data: session } = useSession()
 
-    const [state, setState] = useState<State>({
+    // 1. TAMBAH MASTER DATA KE STATE GLOBAL
+    const [state, setState] = useState<State & { masterData?: any }>({
         load: false,
         data: [],
         add: false,
@@ -29,6 +38,14 @@ const Page = () => {
         filters: { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
         session: null,
         submittedData: null,
+        masterData: {
+            branches: [],
+            positions: [],
+            divisions: [],
+            departments: [],
+            workUnits: [],
+            roles: [] // Tempat nyimpen data mst_roles
+        }
     })
 
     const [dataRekap, setDataRekap] = useState<DataRekap>({
@@ -60,11 +77,11 @@ const Page = () => {
             password: '',
             telp: '',
             status: '0',
-            role: 'superadmin',
+            role: '', // 2. PERBAIKAN: Jangan pakai 'superadmin', kosongkan saja karena isinya angka ID
         },
         validate: (data: initValue) => {
             let errors = {} as initValue;
-            // Validasi name
+            
             if (!data.fullname) {
                 errors.fullname = 'Nama wajib diisi';
             } else if (data.fullname.length < 3) {
@@ -73,12 +90,10 @@ const Page = () => {
                 errors.fullname = 'Nama hanya boleh berisi huruf dan spasi';
             }
 
-            // Validasi username
             if (!data.username) {
                 errors.username = 'Username wajib diisi';
             }
 
-            // Validasi password
             if (!data.password && !state.edit) {
                 errors.password = 'Password wajib diisi';
             }
@@ -97,14 +112,12 @@ const Page = () => {
                 }
             }
 
-            // Validasi no_hp
             if (!data.telp) {
                 errors.telp = 'Nomor HP wajib diisi';
             } else if (!/^(08|(\+62))\d{8,13}$/.test(data.telp)) {
                 errors.telp = 'Nomor HP harus dimulai dengan 08 dan panjang 9-13 digit';
             }
 
-            console.log(errors)
             return errors;
         },
         onSubmit: (data) => {
@@ -112,6 +125,109 @@ const Page = () => {
         },
     });
 
+    // A. Mengambil Master Data (Dropdown)
+    useEffect(() => {
+        if (state.add || state.edit) {
+            const vaEndpoints = [
+                { key: 'branches', path: '/master/organisasi/branches' },
+                { key: 'positions', path: '/master/organisasi/positions' },
+                { key: 'divisions', path: '/master/organisasi/divisions' },
+                { key: 'departments', path: '/master/organisasi/department' },
+                { key: 'workUnits', path: '/master/organisasi/work-unit' },
+                { key: 'roles', path: '/setup/roles' } // Mengambil Role Dinamis
+            ];
+
+            const token = (session as any)?.accessToken || localStorage.getItem('token');
+            const myUserId = (session as any)?.user?.UserId || (session as any)?.user?.id || '';
+
+            vaEndpoints.forEach((oItem) => {
+                apiGetData(oItem.path, {}, {
+                    Authorization: `Bearer ${token}`,
+                    'x-uniqueid': myUserId,
+                    'x-timestamp': new Date().toISOString()
+                })
+                .then((oRes) => {
+                    setState((prev: any) => ({
+                        ...prev,
+                        masterData: { ...prev.masterData, [oItem.key]: oRes.data.data }
+                    }));
+                })
+                .catch((e) => console.error(`Error loading ${oItem.key}:`, e));
+            });
+        }
+    }, [state.add, state.edit, session]);
+
+    // B. Handle Save / Update
+    const handleSave = async (input: initValue) => {
+        setState((p) => ({ ...p, load: true }));
+
+        try {
+            const idUser = input.user_id;
+            const isEdit = Boolean(idUser);
+            const cEndPoint = isEdit ? apiEndpointUpdate : apiEndpointCreate;
+
+            const oHeaders: Record<string, string> = {
+                'X-Credential': JSON.stringify({
+                    username: input.username,
+                    password: input.password
+                })
+            };
+
+            const oBody: Record<string, any> = {
+                fullname: input.fullname,
+                username: input.username,
+                password: input.password,
+                telp: input.telp,
+                status: input.status,
+                role: input.role,
+                branch_id: input.branch_id,
+                position_id: input.position_id,
+                division_id: input.division_id,
+                department_id: input.department_id,
+                work_unit_id: input.work_unit_id
+            };
+
+            if (isEdit) oBody['user_id'] = idUser;
+
+            const vaData = await postData(cEndPoint, oBody, oHeaders);
+            showSuccess(toast, vaData.data?.data?.message || 'Berhasil Menyimpan Data');
+            formik.resetForm();
+            setState((p) => ({ ...p, add: false, edit: false, delete: false }));
+
+            // Refresh tabel
+            getData(apiEndpointGet);
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || 'Terjadi Kesalahan');
+        } finally {
+            setState((p) => ({ ...p, load: false, submittedData: null }));
+        }
+    };
+
+    // C. Handle Delete
+    const handleDelete = async () => {
+        setState((p) => ({ ...p, load: true }));
+
+        try {
+            if (state.selectedUsers.length < 1) return;
+
+            const vaUserId = state.selectedUsers.map((v: any) => v.user_id);
+            const finalPayload = { userId: vaUserId.map(Number) };
+
+            const vaData = await postData(apiEndpointDelete, finalPayload);
+            showSuccess(toast, vaData.data?.data?.message || 'Berhasil Menghapus Data');
+
+            setState((p) => ({ ...p, selectedUsers: [], delete: false }));
+            
+            // Refresh tabel
+            getData(apiEndpointGet);
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || 'Terjadi Kesalahan');
+        } finally {
+            setState((p) => ({ ...p, load: false }));
+        }
+    };
 
     const getData = async (apiEndpoint: string) => {
         setState((p) => ({ ...p, load: true }));
@@ -121,7 +237,6 @@ const Page = () => {
                 ...p,
                 data: res.data.data
             }));
-
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || 'Terjadi Kesalahan');
@@ -137,9 +252,9 @@ const Page = () => {
             const headers = {
                 'X-Level': '1',
             };
-            const vaData = await postData(apiEndpointGetNavDataEdit, { UserId: userId }, headers);
+                const vaData = await apiGetData(apiEndpointGetNavDataEdit, { UserId: userId }, headers);
+            
             let res = vaData.data;
-            console.log(res);
             setNavBar((p) => ({
                 ...p,
                 data: JSON.parse(JSON.stringify(res.data)),
@@ -148,7 +263,6 @@ const Page = () => {
                 show: true
             }));
         } catch (error: any) {
-            console.log(error);
             const e = error?.response?.data || error;
             showError(toast, e?.message || 'Terjadi Kesalahan');
         } finally {
@@ -160,26 +274,22 @@ const Page = () => {
         setNavBar((p) => ({ ...p, load: true }));
 
         try {
-            console.log(navBar.menu)
             const res = await postData(
                 apiEndpointUpdateNav,
                 {
                     UserId: navBar.userId,
                     Menu: JSON.stringify(navBar.menu),
                 },
-
             );
             showSuccess(toast, res.data.message);
             setNavBar((p) => ({ ...p, show: false, }));
         } catch (error: any) {
-            console.log(error);
             const e = error?.response?.data || error;
             showError(toast, e?.message || 'Terjadi Kesalahan');
         } finally {
             setNavBar((p) => ({ ...p, load: false }));
         }
     }
-
 
     useEffect(() => {
         if (session) {
@@ -190,25 +300,24 @@ const Page = () => {
         }
     }, [session]);
 
-
-
     return <>
         <div className="p-4">
             <Toast ref={toast} position="top-right" />
 
-            {/* <input
-                type="file"
-                ref={fileInputRef}
-                accept=".xlsx,.xls"
-                onChange={handleImport}
-                style={{ display: "none" }}
-            /> */}
-
-
             <Table getNav={getNav} dataRekap={dataRekap} setDataRekap={setDataRekap} state={state} toast={toast} setState={setState} formik={formik} getData={getData} />
             <Print dataRekap={dataRekap} setDataRekap={setDataRekap} state={state} toast={toast} setState={setState} formik={formik} getData={getData} />
             <NavForm navBar={navBar} setNavBar={setNavBar} handleSaveNavbar={handleSaveNavbar} />
-
+            
+            {/* 3. KOMPONEN FORM DIPANGGIL DI SINI DENGAN PROPS YANG LENGKAP */}
+            <Form 
+                formik={formik} 
+                state={state} 
+                setState={setState} 
+                toast={toast} 
+                getData={getData} 
+                handleSave={handleSave} 
+                handleDelete={handleDelete} 
+            />
         </div>
     </>
 }

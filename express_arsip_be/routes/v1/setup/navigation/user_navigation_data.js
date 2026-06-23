@@ -30,7 +30,6 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        // UBAH DI SINI: Dari Username jadi UserId (Biar sesuai dengan DB)
         UserId: Joi.alternatives()
           .try(Joi.number(), Joi.string())
           .required()
@@ -53,7 +52,7 @@ router.post("/", async (req, res) => {
 
       Logging(null, {
         file: "user_navigation_data.js",
-        func: "get",
+        func: "post", // UBAH: disesuaikan dengan router.post
         request: oPayload,
         response: oResult,
         user: req?.auth?.username || "",
@@ -62,33 +61,33 @@ router.post("/", async (req, res) => {
       return res.status(422).json(oResult);
     }
 
+    // 1. Ambil Menu Kustom User (Kustomisasi) dari user_navigation
     const oNavigation = await DB("user_navigation")
       .select("menu")
       .where("user_id", oPayload.UserId)
       .first();
       
-    // 2. Definisikan vaData dari hasil query
-    // (Misal di DB disimpen sebagai string JSON, kalau udah array biarkan saja)
     let vaData = oNavigation ? oNavigation.menu : [];
     if (typeof vaData === 'string') {
         try { vaData = JSON.parse(vaData); } catch(e) {}
     }
 
-    // 3. Validasi apakah data ada
-    if (!Array.isArray(vaData) || vaData.length < 1) {
-      return res.status(400).json({
-        status: status.GAGAL,
-        message: "Data navigasi tidak ditemukan",
-        datetime: formatDateSystem(),
-      });
+    // 2. Ambil Peta Induk (Master Navigation) buat nampilin pilihan checkbox di UI
+    const oMasterNav = await DB("mst_navigation").select("menu").first();
+    let masterMenu = oMasterNav ? oMasterNav.menu : [];
+    if (typeof masterMenu === 'string') {
+        try { masterMenu = JSON.parse(masterMenu); } catch(e) {}
     }
 
-    // 4. Kirim respon ke Frontend (Hapus pemanggilan 'source' karena bikin error)
+    // (Validasi block array dihapus agar user baru yang belum punya menu tidak kena error 400)
+
+    // 3. Kirim respon LENGKAP ke Frontend
     return res.status(200).json({
       status: status.SUKSES,
       message: "Data ditemukan",
       datetime: formatDateSystem(),
-      data: vaData,
+      data: masterMenu, // Peta Induk (Semua opsi menu) -> Dibaca res.data di Frontend
+      menu: vaData,     // Kustomisasi User -> Dibaca res.menu di Frontend
     });
   } catch (error) {
     const oResult = {
@@ -99,7 +98,7 @@ router.post("/", async (req, res) => {
 
     Logging(error, {
       file: "user_navigation_data.js",
-      func: "get",
+      func: "post", // UBAH: disesuaikan dengan router.post
       request: oPayload,
       response: oResult,
       user: req?.auth?.username || "",

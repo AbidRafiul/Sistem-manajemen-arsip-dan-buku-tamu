@@ -56,6 +56,15 @@ export interface State {
     };
     session: Session | null
     submittedData: initValue | null
+    // 1. PERBAIKAN: Mendaftarkan masterData agar Typescript mengenali state dropdown
+    masterData?: {
+        branches: any[];
+        positions: any[];
+        divisions: any[];
+        departments: any[];
+        workUnits: any[];
+        roles: any[];
+    };
 }
 
 export interface TableProps {
@@ -75,8 +84,11 @@ export interface FormProps {
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>;
     formik: FormikProps<initValue>
-    toast: RefObject<Toast>
-    getData: (apiEndpoint: string) => Promise<void>;
+    toast?: RefObject<Toast> // Dibuat optional karena logic toast pindah ke page.tsx
+    getData?: (apiEndpoint: string) => Promise<void>; // Dibuat optional
+    // 2. PERBAIKAN: Mendaftarkan handler yang dikirim dari page.tsx
+    handleSave: (input: initValue) => Promise<void>;
+    handleDelete: () => Promise<void>;
 }
 
 export interface NavbarProps {

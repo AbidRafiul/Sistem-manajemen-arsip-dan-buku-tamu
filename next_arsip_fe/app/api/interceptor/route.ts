@@ -216,7 +216,6 @@ async function postCRUD(request: NextRequest, token: any, a2fCookie: string) {
         const targetUrl = `${process.env.API_URL}/${endpoint.replace(/^\/+/, '')}`;
         console.log(" [DEBUG INTERCEPTOR] Menembak ke Backend:", targetUrl);
         console.log(" [DEBUG INTERCEPTOR] Isi Body:", body);
-        // ------------------------------------------
 
         const result = await axios.post(
             targetUrl,

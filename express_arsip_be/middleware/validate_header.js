@@ -17,33 +17,37 @@ import {
 } from "../routes/v1/components/tools/general.js";
 import DB from "../core/config/knex.js";
 import { Logging } from "../routes/v1/components/tools/servertool.js";
-import { AsyncLocalStorage } from "async_hooks"
+import { AsyncLocalStorage } from "async_hooks";
 
 const als = new AsyncLocalStorage();
 
 export const validateTimestamp = async (req, res, next) => {
   try {
-    const timestamp = req.headers["x-timestamp"];
-    if (process.env.APP_DEBUG && process.env.APP_DEBUG == 'true' && req.headers["x-uniqueid"]) {
-      return next()
+    const cTimestamp = req.headers["x-timestamp"];
+    if (
+      process.env.APP_DEBUG &&
+      process.env.APP_DEBUG == "true" &&
+      req.headers["x-uniqueid"]
+    ) {
+      return next();
     }
 
-    if (!timestamp) {
+    if (!cTimestamp) {
       return res.status(400).json({
         status: status.BAD_REQUEST,
         message: "Missing timetstamp header",
         datetime: formatDateSystem(),
       });
     }
-    const inputDate = new Date(timestamp).toLocaleDateString("en-US", {
+    const dInputDate = new Date(cTimestamp).toLocaleDateString("en-US", {
       timeZone: "Asia/Jakarta",
     });
 
-    const now = new Date();
-    const diffMs = Math.abs(now - inputDate);
-    const diffMinutes = diffMs / 1000 / 60;
+    const dNow = new Date();
+    const nDiffMs = Math.abs(dNow - dInputDate);
+    const nDiffMinutes = nDiffMs / 1000 / 60;
 
-    if (diffMinutes > 5) {
+    if (nDiffMinutes > 5) {
       return res.status(400).json({
         status: status.BAD_REQUEST,
         message: "Request timestamp expired",
@@ -53,7 +57,7 @@ export const validateTimestamp = async (req, res, next) => {
 
     next();
   } catch (error) {
-    Logging(error)
+    Logging(error);
     return res.status(401).json({
       status: status.BAD_REQUEST,
       message: "Unauthorized",
@@ -65,15 +69,15 @@ export const validateTimestamp = async (req, res, next) => {
 export const getRequestContext = () => als.getStore();
 
 export const contextMiddleware = (req, res, next) => {
-  const store = {
+  const oStore = {
     requestId: Date.now(),
     method: req.method,
     url: req.url,
     body: req.body,
-    auth: req?.auth || null
+    auth: req?.auth || null,
   };
 
-  als.run(store, () => {
+  als.run(oStore, () => {
     next();
   });
 };
@@ -101,7 +105,7 @@ export const validateSignature = async (req, res, next) => {
         "mst_users.fullname",
         "mst_roles.role_name as Role",
         "mst_users.telp",
-        "mst_users.user_id as UniqueId"
+        "mst_users.user_id as UniqueId",
       )
       .where("mst_users.user_id", cUserUnique)
       .first();
@@ -125,7 +129,7 @@ export const validateSignature = async (req, res, next) => {
     req.context = oUser;
     next();
   } catch (error) {
-    Logging(error)
+    Logging(error);
     return res.status(401).json({
       status: status.BAD_REQUEST,
       message: "Unauthorized",
@@ -135,14 +139,18 @@ export const validateSignature = async (req, res, next) => {
 };
 
 export const validateBaseToken = async (req, res, next) => {
-  const header = req.headers["authorization"];
-  const token = header && header.split(" ")[1];
+  const cHeader = req.headers["authorization"];
+  const cToken = cHeader && cHeader.split(" ")[1];
 
-  if (process.env.APP_DEBUG && process.env.APP_DEBUG == 'true' && req.headers["x-uniqueid"]) {
-    return next()
+  if (
+    process.env.APP_DEBUG &&
+    process.env.APP_DEBUG == "true" &&
+    req.headers["x-uniqueid"]
+  ) {
+    return next();
   }
 
-  if (!token || !header.startsWith("Basic ")) {
+  if (!cToken || !cHeader.startsWith("Basic ")) {
     return res.status(400).json({
       status: status.BAD_REQUEST,
       message: "No token provided",
@@ -151,12 +159,12 @@ export const validateBaseToken = async (req, res, next) => {
   }
 
   try {
-    const credentials = Buffer.from(token, "base64").toString("utf-8");
-    const [username, password] = credentials.split(":");
+    const cCredentials = Buffer.from(cToken, "base64").toString("utf-8");
+    const [cUsername, cPassword] = cCredentials.split(":");
 
     if (
-      !hashEquals(username, hmac(getClientKey(), getClientSecret())) &&
-      !hashEquals(password, hmac(getClientPassKey(), getClientSecret()))
+      !hashEquals(cUsername, hmac(getClientKey(), getClientSecret())) &&
+      !hashEquals(cPassword, hmac(getClientPassKey(), getClientSecret()))
     ) {
       return res.status(400).json({
         status: status.BAD_REQUEST,
@@ -167,7 +175,7 @@ export const validateBaseToken = async (req, res, next) => {
 
     return next();
   } catch (error) {
-    Logging(error)
+    Logging(error);
     return res.status(401).json({
       status: status.BAD_REQUEST,
       message: "Unauthorized",
@@ -177,14 +185,18 @@ export const validateBaseToken = async (req, res, next) => {
 };
 
 export const validateAccessToken = async (req, res, next) => {
-  const header = req.headers["authorization"];
-  const token = header && header.split(" ")[1];
+  const cHeader = req.headers["authorization"];
+  const cToken = cHeader && cHeader.split(" ")[1];
 
-  if (process.env.APP_DEBUG && process.env.APP_DEBUG == 'true' && req.headers["x-uniqueid"]) {
-    return next()
+  if (
+    process.env.APP_DEBUG &&
+    process.env.APP_DEBUG == "true" &&
+    req.headers["x-uniqueid"]
+  ) {
+    return next();
   }
 
-  if (!token || !header.startsWith("Bearer ")) {
+  if (!cToken || !cHeader.startsWith("Bearer ")) {
     return res.status(400).json({
       status: status.BAD_REQUEST,
       message: "No token provided",
@@ -193,11 +205,11 @@ export const validateAccessToken = async (req, res, next) => {
   }
 
   try {
-    // ⚠️ KODE ASLI LO (TETAP DIPAKAI KARENA TIDAK BIKIN TENDANGAN 401)
+    // KODE ASLI LO (TETAP DIPAKAI KARENA TIDAK BIKIN TENDANGAN 401)
     const oToken = await DB("access_token")
       .select("id")
       .where({
-        token: token,
+        token: cToken,
         expired: "0",
       })
       .first();
@@ -210,13 +222,13 @@ export const validateAccessToken = async (req, res, next) => {
       });
     }
 
-    // 💡 SEMENTARA GUE MATIKAN FITUR "TOKEN SEKALI PAKAI" INI BIAR DROPDOWN LO NGGAK ERROR
+    // SEMENTARA GUE MATIKAN FITUR "TOKEN SEKALI PAKAI" INI BIAR DROPDOWN LO NGGAK ERROR
     // Karena kalau nyala, request ke-2 (positions) akan dibilang expired.
-    // await DB("access_token").where({ id: oToken.id }).update({ expired: "1" }); 
+    // await DB("access_token").where({ id: oToken.id }).update({ expired: "1" });
 
     return next();
   } catch (error) {
-    Logging(error)
+    Logging(error);
     res.status(401).json({
       status: status.BAD_REQUEST,
       message: "Unauthorized",
