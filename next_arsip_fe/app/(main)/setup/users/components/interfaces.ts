@@ -78,6 +78,8 @@ export interface TableProps {
     toast: RefObject<Toast>
     navBar?: NavState;
     setNavBar?: React.Dispatch<React.SetStateAction<NavState>>;
+    handleSave: (input: initValue) => Promise<void>;
+    handleDelete: () => Promise<void>;
 }
 
 export interface FormProps {
@@ -89,6 +91,16 @@ export interface FormProps {
     // 2. PERBAIKAN: Mendaftarkan handler yang dikirim dari page.tsx
     handleSave: (input: initValue) => Promise<void>;
     handleDelete: () => Promise<void>;
+}
+
+export interface PrintProps {
+    state: State;
+    setState: React.Dispatch<React.SetStateAction<State>>;
+    formik: FormikProps<initValue>;
+    getData?: (apiEndpoint: string) => Promise<void>;
+    toast: React.RefObject<Toast>;
+    dataRekap: DataRekap;
+    setDataRekap: React.Dispatch<React.SetStateAction<DataRekap>>;
 }
 
 export interface NavbarProps {

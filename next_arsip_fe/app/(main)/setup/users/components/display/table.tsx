@@ -12,7 +12,7 @@ import { apiEndpointGet } from '../endpoints';
 import { useEffect } from 'react';
 import Form from './form';
 
-const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBar, navBar, getNav }: TableProps) => {
+const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBar, navBar, getNav, handleSave, handleDelete }: TableProps) => {
     const headerTemplate = (
         <div className="flex flex-wrap align-items-center justify-content-between gap-2">
             <span className="text-xl font-bold">Users Management</span>
@@ -190,7 +190,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                 </DataTable>
             </div>
 
-            <Form getData={getData} toast={toast} state={state} setState={setState} formik={formik} />
+           <Form getData={getData} toast={toast} state={state} setState={setState} formik={formik} handleSave={handleSave} handleDelete={handleDelete} />
         </>
     );
 };
