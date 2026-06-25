@@ -3,27 +3,46 @@
  * @returns { Promise<void> }
  */
 export async function up(knex) {
-  // Cek apakah UniqueId masih ada
-  const hasUniqueId = await knex.schema.hasColumn('user_navigation', 'UniqueId');
-  
+  // Cek apakah kolom lama (UniqueId) masih ada
+  const hasUniqueId = await knex.schema.hasColumn(
+    "navigasi_pengguna",
+    "UniqueId",
+  );
+
   if (hasUniqueId) {
-    // Kalau masih ada, ganti nama SEKALIGUS ganti tipe data pakai Raw SQL
-    await knex.raw('ALTER TABLE user_navigation CHANGE UniqueId UserId INT;');
-    console.log("Kolom UniqueId berhasil diubah menjadi UserId (INT).");
+    // Rename sekaligus ubah tipe data ke INT untuk konsistensi dengan mst_pengguna.nama_pengguna
+    await knex.raw(
+      "ALTER TABLE navigasi_pengguna CHANGE UniqueId nama_pengguna INT;",
+    );
+    console.log("Kolom UniqueId berhasil diubah menjadi nama_pengguna (INT).");
   } else {
-    // Kalau ternyata udah ke-rename jadi UserId (efek crash sebelumnya), kita tinggal ganti tipenya aja
-    const hasUserId = await knex.schema.hasColumn('user_navigation', 'UserId');
-    if (hasUserId) {
-      await knex.raw('ALTER TABLE user_navigation MODIFY UserId INT;');
-      console.log("Kolom UserId berhasil diubah tipe datanya menjadi INT.");
+    // Cek jika sudah bernama nama_pengguna, pastikan tipe datanya adalah INT
+    const hasNamaPengguna = await knex.schema.hasColumn(
+      "navigasi_pengguna",
+      "nama_pengguna",
+    );
+    if (hasNamaPengguna) {
+      await knex.raw("ALTER TABLE navigasi_pengguna MODIFY nama_pengguna INT;");
+      console.log(
+        "Kolom nama_pengguna sudah sesuai dan dikonfirmasi sebagai INT.",
+      );
     }
   }
 }
 
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
 export async function down(knex) {
-  const hasUserId = await knex.schema.hasColumn('user_navigation', 'UserId');
-  if (hasUserId) {
-    // Kembalikan ke asalnya
-    await knex.raw('ALTER TABLE user_navigation CHANGE UserId UniqueId VARCHAR(36);');
+  const hasNamaPengguna = await knex.schema.hasColumn(
+    "navigasi_pengguna",
+    "nama_pengguna",
+  );
+  if (hasNamaPengguna) {
+    // Rollback: Kembalikan ke format lama jika diperlukan
+    await knex.raw(
+      "ALTER TABLE navigasi_pengguna CHANGE nama_pengguna unique_id VARCHAR(36);",
+    );
   }
 }

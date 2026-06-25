@@ -1,13 +1,17 @@
 import express from "express";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
 import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
   const oPayload = req.body;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     const vaData = await DB("mst_retention_schedule")
@@ -18,8 +22,8 @@ router.get("/", async (req, res) => {
         "retention_name",
         "retention_years",
         "retention_action",
-        "description",
-        "status"
+        "deskripsi",
+        "status",
       )
       .where("status", "active")
       .orderBy("created_at", "desc");
@@ -43,7 +47,7 @@ router.get("/", async (req, res) => {
       func: "get",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

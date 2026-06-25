@@ -19,7 +19,7 @@ const incomingLetterUpdate = async (req, res) => {
       sender_name: Joi.string().max(150).optional(),
       sender_institution: Joi.string().max(150).allow(null, "").optional(),
       subject: Joi.string().max(255).optional(),
-      attachment_description: Joi.string().allow(null, "").optional(),
+      attachment_deskripsi: Joi.string().allow(null, "").optional(),
 
       letter_type_id: Joi.number().allow(null).optional(),
       document_type_id: Joi.number().allow(null).optional(),
@@ -98,8 +98,8 @@ const incomingLetterUpdate = async (req, res) => {
       },
       {
         field: "updated_by",
-        table: "mst_users",
-        key: "UserId",
+        table: "mst_pengguna",
+        key: "NamaPengguna",
         label: "User pengubah",
       },
     ];
@@ -133,7 +133,7 @@ const incomingLetterUpdate = async (req, res) => {
       sender_name: oPayload.sender_name,
       sender_institution: oPayload.sender_institution,
       subject: oPayload.subject,
-      attachment_description: oPayload.attachment_description,
+      attachment_deskripsi: oPayload.attachment_deskripsi,
       letter_type_id: oPayload.letter_type_id,
       document_type_id: oPayload.document_type_id,
       archive_classification_id: oPayload.archive_classification_id,
@@ -156,10 +156,10 @@ const incomingLetterUpdate = async (req, res) => {
 
       await trx("trx_incoming_letter_trackings").insert({
         incoming_letter_id: oPayload.incoming_letter_id,
-        disposition_id: null,
+        disid_jabatan: null,
         action_name: "surat_diupdate",
-        from_user_id: null,
-        to_user_id: null,
+        from_nama_pengguna: null,
+        to_nama_pengguna: null,
         previous_status: oLetter.status,
         current_status: oUpdate.status || oLetter.status,
         notes: "Data surat masuk diperbarui",

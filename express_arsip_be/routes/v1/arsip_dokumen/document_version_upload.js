@@ -18,7 +18,8 @@ const uploadDocumentVersion = async (req, res) => {
     const cFilePath = `/uploads/documents/${oFile.filename}`;
     const nDocumentId = parseInt(oPayload.document_id, 10);
     const cChangeNotes = oPayload.change_notes || null;
-    const cUploadedBy = req?.context?.Username || oPayload.uploaded_by || "system";
+    const cUploadedBy =
+      req?.context?.nama_pengguna || oPayload.uploaded_by || "system";
     const dNow = new Date();
 
     if (!nDocumentId) {
@@ -90,7 +91,7 @@ const uploadDocumentVersion = async (req, res) => {
       func: "uploadDocumentVersion",
       request: oPayload,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

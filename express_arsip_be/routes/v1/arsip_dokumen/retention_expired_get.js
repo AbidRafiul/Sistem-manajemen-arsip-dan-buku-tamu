@@ -28,31 +28,31 @@ const getRetentionExpiredDocuments = async (req, res) => {
         "rs.retention_action",
         // Kalkulasi tanggal retensi berakhir
         DB.raw(
-          "DATE_ADD(d.document_date, INTERVAL rs.retention_years YEAR) as RetentionEndDate"
+          "DATE_ADD(d.document_date, INTERVAL rs.retention_years YEAR) as RetentionEndDate",
         ),
         // Kalkulasi berapa tahun sudah lewat
         DB.raw(
-          "TIMESTAMPDIFF(YEAR, DATE_ADD(d.document_date, INTERVAL rs.retention_years YEAR), NOW()) as YearsOverRetention"
+          "TIMESTAMPDIFF(YEAR, DATE_ADD(d.document_date, INTERVAL rs.retention_years YEAR), NOW()) as YearsOverRetention",
         ),
         // Status proposal pemusnahan (jika ada)
         DB.raw(
-          "(SELECT status FROM trx_destruction_proposals WHERE document_id = d.document_id AND status NOT IN ('rejected', 'executed') LIMIT 1) as ActiveProposalStatus"
-        )
+          "(SELECT status FROM trx_destruction_proposals WHERE document_id = d.document_id AND status NOT IN ('rejected', 'executed') LIMIT 1) as ActiveProposalStatus",
+        ),
       )
       .join(
         "mst_retention_schedule as rs",
         "d.retention_schedule_id",
-        "rs.retention_schedule_id"
+        "rs.retention_schedule_id",
       )
       .leftJoin(
         "mst_document_categories as dc",
         "d.document_category_id",
-        "dc.document_category_id"
+        "dc.document_category_id",
       )
       .where("d.status", cStatus)
       // Kondisi utama: masa retensi sudah lewat
       .whereRaw(
-        "DATE_ADD(d.document_date, INTERVAL rs.retention_years YEAR) <= NOW()"
+        "DATE_ADD(d.document_date, INTERVAL rs.retention_years YEAR) <= NOW()",
       );
 
     if (nDocumentCategoryId) {
@@ -81,7 +81,7 @@ const getRetentionExpiredDocuments = async (req, res) => {
       func: "getRetentionExpiredDocuments",
       request: req.query,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

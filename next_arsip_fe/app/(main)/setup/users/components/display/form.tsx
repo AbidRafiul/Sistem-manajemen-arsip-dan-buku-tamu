@@ -6,163 +6,10 @@ import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
-import { apiEndpointCreate, apiEndpointDelete, apiEndpointGet, apiEndpointUpdate } from '../endpoints';
-import { showError, showSuccess } from '@/lib/tools/generalTools';
-import { useState, useEffect } from 'react';
-import postData from '@/lib/axios/postData';
-import getData from '@/lib/axios/getData'; // 🔥 1. IMPORT UTILITY GET DATA BARU
+import { useEffect } from 'react';
 
-const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps) => {
-    const [masterData, setMasterData] = useState<any>({
-        branches: [],
-        positions: [],
-        divisions: [],
-        departments: [],
-        workUnits: []
-    });
-
-    useEffect(() => {
-        if (state.add || state.edit) {
-            const vaEndpoints = [
-                { key: 'branches', path: '/master/organisasi/branches' },
-                { key: 'positions', path: '/master/organisasi/positions' },
-                { key: 'divisions', path: '/master/organisasi/divisions' },
-                { key: 'departments', path: '/master/organisasi/department' },
-                { key: 'workUnits', path: '/master/organisasi/work-unit' }
-            ];
-
-            const token = localStorage.getItem('token');
-            const myUserId = '1'; // Sesuai UserId superadmin di database
-
-            vaEndpoints.forEach((oItem) => {
-                // 🔥 2. UBAH MENJADI GE-TDATA
-                // Parameter: (endpoint, params/query, customHeader)
-                getData(
-                    oItem.path,
-                    {}, // params kosong karena kita tidak melakukan filter query url
-                    {
-                        Authorization: `Bearer ${token}`,
-                        'x-uniqueid': myUserId,
-                        'x-timestamp': new Date().toISOString()
-                    }
-                )
-                    .then((oRes) => {
-                        setMasterData((prev: any) => ({ ...prev, [oItem.key]: oRes.data.data }));
-                    })
-                    .catch((e) => console.error(`Error loading ${oItem.key}:`, e));
-            });
-        }
-    }, [state.add, state.edit]);
-
-    const fetchComponentData = async () => {
-        setState((p) => ({ ...p, load: true }));
-
-        try {
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || 'Terjadi Kesalahan');
-        } finally {
-            setState((p) => ({ ...p, load: false }));
-        }
-    };
-
-    const handleSave = async (input: initValue) => {
-        setState((p) => ({ ...p, load: true }));
-
-        try {
-            const idUser = input.user_id;
-            const isEdit = Boolean(idUser);
-
-            console.log('INPUT DATA YANG DIKIRIM:', input);
-            console.log('APAKAH INI EDIT?', isEdit);
-
-            const cEndPoint = isEdit ? apiEndpointUpdate : apiEndpointCreate;
-
-            const oHeaders: Record<string, string> = {
-                'X-Level': '1',
-                'X-Credential': JSON.stringify({
-                    username: input.username,
-                    password: input.password
-                })
-            };
-
-            const oBody: Record<string, any> = {
-                fullname: input.fullname,
-                username: input.username,
-                password: input.password,
-                telp: input.telp,
-                status: input.status,
-                role: input.role,
-                branch_id: input.branch_id,
-                position_id: input.position_id,
-                division_id: input.division_id,
-                department_id: input.department_id,
-                work_unit_id: input.work_unit_id
-            };
-
-            if (isEdit) {
-                oBody['user_id'] = idUser;
-            }
-
-            const vaData = await postData(cEndPoint, oBody, oHeaders);
-            const res = vaData.data;
-
-            showSuccess(toast, res.data?.message || 'Berhasil Menyimpan Data');
-            formik.resetForm();
-            setState((p) => ({ ...p, add: false, edit: false, delete: false }));
-
-            // Refresh data setelah save/update
-            await postData(apiEndpointGet, {});
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || 'Terjadi Kesalahan');
-        } finally {
-            setState((p) => ({ ...p, load: false, submittedData: null }));
-        }
-    };
-
-    const handleDelete = async () => {
-        setState((p) => ({ ...p, load: true }));
-
-        try {
-            console.log('STATE SELECTED USERS:', JSON.stringify(state.selectedUsers));
-
-            if (state.selectedUsers.length < 1) return;
-
-            const vaUserId = state.selectedUsers.map((v: any) => {
-                console.log('Object Row:', v);
-                return v.user_id;
-            });
-
-            const finalPayload = { userId: vaUserId.map(Number) };
-            console.log('PAYLOAD FINAL KE BACKEND:', finalPayload);
-
-            const vaData = await postData(apiEndpointDelete, finalPayload);
-            const res = vaData.data;
-
-            showSuccess(toast, res.data?.message || 'Berhasil Menghapus Data');
-
-            // PERBAIKAN UTAMA:
-            // Tarik data terbaru menggunakan postData (karena backend butuh POST)
-            const refreshData = await postData(apiEndpointGet, {});
-
-            // Tutup modal & update isi tabel dengan data terbaru
-            setState((p) => ({
-                ...p,
-                selectedUsers: [],
-                add: false,
-                edit: false,
-                delete: false,
-                data: refreshData.data.data
-            }));
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || 'Terjadi Kesalahan');
-        } finally {
-            setState((p) => ({ ...p, load: false }));
-        }
-    };
-
+// Form sekarang menerima handleSave dan handleDelete dari page.tsx
+const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) => {
     const deleteFooterTemplate = (
         <div className="flex justify-content-center gap-2">
             <Button
@@ -171,11 +18,20 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
                 severity="secondary"
                 outlined
                 onClick={() => {
-                    setState((p) => ({ ...p, add: false, edit: false, delete: false }));
+                    setState((p: any) => ({ ...p, add: false, edit: false, delete: false }));
                 }}
                 disabled={state.load}
             />
-            <Button label="Ya, Hapus" icon="pi pi-trash" severity="danger" onClick={handleDelete} loading={state.load} />
+            <Button
+                type="button" 
+                label="Hapus"
+                icon="pi pi-check"
+                severity="danger"
+                className="mt-2"
+                loading={state?.load}
+                disabled={state?.load}
+                onClick={handleDelete}
+            />
         </div>
     );
 
@@ -185,12 +41,6 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
         return isFormFieldInvalid(name) ? <small className="p-error">{formik?.errors[name]}</small> : <small className="p-error">&nbsp;</small>;
     };
 
-    useEffect(() => {
-        if (state.submittedData) {
-            handleSave(state.submittedData);
-        }
-    }, [state.submittedData]);
-
     return (
         <>
             <Dialog
@@ -199,7 +49,7 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
                 modal
                 style={{ width: '70%' }}
                 onHide={() => {
-                    setState((p) => ({ ...p, add: false, edit: false, delete: false }));
+                    setState((p: any) => ({ ...p, add: false, edit: false, delete: false }));
                     formik?.resetForm();
                 }}
             >
@@ -209,35 +59,31 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
                             <label htmlFor="fullname">Nama Lengkap</label>
                             <div className="p-inputgroup">
                                 <InputText
-                                    id="fullname"
-                                    name="fullname"
-                                    value={formik?.values.fullname}
+                                    id="nama_lengkap"
+                                    name="nama_lengkap"
+                                    value={formik?.values.nama_lengkap}
                                     style={{ padding: '1rem' }}
-                                    placeholder="Nama Lengkap"
-                                    onChange={(e) => {
-                                        formik?.setFieldValue('fullname', e.target.value);
-                                    }}
-                                    className={isFormFieldInvalid('fullname') ? 'p-invalid' : ''}
+                                    placeholder="nama_lengkap"
+                                    onChange={(e) => formik?.setFieldValue('nama_lengkap', e.target.value)}
+                                    className={isFormFieldInvalid('nama_lengkap') ? 'p-invalid' : ''}
                                 />
                             </div>
-                            {isFormFieldInvalid('fullname') ? getFormErrorMessage('fullname') : ''}
+                            {isFormFieldInvalid('nama_lengkap') ? getFormErrorMessage('nama_lengkap') : ''}
                         </div>
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="username">Username</label>
+                            <label htmlFor="nama_pengguna">nama_pengguna</label>
                             <div className="p-inputgroup">
                                 <InputText
-                                    id="username"
-                                    name="username"
-                                    value={formik?.values.username}
+                                    id="nama_pengguna"
+                                    name="nama_pengguna"
+                                    value={formik?.values.nama_pengguna}
                                     style={{ padding: '1rem' }}
-                                    placeholder="Username"
-                                    onChange={(e) => {
-                                        formik?.setFieldValue('username', e.target.value);
-                                    }}
-                                    className={isFormFieldInvalid('username') ? 'p-invalid' : ''}
+                                    placeholder="nama_pengguna"
+                                    onChange={(e) => formik?.setFieldValue('nama_pengguna', e.target.value)}
+                                    className={isFormFieldInvalid('nama_pengguna') ? 'p-invalid' : ''}
                                 />
                             </div>
-                            {isFormFieldInvalid('username') ? getFormErrorMessage('username') : ''}
+                            {isFormFieldInvalid('nama_pengguna') ? getFormErrorMessage('nama_pengguna') : ''}
                         </div>
                     </div>
 
@@ -246,149 +92,136 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
                             <label htmlFor="telp">No. Telepon</label>
                             <div className="p-inputgroup">
                                 <InputText
-                                    id="telp"
-                                    name="telp"
+                                    id="telepon"
+                                    name="telepon"
                                     keyfilter={'int'}
-                                    value={formik?.values.telp}
+                                    value={formik?.values.telepon}
                                     style={{ padding: '1rem' }}
-                                    onChange={(e) => {
-                                        formik?.setFieldValue('telp', e.target.value);
-                                    }}
+                                    onChange={(e) => formik?.setFieldValue('telepon', e.target.value)}
                                     placeholder="089222333444"
-                                    className={isFormFieldInvalid('telp') ? 'p-invalid' : ''}
+                                    className={isFormFieldInvalid('telepon') ? 'p-invalid' : ''}
                                 />
                             </div>
-                            {isFormFieldInvalid('telp') ? getFormErrorMessage('telp') : ''}
+                            {isFormFieldInvalid('telepon') ? getFormErrorMessage('telepon') : ''}
                         </div>
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="password">Password</label>
+                        <label htmlFor="kata_sandi">kata_sandi</label>
                         <div className="p-inputgroup">
                             <Password
-                                id="password"
-                                name="password"
+                                id="kata_sandi"
+                                name="kata_sandi"
                                 toggleMask
-                                value={formik?.values.password}
-                                onChange={(e) => {
-                                    formik?.setFieldValue('password', e.target.value);
-                                }}
-                                className={isFormFieldInvalid('password') ? 'p-invalid' : ''}
+                                value={formik?.values.kata_sandi}
+                                onChange={(e) => formik?.setFieldValue('kata_sandi', e.target.value)}
+                                className={isFormFieldInvalid('kata_sandi') ? 'p-invalid' : ''}
                             />
                         </div>
-                        {isFormFieldInvalid('password') ? getFormErrorMessage('password') : ''}
+                        {isFormFieldInvalid('kata_sandi') ? getFormErrorMessage('kata_sandi') : ''}
                     </div>
 
                     <div className="grid">
-                        {/* Cabang */}
+                        {/* DATA DROPDOWN SEKARANG DIAMBIL DARI state.masterData YANG DIKIRIM DARI page.tsx */}
                         <div className="col-12 md:col-6 field">
-                            <label htmlFor="branch_id">Cabang</label>
+                            <label htmlFor="id_cabang">Cabang</label>
                             <Dropdown
-                                id="branch_id"
-                                name="branch_id"
-                                value={formik?.values.branch_id}
-                                options={masterData?.branches || []}
+                                id="id_cabang"
+                                name="id_cabang"
+                                value={formik?.values.id_cabang}
+                                options={state.masterData?.branches || []}
                                 optionLabel="name"
                                 optionValue="id"
-                                onChange={(e) => formik?.setFieldValue('branch_id', e.value)}
+                                onChange={(e) => formik?.setFieldValue('id_cabang', e.value)}
                                 placeholder="Pilih Cabang"
                                 className="w-full"
                             />
                         </div>
 
-                        {/* Posisi */}
                         <div className="col-12 md:col-6 field">
-                            <label htmlFor="position_id">Posisi</label>
+                            <label htmlFor="id_jabatan">Posisi</label>
                             <Dropdown
-                                id="position_id"
-                                name="position_id"
-                                value={formik?.values.position_id}
-                                options={masterData?.positions || []}
+                                id="id_jabatan"
+                                name="id_jabatan"
+                                value={formik?.values.id_jabatan}
+                                options={state.masterData?.positions || []}
                                 optionLabel="name"
                                 optionValue="id"
-                                onChange={(e) => formik?.setFieldValue('position_id', e.value)}
+                                onChange={(e) => formik?.setFieldValue('id_jabatan', e.value)}
                                 placeholder="Pilih Posisi"
                                 className="w-full"
                             />
                         </div>
 
-                        {/* Divisi */}
                         <div className="col-12 md:col-6 field">
-                            <label htmlFor="division_id">Divisi</label>
+                            <label htmlFor="id_divisi">Divisi</label>
                             <Dropdown
-                                id="division_id"
-                                name="division_id"
-                                value={formik?.values.division_id}
-                                options={masterData?.divisions || []}
+                                id="id_divisi"
+                                name="id_divisi"
+                                value={formik?.values.id_divisi}
+                                options={state.masterData?.divisions || []}
                                 optionLabel="name"
                                 optionValue="id"
-                                onChange={(e) => formik?.setFieldValue('division_id', e.value)}
+                                onChange={(e) => formik?.setFieldValue('id_divisi', e.value)}
                                 placeholder="Pilih Divisi"
                                 className="w-full"
                             />
                         </div>
 
-                        {/* Departemen */}
                         <div className="col-12 md:col-6 field">
-                            <label htmlFor="department_id">Departemen</label>
+                            <label htmlFor="id_departemen">Departemen</label>
                             <Dropdown
-                                id="department_id"
-                                name="department_id"
-                                value={formik?.values.department_id}
-                                options={masterData?.departments || []}
+                                id="id_departemen"
+                                name="id_departemen"
+                                value={formik?.values.id_departemen}
+                                options={state.masterData?.departments || []}
                                 optionLabel="name"
                                 optionValue="id"
-                                onChange={(e) => formik?.setFieldValue('department_id', e.value)}
+                                onChange={(e) => formik?.setFieldValue('id_departemen', e.value)}
                                 placeholder="Pilih Departemen"
                                 className="w-full"
                             />
                         </div>
 
-                        {/* Unit Kerja */}
                         <div className="col-12 md:col-6 field">
-                            <label htmlFor="work_unit_id">Unit Kerja</label>
+                            <label htmlFor="id_unit_kerja">Unit Kerja</label>
                             <Dropdown
-                                id="work_unit_id"
-                                name="work_unit_id"
-                                value={formik?.values.work_unit_id}
-                                options={masterData?.workUnits || []}
+                                id="id_unit_kerja"
+                                name="id_unit_kerja"
+                                value={formik?.values.id_unit_kerja}
+                                options={state.masterData?.workUnits || []}
                                 optionLabel="name"
                                 optionValue="id"
-                                onChange={(e) => formik?.setFieldValue('work_unit_id', e.value)}
+                                onChange={(e) => formik?.setFieldValue('id_unit_kerja', e.value)}
                                 placeholder="Pilih Unit Kerja"
                                 className="w-full"
                             />
                         </div>
                     </div>
 
-                    {formik.values.role == 'superadmin' && state.edit ? (
+                    {formik.values.id_peran === 1 && state.edit ? (
                         ''
                     ) : (
                         <div className="flex flex-column gap-2 w-full">
                             <label htmlFor="role">Role</label>
                             <div className="p-inputgroup">
+                                {/* ROLE DINAMIS DIAMBIL DARI STATE GLOBAL */}
                                 <Dropdown
-                                    id="role"
-                                    name="role"
-                                    options={[
-                                        { label: 'Administrator', value: 1 },
-                                        { label: 'Pimpinan', value: 2 },
-                                        { label: 'Sekretaris', value: 3 },
-                                        { label: 'Staff Arsip', value: 4 },
-                                        { label: 'Staff Umum', value: 5 },
-                                        { label: 'Resepsionis', value: 6 },
-                                        { label: 'Auditor', value: 7 }
-                                    ]}
-                                    value={formik?.values.role}
-                                    onChange={(e) => {
-                                        formik?.setFieldValue('role', e.value);
-                                    }}
-                                    className={isFormFieldInvalid('role') ? 'p-invalid' : ''}
+                                    id="role_peran"
+                                    name="role_peran"
+                                    options={state.masterData?.roles || []}
+                                    optionLabel="name"
+                                    optionValue="id"
+                                    value={formik?.values.id_peran}
+                                    onChange={(e) => formik?.setFieldValue('id_peran', e.value)}
+                                    placeholder="Pilih Role"
+                                    className={isFormFieldInvalid('id_peran') ? 'p-invalid' : ''}
                                 />
                             </div>
-                            {isFormFieldInvalid('role') ? getFormErrorMessage('role') : ''}
+                            {isFormFieldInvalid('id_peran') ? getFormErrorMessage('id_peran') : ''}
                         </div>
                     )}
+
                     <div className="flex flex-column gap-2 w-full">
                         <label htmlFor="status">Status</label>
                         <div className="p-inputgroup">
@@ -402,9 +235,7 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
                                     { kode: '1', label: 'Aktif' }
                                 ]}
                                 value={formik?.values.status}
-                                onChange={(e) => {
-                                    formik?.setFieldValue('status', e.value);
-                                }}
+                                onChange={(e) => formik?.setFieldValue('status', e.value)}
                                 className={isFormFieldInvalid('status') ? 'p-invalid' : ''}
                             />
                         </div>
@@ -426,7 +257,6 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
             >
                 <div className="flex flex-column align-items-center text-center gap-4 py-4">
                     <i className="pi pi-exclamation-triangle text-red-500 text-6xl" />
-
                     <div>
                         <h3 className="font-bold mb-2">{state.selectedUsers.length > 1 ? `Hapus ${state.selectedUsers.length} pengguna?` : 'Hapus pengguna ini?'}</h3>
                         <p className="text-color-secondary">
@@ -434,8 +264,8 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
                                 `Anda akan menghapus ${state.selectedUsers.length} pengguna yang dipilih`
                             ) : (
                                 <>
-                                    Anda akan menghapus pengguna berikut: <strong>{state.selectedUsers[0]?.user_id || ''}</strong>
-                                    {` (${state.selectedUsers[0]?.fullname})`}.
+                                    You are going to delete this unit as follow : <strong>{state.selectedUsers[0]?.id_pengguna || ''}</strong>
+                                    {`(${state.selectedUsers[0]?.nama_lengkap})`}.
                                 </>
                             )}
                             <br />

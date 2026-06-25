@@ -33,13 +33,13 @@ const getDestructionProposals = async (req, res) => {
         // Data retensi
         "rs.retention_name",
         "rs.retention_years",
-        "rs.retention_action"
+        "rs.retention_action",
       )
       .leftJoin("trx_documents as d", "dp.document_id", "d.document_id")
       .leftJoin(
         "mst_retention_schedule as rs",
         "dp.retention_schedule_id",
-        "rs.retention_schedule_id"
+        "rs.retention_schedule_id",
       );
 
     if (cStatus) {
@@ -76,7 +76,7 @@ const getDestructionProposals = async (req, res) => {
       func: "getDestructionProposals",
       request: req.query,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

@@ -13,101 +13,96 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { body: oPayload } = req;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
-      return res
-        .status(400)
-        .json({
-          status: status.BAD_REQUEST,
-          message: "Invalid request body",
-          datetime: formatDateSystem(),
-        });
+      return res.status(400).json({
+        status: status.BAD_REQUEST,
+        message: "Invalid request body",
+        datetime: formatDateSystem(),
+      });
     }
 
     const cValidation = await validatePayload(
       {
-        user_id: Joi.number().required().label("user_id"), 
-        fullname: Joi.string().max(100).required().label("fullname"),
-        username: Joi.string().max(100).required().label("username"),
-        telp: Joi.string()
+        nama_pengguna: Joi.number().required().label("nama_pengguna"),
+        nama_lengkap: Joi.string().max(100).required().label("nama_lengkap"),
+        nama_pengguna: Joi.string().max(100).required().label("nama_pengguna"),
+        telepon: Joi.string()
           .pattern(/^[0-9]+$/)
           .max(13)
           .required()
-          .label("telp"),
-        role: Joi.any().required(),
-        password: Joi.string().optional().allow(''),
+          .label("telepon"),
+        peran: Joi.any().required(),
+        kata_sandi: Joi.string().optional().allow(""),
         status: Joi.string().required().label("status"),
       },
       { "any.required": "{#label} wajib diisi" },
       oPayload,
       {
-        uniqueField: ["username", "telp"],
-        table: "mst_users",
-        excludedField: "user_id", 
+        uniqueField: ["nama_pengguna", "telepon"],
+        table: "mst_pengguna",
+        excludedField: "nama_pengguna",
         allowUnknown: true,
       },
     );
 
     if (cValidation)
-      return res
-        .status(422)
-        .json({
-          status: status.BAD_REQUEST,
-          message: cValidation,
-          datetime: datetime(),
-        });
+      return res.status(422).json({
+        status: status.BAD_REQUEST,
+        message: cValidation,
+        datetime: datetime(),
+      });
 
-    // Siapkan data update mst_users
+    // Siapkan data update mst_pengguna
     const oDataUser = {
-      fullname: oPayload.fullname,
-      username: oPayload.username, // Update username jika berubah
-      telp: oPayload.telp,
-      status: (oPayload.status == "1" || oPayload.status == "active") ? "active" : "nonactive",
+      nama_lengkap: oPayload.nama_lengkap,
+      nama_pengguna: oPayload.nama_pengguna, // Update nama_pengguna jika berubah
+      telepon: oPayload.telepon,
+      status:
+        oPayload.status == "1" || oPayload.status == "active"
+          ? "active"
+          : "nonactive",
       updated_at: formatDateSystem(),
     };
 
-    if (oPayload.password) {
-      const cPassword =
-        process.env.USER_KEY + oPayload.username + oPayload.password;
+    if (oPayload.kata_sandi) {
+      const ckata_sandi =
+        process.env.USER_KEY + oPayload.nama_pengguna + oPayload.kata_sandi;
       const secret = process.env.USER_SECRET;
-      oDataUser["password"] = hmac(cPassword, secret, "sha512");
+      oDataUser["kata_sandi"] = hmac(ckata_sandi, secret, "sha512");
     }
 
     // TRANSAKSI UPDATE
     await DB.transaction(async (trx) => {
-      const userId = oPayload.user_id;
+      const NamaPengguna = oPayload.nama_pengguna;
 
-      // 2. Update mst_users
-      await trx("mst_users")
-        .where("user_id", userId)
+      // 2. Update mst_pengguna
+      await trx("mst_pengguna")
+        .where("nama_pengguna", NamaPengguna)
         .update(oDataUser);
 
-      // 3. Update mst_user_roles (pake user_id)
-      await trx("mst_user_roles")
-        .where("user_id", userId)
+      // 3. Update mst_pengguna_perans (pake nama_pengguna)
+      await trx("mst_pengguna_peran")
+        .where("nama_pengguna", NamaPengguna)
         .update({
-            role_id: oPayload.role || null,
+          id_peran: oPayload.peran || null,
         });
     });
 
-    return res
-      .status(200)
-      .json({
-        status: status.SUKSES,
-        message: "Data berhasil diupdate",
-        datetime: formatDateSystem(),
-      });
+    return res.status(200).json({
+      status: status.SUKSES,
+      message: "Data berhasil diupdate",
+      datetime: formatDateSystem(),
+    });
   } catch (error) {
     console.log("ERROR DATABASE:", error); //TAMBAHKAN BARIS INI
-    return res
-      .status(500)
-      .json({
-        status: status.BAD_REQUEST,
-        message: "Sistem maintenance",
-        datetime: datetime(),
-      });
+    return res.status(500).json({
+      status: status.BAD_REQUEST,
+      message: "Sistem maintenance",
+      datetime: datetime(),
+    });
   }
 });
 

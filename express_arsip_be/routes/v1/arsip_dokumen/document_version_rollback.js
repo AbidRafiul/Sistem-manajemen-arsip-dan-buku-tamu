@@ -7,7 +7,8 @@ const rollbackDocumentVersion = async (req, res) => {
   try {
     const nDocumentId = oPayload.document_id;
     const nTargetVersionId = oPayload.version_id;
-    const cUploadedBy = req?.context?.Username || oPayload.rollback_by || "system";
+    const cUploadedBy =
+      req?.context?.nama_pengguna || oPayload.rollback_by || "system";
     const dNow = new Date();
 
     if (!nDocumentId || !nTargetVersionId) {
@@ -42,7 +43,8 @@ const rollbackDocumentVersion = async (req, res) => {
     if (!oTargetVersion) {
       const oResult = {
         status: "error",
-        message: "Target version not found, not approved, or not belonging to this document",
+        message:
+          "Target version not found, not approved, or not belonging to this document",
       };
       return res.status(404).json(oResult);
     }
@@ -54,7 +56,9 @@ const rollbackDocumentVersion = async (req, res) => {
       .orderBy("version_number", "desc")
       .first();
 
-    const nNewVersionNumber = oLastVersion ? oLastVersion.version_number + 1 : 1;
+    const nNewVersionNumber = oLastVersion
+      ? oLastVersion.version_number + 1
+      : 1;
 
     // Buat versi baru dengan FilePath dari versi target (rollback)
     const oNewVersion = {
@@ -72,7 +76,9 @@ const rollbackDocumentVersion = async (req, res) => {
       updated_at: dNow,
     };
 
-    const [nNewVersionId] = await DB("trx_document_versions").insert(oNewVersion);
+    const [nNewVersionId] = await DB("trx_document_versions").insert(
+      oNewVersion,
+    );
 
     const oResult = {
       status: "success",
@@ -99,7 +105,7 @@ const rollbackDocumentVersion = async (req, res) => {
       func: "rollbackDocumentVersion",
       request: oPayload,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

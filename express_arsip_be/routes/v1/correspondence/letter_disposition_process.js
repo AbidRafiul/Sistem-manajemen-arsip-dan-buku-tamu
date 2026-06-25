@@ -10,14 +10,14 @@ const letterDispositionProcess = async (req, res) => {
     const oPayload = req.body || {};
 
     const oValidation = {
-      disposition_id: Joi.number().required(),
+      disid_jabatan: Joi.number().required(),
       process_note: Joi.string().allow(null, "").optional(),
       updated_by: Joi.number().allow(null).optional(),
     };
 
     const oMessage = {
-      "disposition_id.required": "disposition_id wajib diisi",
-      "disposition_id.number": "disposition_id harus berupa angka",
+      "disid_jabatan.required": "disid_jabatan wajib diisi",
+      "disid_jabatan.number": "disid_jabatan harus berupa angka",
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
@@ -32,7 +32,7 @@ const letterDispositionProcess = async (req, res) => {
     }
 
     const oDisposition = await DB("trx_letter_dispositions")
-      .where("disposition_id", oPayload.disposition_id)
+      .where("disid_jabatan", oPayload.disid_jabatan)
       .first();
 
     if (!oDisposition) {
@@ -78,7 +78,7 @@ const letterDispositionProcess = async (req, res) => {
 
     await DB.transaction(async (trx) => {
       await trx("trx_letter_dispositions")
-        .where("disposition_id", oPayload.disposition_id)
+        .where("disid_jabatan", oPayload.disid_jabatan)
         .update({
           status: "diproses",
           received_at: oDisposition.received_at || dNow,
@@ -97,10 +97,10 @@ const letterDispositionProcess = async (req, res) => {
 
       await trx("trx_incoming_letter_trackings").insert({
         incoming_letter_id: oDisposition.incoming_letter_id,
-        disposition_id: oPayload.disposition_id,
+        disid_jabatan: oPayload.disid_jabatan,
         action_name: "disposisi_diproses",
-        from_user_id: oDisposition.from_user_id || null,
-        to_user_id: oDisposition.to_user_id || null,
+        from_nama_pengguna: oDisposition.from_nama_pengguna || null,
+        to_nama_pengguna: oDisposition.to_nama_pengguna || null,
         previous_status: oLetter.status,
         current_status: "diproses",
         notes: oPayload.process_note || "Disposisi mulai diproses",

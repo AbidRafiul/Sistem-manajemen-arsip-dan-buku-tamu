@@ -3,7 +3,7 @@ import multer from "multer";
 import crypto from "crypto";
 import Joi from "joi";
 import { formatDateSystem } from "../components/tools/general.js";
-import { Logging, validatePayload } from "../components/tools/servertool.js"; 
+import { Logging, validatePayload } from "../components/tools/servertool.js";
 import DB from "../../../core/config/knex.js";
 import { uploadFileToMinio } from "../../../core/components/tools/minio_helper.js";
 
@@ -17,37 +17,72 @@ router.post(
     { name: "SelfieFile", maxCount: 1 },
     { name: "IdentityFile", maxCount: 1 },
     { name: "PhotoFace", maxCount: 1 },
-    { name: "PhotoIdentity", maxCount: 1 }
+    { name: "PhotoIdentity", maxCount: 1 },
   ]),
   async (req, res) => {
     const { body: oPayload } = req;
-    const username = req?.auth?.username || "";
+    const nama_pengguna = req?.auth?.nama_pengguna || "";
 
     try {
       const cValidation = await validatePayload(
         {
           GuestName: Joi.string().max(100).required().label("GuestName"),
           PhoneNumber: Joi.string().max(45).required().label("PhoneNumber"),
-          GuestEmail: Joi.string().email().max(150).optional().allow(null, "").label("GuestEmail"),
-          GuestCompany: Joi.string().max(255).optional().allow(null, "").label("GuestCompany"),
-          GuestPosition: Joi.string().max(20).optional().allow(null, "").label("GuestPosition"),
-          VisitPurposeId: Joi.alternatives().try(Joi.string(), Joi.number()).required().label("VisitPurposeId"),
-          HostUserId: Joi.string().max(36).optional().allow(null, "").label("HostUserId"),
-          HostName: Joi.string().max(100).optional().allow(null, "").label("HostName"),
-          IdentityType: Joi.string().valid("ktp", "sim", "paspor").optional().allow(null, "").label("IdentityType"),
-          IdentityNumber: Joi.string().max(50).optional().allow(null, "").label("IdentityNumber"),
-          VisitNotes: Joi.string().optional().allow(null, "").label("VisitNotes"),
+          Guestsurel: Joi.string()
+            .surel()
+            .max(150)
+            .optional()
+            .allow(null, "")
+            .label("Guestsurel"),
+          GuestCompany: Joi.string()
+            .max(255)
+            .optional()
+            .allow(null, "")
+            .label("GuestCompany"),
+          GuestPosition: Joi.string()
+            .max(20)
+            .optional()
+            .allow(null, "")
+            .label("GuestPosition"),
+          VisitPurposeId: Joi.alternatives()
+            .try(Joi.string(), Joi.number())
+            .required()
+            .label("VisitPurposeId"),
+          HostNamaPengguna: Joi.string()
+            .max(36)
+            .optional()
+            .allow(null, "")
+            .label("HostNamaPengguna"),
+          HostName: Joi.string()
+            .max(100)
+            .optional()
+            .allow(null, "")
+            .label("HostName"),
+          IdentityType: Joi.string()
+            .valid("ktp", "sim", "paspor")
+            .optional()
+            .allow(null, "")
+            .label("IdentityType"),
+          IdentityNumber: Joi.string()
+            .max(50)
+            .optional()
+            .allow(null, "")
+            .label("IdentityNumber"),
+          VisitNotes: Joi.string()
+            .optional()
+            .allow(null, "")
+            .label("VisitNotes"),
         },
         {
           "string.base": "{#label} harus berupa string",
-          "string.email": "{#label} harus berupa email yang valid",
+          "string.surel": "{#label} harus berupa surel yang valid",
           "string.empty": "{#label} tidak boleh kosong",
           "string.max": "{#label} tidak boleh lebih dari {#limit} karakter",
           "any.required": "{#label} wajib diisi",
           "any.only": "{#label} tidak valid",
         },
         oPayload,
-        { allowUnknown: true }
+        { allowUnknown: true },
       );
 
       if (cValidation) {
@@ -62,19 +97,21 @@ router.post(
       const {
         GuestName,
         PhoneNumber,
-        GuestEmail,
+        Guestsurel,
         GuestCompany,
         GuestPosition,
         VisitPurposeId,
-        HostUserId,
+        HostNamaPengguna,
         HostName,
         IdentityType,
         IdentityNumber,
         VisitNotes,
       } = oPayload;
 
-      const photoFaceFile = req.files?.SelfieFile?.[0] || req.files?.PhotoFace?.[0] || null;
-      const photoIdentityFile = req.files?.IdentityFile?.[0] || req.files?.PhotoIdentity?.[0] || null;
+      const photoFaceFile =
+        req.files?.SelfieFile?.[0] || req.files?.PhotoFace?.[0] || null;
+      const photoIdentityFile =
+        req.files?.IdentityFile?.[0] || req.files?.PhotoIdentity?.[0] || null;
       const todayPath = formatDateSystem(new Date(), "yyyyMMdd");
 
       let PhotoFace = null;
@@ -84,7 +121,7 @@ router.post(
         PhotoFace = await uploadFileToMinio(
           "buku-tamu",
           photoFaceFile,
-          `photos/${todayPath}`
+          `photos/${todayPath}`,
         );
       }
 
@@ -92,12 +129,12 @@ router.post(
         PhotoIdentity = await uploadFileToMinio(
           "buku-tamu",
           photoIdentityFile,
-          `photos/${todayPath}`
+          `photos/${todayPath}`,
         );
       }
 
-      const dateStr = formatDateSystem(new Date(), "yyyyMMdd"); 
-      const uniqueSuffix = Date.now().toString().slice(-4); 
+      const dateStr = formatDateSystem(new Date(), "yyyyMMdd");
+      const uniqueSuffix = Date.now().toString().slice(-4);
       const VisitCode = `TAMU${dateStr}${uniqueSuffix}`;
 
       const QRToken =
@@ -108,13 +145,13 @@ router.post(
       const oData = {
         guest_name: GuestName,
         phone_number: PhoneNumber,
-        guest_email: GuestEmail,
+        guest_surel: Guestsurel,
         guest_company: GuestCompany,
         guest_position: GuestPosition,
         identity_type: IdentityType,
         identity_number: IdentityNumber,
         visit_purpose_id: VisitPurposeId,
-        host_user_id: HostUserId,
+        host_nama_pengguna: HostNamaPengguna,
         host_name: HostName,
         visit_notes: VisitNotes,
         photo_face: PhotoFace,
@@ -138,12 +175,12 @@ router.post(
           visitation_id: VisitationId,
           guest_name: GuestName,
           guest_company: GuestCompany || "-",
-          qr_image_url: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${QRToken}`
+          qr_image_url: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${QRToken}`,
         },
         datetime: formatDateSystem(),
       });
     } catch (error) {
-      console.error("❌ [Database Error Log]:", error); 
+      console.error("❌ [Database Error Log]:", error);
 
       const oResult = {
         status: "01",
@@ -156,12 +193,12 @@ router.post(
         func: "check-in",
         request: req.body,
         response: oResult,
-        user: username,
+        user: nama_pengguna,
       });
 
       return res.status(500).json(oResult);
     }
-  }
+  },
 );
 
 export default router;

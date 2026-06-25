@@ -7,7 +7,8 @@ const executeDestructionProposal = async (req, res) => {
   try {
     const nProposalId = oPayload.proposal_id;
     const cBeritaAcaraPath = oPayload.berita_acara_path || null;
-    const cExecutedBy = req?.context?.Username || oPayload.executed_by || "system";
+    const cExecutedBy =
+      req?.context?.nama_pengguna || oPayload.executed_by || "system";
     const dNow = new Date();
 
     if (!nProposalId) {
@@ -63,7 +64,8 @@ const executeDestructionProposal = async (req, res) => {
 
     const oResult = {
       status: "success",
-      message: "Pemusnahan arsip berhasil dieksekusi. Dokumen telah dinonaktifkan.",
+      message:
+        "Pemusnahan arsip berhasil dieksekusi. Dokumen telah dinonaktifkan.",
       data: {
         proposal_id: nProposalId,
         document_id: oProposal.document_id,
@@ -87,7 +89,7 @@ const executeDestructionProposal = async (req, res) => {
       func: "executeDestructionProposal",
       request: oPayload,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

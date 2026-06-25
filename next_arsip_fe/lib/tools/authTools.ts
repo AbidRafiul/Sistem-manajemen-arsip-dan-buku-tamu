@@ -18,10 +18,10 @@ const authOptions = {
 
                     // PASTIIN DATA DARI EXPRESS DIPETAKAN KE SINI
                     return {
-                        id: userData.UserId, // KUNCI: Pake UserId dari Express
-                        UserId: userData.UserId, // Tambahkan eksplisit
-                        name: userData.fullname || userData.name,
-                        username: userData.username,
+                        id: userData.IdPengguna, // KUNCI: Pake IdPengguna dari Express
+                        IdPengguna: userData.IdPengguna, // Tambahkan eksplisit
+                        name: userData.nama_lengkap || userData.name,
+                        nama_pengguna: userData.nama_pengguna,
                         role: userData.role || userData.roleCode,
                         roleCode: userData.roleCode,
                         roleId: userData.roleId,
@@ -48,14 +48,14 @@ const authOptions = {
             // Initial sign in
             if (user) {
                 const anyUser = user as any;
-                token.id = anyUser.UserId || user.id;
+                token.id = anyUser.IdPengguna || user.id;
                 token.id = user.id;
                 token.role = user.role;
                 (token as any).roleCode = (user as any).roleCode;
                 (token as any).roleId = (user as any).roleId;
                 token.uniqueId = user.uniqueId;
                 token.name = user.name;
-                token.username = user.username;
+                token.nama_pengguna = user.nama_pengguna;
                 token.remember_me = user.remember_me;
                 token.userCredential = user.credential;
 
@@ -78,15 +78,15 @@ const authOptions = {
             }
 
             if (token.id) {
-                // TAMBAHKAN INI BIAR userId NYAMPE KE FRONTEND
-                (session.user as any).id = token.id; 
-                (session.user as any).UserId = token.id;
+                // TAMBAHKAN INI BIAR IdPengguna NYAMPE KE FRONTEND
+                (session.user as any).id = token.id;
+                (session.user as any).IdPengguna = token.id;
                 session.user.id = token.id as string;
                 session.user.role = token.role as string;
                 (session.user as any).roleCode = (token as any).roleCode;
                 (session.user as any).roleId = (token as any).roleId;
                 session.user.name = token.name as string;
-                session.user.username = token.username as string;
+                session.user.nama_pengguna = token.nama_pengguna as string;
             }
 
             if (token.expiry) {
@@ -104,9 +104,9 @@ const authOptions = {
 
                     const secret = new TextEncoder().encode(process.env.USER_KEY);
                     const payload = {
-                        userId: (user as any).UserId || user.id,
+                        IdPengguna: (user as any).IdPengguna || user.id,
                         name: user.name,
-                        username: (user as any).username
+                        nama_pengguna: (user as any).nama_pengguna
                     };
                     const token = await new SignJWT(payload)
                         .setProtectedHeader({ alg: 'HS512' })

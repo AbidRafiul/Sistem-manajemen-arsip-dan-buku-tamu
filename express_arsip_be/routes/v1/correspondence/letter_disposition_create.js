@@ -11,10 +11,10 @@ const letterDispositionCreate = async (req, res) => {
 
     const oValidation = {
       incoming_letter_id: Joi.number().required(),
-      parent_disposition_id: Joi.number().allow(null).optional(),
+      parent_disid_jabatan: Joi.number().allow(null).optional(),
 
-      from_user_id: Joi.number().allow(null).optional(),
-      to_user_id: Joi.number().required(),
+      from_nama_pengguna: Joi.number().allow(null).optional(),
+      to_nama_pengguna: Joi.number().required(),
 
       disposition_instruction_id: Joi.number().allow(null).optional(),
 
@@ -30,8 +30,8 @@ const letterDispositionCreate = async (req, res) => {
       "incoming_letter_id.required": "incoming_letter_id wajib diisi",
       "incoming_letter_id.number": "incoming_letter_id harus berupa angka",
 
-      "to_user_id.required": "User tujuan disposisi wajib diisi",
-      "to_user_id.number": "to_user_id harus berupa angka",
+      "to_nama_pengguna.required": "User tujuan disposisi wajib diisi",
+      "to_nama_pengguna.number": "to_nama_pengguna harus berupa angka",
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
@@ -65,15 +65,15 @@ const letterDispositionCreate = async (req, res) => {
 
     const vaReferenceChecks = [
       {
-        field: "from_user_id",
-        table: "mst_users",
-        key: "user_id",
+        field: "from_nama_pengguna",
+        table: "mst_pengguna",
+        key: "nama_pengguna",
         label: "User asal disposisi",
       },
       {
-        field: "to_user_id",
-        table: "mst_users",
-        key: "user_id",
+        field: "to_nama_pengguna",
+        table: "mst_pengguna",
+        key: "nama_pengguna",
         label: "User tujuan disposisi",
       },
       {
@@ -84,14 +84,14 @@ const letterDispositionCreate = async (req, res) => {
       },
       {
         field: "created_by",
-        table: "mst_users",
-        key: "user_id",
+        table: "mst_pengguna",
+        key: "nama_pengguna",
         label: "User pembuat",
       },
       {
         field: "updated_by",
-        table: "mst_users",
-        key: "user_id",
+        table: "mst_pengguna",
+        key: "nama_pengguna",
         label: "User pengubah",
       },
     ];
@@ -115,9 +115,9 @@ const letterDispositionCreate = async (req, res) => {
       }
     }
 
-    if (oPayload.parent_disposition_id) {
+    if (oPayload.parent_disid_jabatan) {
       const oParentDisposition = await DB("trx_letter_dispositions")
-        .where("disposition_id", oPayload.parent_disposition_id)
+        .where("disid_jabatan", oPayload.parent_disid_jabatan)
         .where("incoming_letter_id", oPayload.incoming_letter_id)
         .first();
 
@@ -131,13 +131,13 @@ const letterDispositionCreate = async (req, res) => {
 
     const dNow = new Date();
 
-    const nDispositionId = await DB.transaction(async (trx) => {
+    const nDisIdJabatan = await DB.transaction(async (trx) => {
       const vaInserted = await trx("trx_letter_dispositions").insert({
         incoming_letter_id: oPayload.incoming_letter_id,
-        parent_disposition_id: oPayload.parent_disposition_id || null,
+        parent_disid_jabatan: oPayload.parent_disid_jabatan || null,
 
-        from_user_id: oPayload.from_user_id || null,
-        to_user_id: oPayload.to_user_id,
+        from_nama_pengguna: oPayload.from_nama_pengguna || null,
+        to_nama_pengguna: oPayload.to_nama_pengguna,
 
         disposition_instruction_id: oPayload.disposition_instruction_id || null,
 
@@ -168,13 +168,16 @@ const letterDispositionCreate = async (req, res) => {
 
       await trx("trx_incoming_letter_trackings").insert({
         incoming_letter_id: oPayload.incoming_letter_id,
-        disposition_id: nId,
+        disid_jabatan: nId,
         action_name: "surat_didisposisi",
-        from_user_id: oPayload.from_user_id || null,
-        to_user_id: oPayload.to_user_id,
+        from_nama_pengguna: oPayload.from_nama_pengguna || null,
+        to_nama_pengguna: oPayload.to_nama_pengguna,
         previous_status: oLetter.status,
         current_status: "didisposisi",
-        notes: oPayload.disposition_note || oPayload.instruction || "Surat didisposisikan",
+        notes:
+          oPayload.disposition_note ||
+          oPayload.instruction ||
+          "Surat didisposisikan",
         processed_at: dNow,
         created_by: oPayload.created_by || null,
         created_at: dNow,
@@ -188,7 +191,7 @@ const letterDispositionCreate = async (req, res) => {
       status: true,
       message: "Disposisi surat berhasil dibuat",
       data: {
-        disposition_id: nDispositionId,
+        disid_jabatan: nDisIdJabatan,
       },
     });
   } catch (error) {

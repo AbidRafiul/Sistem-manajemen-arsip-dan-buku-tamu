@@ -10,13 +10,13 @@ const db = knex({
     password: process.env.DB_PASSWORD || "",
     database: process.env.DB_DATABASE || "db_magang",
     port: Number(process.env.DB_PORT) || 3306,
-  }
+  },
 });
 
 async function main() {
   try {
-    const mst = await db("mst_navigation").select("*");
-    console.log("=== mst_navigation ===");
+    const mst = await db("mst_navigasi").select("*");
+    console.log("=== mst_navigasi ===");
     console.log(JSON.stringify(mst, null, 2));
 
     const userNav = await db("user_navigation").select("*");

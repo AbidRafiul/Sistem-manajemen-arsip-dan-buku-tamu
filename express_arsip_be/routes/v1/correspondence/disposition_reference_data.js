@@ -6,17 +6,23 @@ const router = express.Router();
 const dispositionReferenceData = async (req, res) => {
   try {
     const [vaUsers, vaInstructions] = await Promise.all([
-      DB("mst_users")
-        .select("user_id", "fullname", "username", "position_id", "status")
+      DB("mst_pengguna")
+        .select(
+          "nama_pengguna",
+          "nama_lengkap",
+          "nama_pengguna",
+          "id_jabatan",
+          "status",
+        )
         .where("status", "active")
-        .orderBy("fullname", "asc"),
+        .orderBy("nama_lengkap", "asc"),
       DB("mst_disposition_instructions")
         .select(
           "disposition_instruction_id",
           "instruction_code",
           "instruction_name",
-          "description",
-          "status"
+          "deskripsi",
+          "status",
         )
         .where("status", "active")
         .orderBy("instruction_name", "asc"),

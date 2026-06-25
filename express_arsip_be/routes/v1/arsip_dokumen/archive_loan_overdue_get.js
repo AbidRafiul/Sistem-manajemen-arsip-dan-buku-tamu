@@ -26,7 +26,7 @@ const getOverdueLoans = async (req, res) => {
         "d.document_number",
         "d.physical_location",
         // Kalkulasi hari keterlambatan
-        DB.raw(`DATEDIFF(?, l.expected_return_date) as OverdueDays`, [dToday])
+        DB.raw(`DATEDIFF(?, l.expected_return_date) as OverdueDays`, [dToday]),
       )
       .leftJoin("trx_documents as d", "l.document_id", "d.document_id")
       .where((oBuilder) => {
@@ -62,7 +62,7 @@ const getOverdueLoans = async (req, res) => {
       func: "getOverdueLoans",
       request: req.query,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

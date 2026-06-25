@@ -31,14 +31,14 @@ export async function middleware(req: NextRequest) {
 
         const { payload: userDecrypted } = await jwtVerify(a2rCookie, secret);
 
-        //  CCTV PASANG DI SINI 
-        console.log("CCTV MIDDLEWARE - PAYLOAD DARI EXPRESS:", userDecrypted);
+        //  CCTV PASANG DI SINI
+        console.log('CCTV MIDDLEWARE - PAYLOAD DARI EXPRESS:', userDecrypted);
 
-        //  UBAHAN DI SINI: TERIMA UserId (Besar) ATAU userId (Kecil) 
-        const activeId = userDecrypted.UserId || userDecrypted.userId;
-        
+        //  UBAHAN DI SINI: TERIMA IdPengguna (Besar) ATAU IdPengguna (Kecil)
+        const activeId = userDecrypted.IdPengguna || userDecrypted.IdPengguna;
+
         if (!activeId) {
-            throw new Error('Invalid user: userId tidak ditemukan');
+            throw new Error('Invalid user: IdPengguna tidak ditemukan');
         }
 
         if (pathname === '/') {
@@ -49,7 +49,7 @@ export async function middleware(req: NextRequest) {
         response.headers.set('x-pathname', pathname);
         return response;
     } catch (error) {
-        // CCTV ERROR PASANG DI SINI 
+        // CCTV ERROR PASANG DI SINI
         console.error('CCTV MIDDLEWARE - ERROR DITENDANG:', error);
         return NextResponse.redirect(new URL('/auth/login', req.url));
     }

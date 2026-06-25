@@ -1,13 +1,17 @@
 import express from "express";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
 import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
 router.delete("/:RetentionScheduleId", async (req, res) => {
   const cRetentionScheduleId = req.params.RetentionScheduleId;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
   const oPayload = { id: cRetentionScheduleId };
 
   try {
@@ -40,7 +44,7 @@ router.delete("/:RetentionScheduleId", async (req, res) => {
       func: "delete",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

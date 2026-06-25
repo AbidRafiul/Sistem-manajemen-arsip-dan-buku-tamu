@@ -19,7 +19,13 @@ const generateDocumentQR = async (req, res) => {
 
     // Ambil data dokumen
     const oDocument = await DB("trx_documents")
-      .select("document_id", "document_name", "document_number", "qr_code", "status")
+      .select(
+        "document_id",
+        "document_name",
+        "document_number",
+        "qr_code",
+        "status",
+      )
       .where("document_id", nDocumentId)
       .where("status", "active")
       .first();
@@ -38,12 +44,10 @@ const generateDocumentQR = async (req, res) => {
       cQRCodeString = `DOC-${uuidv4()}`;
 
       // Simpan QR Code string ke database
-      await DB("trx_documents")
-        .where("document_id", nDocumentId)
-        .update({
-          qr_code: cQRCodeString,
-          updated_at: new Date(),
-        });
+      await DB("trx_documents").where("document_id", nDocumentId).update({
+        qr_code: cQRCodeString,
+        updated_at: new Date(),
+      });
     }
 
     // Data yang akan diencode ke dalam QR Code
@@ -90,7 +94,7 @@ const generateDocumentQR = async (req, res) => {
       func: "generateDocumentQR",
       request: oPayload,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

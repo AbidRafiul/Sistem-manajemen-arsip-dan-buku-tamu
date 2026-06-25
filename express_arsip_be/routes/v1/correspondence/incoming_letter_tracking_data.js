@@ -3,7 +3,6 @@ import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { validatePayload } from "../components/tools/servertool.js";
 
-
 const router = express.Router();
 
 const incomingLetterTrackingData = async (req, res) => {
@@ -37,7 +36,7 @@ const incomingLetterTrackingData = async (req, res) => {
         "letter_number",
         "subject",
         "sender_name",
-        "status"
+        "status",
       )
       .where("incoming_letter_id", oPayload.incoming_letter_id)
       .first();
@@ -52,16 +51,16 @@ const incomingLetterTrackingData = async (req, res) => {
     const vaData = await DB("trx_incoming_letter_trackings as tilt")
       .leftJoin(
         "trx_letter_dispositions as tld",
-        "tilt.disposition_id",
-        "tld.disposition_id"
+        "tilt.disid_jabatan",
+        "tld.disid_jabatan",
       )
       .select(
         "tilt.incoming_letter_tracking_id",
         "tilt.incoming_letter_id",
-        "tilt.disposition_id",
+        "tilt.disid_jabatan",
         "tilt.action_name",
-        "tilt.from_user_id",
-        "tilt.to_user_id",
+        "tilt.from_nama_pengguna",
+        "tilt.to_nama_pengguna",
         "tilt.previous_status",
         "tilt.current_status",
         "tilt.notes",
@@ -70,11 +69,11 @@ const incomingLetterTrackingData = async (req, res) => {
         "tilt.created_at",
         "tilt.updated_at",
 
-        "tld.parent_disposition_id",
+        "tld.parent_disid_jabatan",
         "tld.instruction",
         "tld.disposition_note",
         "tld.due_date",
-        "tld.status as disposition_status"
+        "tld.status as disposition_status",
       )
       .where("tilt.incoming_letter_id", oPayload.incoming_letter_id)
       .orderBy("tilt.processed_at", "asc");

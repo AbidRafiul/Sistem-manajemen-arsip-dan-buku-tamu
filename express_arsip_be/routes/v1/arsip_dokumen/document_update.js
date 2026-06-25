@@ -31,7 +31,8 @@ const updateDocument = async (req, res) => {
     if (!cDocumentName || !cDocumentNumber || !dDocumentDate || !cPicName) {
       const oResult = {
         status: "error",
-        message: "document_name, document_number, document_date, dan pic_name wajib diisi",
+        message:
+          "document_name, document_number, document_date, dan pic_name wajib diisi",
       };
       return res.status(422).json(oResult);
     }
@@ -99,7 +100,7 @@ const updateDocument = async (req, res) => {
       func: "updateDocument",
       request: oPayload,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

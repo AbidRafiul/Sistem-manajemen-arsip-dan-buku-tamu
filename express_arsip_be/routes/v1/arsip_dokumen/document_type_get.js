@@ -10,8 +10,8 @@ const getDocumentTypes = async (req, res) => {
         "document_type_id",
         "document_type_code",
         "document_type_name",
-        "description",
-        "status"
+        "deskripsi",
+        "status",
       )
       .where("status", cStatus)
       .orderBy("document_type_name", "asc");
@@ -35,7 +35,7 @@ const getDocumentTypes = async (req, res) => {
       func: "getDocumentTypes",
       request: req.query,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

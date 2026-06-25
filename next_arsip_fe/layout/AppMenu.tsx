@@ -1,19 +1,19 @@
-    /* eslint-disable @next/next/no-img-element */
-    'use client';
-    import React, { useContext, useEffect, useRef, useState } from 'react';
-    import AppMenuitem from './AppMenuitem';
-    import { LayoutContext } from './context/layoutcontext';
-    import { MenuProvider } from './context/menucontext';
+/* eslint-disable @next/next/no-img-element */
+'use client';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import AppMenuitem from './AppMenuitem';
+import { LayoutContext } from './context/layoutcontext';
+import { MenuProvider } from './context/menucontext';
 
-    //HIDUPKAN LAGI IMPORT NEXT-AUTH
-    import { useSession } from 'next-auth/react';
+//HIDUPKAN LAGI IMPORT NEXT-AUTH
+import { useSession } from 'next-auth/react';
 
-    import postData from '@/lib/axios/postData';
-    import { InputText } from 'primereact/inputtext';
-    import { AppMenuItem } from '@/types';
-    import { Skeleton } from 'primereact/skeleton';
+import postData from '@/lib/axios/postData';
+import { InputText } from 'primereact/inputtext';
+import { AppMenuItem } from '@/types';
+import { Skeleton } from 'primereact/skeleton';
 
-    interface MenuState {
+interface MenuState {
     searchVal: string;
     filteredMenu: AppMenuItem[];
     load: boolean;
@@ -39,7 +39,7 @@ const mailInMenu: AppMenuItem = {
             label: 'Disposisi Surat',
             icon: 'pi pi-send',
             to: '/correspondence/mail_in/disposition'
-        },
+        }
     ]
 };
 
@@ -88,8 +88,8 @@ const ensureArchiveDocumentMenu = (menu: AppMenuItem[]) => {
     });
 
     if (archiveGroup) {
-        const existingTos = (archiveGroup.items || []).map(item => item.to);
-        const missingItems = archiveDocumentItems.filter(item => !existingTos.includes(item.to));
+        const existingTos = (archiveGroup.items || []).map((item) => item.to);
+        const missingItems = archiveDocumentItems.filter((item) => !existingTos.includes(item.to));
         archiveGroup.items = [...(archiveGroup.items || []), ...missingItems];
         return menu;
     }
@@ -160,8 +160,8 @@ const ensureGuestBookMenu = (menu: AppMenuItem[]) => {
     });
 
     if (guestBookGroup) {
-        const existingTos = (guestBookGroup.items || []).map(item => item.to);
-        const missingItems = guestBookItems.filter(item => !existingTos.includes(item.to));
+        const existingTos = (guestBookGroup.items || []).map((item) => item.to);
+        const missingItems = guestBookItems.filter((item) => !existingTos.includes(item.to));
         guestBookGroup.items = [...(guestBookGroup.items || []), ...missingItems];
         return menu;
     }
@@ -180,179 +180,178 @@ const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
     return menu.filter((item) => item.label?.toLowerCase() !== 'korespondensi');
 };
 
-    const AppMenu = () => {
-        // HAPUS DUMMY, PAKAI SESSION ASLI DARI NEXT-AUTH
-        const { data: session } = useSession();
+const AppMenu = () => {
+    const { data: session } = useSession();
 
-        const { layoutConfig } = useContext(LayoutContext);
-        const searchRef = useRef<HTMLInputElement>(null);
-        const lastPressTime = useRef<number>(0);
+    const { layoutConfig } = useContext(LayoutContext);
+    const searchRef = useRef<HTMLInputElement>(null);
+    const lastPressTime = useRef<number>(0);
 
-        const [state, setState] = useState<MenuState>({
-            searchVal: '',
-            filteredMenu: [],
-            load: true,
-            menu: []
-        });
+    const [state, setState] = useState<MenuState>({
+        searchVal: '',
+        filteredMenu: [],
+        load: true,
+        menu: []
+    });
 
-        //  AMBIL UserId DARI SESSION UNTUK DIKIRIM KE BACKEND
-        useEffect(() => {
-            const user = session?.user as any;
+    //  AMBIL IdPengguna DARI SESSION UNTUK DIKIRIM KE BACKEND
+    useEffect(() => {
+        const user = session?.user as any;
 
-            if (user) {
-                // Kita log untuk memastikan UserId sudah ada
-                console.log('ISI SESSION USER:', user);
+        if (user) {
+            // Kita log untuk memastikan IdPengguna sudah ada
+            console.log('ISI SESSION USER:', user);
 
-                // Gunakan UserId (sesuai yang kita pasang di session tadi)
-                const activeId = user.UserId || user.id;
+            // Gunakan IdPengguna (sesuai yang kita pasang di session tadi)
+            const activeId = user.IdPengguna || user.id;
 
-                if (activeId) {
-                    getMenu(activeId);
-                }
+            if (activeId) {
+                getMenu(activeId);
             }
-        }, [session]);
+        }
+    }, [session]);
 
-       const getMenu = async (userId: string | number) => {
-            setState((prev) => ({ ...prev, load: true }));
-            try {
-                const { data: vaData } = await postData('setup/nav/user-data', { UserId: userId });
-                
-                // 1. Log data mentah untuk debugging di Console Browser
-                console.log("🚀 MENTAHAN DARI BACKEND:", vaData);
+    const getMenu = async (IdPengguna: string | number) => {
+        setState((prev) => ({ ...prev, load: true }));
+        try {
+            const { data: vaData } = await postData('setup/nav/user-data', { IdPengguna: IdPengguna });
 
-                if (!vaData?.data) {
-                    throw new Error('Data menu tidak ditemukan dari backend');
-                }
+            // 1. Log data mentah untuk debugging di Console Browser
+            console.log('MENTAHAN DARI BACKEND:', vaData);
 
-                // 2. Filter Anti-Crash: Pastikan menu adalah Array
-                let menuArray = vaData.data;
-                
-                // Kalau MySQL ngirim string, kita bongkar dulu jadi Array
-                if (typeof menuArray === 'string') {
-                    try {
-                        menuArray = JSON.parse(menuArray);
-                    } catch (e) {
-                        console.error("Gagal memecah string menu dari database:", e);
-                        menuArray = [];
-                    }
-                }
+            if (!vaData?.data) {
+                throw new Error('Data menu tidak ditemukan dari backend');
+            }
 
-                // Pengaman ekstra: Kalau ternyata tetap bukan array, paksa jadi array kosong
-                if (!Array.isArray(menuArray)) {
-                    console.error("Format menu tidak valid (bukan array):", menuArray);
+            // 2. Filter Anti-Crash: Pastikan menu adalah Array
+            let menuArray = vaData.data;
+
+            // Kalau MySQL ngirim string, kita bongkar dulu jadi Array
+            if (typeof menuArray === 'string') {
+                try {
+                    menuArray = JSON.parse(menuArray);
+                } catch (e) {
+                    console.error('Gagal memecah string menu dari database:', e);
                     menuArray = [];
                 }
+            }
 
-                // 3. Olah data yang sudah dipastikan aman
-                const normalizedMenu = ensureGuestBookMenu(ensureArchiveDocumentMenu(ensureCorrespondenceMenu(removeLegacyCorrespondenceMenu(menuArray))));
-                const menu: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
-                const menu2: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
+            // Pengaman ekstra: Kalau ternyata tetap bukan array, paksa jadi array kosong
+            if (!Array.isArray(menuArray)) {
+                console.error('Format menu tidak valid (bukan array):', menuArray);
+                menuArray = [];
+            }
 
-                setState((prev) => ({
-                    ...prev,
-                    filteredMenu: menu2,
-                    menu: menu
-                }));
-            } catch (error) {
-                console.error('Error loading menu:', error);
-                setState((prev) => ({
-                    ...prev,
-                    filteredMenu: [],
-                    menu: []
-                }));
-            } finally {
-                setState((prev) => ({ ...prev, load: false }));
+            // 3. Olah data yang sudah dipastikan aman
+            const normalizedMenu = ensureGuestBookMenu(ensureArchiveDocumentMenu(ensureCorrespondenceMenu(removeLegacyCorrespondenceMenu(menuArray))));
+            const menu: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
+            const menu2: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
+
+            setState((prev) => ({
+                ...prev,
+                filteredMenu: menu2,
+                menu: menu
+            }));
+        } catch (error) {
+            console.error('Error loading menu:', error);
+            setState((prev) => ({
+                ...prev,
+                filteredMenu: [],
+                menu: []
+            }));
+        } finally {
+            setState((prev) => ({ ...prev, load: false }));
+        }
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.ctrlKey && e.key.toLowerCase() === 'f') {
+                const now = Date.now();
+
+                if (now - lastPressTime.current < 1000) {
+                    lastPressTime.current = 0;
+                    return;
+                }
+
+                e.preventDefault();
+                lastPressTime.current = now;
+                searchRef.current?.focus();
+                searchRef.current?.select();
             }
         };
 
-        useEffect(() => {
-            const handleKeyDown = (e: KeyboardEvent) => {
-                if (e.ctrlKey && e.key.toLowerCase() === 'f') {
-                    const now = Date.now();
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
-                    if (now - lastPressTime.current < 1000) {
-                        lastPressTime.current = 0;
-                        return;
-                    }
+    const searchMenuByLabel = (menu: AppMenuItem[] | undefined, keyword: string, parentIndexes: number[] = []): AppMenuItem[] => {
+        if (!Array.isArray(menu) || menu.length === 0) return [];
 
-                    e.preventDefault();
-                    lastPressTime.current = now;
-                    searchRef.current?.focus();
-                    searchRef.current?.select();
+        const lowerKeyword = keyword?.toLowerCase() || '';
+
+        if (!lowerKeyword.trim()) {
+            return menu.map((item, idx) => {
+                const newItem: AppMenuItem = {
+                    ...item,
+                    indexPath: [...parentIndexes, idx]
+                };
+
+                if (item.items && item.items.length > 0) {
+                    newItem.items = searchMenuByLabel(item.items, '', [...parentIndexes, idx]);
                 }
-            };
 
-            window.addEventListener('keydown', handleKeyDown);
-            return () => window.removeEventListener('keydown', handleKeyDown);
-        }, []);
+                return newItem;
+            });
+        }
 
-        const searchMenuByLabel = (menu: AppMenuItem[] | undefined, keyword: string, parentIndexes: number[] = []): AppMenuItem[] => {
-            if (!Array.isArray(menu) || menu.length === 0) return [];
+        return menu
+            .map((item, idx): AppMenuItem | null => {
+                const isMatch = item.label?.toLowerCase().includes(lowerKeyword);
+                const childMatches = searchMenuByLabel(item.items || [], keyword, [...parentIndexes, idx]);
 
-            const lowerKeyword = keyword?.toLowerCase() || '';
-
-            if (!lowerKeyword.trim()) {
-                return menu.map((item, idx) => {
+                if (isMatch) {
                     const newItem: AppMenuItem = {
                         ...item,
                         indexPath: [...parentIndexes, idx]
                     };
-
                     if (item.items && item.items.length > 0) {
-                        newItem.items = searchMenuByLabel(item.items, '', [...parentIndexes, idx]);
+                        newItem.items = childMatches;
                     }
-
                     return newItem;
-                });
-            }
-
-            return menu
-                .map((item, idx): AppMenuItem | null => {
-                    const isMatch = item.label?.toLowerCase().includes(lowerKeyword);
-                    const childMatches = searchMenuByLabel(item.items || [], keyword, [...parentIndexes, idx]);
-
-                    if (isMatch) {
-                        const newItem: AppMenuItem = {
-                            ...item,
-                            indexPath: [...parentIndexes, idx]
-                        };
-                        if (item.items && item.items.length > 0) {
-                            newItem.items = childMatches;
-                        }
-                        return newItem;
-                    } else if (childMatches.length > 0) {
-                        const newItem: AppMenuItem = {
-                            ...item,
-                            indexPath: [...parentIndexes, idx]
-                        };
-                        if (item.items && item.items.length > 0) {
-                            newItem.items = childMatches;
-                        }
-                        return newItem;
+                } else if (childMatches.length > 0) {
+                    const newItem: AppMenuItem = {
+                        ...item,
+                        indexPath: [...parentIndexes, idx]
+                    };
+                    if (item.items && item.items.length > 0) {
+                        newItem.items = childMatches;
                     }
+                    return newItem;
+                }
 
-                    return null;
-                })
-                .filter((item): item is AppMenuItem => item !== null);
-        };
+                return null;
+            })
+            .filter((item): item is AppMenuItem => item !== null);
+    };
 
     useEffect(() => {
         const filtered = searchMenuByLabel(state.menu, state.searchVal);
-        setState(prev => ({ ...prev, filteredMenu: filtered }));
+        setState((prev) => ({ ...prev, filteredMenu: filtered }));
     }, [state.menu, state.searchVal]);
 
     return (
         <MenuProvider>
             <div
                 style={{
-                    display: "flex",
-                    width: "100%",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    position: "sticky",
-                    top: "0",
-                    padding: "10px 0",
-                    zIndex: "9999"
+                    display: 'flex',
+                    width: '100%',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    position: 'sticky',
+                    top: '0',
+                    padding: '10px 0',
+                    zIndex: '9999'
                 }}
             >
                 <span className="block w-full p-input-icon-left">
@@ -365,7 +364,7 @@ const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                             const keyword = e.target.value;
                             const filtered = searchMenuByLabel(state.menu, keyword);
-                            setState(prev => ({
+                            setState((prev) => ({
                                 ...prev,
                                 searchVal: keyword,
                                 filteredMenu: filtered
@@ -378,24 +377,11 @@ const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
             <ul className="layout-menu">
                 {state.load
                     ? [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((item, i) => (
-                        <li className="my-3" key={`menu-skeleton-${i}`}>
-                            <Skeleton className="py-4" />
-                        </li>
-                    ))
-                    : state.filteredMenu?.map((item, i) => (
-                        !item.separator ? (
-                            <AppMenuitem
-                                load={state.load}
-                                item={item}
-                                root={true}
-                                index={i}
-                                key={item.label || `menu-item-${i}`}
-                            />
-                        ) : (
-                            <li className="menu-separator" key={`separator-${i}`}></li>
-                        )
-                    ))
-                }
+                          <li className="my-3" key={`menu-skeleton-${i}`}>
+                              <Skeleton className="py-4" />
+                          </li>
+                      ))
+                    : state.filteredMenu?.map((item, i) => (!item.separator ? <AppMenuitem load={state.load} item={item} root={true} index={i} key={item.label || `menu-item-${i}`} /> : <li className="menu-separator" key={`separator-${i}`}></li>))}
             </ul>
         </MenuProvider>
     );

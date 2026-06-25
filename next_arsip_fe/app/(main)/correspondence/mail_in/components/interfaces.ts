@@ -1,10 +1,10 @@
-import { FilterMatchMode } from "primereact/api";
-import { FormikProps } from "formik";
-import { Session } from "next-auth";
-import { Toast } from "primereact/toast";
-import { RefObject } from "react";
+import { FilterMatchMode } from 'primereact/api';
+import { FormikProps } from 'formik';
+import { Session } from 'next-auth';
+import { Toast } from 'primereact/toast';
+import { RefObject } from 'react';
 
-export type IncomingLetterStatus = "baru" | "diproses" | "didisposisi" | "selesai";
+export type IncomingLetterStatus = 'baru' | 'diproses' | 'didisposisi' | 'selesai';
 
 export interface initValue {
     incoming_letter_id: number | null;
@@ -62,11 +62,11 @@ export interface IncomingLetterFile {
 }
 
 export interface IncomingLetterDisposition {
-    disposition_id: number;
+    disid_jabatan: number;
     incoming_letter_id: number;
-    parent_disposition_id: number | null;
-    from_user_id: number | null;
-    to_user_id: number | null;
+    parent_disid_jabatan: number | null;
+    from_id_pengguna: number | null;
+    to_id_pengguna: number | null;
     instruction_name: string | null;
     instruction: string | null;
     disposition_note: string | null;
@@ -78,7 +78,7 @@ export interface IncomingLetterDisposition {
 export interface IncomingLetterTracking {
     incoming_letter_tracking_id: number;
     incoming_letter_id: number;
-    disposition_id: number | null;
+    disid_jabatan: number | null;
     action_name: string;
     previous_status: string | null;
     current_status: string | null;
