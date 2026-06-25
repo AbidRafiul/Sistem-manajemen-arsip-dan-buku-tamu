@@ -72,7 +72,7 @@ const AppConfig = (props: AppConfigProps) => {
             <Sidebar visible={layoutState.configSidebarVisible} onHide={onConfigSidebarHide} position="right" className="layout-config-sidebar w-20rem">
                 {!props.simple && (
                     <>
-                        <h5>Scale</h5>
+                        <h5>Skala</h5>
                         <div className="flex align-items-center">
                             <Button icon="pi pi-minus" type="button" onClick={decrementScale} rounded text className="w-2rem h-2rem mr-2" disabled={layoutConfig.scale === scales[0]}></Button>
                             <div className="flex gap-2 align-items-center">
@@ -83,19 +83,9 @@ const AppConfig = (props: AppConfigProps) => {
                             <Button icon="pi pi-plus" type="button" onClick={incrementScale} rounded text className="w-2rem h-2rem ml-2" disabled={layoutConfig.scale === scales[scales.length - 1]}></Button>
                         </div>
 
-                        <h5>Menu Type</h5>
-                        <div className="flex">
-                            <div className="field-radiobutton flex-1">
-                                <RadioButton name="menuMode" value={'static'} checked={layoutConfig.menuMode === 'static'} onChange={(e) => changeMenuMode(e)} inputId="mode1"></RadioButton>
-                                <label htmlFor="mode1">Static</label>
-                            </div>
-                            <div className="field-radiobutton flex-1">
-                                <RadioButton name="menuMode" value={'overlay'} checked={layoutConfig.menuMode === 'overlay'} onChange={(e) => changeMenuMode(e)} inputId="mode2"></RadioButton>
-                                <label htmlFor="mode2">Overlay</label>
-                            </div>
-                        </div>
 
-                        <h5>Input Style</h5>
+
+                        <h5>Tampilan Input</h5>
                         <div className="flex">
                             <div className="field-radiobutton flex-1">
                                 <RadioButton name="inputStyle" value={'outlined'} checked={layoutConfig.inputStyle === 'outlined'} onChange={(e) => changeInputStyle(e)} inputId="outlined_input"></RadioButton>
@@ -107,7 +97,7 @@ const AppConfig = (props: AppConfigProps) => {
                             </div>
                         </div>
 
-                        <h5>Ripple Effect</h5>
+                        <h5>Efek Ripple</h5>
                         <InputSwitch checked={layoutConfig.ripple as boolean} onChange={(e) => changeRipple(e)}></InputSwitch>
                     </>
                 )}
