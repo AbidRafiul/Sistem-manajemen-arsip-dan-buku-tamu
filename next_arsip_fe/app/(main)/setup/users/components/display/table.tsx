@@ -15,7 +15,7 @@ import Form from './form';
 const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBar, navBar, getNav, handleSave, handleDelete }: TableProps) => {
     const headerTemplate = (
         <div className="flex flex-wrap align-items-center justify-content-between gap-2">
-            <span className="text-xl font-bold">Users Management</span>
+            <span className="text-xl font-bold">Manajemen Pengguna</span>
 
             <div className="flex gap-2">
                 <span className="p-input-icon-left">
@@ -28,7 +28,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                             _filters['global'].value = value;
                             setState((p) => ({ ...p, searchVal: value, filters: _filters }));
                         }}
-                        placeholder="Search users..."
+                        placeholder="Cari pengguna..."
                     />
                 </span>
             </div>
@@ -90,14 +90,14 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
             <div className="card">
                 <div className="flex justify-content-between items-start mb-4">
                     <div>
-                        <h3 className="text-2xl font-semibold">User Management</h3>
+                        <h3 className="text-2xl font-semibold">Manajemen Pengguna</h3>
                     </div>
                 </div>
 
                 <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
                     <Button
                         size="small"
-                        label="New"
+                        label="Baru"
                         icon="pi pi-plus"
                         outlined
                         severity="success"
@@ -105,10 +105,9 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                             setState((p) => ({ ...p, selectedUser: [], add: true }));
                         }}
                     />
-                    {/* <Divider layout="vertical" /> */}
                     <Button
                         size="small"
-                        label="Print"
+                        label="Cetak"
                         icon="pi pi-print"
                         outlined
                         onClick={() => {
@@ -136,7 +135,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                     <Divider layout="vertical" />
                     <Button
                         size="small"
-                        label={`Delete${state.selectedUsers.length > 0 ? ` (${state.selectedUsers.length})` : ''}`}
+                        label={`Hapus${state.selectedUsers.length > 0 ? ` (${state.selectedUsers.length})` : ''}`}
                         icon="pi pi-trash"
                         severity="danger"
                         outlined
@@ -151,7 +150,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                         disabled={state.selectedUsers.length === 0}
                     />
                     <Divider layout="vertical" />
-                    <Button size="small" label="Refresh" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
+                    <Button size="small" label="Muat Ulang" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
                 </div>
 
                 <DataTable
@@ -181,12 +180,12 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                         body={(rowData) => {
                             // Karena di DB nilainya 'active' (string), bukan '1'
                             const isActive = rowData.status === 'active';
-                            return <Tag value={isActive ? 'Active' : 'Inactive'} severity={isActive ? 'success' : 'danger'} className="text-sm" />;
+                            return <Tag value={isActive ? 'Aktif' : 'Tidak Aktif'} severity={isActive ? 'success' : 'danger'} className="text-sm" />;
                         }}
                         header="Status"
                     ></Column>
-                    <Column field="created_at" sortable body={(rowData) => formatDateCalendar(rowData.created_at)} header="Datetime"></Column>
-                    <Column headerStyle={{ textAlign: 'center' }} header="Action" body={actionBodyTemplate}></Column>
+                    <Column field="created_at" sortable body={(rowData) => formatDateCalendar(rowData.created_at)} header="Tanggal & Waktu"></Column>
+                    <Column headerStyle={{ textAlign: 'center' }} header="Aksi" body={actionBodyTemplate}></Column>
                 </DataTable>
             </div>
 

@@ -3,16 +3,19 @@
 import axios from 'axios';
 import { useFormik } from 'formik';
 import { signIn } from 'next-auth/react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Button } from 'primereact/button';
-import { Checkbox } from 'primereact/checkbox';
-import { InputText } from 'primereact/inputtext';
-import { Password } from 'primereact/password';
 import { Toast } from 'primereact/toast';
 import { useRef, useState } from 'react';
 import { showError } from '../../../../lib/tools/generalTools';
 import { LoginFormik } from './component/interfaces';
+import { Inter } from 'next/font/google';
+import LoginView from './component/loginView';
+
+const inter = Inter({
+    subsets: ['latin'],
+    weight: ['400', '500', '600', '700', '800'],
+    variable: '--font-inter'
+});
 
 const LoginPage = () => {
     const router = useRouter();
@@ -22,7 +25,7 @@ const LoginPage = () => {
         load: false
     });
 
-    const formik = useFormik({
+    const formik = useFormik<LoginFormik>({
         initialValues: {
             nama_pengguna: '',
             kata_sandi: '',
@@ -76,16 +79,22 @@ const LoginPage = () => {
         }
     };
 
+<<<<<<< HEAD
     const handleUnavailableAction = (message: string) => {
         showError(toast, message);
     };
 
     const nama_penggunaInvalid = !!(formik.touched.nama_pengguna && formik.errors.nama_pengguna);
     const kata_sandiInvalid = !!(formik.touched.kata_sandi && formik.errors.kata_sandi);
+=======
+    const usernameInvalid = !!(formik.touched.username && formik.errors.username);
+    const passwordInvalid = !!(formik.touched.password && formik.errors.password);
+>>>>>>> main
 
     return (
         <>
             <Toast ref={toast} />
+<<<<<<< HEAD
             <main className="login-shell">
                 <section className="login-card" aria-label="Login DocArchive">
                     <aside className="login-brand-panel">
@@ -821,6 +830,15 @@ const LoginPage = () => {
                     }
                 }
             `}</style>
+=======
+            <LoginView
+                formik={formik}
+                isLoading={state.load}
+                usernameInvalid={usernameInvalid}
+                passwordInvalid={passwordInvalid}
+                fontVariable={inter.variable}
+            />
+>>>>>>> main
         </>
     );
 };

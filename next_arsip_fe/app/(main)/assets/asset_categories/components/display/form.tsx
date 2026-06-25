@@ -3,7 +3,7 @@
 import { Dialog } from 'primereact/dialog';
 import { FormProps, initValue } from '../interfaces';
 import { InputText } from 'primereact/inputtext';
-import { kata_sandi } from 'primereact/kata_sandi';
+import { Password } from 'primereact/password';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { apiEndpointCreate, apiEndpointDelete, apiEndpointGet, apiEndpointUpdate } from '../endpoints';
@@ -53,8 +53,8 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
 
         try {
             if (state.selectedUsers.length < 1) {
-                showError(toast, 'Tidak Ada User yang Dipilih');
-                return;
+                showError(toast, 'Tidak Ada Kategori yang Dipilih')
+                return
             }
 
             const vaCode = state.selectedUsers.map((v) => v.Code);

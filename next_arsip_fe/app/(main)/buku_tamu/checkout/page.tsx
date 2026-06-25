@@ -1,5 +1,6 @@
 'use client';
 
+<<<<<<< HEAD
 import { Toast } from 'primereact/toast';
 import { useEffect, useRef, useState } from 'react';
 import postData from '@/lib/axios/postData';
@@ -13,6 +14,17 @@ import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Button } from 'primereact/button';
 import { FilterMatchMode } from 'primereact/api';
+=======
+import { Toast } from "primereact/toast";
+import { useEffect, useRef, useState } from "react";
+import postData from "@/lib/axios/postData";
+import { showError, showSuccess } from "@/lib/tools/generalTools";
+import { State } from "./components/interfaces";
+import { apiEndpointGet, apiEndpointCheckout } from "./components/endpoints";
+import GuestDataTable from "./components/display/table";
+import { CheckoutDialog, DetailVisitorDialog } from "./components/display/dialogs";
+import { FilterMatchMode } from "primereact/api";
+>>>>>>> main
 
 const CheckoutPage = () => {
     const toast = useRef<Toast>(null);
@@ -92,28 +104,23 @@ const CheckoutPage = () => {
     };
 
     return (
-        <div className="p-4 bg-slate-50 min-h-screen">
+        <div className="p-4 surface-ground min-h-screen">
             <Toast ref={toast} position="top-right" />
 
             <GuestDataTable state={state} setState={setState} onCheckout={onCheckout} onDetail={onDetail} onFilterStatus={onFilterStatus} onRefresh={fetchAll} />
 
-            <Dialog header="Check-Out Tamu" visible={state.showCheckoutDialog} modal style={{ width: '480px' }} onHide={() => setState((p: State) => ({ ...p, showCheckoutDialog: false }))}>
-                <div className="grid grid-nogutter gap-3">
-                    <div className="col-12">
-                        <label htmlFor="checkoutToken">QR Token / Visit Code</label>
-                        <InputText id="checkoutToken" value={state.checkoutToken} className="w-full mt-1" onChange={(e) => setState((p: State) => ({ ...p, checkoutToken: e.target.value }))} />
-                    </div>
-                    <div className="col-12">
-                        <label htmlFor="checkoutNotes">Catatan Keperluan Keluar</label>
-                        <InputTextarea id="checkoutNotes" value={state.checkoutNotes} className="w-full mt-1" onChange={(e) => setState((p: State) => ({ ...p, checkoutNotes: e.target.value }))} rows={4} />
-                    </div>
-                </div>
-                <div className="flex justify-content-end gap-2 mt-4">
-                    <Button label="Batal" severity="secondary" outlined onClick={() => setState((p: State) => ({ ...p, showCheckoutDialog: false }))} />
-                    <Button label="Konfirmasi Selesai" severity="success" onClick={handleCheckout} loading={state.load} />
-                </div>
-            </Dialog>
+            <CheckoutDialog
+                visible={state.showCheckoutDialog}
+                checkoutToken={state.checkoutToken}
+                checkoutNotes={state.checkoutNotes}
+                loading={state.load}
+                onHide={() => setState((p: State) => ({ ...p, showCheckoutDialog: false }))}
+                onTokenChange={(val) => setState((p: State) => ({ ...p, checkoutToken: val }))}
+                onNotesChange={(val) => setState((p: State) => ({ ...p, checkoutNotes: val }))}
+                onConfirm={handleCheckout}
+            />
 
+<<<<<<< HEAD
             <Dialog header="Detail Riwayat Kunjungan" visible={!!state.detailRecord} modal style={{ width: '600px' }} onHide={() => setState((p: State) => ({ ...p, detailRecord: null }))}>
                 {state.detailRecord && (
                     <div className="grid grid-nogutter gap-3">
@@ -156,6 +163,13 @@ const CheckoutPage = () => {
                     </div>
                 )}
             </Dialog>
+=======
+            <DetailVisitorDialog
+                visible={!!state.detailRecord}
+                record={state.detailRecord}
+                onHide={() => setState((p: State) => ({ ...p, detailRecord: null }))}
+            />
+>>>>>>> main
         </div>
     );
 };

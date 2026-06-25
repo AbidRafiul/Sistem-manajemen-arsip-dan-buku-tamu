@@ -126,10 +126,11 @@ export default function RegistrasiKunjunganPage() {
     };
 
     return (
-        <div className="p-4 bg-slate-50 min-h-screen">
+        <div className="p-4 surface-ground min-h-screen">
             <Toast ref={toast} position="top-right" />
 
             <div className="flex justify-content-between align-items-center mb-4">
+<<<<<<< HEAD
                 <h4 className="m-0 font-bold text-slate-800">Booking / Registrasi Kunjungan</h4>
                 <Button
                     type="button"
@@ -138,6 +139,10 @@ export default function RegistrasiKunjunganPage() {
                     className="p-button-outlined p-button-sm bg-white px-3 py-2 border-round border-300 hover:surface-100 text-slate-700"
                     onClick={() => router.push('/buku_tamu/monitoring')}
                 />
+=======
+                <h4 className="m-0 font-bold text-color">Registrasi Kunjungan</h4>
+                <Button type="button" label="Kembali ke Monitoring" icon="pi pi-arrow-left" className="p-button-outlined p-button-sm px-3 py-2 border-round border-300 hover:surface-100" onClick={() => router.push('/buku_tamu/monitoring')} />
+>>>>>>> main
             </div>
 
             <RegistrasiForm

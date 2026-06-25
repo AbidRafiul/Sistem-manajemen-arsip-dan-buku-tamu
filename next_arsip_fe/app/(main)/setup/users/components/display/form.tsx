@@ -56,7 +56,7 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                 <form onSubmit={formik?.handleSubmit} className="flex gap-2 flex-column">
                     <div className="flex md:flex-row flex-column gap-2 w-full">
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="nama_lengkap">Name</label>
+                            <label htmlFor="fullname">Nama Lengkap</label>
                             <div className="p-inputgroup">
                                 <InputText
                                     id="nama_lengkap"
@@ -89,7 +89,7 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
 
                     <div className="flex md:flex-row flex-column gap-2 w-full">
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="telepon">telepon</label>
+                            <label htmlFor="telp">No. Telepon</label>
                             <div className="p-inputgroup">
                                 <InputText
                                     id="telepon"
@@ -231,8 +231,8 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                                 optionValue="kode"
                                 optionLabel="label"
                                 options={[
-                                    { kode: '0', label: 'nonactive' },
-                                    { kode: '1', label: 'active' }
+                                    { kode: '0', label: 'Nonaktif' },
+                                    { kode: '1', label: 'Aktif' }
                                 ]}
                                 value={formik?.values.status}
                                 onChange={(e) => formik?.setFieldValue('status', e.value)}
@@ -241,18 +241,27 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                         </div>
                         {isFormFieldInvalid('status') ? getFormErrorMessage('status') : ''}
                     </div>
-                    <Button type="submit" label={state?.edit ? 'Update' : 'Save'} className="mt-2" loading={state?.load} disabled={state?.load} />
+                    <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} className="mt-2" loading={state?.load} />
                 </form>
             </Dialog>
 
-            <Dialog header="Confirm Delete" visible={state.delete} onHide={() => setState((p: any) => ({ ...p, add: false, edit: false, delete: false }))} modal style={{ width: '25rem' }} footer={deleteFooterTemplate}>
+            <Dialog
+                header="Konfirmasi Hapus"
+                visible={state.delete}
+                onHide={() => {
+                    setState((p) => ({ ...p, add: false, edit: false, delete: false }));
+                }}
+                modal
+                style={{ width: '25rem' }}
+                footer={deleteFooterTemplate}
+            >
                 <div className="flex flex-column align-items-center text-center gap-4 py-4">
                     <i className="pi pi-exclamation-triangle text-red-500 text-6xl" />
                     <div>
-                        <h3 className="font-bold mb-2">{state.selectedUsers.length > 1 ? `Delete ${state.selectedUsers.length} units?` : 'Delete this unit?'}</h3>
+                        <h3 className="font-bold mb-2">{state.selectedUsers.length > 1 ? `Hapus ${state.selectedUsers.length} pengguna?` : 'Hapus pengguna ini?'}</h3>
                         <p className="text-color-secondary">
                             {state.selectedUsers.length > 1 ? (
-                                `You are going to delete all this selected ${state.selectedUsers.length} units`
+                                `Anda akan menghapus ${state.selectedUsers.length} pengguna yang dipilih`
                             ) : (
                                 <>
                                     You are going to delete this unit as follow : <strong>{state.selectedUsers[0]?.id_pengguna || ''}</strong>
@@ -260,7 +269,7 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                                 </>
                             )}
                             <br />
-                            This action can&apos;t be undone
+                            Tindakan ini tidak dapat dibatalkan
                         </p>
                     </div>
                 </div>

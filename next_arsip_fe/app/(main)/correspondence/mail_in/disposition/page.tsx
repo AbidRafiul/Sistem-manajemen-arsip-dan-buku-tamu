@@ -1,5 +1,6 @@
 'use client';
 
+<<<<<<< HEAD
 import postData from '@/lib/axios/postData';
 import { showError, showSuccess } from '@/lib/tools/generalTools';
 import { Button } from 'primereact/button';
@@ -13,6 +14,16 @@ import { apiEndpointGet } from '../components/endpoints';
 import { TableData } from '../components/interfaces';
 import { mapIncomingLetterRow } from '../components/mappers';
 import styles from '../mail_in_dashboard.module.css';
+=======
+import postData from "@/lib/axios/postData";
+import { showError, showSuccess } from "@/lib/tools/generalTools";
+import { Toast } from "primereact/toast";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { apiEndpointGet } from "../components/endpoints";
+import { TableData } from "../components/interfaces";
+import { mapIncomingLetterRow } from "../components/mappers";
+import DispositionView from "./components/display/dispositionView";
+>>>>>>> main
 
 const dispositionEndpoint = '/correspondence/letter-disposition-data';
 const dispositionCreateEndpoint = '/correspondence/letter-disposition-create';
@@ -34,6 +45,7 @@ type InstructionOption = {
     instruction_code: string;
 };
 
+<<<<<<< HEAD
 const statusClass: Record<string, string> = {
     baru: styles.statusWaiting,
     didisposisi: styles.statusWaiting,
@@ -50,6 +62,8 @@ const statusLabel: Record<string, string> = {
     selesai: 'Selesai'
 };
 
+=======
+>>>>>>> main
 const emptyForm = {
     incoming_letter_id: null as number | null,
     parent_disid_jabatan: null as number | null,
@@ -61,6 +75,7 @@ const emptyForm = {
     due_date: ''
 };
 
+<<<<<<< HEAD
 const formatDate = (value?: string) => {
     if (!value) return '-';
 
@@ -75,6 +90,9 @@ const formatDate = (value?: string) => {
 };
 
 const getStatus = (value?: string) => String(value || 'baru').toLowerCase();
+=======
+const getStatus = (value?: string) => String(value || "baru").toLowerCase();
+>>>>>>> main
 
 const Page = () => {
     const toast = useRef<Toast>(null);
@@ -187,8 +205,11 @@ const Page = () => {
                 instruction: form.instruction || null,
                 disposition_note: form.disposition_note || null,
                 due_date: form.due_date || null,
+<<<<<<< HEAD
                 created_by: null,
                 updated_by: null
+=======
+>>>>>>> main
             };
 
             const res = await postData(dispositionCreateEndpoint, payload);
@@ -212,11 +233,18 @@ const Page = () => {
         setLoading(true);
 
         try {
+<<<<<<< HEAD
             const endpoint = dialogMode === 'complete' ? dispositionCompleteEndpoint : dispositionProcessEndpoint;
             const payload =
                 dialogMode === 'complete'
                     ? { disid_jabatan: selectedDisposition.disid_jabatan, complete_note: actionNote || null, updated_by: null }
                     : { disid_jabatan: selectedDisposition.disid_jabatan, process_note: actionNote || null, updated_by: null };
+=======
+            const endpoint = dialogMode === "complete" ? dispositionCompleteEndpoint : dispositionProcessEndpoint;
+            const payload = dialogMode === "complete"
+                ? { disposition_id: selectedDisposition.disposition_id, complete_note: actionNote || null }
+                : { disposition_id: selectedDisposition.disposition_id, process_note: actionNote || null };
+>>>>>>> main
 
             const res = await postData(endpoint, payload);
             showSuccess(toast, res.data?.message || 'Status disposisi berhasil diperbarui');
@@ -238,6 +266,7 @@ const Page = () => {
         }, {});
     }, [letters]);
 
+<<<<<<< HEAD
     const pendingLetters = letters.filter((letter) => letter.status !== 'selesai').slice(0, 6);
     const recentDispositions = dispositions.slice(0, 8);
     const renderStatus = (statusValue?: string) => {
@@ -250,11 +279,16 @@ const Page = () => {
         forward: 'Teruskan Disposisi',
         process: 'Proses Disposisi',
         complete: 'Selesaikan Disposisi'
+=======
+    const handleFormChange = (key: string, value: any) => {
+        setForm((prev) => ({ ...prev, [key]: value }));
+>>>>>>> main
     };
 
     return (
-        <div className={styles.page}>
+        <div>
             <Toast ref={toast} position="top-right" />
+<<<<<<< HEAD
 
             <section className={styles.hero}>
                 <div>
@@ -566,6 +600,34 @@ const Page = () => {
                     </div>
                 )}
             </Dialog>
+=======
+            <DispositionView
+                toast={toast}
+                letters={letters}
+                dispositions={dispositions}
+                users={users}
+                instructions={instructions}
+                search={search}
+                loading={loading}
+                dialogMode={dialogMode}
+                selectedLetter={selectedLetter}
+                selectedDisposition={selectedDisposition}
+                form={form}
+                actionNote={actionNote}
+                statusSummary={statusSummary}
+                letterOptions={letterOptions}
+                onSearchChange={setSearch}
+                onFormChange={handleFormChange}
+                onActionNoteChange={setActionNote}
+                onOpenCreate={openCreateDialog}
+                onOpenForward={openForwardDialog}
+                onOpenAction={openActionDialog}
+                onCloseDialog={closeDialog}
+                onSaveDisposition={saveDisposition}
+                onSaveAction={saveAction}
+                onRefresh={() => fetchData(search)}
+            />
+>>>>>>> main
         </div>
     );
 };

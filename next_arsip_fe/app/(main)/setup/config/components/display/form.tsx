@@ -56,7 +56,14 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
 
             const res = vaData.data;
 
+<<<<<<< HEAD
             showSuccess(toast, res.data?.message || 'Data saved successfully');
+=======
+            showSuccess(
+                toast,
+                res.data?.message || "Konfigurasi berhasil disimpan"
+            );
+>>>>>>> main
 
             formik.resetForm();
             setState((p) => ({
@@ -70,7 +77,14 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
             await getData(apiEndpointGet);
         } catch (error: any) {
             const e = error?.response?.data || error;
+<<<<<<< HEAD
             showError(toast, e?.message || 'An unexpected error occurred');
+=======
+            showError(
+                toast,
+                e?.message || "Terjadi kesalahan yang tidak terduga"
+            );
+>>>>>>> main
         } finally {
             setState((p) => ({ ...p, load: false, submittedData: null }));
         }
@@ -93,7 +107,17 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
 
     const konfigurasiFooter = (
         <>
+<<<<<<< HEAD
             <Button type="submit" label="Save" icon="pi pi-check" className="p-button-text" onClick={() => formik.handleSubmit()} />
+=======
+            <Button
+                type="submit"
+                label="Simpan"
+                icon="pi pi-check"
+                className="p-button-text"
+                onClick={() => formik.handleSubmit()}
+            />
+>>>>>>> main
         </>
     );
 

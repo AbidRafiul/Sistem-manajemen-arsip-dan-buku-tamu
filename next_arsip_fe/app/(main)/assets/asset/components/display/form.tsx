@@ -3,7 +3,7 @@
 import { Dialog } from 'primereact/dialog';
 import { FormProps, initValue } from '../interfaces';
 import { InputText } from 'primereact/inputtext';
-import { kata_sandi } from 'primereact/kata_sandi';
+import { Password } from 'primereact/password';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { apiEndpointCreate, apiEndpointDelete, apiEndpointGet, apiEndpointGetCategory, apiEndpointGetDivision, apiEndpointUpdate } from '../endpoints';
@@ -71,8 +71,8 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
 
         try {
             if (state.selectedUsers.length < 1) {
-                showError(toast, 'Tidak Ada User yang Dipilih');
-                return;
+                showError(toast, 'Tidak Ada Aset yang Dipilih')
+                return
             }
 
             const vaCode = state.selectedUsers.map((v) => v.Code);
@@ -267,39 +267,78 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                             {isFormFieldInvalid('DivisionCode') ? getFormErrorMessage('DivisionCode') : ''}
                         </div>
                     </div>
-                    <Button type="submit" label={state?.edit ? 'Update' : 'Save'} className="mt-2" loading={state?.load} />
-                </form>
-            </Dialog>
-
-            <Dialog
-                header="Delete Confirm"
-                visible={state.delete}
-                onHide={() => {
-                    setState((p) => ({ ...p, add: false, edit: false, delete: false }));
-                }}
-                modal
-                style={{ width: '25rem' }}
-                footer={deleteFooterTemplate}
-            >
-                <div className="flex flex-column align-items-center text-center gap-4 py-4">
-                    <i className="pi pi-exclamation-triangle text-red-500 text-6xl" />
-
-                    <div>
-                        <h3 className="font-bold mb-2">{state.selectedUsers.length > 1 ? `Delete ${state.selectedUsers.length} units?` : 'Delete this unit?'}</h3>
-                        <p className="text-color-secondary">
-                            {state.selectedUsers.length > 1 ? (
-                                `You are going to delete all this selected ${state.selectedUsers.length} units`
-                            ) : (
-                                <>
-                                    You are going to delete this unit as follow : <strong>{state.selectedUsers[0]?.Code || ''}</strong>
-                                    {`(${state.selectedUsers[0]?.Name})`}.
-                                </>
-                            )}
-                            <br />
-                            This action can&apos;t be undone
-                        </p>
+                    <div className="flex flex-column gap-2 w-full">
+                        <label htmlFor="name">Nama Aset</label>
+                        <div className="p-inputgroup">
+                            <InputText
+                                id="name"
+                                name="name"
+                                value={formik?.values.Name}
+                                style={{ padding: '1rem' }}
+                                placeholder=""
+                                onChange={(e) => {
+                                    formik?.setFieldValue('Name', e.target.value);
+                                }}
+                                className={isFormFieldInvalid('Name') ? 'p-invalid' : ''}
+                            />
+                        </div>
+                        {isFormFieldInvalid('Name') ? getFormErrorMessage('Name') : ''}
                     </div>
-                </div>
+                    <div className="flex flex-column gap-2 w-full">
+                        <label htmlFor="Location">Lokasi</label>
+                        <div className="p-inputgroup">
+                            <InputText
+                                id="Location"
+                                name="Location"
+                                value={formik?.values.Location}
+                                style={{ padding: '1rem', width: '100%' }}
+                                placeholder=""
+                                onChange={(e) => {
+                                    formik?.setFieldValue('Location', e.target.value);
+                                }}
+                                className={isFormFieldInvalid('Location') ? 'p-invalid' : ''}
+                            />
+                        </div>
+                        {isFormFieldInvalid('Location') ? getFormErrorMessage('Location') : ''}
+                    </div>
+                    <div className="flex flex-column gap-2 w-full">
+                        <label htmlFor="Type">Tipe</label>
+                        <div className="p-inputgroup">
+                            <InputText
+                                id="Type"
+                                name="Type"
+                                value={formik?.values.Type}
+                                style={{ padding: '1rem', width: '100%' }}
+                                placeholder=""
+                                onChange={(e) => {
+                                    formik?.setFieldValue('Type', e.target.value);
+                                }}
+                                className={isFormFieldInvalid('Type') ? 'p-invalid' : ''}
+                            />
+                        </div>
+                        {isFormFieldInvalid('Type') ? getFormErrorMessage('Type') : ''}
+                    </div>
+                    <div className="flex flex-column gap-2 w-full">
+                        <label htmlFor="Status">Status</label>
+                        <div className="p-inputgroup">
+                            <Dropdown
+                                id="Status"
+                                name="Status"
+                                value={formik?.values.Status}
+                                options={[
+                                    { label: 'Operasional', value: 'operational' },
+                                    { label: 'Pemeliharaan', value: 'maintenance' },
+                                    { label: 'Rusak', value: 'down' },
+                                ]}
+                                onChange={(e) => {
+                                    formik?.setFieldValue('Status', e.value);
+                                }}
+                                className={isFormFieldInvalid('Status') ? 'p-invalid' : ''}
+                            />
+                        </div>
+                        {isFormFieldInvalid('Status') ? getFormErrorMessage('Status') : ''}
+                    </div>
+                </form>
             </Dialog>
         </>
     );

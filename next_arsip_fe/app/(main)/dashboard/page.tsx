@@ -1,9 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import MetricCards from './components/display/metricCard';
-import AnalyticsChart from './components/display/analyticsChart';
-import AuditTimeline from './components/display/auditTimeline';
+import DashboardView from './components/display/dashboardView';
 
 export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
@@ -49,29 +47,10 @@ export default function DashboardPage() {
     };
 
     return (
-        <div className="dashboard-page">
-            <section className="dashboard-header">
-                <div>
-                    <span className="dashboard-eyebrow">Executive overview</span>
-                    <h1>Executive Dashboard</h1>
-                    <p>Ringkasan aktivitas arsip, kunjungan, surat, dan retensi dalam satu tampilan operasional.</p>
-                </div>
-                <button className="dashboard-date-button" type="button">
-                    <i className="pi pi-calendar"></i>
-                    <span>17 Jun 2026</span>
-                </button>
-            </section>
-
-            <MetricCards data={summaryData} isLoading={loading} />
-
-            <section className="dashboard-insight-grid">
-                <div className="dashboard-chart-column">
-                    <AnalyticsChart isLoading={loading} />
-                </div>
-                <div className="dashboard-audit-column">
-                    <AuditTimeline logs={auditLogs} isLoading={loading} />
-                </div>
-            </section>
-        </div>
+        <DashboardView
+            data={summaryData}
+            auditLogs={auditLogs}
+            isLoading={loading}
+        />
     );
 }
