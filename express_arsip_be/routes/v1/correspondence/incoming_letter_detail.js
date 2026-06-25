@@ -14,8 +14,8 @@ const incomingLetterDetail = async (req, res) => {
     };
 
     const oMessage = {
-      "incoming_letter_id.required": "incoming_letter_id wajib diisi",
-      "incoming_letter_id.number": "incoming_letter_id harus berupa angka",
+      "surat_masuk_id.required": "surat_masuk_id wajib diisi",
+      "surat_masuk_id.number": "surat_masuk_id harus berupa angka",
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
@@ -30,29 +30,28 @@ const incomingLetterDetail = async (req, res) => {
     }
 
     const oLetter = await DB("trx_incoming_letters as til")
-      .leftJoin("mst_letter_types as mlt", "til.letter_type_id", "mlt.letter_type_id")
+      .leftJoin("mst_jenis_surat as mlt", "til.jenis_surat_id", "mlt.jenis_surat_id")
       .select(
-        "til.incoming_letter_id",
-        "til.agenda_number",
-        "til.letter_number",
-        "til.letter_date",
-        "til.received_date",
-        "til.sender_name",
-        "til.sender_institution",
-        "til.subject",
-        "til.attachment_description",
-        "til.letter_type_id",
-        "mlt.letter_type_name",
-        "til.document_type_id",
-        "til.archive_classification_id",
-        "til.confidentiality_level_id",
+       "til.surat_masuk_id",
+        "til.nomor_agenda",
+        "til.nomor_surat",
+        "til.tanggal_surat",
+        "til.tanggal_diterima",
+        "til.nama_pengirim",
+        "til.instansi_pengirim",
+        "til.perihal",
+        "til.keterangan_lampiran",
+        "til.jenis_surat_id",
+        "mlt.nama_jenis_surat",
+        "til.jenis_dokumen_id",
+        "til.klasifikasi_arsip_id",
+        "til.tingkat_kerahasiaan_id",
         "til.status",
         "til.created_by",
         "til.updated_by",
         "til.created_at",
-        "til.updated_at"
       )
-      .where("til.incoming_letter_id", oPayload.incoming_letter_id)
+      .where("til.surat_masuk_id", oPayload.incoming_letter_id)
       .first();
 
     if (!oLetter) {
@@ -62,40 +61,40 @@ const incomingLetterDetail = async (req, res) => {
       });
     }
 
-    const vaFiles = await DB("trx_incoming_letter_files")
+    const vaFiles = await DB("trs_file_surat_masuk")
       .select(
-        "incoming_letter_file_id",
-        "incoming_letter_id",
-        "file_path",
-        "file_name",
-        "file_mime_type",
-        "file_size",
+        "file_surat_masuk_id",
+        "surat_masuk_id",
+        "path_file",
+        "nama_file",
+        "tipe_mime_file",
+        "ukuran_file",
         "uploaded_by",
         "status",
         "created_at",
         "updated_at"
       )
-      .where("incoming_letter_id", oPayload.incoming_letter_id)
+      .where("surat_masuk_id", oPayload.incoming_letter_id)
       .where("status", "active")
       .orderBy("created_at", "desc");
 
-    const vaDispositions = await DB("trx_letter_dispositions as tld")
+    const vaDispositions = await DB("trs_disposisi_surat as tld")
       .leftJoin(
-        "mst_disposition_instructions as mdi",
-        "tld.disposition_instruction_id",
-        "mdi.disposition_instruction_id"
+        "mst_instruksi_diposisi as mdi",
+        "tld.instruksi_diposisi_id",
+        "mdi.instruksi_diposisi_id"
       )
       .select(
-        "tld.disposition_id",
-        "tld.incoming_letter_id",
-        "tld.parent_disposition_id",
-        "tld.from_user_id",
-        "tld.to_user_id",
-        "tld.disposition_instruction_id",
-        "mdi.instruction_name",
-        "tld.instruction",
-        "tld.disposition_note",
-        "tld.due_date",
+        "tld.diposisi_id",
+        "tld.surat_masuk_id",
+        "tld.diposisi_induk_id",
+        "tld.dari_pengguna_id",
+        "tld.kepada_pengguna_id",
+        "tld.instruksi_diposisi_id",
+        "mdi.nama_instruksi",
+        "tld.instruksi",
+        "tld.catatan_diposisi",
+        "tld.batas_waktu",
         "tld.status",
         "tld.received_at",
         "tld.processed_at",
@@ -105,26 +104,26 @@ const incomingLetterDetail = async (req, res) => {
         "tld.created_at",
         "tld.updated_at"
       )
-      .where("tld.incoming_letter_id", oPayload.incoming_letter_id)
+      .where("tld.surat_masukid", oPayload.incoming_letter_id)
       .orderBy("tld.created_at", "desc");
 
-    const vaTrackings = await DB("trx_incoming_letter_trackings")
+    const vaTrackings = await DB("trs_tracking_surat_masuk")
       .select(
-        "incoming_letter_tracking_id",
-        "incoming_letter_id",
-        "disposition_id",
-        "action_name",
-        "from_user_id",
-        "to_user_id",
-        "previous_status",
-        "current_status",
-        "notes",
+        "tracking_surat_masuk_id",
+        "surat_masuk_id",
+        "disposisi_id",
+        "nama_aksi",
+        "dari_pengguna_id",
+        "kepada_pengguna_id",
+        "status_sebelumnya",
+        "status_saat_ini",
+        "catatan",
         "processed_at",
         "created_by",
         "created_at",
         "updated_at"
       )
-      .where("incoming_letter_id", oPayload.incoming_letter_id)
+      .where("surat_masuk_id", oPayload.incoming_letter_id)
       .orderBy("processed_at", "desc");
 
     return res.status(200).json({

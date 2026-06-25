@@ -13,7 +13,7 @@ import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { jwtVerify, SignJWT } from "jose";
 import { recordAuditTrail } from "../components/tools/audit_tool.js";
-import { getNavigationMenu } from "../setup/navigation/navigation_helper.js";
+import { roleAliases } from "../setup/navigation/navigation_helper.js";
 
 const router = express.Router();
 
@@ -110,21 +110,7 @@ router.post("/", async (req, res) => {
         });
       }
 
-      // 4. AMBIL MENU DARI TABEL BARU (Pakai UserId)
-      const oNavigation = await DB("user_navigation")
-        .select("menu")
-        .where("user_id", oUser.user_id)
-        .first();
-
-      if (!oNavigation || !oNavigation.menu) {
-        return res.status(400).json({
-          status: status.GAGAL,
-          message: "User tidak memiliki hak akses menu terdaftar di database",
-          datetime: formatDateSystem(),
-        });
-      }
-
-      // 5. AMBIL JABATAN DARI TABEL ROLE (Pakai UserId)
+      // 4. AMBIL JABATAN DARI TABEL ROLE (Pakai UserId)
       const oUserRole = await DB("mst_user_roles")
         .leftJoin("mst_roles", "mst_user_roles.role_id", "mst_roles.role_id")
         .select(
@@ -137,7 +123,20 @@ router.post("/", async (req, res) => {
 
       const roleId = oUserRole ? oUserRole.role_id : null;
 
-      // 6. BUNGKUS PAYLOAD JWT BARU
+      const oNavigation = await DB("mst_navigation")
+        .select("menu")
+        .whereIn("role", roleAliases(oUserRole?.role_name || oUserRole?.role_code))
+        .first();
+
+      if (!oNavigation || !oNavigation.menu) {
+        return res.status(400).json({
+          status: status.GAGAL,
+          message: "Role tidak memiliki hak akses menu terdaftar di mst_navigation",
+          datetime: formatDateSystem(),
+        });
+      }
+
+      // 5. BUNGKUS PAYLOAD JWT BARU
       const credential = {
         UserId: oUser.user_id, // HURUF BESAR: Biar NextAuth & AppMenu.tsx lo mulus baca UserId
         username: oUser.username,

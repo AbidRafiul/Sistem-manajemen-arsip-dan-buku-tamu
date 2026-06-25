@@ -72,12 +72,19 @@ const ROLE_ALIASES = {
   admin: ["admin", "master", "ADM", "Administrator"],
   master: ["master", "ADM", "Administrator"],
   administrator: ["Administrator", "ADM", "admin", "master"],
+  adm: ["ADM", "Administrator", "admin", "master"],
   pimpinan: ["Pimpinan", "PMN"],
+  pmn: ["PMN", "Pimpinan"],
   sekretaris: ["Sekretaris", "SKR"],
+  skr: ["SKR", "Sekretaris"],
   "staff arsip": ["Staff Arsip", "STF_ARS"],
+  stf_ars: ["STF_ARS", "Staff Arsip"],
   "staff umum": ["Staff Umum", "STF_UMM"],
+  stf_umm: ["STF_UMM", "Staff Umum"],
   resepsionis: ["Resepsionis", "RSP"],
+  rsp: ["RSP", "Resepsionis"],
   auditor: ["Auditor", "AUD"],
+  aud: ["AUD", "Auditor"],
 };
 
 const cloneMenu = (item) => JSON.parse(JSON.stringify(item));
@@ -332,4 +339,4 @@ const getNavigationMenu = async (DB, uniqueId) => {
   return { menu: [], source: null, user };
 };
 
-export { getNavigationMenu, normalizeLegacyMenu };
+export { getNavigationMenu, normalizeLegacyMenu, roleAliases };

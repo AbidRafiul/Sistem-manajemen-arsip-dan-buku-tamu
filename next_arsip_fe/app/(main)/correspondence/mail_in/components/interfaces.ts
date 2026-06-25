@@ -7,18 +7,18 @@ import { RefObject } from "react";
 export type IncomingLetterStatus = "baru" | "diproses" | "didisposisi" | "selesai";
 
 export interface initValue {
-    incoming_letter_id: number | null;
-    agenda_number: string;
-    letter_number: string;
-    letter_date: string;
-    received_date: string;
-    sender_name: string;
-    sender_institution: string;
-    subject: string;
-    attachment_description: string;
-    letter_file: File | null;
-    letter_type_id: number | null;
-    document_type_id: number | null;
+    surat_masuk_id: number | null;
+    nomor_agenda: string;
+    nomor_surat: string;
+    tanggal_surat: string;
+    tanggal_diterima: string;
+    nama_pengirim: string;
+    instansi_pengirim: string;
+    perihal: string;
+    keterangan_lampiran: string;
+    file_surat: File | null;
+    jenis_surat_id: number | null;
+    jenis_dokumen_id: number | null;
     archive_classification_id: number | null;
     confidentiality_level_id: number | null;
     status: IncomingLetterStatus | string;
@@ -27,18 +27,18 @@ export interface initValue {
 }
 
 export interface TableData {
-    incoming_letter_id: number;
-    agenda_number: string;
-    letter_number: string;
-    letter_date: string;
-    received_date: string;
-    sender_name: string;
-    sender_institution: string | null;
-    subject: string;
-    attachment_description: string | null;
-    letter_type_id: number | null;
-    letter_type_name: string | null;
-    document_type_id: number | null;
+    surat_masuk_id: number;
+    nomor_agenda: string;
+    nomor_surat: string;
+    tanggal_surat: string;
+    tanggal_diterima: string;
+    nama_pengirim: string;
+    instansi_pengirim: string | null;
+    perihal: string;
+    keterangan_lampiran: string | null;
+    jenis_surat_id: number | null;
+    nama_jenis_surat: string | null;
+    jenis_dokumen_id: number | null;
     archive_classification_id: number | null;
     confidentiality_level_id: number | null;
     status: IncomingLetterStatus | string;
@@ -49,12 +49,12 @@ export interface TableData {
 }
 
 export interface IncomingLetterFile {
-    incoming_letter_file_id: number;
-    incoming_letter_id: number;
-    file_path: string;
-    file_name: string | null;
-    file_mime_type: string | null;
-    file_size: number | null;
+    file_surat_masuk_id: number;
+    surat_masuk_id: number;
+    path_file: string;
+    nama_file: string | null;
+    tipe_mime_file: string | null;
+    ukuran_file: number | null;
     uploaded_by: number | null;
     status: string;
     created_at: string;
@@ -62,34 +62,34 @@ export interface IncomingLetterFile {
 }
 
 export interface IncomingLetterDisposition {
-    disposition_id: number;
-    incoming_letter_id: number;
-    parent_disposition_id: number | null;
-    from_user_id: number | null;
-    to_user_id: number | null;
-    instruction_name: string | null;
-    instruction: string | null;
-    disposition_note: string | null;
-    due_date: string | null;
+    disposisi_id: number;
+    surat_masuk_id: number;
+    disposisi_induk_id: number | null;
+    dari_pengguna_id: number | null;
+    kepada_pengguna_id: number | null;
+    nama_instruksi: string | null;
+    instruksi: string | null;
+    catatan_disposisi: string | null;
+    batas_waktu: string | null;
     status: string;
     created_at: string;
 }
 
 export interface IncomingLetterTracking {
-    incoming_letter_tracking_id: number;
-    incoming_letter_id: number;
-    disposition_id: number | null;
-    action_name: string;
-    previous_status: string | null;
-    current_status: string | null;
-    notes: string | null;
+    tracking_surat_masuk_id: number;
+    surat_masuk_id: number;
+    disposisi_id: number | null;
+    nama_aksi: string;
+    status_sebelumnya: string | null;
+    status_saat_ini: string | null;
+    catatan: string | null;
     processed_at: string;
 }
 
 export interface IncomingLetterDetailData {
-    letter: Record<string, any> | null;
+    surat: Record<string, any> | null;
     files: IncomingLetterFile[];
-    dispositions: IncomingLetterDisposition[];
+    disposisi: IncomingLetterDisposition[];
     trackings: IncomingLetterTracking[];
 }
 

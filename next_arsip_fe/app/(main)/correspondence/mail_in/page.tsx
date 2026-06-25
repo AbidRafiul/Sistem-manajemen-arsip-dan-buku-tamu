@@ -9,8 +9,6 @@ import { TableData } from "./components/interfaces";
 import { mapIncomingLetterRow } from "./components/mappers";
 import DashboardView from "./components/display/dashboardView";
 
-type FilterKey = "all" | "needs_action" | "archived";
-
 const dispositionEndpoint = "/correspondence/letter-disposition-data";
 
 const Page = () => {

@@ -14,8 +14,8 @@ const incomingLetterDelete = async (req, res) => {
     };
 
     const oMessage = {
-      "incoming_letter_id.required": "incoming_letter_id wajib diisi",
-      "incoming_letter_id.number": "incoming_letter_id harus berupa angka",
+      "surat_masuk_id.required": "id surat masuk wajib diisi",
+      "surat_masuk_id.number": "id surat masuk harus berupa angka",
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
@@ -29,8 +29,8 @@ const incomingLetterDelete = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trx_incoming_letters")
-      .where("incoming_letter_id", oPayload.incoming_letter_id)
+    const oLetter = await DB("trs_surat_masuk")
+      .where("surat_masuk_id", oPayload.incoming_letter_id)
       .first();
 
     if (!oLetter) {
@@ -41,8 +41,8 @@ const incomingLetterDelete = async (req, res) => {
     }
 
     await DB.transaction(async (trx) => {
-      await trx("trx_incoming_letters")
-        .where("incoming_letter_id", oPayload.incoming_letter_id)
+      await trx("trs_surat_masuk")
+        .where("surat_masuk_id", oPayload.incoming_letter_id)
         .del();
     });
 

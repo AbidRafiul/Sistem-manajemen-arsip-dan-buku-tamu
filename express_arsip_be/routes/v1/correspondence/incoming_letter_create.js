@@ -10,34 +10,34 @@ const incomingLetterCreate = async (req, res) => {
     const oPayload = req.body || {};
 
     const oValidation = {
-      agenda_number: Joi.string().max(100).required(),
-      letter_number: Joi.string().max(100).required(),
-      letter_date: Joi.date().required(),
-      received_date: Joi.date().required(),
-      sender_name: Joi.string().max(150).required(),
-      sender_institution: Joi.string().max(150).allow(null, "").optional(),
-      subject: Joi.string().max(255).required(),
-      attachment_description: Joi.string().allow(null, "").optional(),
-      letter_type_id: Joi.number().allow(null).optional(),
-      document_type_id: Joi.number().allow(null).optional(),
-      archive_classification_id: Joi.number().allow(null).optional(),
-      confidentiality_level_id: Joi.number().allow(null).optional(),
+      nomor_agenda: Joi.string().max(100).required(),
+      nomor_surat: Joi.string().max(100).required(),
+      tanggal_surat: Joi.date().required(),
+      tanggal_diterima: Joi.date().required(),
+      nama_pengirim: Joi.string().max(150).required(),
+      instansi_pengirim: Joi.string().max(150).allow(null, "").optional(),
+      perihal: Joi.string().max(255).required(),
+      keterangan_lampiran: Joi.string().allow(null, "").optional(),
+      jenis_surat_id: Joi.number().allow(null).optional(),
+      jenis_dokumen_id: Joi.number().allow(null).optional(),
+      klarifikasi_arsip_id: Joi.number().allow(null).optional(),
+      tingkat_kerahasiaan_id: Joi.number().allow(null).optional(),
       created_by: Joi.number().allow(null).optional(),
       updated_by: Joi.number().allow(null).optional(),
     };
 
     const oMessage = {
-      "agenda_number.required": "Nomor agenda wajib diisi",
-      "letter_number.required": "Nomor surat wajib diisi",
-      "letter_date.required": "Tanggal surat wajib diisi",
-      "received_date.required": "Tanggal diterima wajib diisi",
-      "sender_name.required": "Pengirim wajib diisi",
-      "subject.required": "Perihal wajib diisi",
+      "nomor_agenda.required": "Nomor agenda wajib diisi",
+      "nomor_surat.required": "Nomor surat wajib diisi",
+      "tanggal_surat.required": "Tanggal surat wajib diisi",
+      "tanggal_diterima.required": "Tanggal diterima wajib diisi",
+      "nama_pengirim.required": "Pengirim wajib diisi",
+      "perihal.required": "Perihal wajib diisi",
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
-      uniqueField: ["agenda_number"],
-      table: "trx_incoming_letters",
+      uniqueField: ["nomor_agenda"],
+      table: "trs_surat_masuk",
       allowUnknown: false,
     });
 
@@ -50,14 +50,14 @@ const incomingLetterCreate = async (req, res) => {
 
     const vaReferenceChecks = [
       {
-        field: "letter_type_id",
-        table: "mst_letter_types",
-        key: "letter_type_id",
+        field: "jenis_surat_id",
+        table: "mst_jenis_surat",
+        key: "jenis_surat_id",
         label: "Jenis surat",
       },
       {
-        field: "document_type_id",
-        table: "mst_document_type",
+        field: "jenis_dokumen_id",
+        table: "mst_jenis_dokumen",
         key: "DocumentTypeId",
         label: "Tipe dokumen",
       },
@@ -110,16 +110,16 @@ const incomingLetterCreate = async (req, res) => {
 
     const nIncomingLetterId = await DB.transaction(async (trx) => {
       const vaInserted = await trx("trx_incoming_letters").insert({
-        agenda_number: oPayload.agenda_number,
-        letter_number: oPayload.letter_number,
-        letter_date: oPayload.letter_date,
-        received_date: oPayload.received_date,
-        sender_name: oPayload.sender_name,
-        sender_institution: oPayload.sender_institution || null,
-        subject: oPayload.subject,
+        nomor_agenda: oPayload.agenda_number,
+        nomor_surat: oPayload.letter_number,
+        tanggal_surat: oPayload.letter_date,
+        tanggal_diterima: oPayload.received_date,
+        nama_pengirim: oPayload.sender_name,
+        instansi_pengirim: oPayload.sender_institution || null,
+        perihal: oPayload.subject,
         attachment_description: oPayload.attachment_description || null,
-        letter_type_id: oPayload.letter_type_id || null,
-        document_type_id: oPayload.document_type_id || null,
+        jenis_surat_id: oPayload.letter_type_id || null,
+        jenis_dokumen_id: oPayload.document_type_id || null,
         archive_classification_id: oPayload.archive_classification_id || null,
         confidentiality_level_id: oPayload.confidentiality_level_id || null,
         status: "baru",
@@ -131,15 +131,15 @@ const incomingLetterCreate = async (req, res) => {
 
       const nId = vaInserted[0];
 
-      await trx("trx_incoming_letter_trackings").insert({
-        incoming_letter_id: nId,
-        disposition_id: null,
-        action_name: "surat_dibuat",
-        from_user_id: null,
-        to_user_id: null,
-        previous_status: null,
-        current_status: "baru",
-        notes: "Surat masuk dibuat",
+      await trx("trs_tracking_surat_masuk").insert({
+        surat_masuk_id: nId,
+        disposisi_id: null,
+        nama_aksi: "surat_dibuat",
+        dari_pengguna_id: null,
+        kepada_pengguna_id: null,
+        status_sebelumnya: null,
+        status_saat_ini: "baru",
+        catatan: "Surat masuk dibuat",
         processed_at: dNow,
         created_by: oPayload.created_by || null,
         created_at: dNow,

@@ -10,16 +10,16 @@ const dispositionReferenceData = async (req, res) => {
         .select("user_id", "fullname", "username", "position_id", "status")
         .where("status", "active")
         .orderBy("fullname", "asc"),
-      DB("mst_disposition_instructions")
+      DB("mst_instruksi_disposisi")
         .select(
-          "disposition_instruction_id",
-          "instruction_code",
-          "instruction_name",
-          "description",
+          "instruksi_diposisi_id",
+          "kode_instruksi",
+          "nama_instruksi",
+          "deskripsi",
           "status"
         )
         .where("status", "active")
-        .orderBy("instruction_name", "asc"),
+        .orderBy("nama_instruksi", "asc"),
     ]);
 
     return res.status(200).json({

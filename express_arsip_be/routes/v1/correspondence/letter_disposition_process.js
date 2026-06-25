@@ -10,14 +10,14 @@ const letterDispositionProcess = async (req, res) => {
     const oPayload = req.body || {};
 
     const oValidation = {
-      disposition_id: Joi.number().required(),
+      disposisi_id: Joi.number().required(),
       process_note: Joi.string().allow(null, "").optional(),
       updated_by: Joi.number().allow(null).optional(),
     };
 
     const oMessage = {
-      "disposition_id.required": "disposition_id wajib diisi",
-      "disposition_id.number": "disposition_id harus berupa angka",
+      "disposisi_id.required": "id disposisi wajib diisi",
+      "disposisi_id.number": "id disposisi harus berupa angka",
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
@@ -31,8 +31,8 @@ const letterDispositionProcess = async (req, res) => {
       });
     }
 
-    const oDisposition = await DB("trx_letter_dispositions")
-      .where("disposition_id", oPayload.disposition_id)
+    const oDisposition = await DB("trs_disposisi_surat")
+      .where("disposisi_id", oPayload.disposition_id)
       .first();
 
     if (!oDisposition) {
@@ -56,8 +56,8 @@ const letterDispositionProcess = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trx_incoming_letters")
-      .where("incoming_letter_id", oDisposition.incoming_letter_id)
+    const oLetter = await DB("trs_surat_masuk")
+      .where("surat_masuk_id", oDisposition.surat_masuk_id)
       .first();
 
     if (!oLetter) {
@@ -77,8 +77,8 @@ const letterDispositionProcess = async (req, res) => {
     const dNow = new Date();
 
     await DB.transaction(async (trx) => {
-      await trx("trx_letter_dispositions")
-        .where("disposition_id", oPayload.disposition_id)
+      await trx("trs_diposisi_surat")
+        .where("disposisi_id", oPayload.disposisi_id)
         .update({
           status: "diproses",
           received_at: oDisposition.received_at || dNow,
@@ -87,23 +87,23 @@ const letterDispositionProcess = async (req, res) => {
           updated_at: dNow,
         });
 
-      await trx("trx_incoming_letters")
-        .where("incoming_letter_id", oDisposition.incoming_letter_id)
+      await trx("trs_surat_masuk")
+        .where("surat_masuk_id", oDisposition.surat_masuk_id)
         .update({
           status: "diproses",
           updated_by: oPayload.updated_by || null,
           updated_at: dNow,
         });
 
-      await trx("trx_incoming_letter_trackings").insert({
-        incoming_letter_id: oDisposition.incoming_letter_id,
-        disposition_id: oPayload.disposition_id,
-        action_name: "disposisi_diproses",
-        from_user_id: oDisposition.from_user_id || null,
-        to_user_id: oDisposition.to_user_id || null,
-        previous_status: oLetter.status,
-        current_status: "diproses",
-        notes: oPayload.process_note || "Disposisi mulai diproses",
+      await trx("trs_tracking_surat_masuk").insert({
+        surat_masuk_id: oDisposition.surat_masuk_id,
+        disposisi_id: oPayload.disposisi_id,
+        nama_aksi: "disposisi_diproses",
+        dari_pengguna_id: oDisposition.dari_pengguna_id || null,
+        kepada_pengguna_id: oDisposition.kepada_pengguna_id || null,
+        status_sebelumnya: oLetter.status,
+        status_saat_ini: "diproses",
+        catatan: oPayload.process_note || "Disposisi mulai diproses",
         processed_at: dNow,
         created_by: oPayload.updated_by || null,
         created_at: dNow,
