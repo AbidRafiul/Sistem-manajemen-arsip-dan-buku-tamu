@@ -4,14 +4,10 @@ import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
 import postData from "@/lib/axios/postData";
 import { showError, showSuccess } from "@/lib/tools/generalTools";
-import { formatDateCalendar } from "@/lib/tools/dateTools";
 import { State } from "./components/interfaces";
 import { apiEndpointGet, apiEndpointCheckout } from "./components/endpoints";
 import GuestDataTable from "./components/display/table";
-import { Dialog } from "primereact/dialog";
-import { InputText } from "primereact/inputtext";
-import { InputTextarea } from "primereact/inputtextarea";
-import { Button } from "primereact/button";
+import { CheckoutDialog, DetailVisitorDialog } from "./components/display/dialogs";
 import { FilterMatchMode } from "primereact/api";
 
 const CheckoutPage = () => {
@@ -92,7 +88,7 @@ const CheckoutPage = () => {
     };
 
     return (
-        <div className="p-4 bg-slate-50 min-h-screen">
+        <div className="p-4 surface-ground min-h-screen">
             <Toast ref={toast} position="top-right" />
 
             <GuestDataTable 
@@ -104,38 +100,22 @@ const CheckoutPage = () => {
                 onRefresh={fetchAll} 
             />
 
-            <Dialog header="Check-Out Tamu" visible={state.showCheckoutDialog} modal style={{ width: '480px' }} onHide={() => setState((p: State) => ({ ...p, showCheckoutDialog: false }))}>
-                <div className="grid grid-nogutter gap-3">
-                    <div className="col-12">
-                        <label htmlFor="checkoutToken">QR Token / Visit Code</label>
-                        <InputText id="checkoutToken" value={state.checkoutToken} className="w-full mt-1" onChange={(e) => setState((p: State) => ({ ...p, checkoutToken: e.target.value }))} />
-                    </div>
-                    <div className="col-12">
-                        <label htmlFor="checkoutNotes">Catatan Keperluan Keluar</label>
-                        <InputTextarea id="checkoutNotes" value={state.checkoutNotes} className="w-full mt-1" onChange={(e) => setState((p: State) => ({ ...p, checkoutNotes: e.target.value }))} rows={4} />
-                    </div>
-                </div>
-                <div className="flex justify-content-end gap-2 mt-4">
-                    <Button label="Batal" severity="secondary" outlined onClick={() => setState((p: State) => ({ ...p, showCheckoutDialog: false }))} />
-                    <Button label="Konfirmasi Selesai" severity="success" onClick={handleCheckout} loading={state.load} />
-                </div>
-            </Dialog>
+            <CheckoutDialog
+                visible={state.showCheckoutDialog}
+                checkoutToken={state.checkoutToken}
+                checkoutNotes={state.checkoutNotes}
+                loading={state.load}
+                onHide={() => setState((p: State) => ({ ...p, showCheckoutDialog: false }))}
+                onTokenChange={(val) => setState((p: State) => ({ ...p, checkoutToken: val }))}
+                onNotesChange={(val) => setState((p: State) => ({ ...p, checkoutNotes: val }))}
+                onConfirm={handleCheckout}
+            />
 
-            <Dialog header="Detail Riwayat Kunjungan" visible={!!state.detailRecord} modal style={{ width: '600px' }} onHide={() => setState((p: State) => ({ ...p, detailRecord: null }))}>
-                {state.detailRecord && (
-                    <div className="grid grid-nogutter gap-3">
-                        <div className="col-12 md:col-6"><strong>Nama Tamu</strong><div>{state.detailRecord.guest_name}</div></div>
-                        <div className="col-12 md:col-6"><strong>No. Telepon</strong><div>{state.detailRecord.phone_number}</div></div>
-                        <div className="col-12 md:col-6"><strong>Instansi/Perusahaan</strong><div>{state.detailRecord.guest_company}</div></div>
-                        <div className="col-12 md:col-6"><strong>Tujuan Alasan</strong><div>{state.detailRecord.VisitPurposeName}</div></div>
-                        <div className="col-12 md:col-6"><strong>Pegawai yang Ditemui</strong><div>{state.detailRecord.HostFullname || state.detailRecord.host_name || '-'}</div></div>
-                        <div className="col-12 md:col-6"><strong>Status Saat Ini</strong><div>{state.detailRecord.status}</div></div>
-                        <div className="col-12"><strong>Waktu Check-In</strong><div>{formatDateCalendar(state.detailRecord.check_in_time, 'HH:mm dd/MM/yyyy')}</div></div>
-                        <div className="col-12"><strong>Waktu Check-Out</strong><div>{state.detailRecord.check_out_time ? formatDateCalendar(state.detailRecord.check_out_time, 'HH:mm dd/MM/yyyy') : '-'}</div></div>
-                        <div className="col-12"><strong>Catatan Tambahan</strong><div>{state.detailRecord.visit_notes}</div></div>
-                    </div>
-                )}
-            </Dialog>
+            <DetailVisitorDialog
+                visible={!!state.detailRecord}
+                record={state.detailRecord}
+                onHide={() => setState((p: State) => ({ ...p, detailRecord: null }))}
+            />
         </div>
     );
 };

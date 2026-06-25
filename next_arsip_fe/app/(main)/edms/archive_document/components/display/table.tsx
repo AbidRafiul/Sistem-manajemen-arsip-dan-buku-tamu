@@ -7,6 +7,8 @@ import { InputText } from "primereact/inputtext";
 import { Tag } from "primereact/tag";
 import { Dialog } from "primereact/dialog";
 import { Divider } from "primereact/divider";
+import { Card } from "primereact/card";
+import { Avatar } from "primereact/avatar";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DocumentData, LoanData, TableProps } from "../interfaces";
@@ -29,59 +31,63 @@ const Table = ({
         return String(value).slice(0, 10);
     };
 
-    const headerTemplate = (
-        <div className="flex flex-wrap align-items-center justify-content-between gap-2">
-            <span className="text-xl font-bold">Archive Documents</span>
-            <span className="p-input-icon-left">
-                <i className="pi pi-search" />
-                <InputText
-                    value={state.searchVal}
-                    onChange={(e) => {
-                        const value = e.target.value;
-                        const filters = { ...state.filters };
-                        filters.global.value = value;
-                        setState((p) => ({ ...p, searchVal: value, filters }));
-                    }}
-                    placeholder="Search documents..."
-                />
-            </span>
-        </div>
-    );
-
     const statusTemplate = (rowData: DocumentData) => (
         <Tag
-            value={rowData.status}
+            value={rowData.status === 'active' ? 'Aktif' : 'Nonaktif'}
             severity={rowData.status === 'active' ? 'success' : 'danger'}
-            style={{ minWidth: "75px", justifyContent: "center" }}
+            icon={rowData.status === 'active' ? 'pi pi-check-circle' : 'pi pi-times-circle'}
+            style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem' }}
         />
     );
 
+    const documentTemplate = (rowData: DocumentData) => (
+        <div>
+            <span className="font-semibold text-sm text-900 block">{rowData.document_number}</span>
+            <span className="text-xs text-color-secondary">{rowData.document_name}</span>
+        </div>
+    );
+
+    const picTemplate = (rowData: DocumentData) => (
+        <div className="flex align-items-center gap-2">
+            <Avatar
+                label={rowData.pic_name?.slice(0, 1).toUpperCase() || 'P'}
+                shape="circle"
+                style={{ width: '1.75rem', height: '1.75rem', fontSize: '0.7rem', background: '#EEF2FF', color: '#4F46E5', fontWeight: '700', flexShrink: 0 }}
+            />
+            <span className="text-sm text-900">{rowData.pic_name}</span>
+        </div>
+    );
+
     const actionTemplate = (rowData: DocumentData) => (
-        <div className="flex gap-2">
+        <div className="flex gap-1 align-items-center">
             <Button
                 icon="pi pi-eye"
                 rounded
-                outlined
-                className="p-button-sm"
-                tooltip="Detail"
+                text
+                size="small"
+                tooltip="Detail Dokumen"
+                tooltipOptions={{ position: 'top' }}
                 loading={state.detailLoad}
                 onClick={() => getDocumentDetail(rowData.document_id)}
             />
             <Button
                 icon="pi pi-history"
                 rounded
-                outlined
+                text
                 severity="info"
-                className="p-button-sm"
-                tooltip="Versions"
+                size="small"
+                tooltip="Riwayat Versi"
+                tooltipOptions={{ position: 'top' }}
                 onClick={() => router.push(`/edms/archive_document/${rowData.document_id}/versions`)}
             />
             <Button
                 icon="pi pi-pencil"
                 rounded
-                outlined
-                className="p-button-sm"
+                text
+                severity="secondary"
+                size="small"
                 tooltip="Edit"
+                tooltipOptions={{ position: 'top' }}
                 onClick={() => {
                     formik.setValues({
                         document_id: rowData.document_id,
@@ -97,76 +103,98 @@ const Table = ({
             <Button
                 icon="pi pi-trash"
                 rounded
-                outlined
+                text
                 severity="danger"
-                className="p-button-sm"
-                tooltip="Delete"
+                size="small"
+                tooltip="Hapus"
+                tooltipOptions={{ position: 'top' }}
                 onClick={() => setState((p) => ({ ...p, delete: true, selectedDocuments: [rowData] }))}
             />
         </div>
     );
 
+    const headerTemplate = (
+        <div className="flex flex-wrap align-items-center justify-content-between gap-2">
+            <span className="font-semibold text-color text-sm">Daftar Dokumen</span>
+            <span className="p-input-icon-left">
+                <i className="pi pi-search" />
+                <InputText
+                    value={state.searchVal}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        const filters = { ...state.filters };
+                        filters.global.value = value;
+                        setState((p) => ({ ...p, searchVal: value, filters }));
+                    }}
+                    placeholder="Cari dokumen..."
+                    className="text-sm"
+                    style={{ height: '2.25rem' }}
+                />
+            </span>
+        </div>
+    );
+
     const deleteFooterTemplate = (
-        <div className="flex justify-content-center gap-2">
+        <div className="flex justify-content-end gap-2">
             <Button
-                label="Cancel"
+                label="Batal"
                 icon="pi pi-times"
                 severity="secondary"
                 outlined
+                size="small"
                 onClick={() => setState((p) => ({ ...p, delete: false }))}
                 disabled={state.load}
             />
             <Button
-                label="Delete"
+                label="Hapus"
                 icon="pi pi-trash"
                 severity="danger"
+                size="small"
                 onClick={deleteDocuments}
                 loading={state.load}
             />
         </div>
     );
 
-    useEffect(() => {
-        getDocuments();
-    }, []);
+    useEffect(() => { getDocuments(); }, []);
 
     return <>
-        <div className="card shadow-xl rounded-2xl bg-white border border-slate-100 p-5">
-            <div className="flex flex-column md:flex-row md:align-items-center justify-content-between gap-3 mb-4">
-                <div>
-                    <h3 className="text-2xl font-bold text-slate-800 mb-1">EDMS Archive Documents</h3>
-                    <span className="text-slate-500 text-sm">Kelola metadata dokumen dan pantau riwayat versi serta peminjaman arsip.</span>
-                </div>
-                <div className="flex gap-2">
-                    <Button
-                        size="small"
-                        label="New"
-                        icon="pi pi-plus"
-                        outlined
-                        severity="success"
-                        onClick={() => {
-                            formik.resetForm();
-                            setState(p => ({ ...p, add: true, edit: false, delete: false }));
-                        }}
-                    />
-                    <Button
-                        size="small"
-                        label={`Delete${state.selectedDocuments.length > 0 ? ` (${state.selectedDocuments.length})` : ''}`}
-                        icon="pi pi-trash"
-                        severity="danger"
-                        outlined
-                        disabled={state.selectedDocuments.length === 0}
-                        onClick={() => setState((p) => ({ ...p, delete: true }))}
-                    />
-                    <Button
-                        size="small"
-                        label="Refresh"
-                        icon="pi pi-refresh"
-                        outlined
-                        loading={state.load}
-                        onClick={getDocuments}
-                    />
-                </div>
+        <Card className="shadow-1 border-round-2xl border-none">
+            {/* Page Header */}
+            <div className="mb-4">
+                <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: '0.1em' }}>EDMS</span>
+                <h2 className="m-0 text-900 font-extrabold text-2xl mt-1 mb-2" style={{ letterSpacing: '-0.02em' }}>Archive Documents</h2>
+                <p className="m-0 text-color-secondary text-sm font-medium">Kelola metadata dokumen dan pantau riwayat versi serta peminjaman arsip.</p>
+            </div>
+
+            <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
+                <Button
+                    size="small"
+                    label="Tambah Dokumen"
+                    icon="pi pi-plus"
+                    outlined
+                    severity="success"
+                    onClick={() => { formik.resetForm(); setState(p => ({ ...p, add: true, edit: false, delete: false })); }}
+                />
+                <Divider layout="vertical" />
+                <Button
+                    size="small"
+                    label={`Hapus${state.selectedDocuments.length > 0 ? ` (${state.selectedDocuments.length})` : ''}`}
+                    icon="pi pi-trash"
+                    severity="danger"
+                    outlined
+                    disabled={state.selectedDocuments.length === 0}
+                    onClick={() => setState((p) => ({ ...p, delete: true }))}
+                />
+                <Divider layout="vertical" />
+                <Button
+                    size="small"
+                    label="Refresh"
+                    icon="pi pi-refresh"
+                    outlined
+                    loading={state.load}
+                    onClick={getDocuments}
+                />
             </div>
 
             <DataTable
@@ -180,94 +208,133 @@ const Table = ({
                 globalFilterFields={['document_name', 'document_number', 'pic_name', 'status', 'document_type_name', 'document_category_name', 'confidentiality_level_name']}
                 filters={state.filters}
                 loading={state.load}
-                className="p-datatable-striped p-datatable-gridlines text-sm"
+                rowHover
+                emptyMessage={
+                    <div className="flex flex-column align-items-center py-5 gap-3 text-color-secondary">
+                        <i className="pi pi-folder-open text-4xl text-300" />
+                        <span className="font-medium text-sm">Belum ada dokumen arsip</span>
+                    </div>
+                }
+                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data"
+                className="text-sm"
             >
-                <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
-                <Column field="document_number" header="Document Number" sortable />
-                <Column field="document_name" header="Document Name" sortable />
-                <Column field="document_type_name" header="Type" sortable />
-                <Column field="document_category_name" header="Category" sortable />
-                <Column field="confidentiality_level_name" header="Confidentiality" sortable />
-                <Column field="pic_name" header="PIC" sortable />
-                <Column field="document_date" header="Document Date" sortable body={rowData => formatDateCalendar(rowData.document_date)} />
-                <Column field="expired_date" header="Expired Date" sortable body={rowData => formatDateCalendar(rowData.expired_date)} />
-                <Column body={statusTemplate} header="Status" />
-                <Column headerStyle={{ textAlign: 'center' }} header="Action" body={actionTemplate} />
+                <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
+                <Column header="Nomor & Nama Dokumen" body={documentTemplate} sortable sortField="document_number" style={{ minWidth: '200px' }} />
+                <Column field="document_type_name" header="Tipe" sortable style={{ minWidth: '110px' }} />
+                <Column field="document_category_name" header="Kategori" sortable style={{ minWidth: '110px' }} />
+                <Column field="confidentiality_level_name" header="Kerahasiaan" sortable style={{ minWidth: '120px' }} />
+                <Column header="PIC" body={picTemplate} sortable sortField="pic_name" style={{ minWidth: '150px' }} />
+                <Column field="document_date" header="Tgl. Dokumen" sortable body={rowData => formatDateCalendar(rowData.document_date)} style={{ width: '130px' }} />
+                <Column field="expired_date" header="Tgl. Kedaluwarsa" sortable body={rowData => formatDateCalendar(rowData.expired_date)} style={{ width: '140px' }} />
+                <Column body={statusTemplate} header="Status" style={{ width: '110px', textAlign: 'center' }} />
+                <Column header="Aksi" body={actionTemplate} style={{ width: '150px', textAlign: 'center' }} />
             </DataTable>
-        </div>
+        </Card>
 
         <Form state={state} setState={setState} formik={formik} toast={toast} />
 
+        {/* Document Detail Dialog */}
         <Dialog
             visible={state.detail}
-            header="Document Detail"
+            header={
+                <div className="flex align-items-center gap-2">
+                    <i className="pi pi-file text-primary" />
+                    <span className="font-bold text-900">Detail Dokumen</span>
+                </div>
+            }
             modal
             style={{ width: '75rem', maxWidth: '95vw' }}
-            onHide={() => {
-                setState(p => ({ ...p, detail: false, detailData: null }));
-            }}
+            onHide={() => setState(p => ({ ...p, detail: false, detailData: null }))}
+            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
         >
-            <div className="flex flex-column gap-4">
-                <div className="grid text-sm">
+            <div className="flex flex-column gap-4 pt-3">
+                <div className="grid surface-50 border-round-xl p-3 border-1 surface-border text-sm">
                     <div className="col-12 md:col-6">
-                        <div className="text-color-secondary mb-1 font-semibold">Document Number</div>
-                        <div className="font-semibold text-slate-800">{state.detailData?.document?.document_number || '-'}</div>
+                        <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Nomor Dokumen</div>
+                        <div className="font-bold text-900">{state.detailData?.document?.document_number || '-'}</div>
                     </div>
                     <div className="col-12 md:col-6">
-                        <div className="text-color-secondary mb-1 font-semibold">Document Name</div>
-                        <div className="font-semibold text-slate-800">{state.detailData?.document?.document_name || '-'}</div>
+                        <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Nama Dokumen</div>
+                        <div className="font-semibold text-900">{state.detailData?.document?.document_name || '-'}</div>
                     </div>
                     <div className="col-12 md:col-4">
-                        <div className="text-color-secondary mb-1 font-semibold">PIC</div>
-                        <div className="text-slate-700">{state.detailData?.document?.pic_name || '-'}</div>
+                        <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>PIC</div>
+                        <div className="text-900">{state.detailData?.document?.pic_name || '-'}</div>
                     </div>
                     <div className="col-12 md:col-4">
-                        <div className="text-color-secondary mb-1 font-semibold">Document Date</div>
-                        <div className="text-slate-700">{state.detailData?.document?.document_date ? formatDateCalendar(state.detailData.document.document_date) : '-'}</div>
+                        <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Tanggal Dokumen</div>
+                        <div className="text-900">{state.detailData?.document?.document_date ? formatDateCalendar(state.detailData.document.document_date) : '-'}</div>
                     </div>
                     <div className="col-12 md:col-4">
-                        <div className="text-color-secondary mb-1 font-semibold">Expired Date</div>
-                        <div className="text-slate-700">{state.detailData?.document?.expired_date ? formatDateCalendar(state.detailData.document.expired_date) : '-'}</div>
+                        <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Tanggal Kedaluwarsa</div>
+                        <div className="text-900">{state.detailData?.document?.expired_date ? formatDateCalendar(state.detailData.document.expired_date) : '-'}</div>
                     </div>
                 </div>
 
-                <Divider />
+                <Divider className="my-0" />
 
-                <DataTable
-                    value={state.detailData?.loans || []}
-                    header={<div className="font-semibold text-slate-800 text-base">Loan History</div>}
-                    rows={5}
-                    paginator
-                    emptyMessage="Belum ada riwayat peminjaman"
-                    className="text-xs"
-                >
-                    <Column field="borrower_name" header="Borrower" sortable />
-                    <Column field="loan_date" header="Loan Date" body={(rowData: LoanData) => formatDateCalendar(rowData.loan_date)} />
-                    <Column field="return_date" header="Return Date" body={(rowData: LoanData) => rowData.return_date ? formatDateCalendar(rowData.return_date) : '-'} />
-                    <Column field="purpose" header="Purpose" />
-                    <Column field="status" header="Status" body={(rowData: LoanData) => <Tag value={rowData.status} severity={rowData.status === 'approved' ? 'success' : rowData.status === 'rejected' ? 'danger' : 'warning'} />} />
-                </DataTable>
+                <div>
+                    <div className="font-bold text-900 mb-3 flex align-items-center gap-2">
+                        <i className="pi pi-history text-primary" />
+                        Riwayat Peminjaman
+                    </div>
+                    <DataTable
+                        value={state.detailData?.loans || []}
+                        rows={5}
+                        paginator
+                        emptyMessage={
+                            <div className="flex align-items-center gap-2 py-3 text-color-secondary text-sm">
+                                <i className="pi pi-info-circle" />
+                                Belum ada riwayat peminjaman
+                            </div>
+                        }
+                        className="text-sm"
+                        rowHover
+                    >
+                        <Column field="borrower_name" header="Peminjam" sortable />
+                        <Column field="loan_date" header="Tgl. Pinjam" body={(rowData: LoanData) => formatDateCalendar(rowData.loan_date)} />
+                        <Column field="return_date" header="Tgl. Kembali" body={(rowData: LoanData) => rowData.return_date ? formatDateCalendar(rowData.return_date) : <span className="text-orange-500 font-medium">Belum Kembali</span>} />
+                        <Column field="purpose" header="Keperluan" />
+                        <Column field="status" header="Status" body={(rowData: LoanData) => (
+                            <Tag
+                                value={rowData.status === 'approved' ? 'Disetujui' : rowData.status === 'rejected' ? 'Ditolak' : 'Pending'}
+                                severity={rowData.status === 'approved' ? 'success' : rowData.status === 'rejected' ? 'danger' : 'warning'}
+                                style={{ fontSize: '0.7rem' }}
+                            />
+                        )} />
+                    </DataTable>
+                </div>
             </div>
         </Dialog>
 
+        {/* Delete Confirmation Dialog */}
         <Dialog
-            header="Delete Confirm"
+            header={
+                <div className="flex align-items-center gap-2">
+                    <i className="pi pi-exclamation-triangle text-red-500" />
+                    <span className="font-bold text-900">Konfirmasi Hapus</span>
+                </div>
+            }
             visible={state.delete}
             onHide={() => setState((p) => ({ ...p, delete: false }))}
             modal
-            style={{ width: "28rem", maxWidth: "95vw" }}
+            style={{ width: '26rem', maxWidth: '95vw' }}
             footer={deleteFooterTemplate}
+            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
         >
-            <div className="flex flex-column align-items-center text-center gap-4 py-4">
-                <i className="pi pi-exclamation-triangle text-red-500 text-6xl" />
+            <div className="flex flex-column align-items-center text-center gap-3 py-4">
+                <div className="flex align-items-center justify-content-center border-circle bg-red-50 border-1 border-red-100" style={{ width: '4rem', height: '4rem' }}>
+                    <i className="pi pi-trash text-red-500 text-2xl" />
+                </div>
                 <div>
-                    <h3 className="font-bold text-slate-800 mb-2">
-                        Delete {state.selectedDocuments.length > 1 ? `${state.selectedDocuments.length} documents` : "this document"}?
-                    </h3>
-                    <p className="text-slate-500 text-sm">
+                    <h4 className="font-bold text-900 m-0 mb-2 text-lg">
+                        Hapus {state.selectedDocuments.length > 1 ? `${state.selectedDocuments.length} dokumen` : 'dokumen ini'}?
+                    </h4>
+                    <p className="text-color-secondary text-sm m-0">
                         {state.selectedDocuments.length > 1
-                            ? `Dokumen yang dipilih akan dinonaktifkan.`
-                            : `Dokumen ${state.selectedDocuments[0]?.document_number || ""} akan dinonaktifkan.`}
+                            ? `${state.selectedDocuments.length} dokumen yang dipilih akan dinonaktifkan.`
+                            : `Dokumen "${state.selectedDocuments[0]?.document_number || ''}" akan dinonaktifkan.`}
                     </p>
                 </div>
             </div>

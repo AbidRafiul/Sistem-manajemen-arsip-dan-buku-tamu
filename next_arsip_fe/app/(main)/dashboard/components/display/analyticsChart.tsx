@@ -1,13 +1,14 @@
 import React from 'react';
 import { Chart } from 'primereact/chart';
 import { Skeleton } from 'primereact/skeleton';
+import { Card } from 'primereact/card';
 
 export default function AnalyticsChart({ isLoading }: { isLoading: boolean }) {
     if (isLoading) {
         return (
-            <div className="dashboard-panel-card">
-                <Skeleton width="100%" height="430px" borderRadius="24px" />
-            </div>
+            <Card className="shadow-1 border-round-2xl border-none h-full">
+                <Skeleton width="100%" height="400px" borderRadius="16px" />
+            </Card>
         );
     }
 
@@ -45,20 +46,20 @@ export default function AnalyticsChart({ isLoading }: { isLoading: boolean }) {
     };
 
     return (
-        <article className="dashboard-panel-card dashboard-chart-panel">
-            <div className="dashboard-panel-header">
+        <Card className="shadow-1 border-round-2xl border-none h-full" pt={{ body: { className: 'p-4 flex flex-column h-full' }, content: { className: 'flex-1 p-0 m-0' } }}>
+            <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-start mb-4 gap-3">
                 <div>
-                    <h2>Aktivitas Mingguan</h2>
-                    <p>Tren unggah dokumen dan aktivitas sistem selama 7 hari terakhir.</p>
+                    <h2 className="m-0 text-900 font-bold text-xl mb-1" style={{ letterSpacing: '-0.02em' }}>Aktivitas Mingguan</h2>
+                    <p className="m-0 text-color-secondary text-sm font-medium">Tren unggah dokumen dan aktivitas sistem selama 7 hari terakhir.</p>
                 </div>
-                <div className="dashboard-chart-pill">
-                    <span></span>
+                <div className="flex align-items-center gap-2 bg-indigo-50 text-indigo-600 px-3 py-2 border-round-3xl font-semibold text-xs border-1 border-indigo-100 shadow-1" style={{ width: 'fit-content' }}>
+                    <span className="border-circle bg-indigo-600" style={{ width: '8px', height: '8px' }}></span>
                     Dokumen Diunggah
                 </div>
             </div>
-            <div className="dashboard-chart-canvas">
+            <div style={{ height: '350px' }}>
                 <Chart type="line" data={chartData} options={chartOptions} style={{ height: '100%' }} />
             </div>
-        </article>
+        </Card>
     );
 }

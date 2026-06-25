@@ -97,12 +97,12 @@ const NavForm = ({ navBar, setNavBar, handleSaveNavbar }: NavbarProps) => {
     const footerMenuTemplate = (
         <div>
             <Button
-                label="No"
+                label="Batal"
                 icon="pi pi-times"
                 onClick={() => setNavBar(p => ({ ...p, show: false, menu: [] }))}
                 className="p-button-text"
             />
-            <Button label="Yes" icon="pi pi-check" onClick={handleSave} />
+            <Button label="Simpan" icon="pi pi-check" onClick={handleSave} />
         </div>
     );
 
@@ -119,7 +119,7 @@ const NavForm = ({ navBar, setNavBar, handleSaveNavbar }: NavbarProps) => {
             footer={footerMenuTemplate}
         >
             <div>
-                <div className="card shadow-2 mb-1 border-round p-3 flex gap-2">
+                <div className="card mb-1 border-round p-3 flex gap-2">
                     <Button label="Reset" onClick={handleReset} />
                     <span className="block w-full p-input-icon-left">
                         <i className="pi pi-search" />
@@ -132,13 +132,13 @@ const NavForm = ({ navBar, setNavBar, handleSaveNavbar }: NavbarProps) => {
                                 const filtered = searchMenuByLabel(navBar.menu, keyword);
                                 setState({ searchVal: keyword, filteredMenu: filtered });
                             }}
-                            placeholder="Search..."
+                            placeholder="Cari..."
                         />
                     </span>
                 </div>
 
                 <div
-                    className="card shadow-2 mt-0 border-round p-2 flex gap-2"
+                    className="card mt-0 border-round p-2 flex gap-2"
                     style={{ overflow: "scroll" }}
                 >
                     <MenuDisplay onEdit={(item: number[]) => deleteItemByIndexes(item)} data={state.filteredMenu} />

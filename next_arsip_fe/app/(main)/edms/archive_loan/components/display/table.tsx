@@ -7,6 +7,9 @@ import { InputText } from "primereact/inputtext";
 import { Tag } from "primereact/tag";
 import { Dialog } from "primereact/dialog";
 import { Divider } from "primereact/divider";
+import { Card } from "primereact/card";
+import { Avatar } from "primereact/avatar";
+import { Chip } from "primereact/chip";
 import { useEffect, useState } from "react";
 import { LoanData, TableProps } from "../interfaces";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
@@ -28,7 +31,6 @@ const Table = ({
 
     const [detailDialog, setDetailDialog] = useState(false);
     const [selectedDetail, setSelectedDetail] = useState<LoanData | null>(null);
-
     const [approvalDialog, setApprovalDialog] = useState(false);
     const [notes, setNotes] = useState('');
     const [targetStatus, setTargetStatus] = useState<'approved' | 'rejected' | ''>('');
@@ -38,96 +40,84 @@ const Table = ({
     const roleId = Number(sessionUser?.roleId || 0);
     const canApproveLoan = ['superadmin', 'administrator', 'admin', 'adm', 'pimpinan', 'pmn'].includes(roleKey) || [1, 2].includes(roleId);
 
-    const headerTemplate = (
-        <div className="flex flex-wrap align-items-center justify-content-between gap-3">
-            <span className="text-xl font-bold">Archive Loan Records</span>
-            <span className="p-input-icon-left">
-                <i className="pi pi-search" />
-                <InputText
-                    value={state.searchVal || ''}
-                    onChange={(e) => {
-                        const val = e.target.value;
-                        setState(p => ({ ...p, searchVal: val }));
-                    }}
-                    placeholder="Search borrower or document..."
-                />
-            </span>
+    const getStatusConfig = (rowData: LoanData): { label: string; severity: 'success' | 'danger' | 'warning' | 'info'; icon: string } => {
+        if (rowData.is_overdue === 1 && rowData.status === 'borrowed') return { label: 'Terlambat', severity: 'danger', icon: 'pi pi-exclamation-triangle' };
+        if (rowData.status === 'returned') return { label: 'Dikembalikan', severity: 'success', icon: 'pi pi-check-circle' };
+        if (rowData.status === 'rejected') return { label: 'Ditolak', severity: 'danger', icon: 'pi pi-times-circle' };
+        if (rowData.status === 'borrowed') return { label: 'Dipinjam', severity: 'info', icon: 'pi pi-info-circle' };
+        return { label: 'Pending', severity: 'warning', icon: 'pi pi-clock' };
+    };
+
+    const statusTemplate = (rowData: LoanData) => {
+        const config = getStatusConfig(rowData);
+        return <Tag value={config.label} severity={config.severity} icon={config.icon} style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem' }} />;
+    };
+
+    const borrowerTemplate = (rowData: LoanData) => (
+        <div className="flex align-items-center gap-2">
+            <Avatar
+                label={rowData.borrower_name?.slice(0, 1).toUpperCase() || 'B'}
+                shape="circle"
+                style={{ width: '2rem', height: '2rem', fontSize: '0.75rem', background: '#EEF2FF', color: '#4F46E5', fontWeight: '700', flexShrink: 0 }}
+            />
+            <span className="font-semibold text-900 text-sm">{rowData.borrower_name}</span>
         </div>
     );
 
-    const statusTemplate = (rowData: LoanData) => {
-        const status = rowData.status;
-        let severity: 'success' | 'danger' | 'warning' | 'info' = 'warning';
-        if (status === 'returned') severity = 'success';
-        if (status === 'rejected') severity = 'danger';
-        if (status === 'borrowed') severity = 'info';
-        
-        // Check if overdue
-        if (rowData.is_overdue === 1 && status === 'borrowed') {
-            return <Tag value="OVERDUE" severity="danger" />;
-        }
-        
-        return <Tag value={status} severity={severity} />;
-    };
+    const documentTemplate = (rowData: LoanData) => (
+        <div>
+            <span className="font-semibold text-sm text-900 block">{rowData.document_number}</span>
+            <span className="text-xs text-color-secondary">{rowData.document_name}</span>
+        </div>
+    );
 
     const actionTemplate = (rowData: LoanData) => {
         const status = rowData.status;
-
         return (
-            <div className="flex gap-2 justify-content-center">
+            <div className="flex gap-1 align-items-center justify-content-center">
                 <Button
                     icon="pi pi-eye"
                     rounded
-                    outlined
+                    text
                     severity="secondary"
-                    className="p-button-sm"
-                    tooltip="View Details"
-                    onClick={() => {
-                        setSelectedDetail(rowData);
-                        setDetailDialog(true);
-                    }}
+                    size="small"
+                    tooltip="Lihat Detail"
+                    tooltipOptions={{ position: 'top' }}
+                    onClick={() => { setSelectedDetail(rowData); setDetailDialog(true); }}
                 />
                 {status === 'pending' && canApproveLoan && (
                     <>
                         <Button
                             icon="pi pi-check"
                             rounded
-                            outlined
+                            text
                             severity="success"
-                            className="p-button-sm"
-                            tooltip="Approve Peminjaman"
-                            onClick={() => {
-                                setSelectedDetail(rowData);
-                                setTargetStatus('approved');
-                                setNotes('');
-                                setApprovalDialog(true);
-                            }}
+                            size="small"
+                            tooltip="Setujui Peminjaman"
+                            tooltipOptions={{ position: 'top' }}
+                            onClick={() => { setSelectedDetail(rowData); setTargetStatus('approved'); setNotes(''); setApprovalDialog(true); }}
                         />
                         <Button
                             icon="pi pi-times"
                             rounded
-                            outlined
+                            text
                             severity="danger"
-                            className="p-button-sm"
-                            tooltip="Reject Peminjaman"
-                            onClick={() => {
-                                setSelectedDetail(rowData);
-                                setTargetStatus('rejected');
-                                setNotes('');
-                                setApprovalDialog(true);
-                            }}
+                            size="small"
+                            tooltip="Tolak Peminjaman"
+                            tooltipOptions={{ position: 'top' }}
+                            onClick={() => { setSelectedDetail(rowData); setTargetStatus('rejected'); setNotes(''); setApprovalDialog(true); }}
                         />
                     </>
                 )}
                 {status === 'borrowed' && (
                     <Button
                         icon="pi pi-replay"
-                        label="Return"
-                        outlined
+                        rounded
+                        text
                         severity="info"
                         size="small"
-                        className="p-button-sm"
                         tooltip="Kembalikan Dokumen"
+                        tooltipOptions={{ position: 'top' }}
                         onClick={() => {
                             if (confirm(`Kembalikan dokumen ${rowData.document_number} yang dipinjam oleh ${rowData.borrower_name}?`)) {
                                 handleReturn(rowData.loan_id);
@@ -139,77 +129,99 @@ const Table = ({
         );
     };
 
+    const headerTemplate = (
+        <div className="flex flex-wrap align-items-center justify-content-between gap-2">
+            <span className="font-semibold text-color text-sm">Daftar Peminjaman</span>
+            <span className="p-input-icon-left">
+                <i className="pi pi-search" />
+                <InputText
+                    value={state.searchVal || ''}
+                    onChange={(e) => setState(p => ({ ...p, searchVal: e.target.value }))}
+                    placeholder="Cari peminjam atau dokumen..."
+                    className="text-sm"
+                    style={{ height: '2.25rem' }}
+                />
+            </span>
+        </div>
+    );
+
     const filteredData = state.data.filter((item) => {
         const query = state.searchVal?.toLowerCase() || '';
-        const matchSearch = 
+        const matchSearch =
             item.borrower_name?.toLowerCase().includes(query) ||
             item.document_name?.toLowerCase().includes(query) ||
             item.document_number?.toLowerCase().includes(query) ||
             item.purpose?.toLowerCase().includes(query);
-
         if (!matchSearch) return false;
-
         const tab = state.activeTab;
         if (tab === 'all') return true;
         if (tab === 'pending') return item.status === 'pending';
         if (tab === 'borrowed') return item.status === 'borrowed' && item.is_overdue !== 1;
         if (tab === 'returned') return item.status === 'returned';
         if (tab === 'overdue') return item.is_overdue === 1 && item.status === 'borrowed';
-
         return true;
     });
 
-    useEffect(() => {
-        getLoans();
-    }, []);
-
-    const tabs: { label: string; value: typeof state.activeTab; icon: string; count: number }[] = [
-        { label: 'Semua', value: 'all', icon: 'pi pi-list', count: state.data.length },
-        { label: 'Pending', value: 'pending', icon: 'pi pi-clock', count: state.data.filter(d => d.status === 'pending').length },
-        { label: 'Dipinjam', value: 'borrowed', icon: 'pi pi-info-circle', count: state.data.filter(d => d.status === 'borrowed' && d.is_overdue !== 1).length },
-        { label: 'Kembali', value: 'returned', icon: 'pi pi-check-circle', count: state.data.filter(d => d.status === 'returned').length },
-        { label: 'Terlambat', value: 'overdue', icon: 'pi pi-exclamation-circle', count: state.data.filter(d => d.is_overdue === 1 && d.status === 'borrowed').length }
+    const tabs: { label: string; value: typeof state.activeTab; icon: string; severity: 'success' | 'danger' | 'warning' | 'info' | 'secondary' }[] = [
+        { label: 'Semua', value: 'all', icon: 'pi pi-list', severity: 'secondary' },
+        { label: 'Pending', value: 'pending', icon: 'pi pi-clock', severity: 'warning' },
+        { label: 'Dipinjam', value: 'borrowed', icon: 'pi pi-info-circle', severity: 'info' },
+        { label: 'Dikembalikan', value: 'returned', icon: 'pi pi-check-circle', severity: 'success' },
+        { label: 'Terlambat', value: 'overdue', icon: 'pi pi-exclamation-circle', severity: 'danger' },
     ];
 
+    const tabCounts: Record<string, number> = {
+        all: state.data.length,
+        pending: state.data.filter(d => d.status === 'pending').length,
+        borrowed: state.data.filter(d => d.status === 'borrowed' && d.is_overdue !== 1).length,
+        returned: state.data.filter(d => d.status === 'returned').length,
+        overdue: state.data.filter(d => d.is_overdue === 1 && d.status === 'borrowed').length,
+    };
+
+    useEffect(() => { getLoans(); }, []);
+
     return <>
-        <div className="card">
-            <div className="flex flex-column md:flex-row md:align-items-center justify-content-between gap-3 mb-4">
-                <div>
-                    <h3 className="text-2xl font-semibold mb-1">EDMS Archive Loans</h3>
-                    <span className="text-color-secondary">Kelola peminjaman dokumen fisik arsip dan monitor keterlambatan pengembalian.</span>
-                </div>
-                <div className="flex gap-2">
-                    <Button
-                        size="small"
-                        label="Pinjam Dokumen"
-                        icon="pi pi-plus"
-                        onClick={() => {
-                            formik.resetForm();
-                            setState(p => ({ ...p, add: true }));
-                        }}
-                    />
-                    <Button
-                        size="small"
-                        label="Refresh"
-                        icon="pi pi-refresh"
-                        outlined
-                        loading={state.load}
-                        onClick={getLoans}
-                    />
-                </div>
+        <Card className="shadow-1 border-round-2xl border-none">
+            {/* Page Header */}
+            <div className="mb-4">
+                <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: '0.1em' }}>EDMS</span>
+                <h2 className="m-0 text-900 font-extrabold text-2xl mt-1 mb-2" style={{ letterSpacing: '-0.02em' }}>Archive Loans</h2>
+                <p className="m-0 text-color-secondary text-sm font-medium">Kelola peminjaman dokumen fisik arsip dan monitor keterlambatan pengembalian.</p>
             </div>
 
-            {/* Filter Tabs */}
+            <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
+                <Button
+                    size="small"
+                    label="Pinjam Dokumen"
+                    icon="pi pi-plus"
+                    outlined
+                    severity="success"
+                    onClick={() => { formik.resetForm(); setState(p => ({ ...p, add: true })); }}
+                />
+                <Divider layout="vertical" />
+                <Button
+                    size="small"
+                    label="Refresh"
+                    icon="pi pi-refresh"
+                    outlined
+                    onClick={getLoans}
+                    loading={state.load}
+                />
+            </div>
+
+            {/* Status Tabs */}
             <div className="flex flex-wrap gap-2 mb-4">
                 {tabs.map((tab) => (
                     <Button
                         key={tab.value}
                         icon={tab.icon}
-                        label={`${tab.label} (${tab.count})`}
-                        severity={state.activeTab === tab.value ? undefined : 'secondary'}
-                        className="text-sm py-2 px-3"
-                        onClick={() => setState(p => ({ ...p, activeTab: tab.value }))}
+                        label={`${tab.label} (${tabCounts[tab.value]})`}
+                        size="small"
+                        severity={state.activeTab === tab.value ? tab.severity : 'secondary'}
                         outlined={state.activeTab !== tab.value}
+                        className="text-xs border-round-3xl"
+                        style={{ padding: '0.4rem 0.85rem' }}
+                        onClick={() => setState(p => ({ ...p, activeTab: tab.value }))}
                     />
                 ))}
             </div>
@@ -221,102 +233,96 @@ const Table = ({
                 header={headerTemplate}
                 loading={state.load}
                 dataKey="loan_id"
-                emptyMessage="Tidak ada riwayat peminjaman"
+                emptyMessage={
+                    <div className="flex flex-column align-items-center py-5 gap-3 text-color-secondary">
+                        <i className="pi pi-inbox text-4xl text-300" />
+                        <span className="font-medium text-sm">Tidak ada riwayat peminjaman</span>
+                    </div>
+                }
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data"
+                currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data"
+                rowHover
+                className="text-sm"
             >
-                <Column field="borrower_name" header="Borrower" sortable />
-                <Column 
-                    header="Document" 
-                    body={(rowData: LoanData) => (
-                        <div>
-                            <span className="font-semibold block">{rowData.document_number}</span>
-                            <span className="text-sm text-color-secondary">{rowData.document_name}</span>
-                        </div>
-                    )} 
-                />
-                <Column field="loan_date" header="Loan Date" sortable body={rowData => formatDateOnly(rowData.loan_date)} />
-                <Column field="expected_return_date" header="Expected Return" sortable body={rowData => formatDateOnly(rowData.expected_return_date)} />
-                <Column field="return_date" header="Returned At" sortable body={rowData => formatDateOnly(rowData.return_date)} />
-                <Column body={statusTemplate} header="Status" style={{ width: '8rem', textAlign: 'center' }} />
-                <Column headerStyle={{ textAlign: 'center' }} header="Action" body={actionTemplate} style={{ width: '15rem' }} />
+                <Column header="Peminjam" body={borrowerTemplate} style={{ minWidth: '180px' }} />
+                <Column header="Dokumen" body={documentTemplate} style={{ minWidth: '180px' }} />
+                <Column field="loan_date" header="Tgl. Pinjam" sortable body={rowData => formatDateOnly(rowData.loan_date)} style={{ width: '120px' }} />
+                <Column field="expected_return_date" header="Tgl. Jatuh Tempo" sortable body={rowData => formatDateOnly(rowData.expected_return_date)} style={{ width: '140px' }} />
+                <Column field="return_date" header="Tgl. Kembali" sortable body={rowData => formatDateOnly(rowData.return_date)} style={{ width: '120px' }} />
+                <Column body={statusTemplate} header="Status" style={{ width: '130px', textAlign: 'center' }} />
+                <Column header="Aksi" body={actionTemplate} style={{ width: '130px', textAlign: 'center' }} />
             </DataTable>
-        </div>
+        </Card>
 
         <Form state={state} setState={setState} formik={formik} toast={null as any} />
 
-        {/* Loan Details Dialog */}
+        {/* Loan Detail Dialog */}
         <Dialog
             visible={detailDialog}
-            header="Loan Record Details"
+            header={
+                <div className="flex align-items-center gap-2">
+                    <i className="pi pi-file-edit text-primary" />
+                    <span className="font-bold text-900">Detail Peminjaman</span>
+                </div>
+            }
             modal
             style={{ width: '45rem', maxWidth: '95vw' }}
-            onHide={() => {
-                setDetailDialog(false);
-                setSelectedDetail(null);
-            }}
+            onHide={() => { setDetailDialog(false); setSelectedDetail(null); }}
+            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
         >
             {selectedDetail && (
-                <div className="flex flex-column gap-4">
+                <div className="flex flex-column gap-4 pt-3">
+                    <div className="flex align-items-center gap-3 p-3 surface-50 border-round-xl border-1 surface-border">
+                        <Avatar
+                            label={selectedDetail.borrower_name?.slice(0, 2).toUpperCase() || 'NA'}
+                            shape="circle"
+                            size="large"
+                            style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%)', color: '#FFFFFF', fontWeight: '700' }}
+                        />
+                        <div>
+                            <div className="font-bold text-900 text-lg">{selectedDetail.borrower_name}</div>
+                            <div className="mt-1">{statusTemplate(selectedDetail)}</div>
+                        </div>
+                    </div>
+
                     <div className="grid">
-                        <div className="col-12 md:col-6">
-                            <div className="text-color-secondary mb-1 text-sm font-semibold">Borrower Name</div>
-                            <div className="font-bold text-lg">{selectedDetail.borrower_name}</div>
-                        </div>
-                        <div className="col-12 md:col-6">
-                            <div className="text-color-secondary mb-1 text-sm font-semibold">Status</div>
-                            <div>{statusTemplate(selectedDetail)}</div>
-                        </div>
                         <div className="col-12">
-                            <Divider />
+                            <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Dokumen</div>
+                            <div className="font-semibold text-900">{selectedDetail.document_number}</div>
+                            <div className="text-color-secondary text-sm">{selectedDetail.document_name}</div>
                         </div>
-                        <div className="col-12 md:col-6">
-                            <div className="text-color-secondary mb-1 text-sm font-semibold">Document Number</div>
-                            <div className="font-semibold">{selectedDetail.document_number || '-'}</div>
-                        </div>
-                        <div className="col-12 md:col-6">
-                            <div className="text-color-secondary mb-1 text-sm font-semibold">Document Name</div>
-                            <div>{selectedDetail.document_name || '-'}</div>
-                        </div>
-                        <div className="col-12">
-                            <Divider />
+                        <div className="col-12"><Divider className="my-2" /></div>
+                        <div className="col-12 md:col-4">
+                            <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Tgl. Pinjam</div>
+                            <div className="font-semibold text-sm">{formatDateOnly(selectedDetail.loan_date)}</div>
                         </div>
                         <div className="col-12 md:col-4">
-                            <div className="text-color-secondary mb-1 text-sm font-semibold">Loan Date</div>
-                            <div>{formatDateOnly(selectedDetail.loan_date)}</div>
+                            <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Jatuh Tempo</div>
+                            <div className="font-semibold text-sm">{formatDateOnly(selectedDetail.expected_return_date)}</div>
                         </div>
                         <div className="col-12 md:col-4">
-                            <div className="text-color-secondary mb-1 text-sm font-semibold">Expected Return Date</div>
-                            <div>{formatDateOnly(selectedDetail.expected_return_date)}</div>
+                            <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Tgl. Kembali</div>
+                            <div className="font-semibold text-sm text-primary">{selectedDetail.return_date ? formatDateOnly(selectedDetail.return_date) : <span className="text-orange-500">Belum Dikembalikan</span>}</div>
                         </div>
-                        <div className="col-12 md:col-4">
-                            <div className="text-color-secondary mb-1 text-sm font-semibold">Return Date</div>
-                            <div className="font-semibold text-primary">{selectedDetail.return_date ? formatDateOnly(selectedDetail.return_date) : 'Not Returned Yet'}</div>
-                        </div>
+                        <div className="col-12"><Divider className="my-2" /></div>
                         <div className="col-12">
-                            <Divider />
+                            <div className="text-color-secondary text-xs font-bold uppercase mb-2" style={{ letterSpacing: '0.08em' }}>Keperluan Peminjaman</div>
+                            <div className="p-3 surface-50 border-round-lg border-1 surface-border text-sm text-900">{selectedDetail.purpose}</div>
                         </div>
-                        <div className="col-12">
-                            <div className="text-color-secondary mb-1 text-sm font-semibold">Purpose of Loan</div>
-                            <div className="p-3 bg-light border-round" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>{selectedDetail.purpose}</div>
-                        </div>
-                        
                         {(selectedDetail.approved_by || selectedDetail.approval_notes) && (
                             <>
+                                <div className="col-12"><Divider className="my-2" /></div>
+                                <div className="col-12 md:col-6">
+                                    <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Diproses Oleh</div>
+                                    <div className="font-semibold text-sm">{selectedDetail.approved_by}</div>
+                                </div>
+                                <div className="col-12 md:col-6">
+                                    <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Waktu Proses</div>
+                                    <div className="font-semibold text-sm">{selectedDetail.approved_at ? formatDateCalendar(selectedDetail.approved_at) : '-'}</div>
+                                </div>
                                 <div className="col-12">
-                                    <Divider />
-                                </div>
-                                <div className="col-12 md:col-6">
-                                    <div className="text-color-secondary mb-1 text-sm font-semibold">Approved/Rejected By</div>
-                                    <div>{selectedDetail.approved_by}</div>
-                                </div>
-                                <div className="col-12 md:col-6">
-                                    <div className="text-color-secondary mb-1 text-sm font-semibold">Approved/Rejected At</div>
-                                    <div>{selectedDetail.approved_at ? formatDateCalendar(selectedDetail.approved_at) : '-'}</div>
-                                </div>
-                                <div className="col-12 mt-2">
-                                    <div className="text-color-secondary mb-1 text-sm font-semibold">Approval Notes</div>
-                                    <div className="p-3 bg-light border-round italic" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>{selectedDetail.approval_notes || 'No notes left.'}</div>
+                                    <div className="text-color-secondary text-xs font-bold uppercase mb-2" style={{ letterSpacing: '0.08em' }}>Catatan Persetujuan</div>
+                                    <div className="p-3 surface-50 border-round-lg border-1 surface-border text-sm">{selectedDetail.approval_notes || 'Tidak ada catatan.'}</div>
                                 </div>
                             </>
                         )}
@@ -325,54 +331,55 @@ const Table = ({
             )}
         </Dialog>
 
-        {/* Approval Modal Dialog */}
+        {/* Approval Dialog */}
         <Dialog
             visible={approvalDialog}
-            header={targetStatus === 'approved' ? 'Approve Loan Request' : 'Reject Loan Request'}
+            header={
+                <div className="flex align-items-center gap-2">
+                    <i className={`pi ${targetStatus === 'approved' ? 'pi-check-circle text-green-500' : 'pi-times-circle text-red-500'}`} />
+                    <span className="font-bold">{targetStatus === 'approved' ? 'Setujui Permintaan' : 'Tolak Permintaan'}</span>
+                </div>
+            }
             modal
             style={{ width: '32rem', maxWidth: '95vw' }}
-            onHide={() => {
-                setApprovalDialog(false);
-                setSelectedDetail(null);
-                setNotes('');
-                setTargetStatus('');
-            }}
+            onHide={() => { setApprovalDialog(false); setSelectedDetail(null); setNotes(''); setTargetStatus(''); }}
+            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
         >
-            <div className="flex flex-column gap-3">
-                <p>
-                    Apakah Anda yakin ingin <strong>{targetStatus === 'approved' ? 'menyetujui' : 'menolak'}</strong> pengajuan peminjaman dokumen <strong>{selectedDetail?.document_number}</strong> oleh <strong>{selectedDetail?.borrower_name}</strong>?
-                </p>
+            <div className="flex flex-column gap-4 pt-3">
+                <div className={`p-3 border-round-lg border-1 ${targetStatus === 'approved' ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
+                    <p className="m-0 text-sm text-900">
+                        Apakah Anda yakin ingin <strong>{targetStatus === 'approved' ? 'menyetujui' : 'menolak'}</strong> peminjaman dokumen{' '}
+                        <Chip label={selectedDetail?.document_number || ''} className="text-xs mx-1" style={{ padding: '0.1rem 0.6rem', height: 'auto' }} />{' '}
+                        oleh <strong>{selectedDetail?.borrower_name}</strong>?
+                    </p>
+                </div>
                 <div className="flex flex-column gap-2">
-                    <label htmlFor="notes" className="font-semibold text-sm">Catatan Persetujuan (Optional)</label>
+                    <label htmlFor="approval-notes" className="font-semibold text-sm text-900">Catatan <span className="text-color-secondary font-normal">(Opsional)</span></label>
                     <InputText
-                        id="notes"
-                        placeholder="E.g., Approved, please take care of the document..."
+                        id="approval-notes"
+                        placeholder="Contoh: Disetujui, harap jaga kondisi dokumen..."
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
+                        className="w-full"
                     />
                 </div>
-                <div className="flex justify-content-end gap-2 mt-3">
+                <div className="flex justify-content-end gap-2">
                     <Button
                         label="Batal"
                         severity="secondary"
                         outlined
-                        onClick={() => {
-                            setApprovalDialog(false);
-                            setSelectedDetail(null);
-                            setNotes('');
-                            setTargetStatus('');
-                        }}
+                        size="small"
+                        onClick={() => { setApprovalDialog(false); setSelectedDetail(null); setNotes(''); setTargetStatus(''); }}
                     />
                     <Button
-                        label={targetStatus === 'approved' ? 'Setujui' : 'Tolak'}
+                        label={targetStatus === 'approved' ? 'Ya, Setujui' : 'Ya, Tolak'}
+                        icon={targetStatus === 'approved' ? 'pi pi-check' : 'pi pi-times'}
                         severity={targetStatus === 'approved' ? 'success' : 'danger'}
+                        size="small"
                         onClick={async () => {
                             if (selectedDetail && targetStatus) {
                                 await handleApproveReject(selectedDetail.loan_id, targetStatus, notes);
-                                setApprovalDialog(false);
-                                setSelectedDetail(null);
-                                setNotes('');
-                                setTargetStatus('');
+                                setApprovalDialog(false); setSelectedDetail(null); setNotes(''); setTargetStatus('');
                             }
                         }}
                         loading={state.load}

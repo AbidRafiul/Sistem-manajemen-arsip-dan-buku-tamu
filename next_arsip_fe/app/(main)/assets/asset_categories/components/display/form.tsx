@@ -62,7 +62,7 @@ const Form = ({
         try {
 
             if (state.selectedUsers.length < 1) {
-                showError(toast, 'Tidak Ada User yang Dipilih')
+                showError(toast, 'Tidak Ada Kategori yang Dipilih')
                 return
             }
 
@@ -122,7 +122,7 @@ const Form = ({
     return <>
         <Dialog
             visible={state.add || state.edit}
-            header={state.edit ? 'Edit' : 'Add New'}
+            header={state.edit ? 'Ubah Kategori Aset' : 'Tambah Kategori Aset'}
             modal
             style={{ width: '50%' }}
             onHide={() => {
@@ -134,7 +134,7 @@ const Form = ({
 
                 <div className="flex flex-column gap-2 w-full">
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="name">Name</label>
+                        <label htmlFor="name">Nama Kategori</label>
                         <div className="p-inputgroup">
                             <InputText
                                 id="name"
@@ -151,7 +151,7 @@ const Form = ({
                         {isFormFieldInvalid('Name') ? getFormErrorMessage('Name') : ''}
                     </div>
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="Description">Description</label>
+                        <label htmlFor="Description">Deskripsi</label>
                         <div className="w-full">
                             <InputTextarea
                                 id="Description"
@@ -160,7 +160,7 @@ const Form = ({
                                 style={{ padding: '1rem', width: '100%' }}
                                 rows={5}
                                 maxLength={255}
-                                placeholder="Description anda"
+                                placeholder="Masukkan deskripsi..."
                                 onChange={(e) => {
                                     formik?.setFieldValue('Description', e.target.value);
                                 }}
@@ -170,12 +170,12 @@ const Form = ({
                         {isFormFieldInvalid('Description') ? getFormErrorMessage('Description') : ''}
                     </div>
                 </div>
-                <Button type="submit" label={state?.edit ? 'Update' : 'Save'} className="mt-2" loading={state?.load} />
+                <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} className="mt-2" loading={state?.load} />
             </form>
         </Dialog>
 
         <Dialog
-            header="Delete Confirm"
+            header="Konfirmasi Hapus"
             visible={state.delete}
             onHide={() => {
                 setState((p) => ({ ...p, add: false, edit: false, delete: false }));
@@ -190,21 +190,21 @@ const Form = ({
                 <div>
                     <h3 className="font-bold mb-2">
                         {state.selectedUsers.length > 1
-                            ? `Delete ${state.selectedUsers.length} units?`
-                            : "Delete this unit?"
+                            ? `Hapus ${state.selectedUsers.length} kategori?`
+                            : "Hapus kategori ini?"
                         }
                     </h3>
                     <p className="text-color-secondary">
                         {state.selectedUsers.length > 1 ? (
-                            `You are going to delete all this selected ${state.selectedUsers.length} units`
+                            `Anda akan menghapus ${state.selectedUsers.length} kategori yang dipilih`
                         ) : (
                             <>
-                                You are going to delete this unit as follow : <strong>{state.selectedUsers[0]?.Code || ""}</strong>
-                                {`(${state.selectedUsers[0]?.Name})`}.
+                                Anda akan menghapus kategori berikut: <strong>{state.selectedUsers[0]?.Code || ""}</strong>
+                                {` (${state.selectedUsers[0]?.Name})`}.
                             </>
                         )}
                         <br />
-                        This action can&apos;t be undone
+                        Tindakan ini tidak dapat dibatalkan
                     </p>
                 </div>
             </div>

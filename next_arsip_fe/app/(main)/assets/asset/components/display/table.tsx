@@ -23,7 +23,7 @@ const Table = ({
 
     const headerTemplate = (
         <div className="flex flex-wrap align-items-center justify-content-between gap-2">
-            <span className="text-xl font-bold">Table Data</span>
+            <span className="text-xl font-bold">Data Tabel</span>
 
             <div className="flex gap-2">
                 <span className="p-input-icon-left">
@@ -36,7 +36,7 @@ const Table = ({
                             _filters['global'].value = value;
                             setState((p) => ({ ...p, searchVal: value, filters: _filters }));
                         }}
-                        placeholder="Search users..."
+                        placeholder="Cari aset..."
                     />
                 </span>
             </div>
@@ -64,7 +64,7 @@ const Table = ({
 
                     setState(p => ({ ...p, add: false, delete: false, edit: true }))
                 }}
-                tooltip="Edit"
+                tooltip="Ubah"
             />
             <Button
                 icon="pi pi-trash"
@@ -73,7 +73,7 @@ const Table = ({
                 severity="danger"
                 className="p-button-sm"
                 onClick={() => setState(p => ({ ...p, delete: true, selectedUsers: [rowData] }))}
-                tooltip="Delete"
+                tooltip="Hapus"
             />
         </div>
     );
@@ -84,9 +84,9 @@ const Table = ({
         const status = rowData.Status?.toLowerCase() as StatusType;
 
         const statusConfig: Record<string, { label: string; severity: SeverityType }> = {
-            operational: { label: "Operational", severity: "success" },
-            maintenance: { label: "Maintenance", severity: "warning" },
-            down: { label: "Down", severity: "danger" },
+            operational: { label: "Operasional", severity: "success" },
+            maintenance: { label: "Pemeliharaan", severity: "warning" },
+            down: { label: "Rusak", severity: "danger" },
         };
 
         const config =
@@ -119,7 +119,7 @@ const Table = ({
         <div className="card">
             <div className="flex justify-content-between items-start mb-4">
                 <div>
-                    <h3 className="text-2xl font-semibold">Asset Management</h3>
+                    <h3 className="text-2xl font-semibold">Manajemen Aset</h3>
                 </div>
             </div>
 
@@ -134,7 +134,6 @@ const Table = ({
                         setState(p => ({ ...p, selectedUser: [], add: true }))
                     }}
                 />
-                <Divider layout="vertical" />
                 <Button
                     size="small"
                     label="Import"
@@ -195,15 +194,15 @@ const Table = ({
                 currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data"
             >
                 <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
-                <Column field="Code" header="Asset Code"></Column>
-                <Column field="Name" header="Asset Name"></Column>
-                <Column field="Location" header="Location"></Column>
-                <Column field="Type" header="Type"></Column>
+                <Column field="Code" header="Kode Aset"></Column>
+                <Column field="Name" header="Nama Aset"></Column>
+                <Column field="Location" header="Lokasi"></Column>
+                <Column field="Type" header="Tipe"></Column>
                 <Column body={StatusBadge} header="Status"></Column>
-                <Column field="CategoryName" header="Category Name"></Column>
-                <Column field="DivisionName" header="Division Name"></Column>
-                <Column field="CreatedAt" sortable body={rowData => formatDateCalendar(rowData.CreatedAt)} header="Datetime"></Column>
-                <Column headerStyle={{ textAlign: 'center' }} header="Action" body={actionBodyTemplate}></Column>
+                <Column field="CategoryName" header="Nama Kategori"></Column>
+                <Column field="DivisionName" header="Nama Divisi"></Column>
+                <Column field="CreatedAt" sortable body={rowData => formatDateCalendar(rowData.CreatedAt)} header="Tanggal & Waktu"></Column>
+                <Column headerStyle={{ textAlign: 'center' }} header="Aksi" body={actionBodyTemplate}></Column>
             </DataTable>
         </div>
 
