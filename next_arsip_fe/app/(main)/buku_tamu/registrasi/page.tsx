@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -8,19 +8,19 @@ import postData from '@/lib/axios/postData';
 import { showError, showSuccess } from '@/lib/tools/generalTools';
 import RegistrasiForm from './components/display/form';
 import VisitorCardModal from './components/display/table';
-import { apiEndpointGetPurpose, apiEndpointGetUser, apiEndpointRegistrasi } from "./components/endpoints";
-import { RegistrasiFormData, GeneratedCardData } from "./components/interfaces";
+import { apiEndpointGetPurpose, apiEndpointGetUser, apiEndpointRegistrasi } from './components/endpoints';
+import { RegistrasiFormData, GeneratedCardData } from './components/interfaces';
 
 const initialFormState: RegistrasiFormData = {
     guest_name: '',
     phone_number: '',
-    guest_email: '',
+    guest_surel: '',
     guest_company: '',
     guest_position: '',
     identity_type: null,
     identity_number: '',
     visit_purpose_id: null,
-    host_user_id: null,
+    host_id_pengguna: null,
     host_name: '',
     visit_notes: '',
     check_in_time: null
@@ -35,7 +35,7 @@ export default function RegistrasiKunjunganPage() {
 
     const [visitPurposeOptions, setVisitPurposeOptions] = useState([]);
     const [hostUserOptions, setHostUserOptions] = useState([]);
-    
+
     const [identityFile, setIdentityFile] = useState<File | null>(null);
     const [selfieFile, setSelfieFile] = useState<File | null>(null);
     const [formData, setFormData] = useState<RegistrasiFormData>(initialFormState);
@@ -84,13 +84,13 @@ export default function RegistrasiKunjunganPage() {
                         const backendKeys: Record<string, string> = {
                             guest_name: 'GuestName',
                             phone_number: 'PhoneNumber',
-                            guest_email: 'GuestEmail',
+                            guest_surel: 'Guestsurel',
                             guest_company: 'GuestCompany',
                             guest_position: 'GuestPosition',
                             identity_type: 'IdentityType',
                             identity_number: 'IdentityNumber',
                             visit_purpose_id: 'VisitPurposeId',
-                            host_user_id: 'HostUserId',
+                            host_id_pengguna: 'HostIdPengguna',
                             host_name: 'HostName',
                             visit_notes: 'VisitNotes'
                         };
@@ -103,15 +103,17 @@ export default function RegistrasiKunjunganPage() {
             if (selfieFile) submitData.append('SelfieFile', selfieFile);
 
             const response = await postData(apiEndpointRegistrasi, submitData, { 'Content-Type': 'multipart/form-data' });
-            
+
             if (response?.data?.status === '00') {
                 showSuccess(toast, 'Check-In Berhasil!');
-                setGeneratedCard(response?.data?.data || {
-                    visit_code: 'VIST-' + Math.floor(100000 + Math.random() * 900000),
-                    guest_name: formData.guest_name,
-                    guest_company: formData.guest_company || '-',
-                    qr_image_url: 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + formData.guest_name
-                });
+                setGeneratedCard(
+                    response?.data?.data || {
+                        visit_code: 'VIST-' + Math.floor(100000 + Math.random() * 900000),
+                        guest_name: formData.guest_name,
+                        guest_company: formData.guest_company || '-',
+                        qr_image_url: 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + formData.guest_name
+                    }
+                );
                 setShowCardDialog(true);
             } else {
                 throw new Error(response?.data?.message || 'Gagal meregistrasi kunjungan');
@@ -126,13 +128,19 @@ export default function RegistrasiKunjunganPage() {
     return (
         <div className="p-4 bg-slate-50 min-h-screen">
             <Toast ref={toast} position="top-right" />
-            
+
             <div className="flex justify-content-between align-items-center mb-4">
                 <h4 className="m-0 font-bold text-slate-800">Booking / Registrasi Kunjungan</h4>
-                <Button type="button" label="Kembali ke Monitoring" icon="pi pi-arrow-left" className="p-button-outlined p-button-sm bg-white px-3 py-2 border-round border-300 hover:surface-100 text-slate-700" onClick={() => router.push('/buku_tamu/monitoring')} />
+                <Button
+                    type="button"
+                    label="Kembali ke Monitoring"
+                    icon="pi pi-arrow-left"
+                    className="p-button-outlined p-button-sm bg-white px-3 py-2 border-round border-300 hover:surface-100 text-slate-700"
+                    onClick={() => router.push('/buku_tamu/monitoring')}
+                />
             </div>
 
-            <RegistrasiForm 
+            <RegistrasiForm
                 formData={formData}
                 handleChange={handleChange}
                 setIdentityFile={setIdentityFile}
@@ -143,9 +151,12 @@ export default function RegistrasiKunjunganPage() {
                 handleSubmit={handleSubmit}
             />
 
-            <VisitorCardModal 
+            <VisitorCardModal
                 visible={showCardDialog}
-                onHide={() => { setShowCardDialog(false); router.push('/buku_tamu/checkout'); }}
+                onHide={() => {
+                    setShowCardDialog(false);
+                    router.push('/buku_tamu/checkout');
+                }}
                 cardData={generatedCard}
             />
         </div>

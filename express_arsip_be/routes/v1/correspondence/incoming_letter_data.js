@@ -12,7 +12,11 @@ const incomingLetterData = async (req, res) => {
     const oPayload = req.body || {};
 
     const oQuery = DB("trx_incoming_letters as til")
-      .leftJoin("mst_letter_types as mlt", "til.letter_type_id", "mlt.letter_type_id")
+      .leftJoin(
+        "mst_letter_types as mlt",
+        "til.letter_type_id",
+        "mlt.letter_type_id",
+      )
       .select(
         "til.incoming_letter_id",
         "til.agenda_number",
@@ -22,7 +26,7 @@ const incomingLetterData = async (req, res) => {
         "til.sender_name",
         "til.sender_institution",
         "til.subject",
-        "til.attachment_description",
+        "til.attachment_deskripsi",
         "til.letter_type_id",
         "mlt.letter_type_name",
         "til.document_type_id",
@@ -32,7 +36,7 @@ const incomingLetterData = async (req, res) => {
         "til.created_by",
         "til.updated_by",
         "til.created_at",
-        "til.updated_at"
+        "til.updated_at",
       )
       .orderBy("til.created_at", "desc");
 
@@ -71,7 +75,7 @@ const incomingLetterData = async (req, res) => {
       func: cFunc,
       request: JSON.stringify(req.body || {}),
       response: error.message,
-      user: req?.user?.UserId || "",
+      user: req?.user?.NamaPengguna || "",
     });
 
     return res.status(500).json({

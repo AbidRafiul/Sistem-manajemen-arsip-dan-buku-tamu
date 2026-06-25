@@ -30,10 +30,10 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        UserId: Joi.alternatives()
+        IdPengguna: Joi.alternatives() // <--- UBAH JADI IdPengguna
           .try(Joi.number(), Joi.string())
           .required()
-          .label("UserId"),
+          .label("IdPengguna"), // <--- UBAH JADI IdPengguna
       },
       {
         "string.base": "{#label} harus berupa string",
@@ -51,32 +51,36 @@ router.post("/", async (req, res) => {
       };
 
       Logging(null, {
-        file: "user_navigation_data.js",
+        file: "user_navigation_data_edit.js",
         func: "post", // UBAH: disesuaikan dengan router.post
         request: oPayload,
         response: oResult,
-        user: req?.auth?.username || "",
+        user: req?.auth?.nama_pengguna || "",
       });
 
       return res.status(422).json(oResult);
     }
 
-    // 1. Ambil Menu Kustom User (Kustomisasi) dari user_navigation
-    const oNavigation = await DB("user_navigation")
+    // 1. Ambil Menu Kustom User (Kustomisasi) dari navigasi_pengguna
+    const oNavigation = await DB("navigasi_pengguna")
       .select("menu")
-      .where("user_id", oPayload.UserId)
+      .where("id_pengguna", oPayload.IdPengguna)
       .first();
-      
+
     let vaData = oNavigation ? oNavigation.menu : [];
-    if (typeof vaData === 'string') {
-        try { vaData = JSON.parse(vaData); } catch(e) {}
+    if (typeof vaData === "string") {
+      try {
+        vaData = JSON.parse(vaData);
+      } catch (e) {}
     }
 
     // 2. Ambil Peta Induk (Master Navigation) buat nampilin pilihan checkbox di UI
-    const oMasterNav = await DB("mst_navigation").select("menu").first();
+    const oMasterNav = await DB("mst_navigasi").select("menu").first();
     let masterMenu = oMasterNav ? oMasterNav.menu : [];
-    if (typeof masterMenu === 'string') {
-        try { masterMenu = JSON.parse(masterMenu); } catch(e) {}
+    if (typeof masterMenu === "string") {
+      try {
+        masterMenu = JSON.parse(masterMenu);
+      } catch (e) {}
     }
 
     // (Validasi block array dihapus agar user baru yang belum punya menu tidak kena error 400)
@@ -87,7 +91,7 @@ router.post("/", async (req, res) => {
       message: "Data ditemukan",
       datetime: formatDateSystem(),
       data: masterMenu, // Peta Induk (Semua opsi menu) -> Dibaca res.data di Frontend
-      menu: vaData,     // Kustomisasi User -> Dibaca res.menu di Frontend
+      menu: vaData, // Kustomisasi User -> Dibaca res.menu di Frontend
     });
   } catch (error) {
     const oResult = {
@@ -97,11 +101,11 @@ router.post("/", async (req, res) => {
     };
 
     Logging(error, {
-      file: "user_navigation_data.js",
+      file: "user_navigation_data_edit.js",
       func: "post", // UBAH: disesuaikan dengan router.post
       request: oPayload,
       response: oResult,
-      user: req?.auth?.username || "",
+      user: req?.auth?.nama_pengguna || "",
     });
 
     return res.status(500).json(oResult);

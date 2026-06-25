@@ -13,9 +13,8 @@ import {
 
 const router = express.Router();
 
-router.put("/:id_divisi", async (req, res) => {
+router.post("/", async (req, res) => {
   const { body: oPayload } = req;
-  const cIdDivisi = req.params.id_divisi;
   const cnama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
@@ -29,9 +28,9 @@ router.put("/:id_divisi", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        kode_divisi: Joi.string().required().label("Kode Divisi"),
-        nama_divisi: Joi.string().required().label("Nama Divisi"),
-        id_cabang: Joi.number().required().label("ID Branch"),
+        kode_peran: Joi.string().max(50).required().label("Kode Peran"),
+        nama_peran: Joi.string().max(100).required().label("Nama Peran"),
+        deskripsi: Joi.string().optional().allow(null, "").label("Deskripsi"),
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
@@ -47,8 +46,8 @@ router.put("/:id_divisi", async (req, res) => {
         datetime: datetime(),
       };
       Logging(null, {
-        file: "division_update.js",
-        func: "update",
+        file: "roles_create.js",
+        func: "create",
         request: oPayload,
         response: oResult,
         user: cnama_pengguna,
@@ -56,34 +55,30 @@ router.put("/:id_divisi", async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    const nUpdated = await DB("mst_divisi")
-      .where("id_divisi", cIdDivisi)
-      .update({
-        kode_divisi: oPayload.kode_divisi,
-        nama_divisi: oPayload.nama_divisi,
-        id_cabang: oPayload.id_cabang,
-        updated_at: new Date(),
-      });
+    const dNow = new Date();
+    await DB("mst_jabatan").insert({
+      kode_peran: oPayload.kode_peran,
+      nama_peran: oPayload.nama_peran,
+      deskripsi: oPayload.deskripsi || null,
+      status: "active",
+      created_at: dNow,
+      updated_at: dNow,
+    });
 
-    if (!nUpdated)
-      return res.status(404).json({
-        message: "Data tidak ditemukan",
-        datetime: formatDateSystem(),
-      });
-    return res.status(200).json({
+    return res.status(201).json({
       status: status.SUKSES,
-      message: "Berhasil diupdate!",
+      message: "Berhasil ditambahkan!",
       datetime: formatDateSystem(),
     });
   } catch (error) {
     const oResult = {
       status: status.BAD_REQUEST,
-      message: "Gagal mengupdate",
+      message: "Gagal menyimpan",
       datetime: datetime(),
     };
     Logging(error, {
-      file: "division_update.js",
-      func: "update",
+      file: "roles_create.js",
+      func: "create",
       request: oPayload,
       response: oResult,
       user: cnama_pengguna,

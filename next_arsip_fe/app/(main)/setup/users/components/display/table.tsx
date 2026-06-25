@@ -71,7 +71,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
             <Button
                 icon="pi pi-wrench"
                 onClick={() => {
-                    getNav?.(rowData?.user_id || '');
+                    getNav?.(rowData?.id_pengguna || '');
                 }}
                 severity="warning"
                 outlined
@@ -160,21 +160,21 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                     selectionMode={'multiple'}
                     rows={10}
                     header={headerTemplate}
-                    globalFilterFields={['fullname', 'username', 'telp', 'role']}
+                    globalFilterFields={['nama_lengkap', 'nama_pengguna', 'telepon', 'role']}
                     filters={state.filters}
                     loading={state.load}
                     selection={state.selectedUsers}
                     onSelectionChange={(e) => setState((p) => ({ ...p, selectedUsers: e.value }))}
-                    dataKey="user_id"
+                    dataKey="id_pengguna"
                     emptyMessage="Data Kosong"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data"
                 >
                     <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
-                    <Column field="user_id" header="UserId"></Column>
-                    <Column field="fullname" header="Name"></Column>
-                    <Column field="username" header="Username"></Column>
-                    <Column field="telp" header="Phone"></Column>
+                    <Column field="id_pengguna" header="IdPengguna"></Column>
+                    <Column field="nama_lengkap" header="Name"></Column>
+                    <Column field="nama_pengguna" header="nama_pengguna"></Column>
+                    <Column field="telepon" header="Phone"></Column>
                     <Column field="role" body={roleBodyTemplate} header="Role"></Column>
                     <Column
                         field="status"
@@ -190,7 +190,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                 </DataTable>
             </div>
 
-           <Form getData={getData} toast={toast} state={state} setState={setState} formik={formik} handleSave={handleSave} handleDelete={handleDelete} />
+            <Form getData={getData} toast={toast} state={state} setState={setState} formik={formik} handleSave={handleSave} handleDelete={handleDelete} />
         </>
     );
 };

@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { body: oPayload } = req;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
@@ -26,18 +26,18 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        fullname: Joi.string().max(100).required().label("fullname"),
-        username: Joi.string().max(100).required().label("username"),
-        telp: Joi.string()
+        nama_lengkap: Joi.string().max(100).required().label("nama_lengkap"),
+        nama_pengguna: Joi.string().max(100).required().label("nama_pengguna"),
+        telepon: Joi.string()
           .pattern(/^[0-9]+$/)
           .max(13)
           .required()
-          .label("telp"),
-        role: Joi.alternatives()
+          .label("telepon"),
+        peran: Joi.alternatives()
           .try(Joi.string(), Joi.number())
           .required()
-          .label("role"),
-        password: Joi.string()
+          .label("peran"),
+        kata_sandi: Joi.string()
           .min(8)
           .pattern(
             new RegExp(
@@ -45,7 +45,7 @@ router.post("/", async (req, res) => {
             ),
           )
           .required()
-          .label("password"),
+          .label("kata_sandi"),
         status: Joi.string().required().label("status"),
       },
       {
@@ -55,8 +55,8 @@ router.post("/", async (req, res) => {
       },
       oPayload,
       {
-        uniqueField: ["username", "telp"],
-        table: "mst_users", // Validasi langsung cek ke mst_users
+        uniqueField: ["nama_pengguna", "telepon"],
+        table: "mst_pengguna", // Validasi langsung cek ke mst_pengguna
         allowUnknown: true,
       },
     );
@@ -72,86 +72,93 @@ router.post("/", async (req, res) => {
         func: "create",
         request: oPayload,
         response: oResult,
-        user: username,
+        user: nama_pengguna,
       });
       return res.status(422).json(oResult);
     }
 
-    // HASH PASSWORD PAKAI USERNAME SEBAGAI SALT
-    let hashedPassword = "";
-    if (oPayload.password) {
-      const cPassword =
-        process.env.USER_KEY + oPayload.username + oPayload.password;
+    // HASH kata_sandi PAKAI nama_pengguna SEBAGAI SALT
+    let hashedkata_sandi = "";
+    if (oPayload.kata_sandi) {
+      const ckata_sandi =
+        process.env.USER_KEY + oPayload.nama_pengguna + oPayload.kata_sandi;
       const secret = process.env.USER_SECRET;
-      hashedPassword = hmac(cPassword, secret, "sha512");
+      hashedkata_sandi = hmac(ckata_sandi, secret, "sha512");
     }
 
-    // 1. SIAPKAN INPUT ROLE (Menangani superadmin ke master)
-    let inputRole = oPayload.role;
-    if (inputRole == "superadmin" || inputRole == "admin") {
-      inputRole = "master";
+    // 1. SIAPKAN INPUT peran (Menangani superadmin ke master)
+    let inputperan = oPayload.peran;
+    if (inputperan == "superadmin" || inputperan == "admin") {
+      inputperan = "master";
     }
 
-    // 2. CARI ROLE DATA TERLEBIH DAHULU SEBELUM TRANSAKSI
-    // Mencari berdasarkan ID (angka) atau RoleName (string)
-    const roleData = await DB("mst_roles")
-      .where("role_id", inputRole)
-      .orWhere("role_name", inputRole)
+    // 2. CARI peran DATA TERLEBIH DAHULU SEBELUM TRANSAKSI
+    // Mencari berdasarkan ID (angka) atau peranName (string)
+    const peranData = await DB("mst_peran")
+      .where("id_peran", inputperan)
+      .orWhere("nama_peran", inputperan)
       .first();
 
-    if (!roleData) {
+    if (!peranData) {
       return res.status(400).json({
         status: status.GAGAL,
-        message: "Role tidak ditemukan di sistem",
-        datetime: formatDateSystem()
+        message: "peran tidak ditemukan di sistem",
+        datetime: formatDateSystem(),
       });
     }
 
     // 3. CARI NAVIGASI
-    // Karena roleData sudah ketemu, kita pasti bisa mengambil RoleName-nya
-    const oNavigation = await DB("mst_navigation")
+    // Karena peranData sudah ketemu, kita pasti bisa mengambil peranName-nya
+    const oNavigation = await DB("mst_navigasi")
       .select("menu")
-      .where("role", roleData.role_name)
+      .where("peran", peranData.nama_peran)
       .first();
 
     // 4. VALIDASI NAVIGASI
     if (!oNavigation || !oNavigation.menu) {
       return res.status(400).json({
         status: status.GAGAL,
-        message: "Role tidak memiliki template menu di mst_navigation",
+        message: "peran tidak memiliki template menu di mst_navigasi",
         datetime: formatDateSystem(),
       });
     }
 
     // 5. TRANSAKSI DATABASE KE 3 TABEL
     await DB.transaction(async (trx) => {
-      // Masuk ke mst_users (Buku Induk)
-      const [newUserId] = await trx("mst_users").insert({
-        fullname: oPayload.fullname,
-        username: oPayload.username,
-        telp: oPayload.telp,
-        password: hashedPassword,
-        status: (oPayload.status == "1" || oPayload.status == "active") ? "active" : "nonactive",
-        branch_id: oPayload.branch_id,
-        position_id: oPayload.position_id,
-        division_id: oPayload.division_id,
-        department_id: oPayload.department_id,
-        work_unit_id: oPayload.work_unit_id,
+      // 1. Masuk ke mst_pengguna (Buku Induk)
+      const [newUserId] = await trx("mst_pengguna").insert({
+        nama_lengkap: oPayload.nama_lengkap,
+        nama_pengguna: oPayload.nama_pengguna,
+        telepon: oPayload.telepon,
+        kata_sandi: hashedkata_sandi,
+        status:
+          oPayload.status == "1" || oPayload.status == "active"
+            ? "active"
+            : "nonactive",
+        id_cabang: oPayload.id_cabang || null,
+        id_jabatan: oPayload.id_jabatan || null,
+        id_divisi: oPayload.id_divisi || null,
+        id_departemen: oPayload.id_departemen || null,
+        id_unit_kerja: oPayload.id_unit_kerja || null,
         created_at: formatDateSystem(),
         updated_at: formatDateSystem(),
       });
 
-      // Masuk ke mst_user_roles (Relasi Jabatan)
-      // Pakai roleData.role_id dari pencarian di atas
-      await trx("mst_user_roles").insert({
-        user_id: newUserId,
-        role_id: roleData.role_id, 
+      // Masuk ke mst_pengguna_perans (Relasi Jabatan)
+      // Pakai peranData.id_peran dari pencarian di atas
+      await trx("mst_pengguna_peran").insert({
+        id_pengguna: newUserId, // Cocok dengan screenshot
+        id_peran: peranData.id_peran, // Cocok dengan screenshot
+        peran_utama: 1, // Nilai default agar tidak error
+        status: "active", // Nilai default agar tidak error
+        created_at: formatDateSystem(),
+        updated_at: formatDateSystem(),
       });
 
-      // Masuk ke user_navigation (Nampan Menu Spesifik)
+      // Masuk ke navigasi_pengguna (Nampan Menu Spesifik)
       // Pakai oNavigation.menu dari pencarian di atas
-      await trx("user_navigation").insert({
-        user_id: newUserId,
+      await trx("navigasi_pengguna").insert({
+        id_pengguna: newUserId,
         menu: oNavigation.menu,
         created_at: formatDateSystem(),
         updated_at: formatDateSystem(),
@@ -174,7 +181,7 @@ router.post("/", async (req, res) => {
       func: "create",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
     return res.status(500).json(oResult);
   }

@@ -13,9 +13,9 @@ import {
 
 const router = express.Router();
 
-router.put("/:id_divisi", async (req, res) => {
+router.put("/:id_peran", async (req, res) => {
   const { body: oPayload } = req;
-  const cIdDivisi = req.params.id_divisi;
+  const cIdPeran = req.params.id_peran;
   const cnama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
@@ -29,9 +29,9 @@ router.put("/:id_divisi", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        kode_divisi: Joi.string().required().label("Kode Divisi"),
-        nama_divisi: Joi.string().required().label("Nama Divisi"),
-        id_cabang: Joi.number().required().label("ID Branch"),
+        kode_peran: Joi.string().max(50).required().label("Kode Peran"),
+        nama_peran: Joi.string().max(100).required().label("Nama Peran"),
+        deskripsi: Joi.string().optional().allow(null, "").label("Deskripsi"),
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
@@ -47,7 +47,7 @@ router.put("/:id_divisi", async (req, res) => {
         datetime: datetime(),
       };
       Logging(null, {
-        file: "division_update.js",
+        file: "roles_update.js",
         func: "update",
         request: oPayload,
         response: oResult,
@@ -56,12 +56,12 @@ router.put("/:id_divisi", async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    const nUpdated = await DB("mst_divisi")
-      .where("id_divisi", cIdDivisi)
+    const nUpdated = await DB("mst_peran")
+      .where("id_jabatan", cIdJabatan)
       .update({
-        kode_divisi: oPayload.kode_divisi,
-        nama_divisi: oPayload.nama_divisi,
-        id_cabang: oPayload.id_cabang,
+        kode_peran: oPayload.kode_peran,
+        nama_peran: oPayload.nama_peran,
+        deskripsi: oPayload.deskripsi || null,
         updated_at: new Date(),
       });
 
@@ -82,7 +82,7 @@ router.put("/:id_divisi", async (req, res) => {
       datetime: datetime(),
     };
     Logging(error, {
-      file: "division_update.js",
+      file: "roles_update.js",
       func: "update",
       request: oPayload,
       response: oResult,

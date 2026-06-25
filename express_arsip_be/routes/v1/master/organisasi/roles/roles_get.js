@@ -9,35 +9,30 @@ import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
-router.delete("/:id_divisi", async (req, res) => {
-  const cIdDivisi = req.params.id_divisi;
+router.get("/", async (req, res) => {
+  const oPayload = req.body;
   const cnama_pengguna = req?.auth?.nama_pengguna || "";
-  const oPayload = { id: cIdDivisi };
 
   try {
-    const nUpdated = await DB("mst_divisi")
-      .where("id_divisi", cIdDivisi)
-      .update({ status: "nonactive", updated_at: new Date() });
+    const vaData = await DB("mst_peran")
+      .select("id_peran as id", "nama_peran as name", "status")
+      .where("status", "active");
 
-    if (!nUpdated)
-      return res.status(404).json({
-        message: "Data tidak ditemukan",
-        datetime: formatDateSystem(),
-      });
     return res.status(200).json({
       status: status.SUKSES,
-      message: "Berhasil dihapus!",
+      message: "Data peran berhasil ditarik",
       datetime: formatDateSystem(),
+      data: vaData,
     });
   } catch (error) {
     const oResult = {
       status: status.BAD_REQUEST,
-      message: "Gagal menghapus",
-      datetime: datetime(),
+      message: "Terjadi kesalahan sistem",
+      datetime: formatDateSystem(),
     };
     Logging(error, {
-      file: "division_delete.js",
-      func: "delete",
+      file: "roles_get.js",
+      func: "get",
       request: oPayload,
       response: oResult,
       user: cnama_pengguna,

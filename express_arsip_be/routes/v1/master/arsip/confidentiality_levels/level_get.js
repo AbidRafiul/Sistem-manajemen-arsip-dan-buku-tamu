@@ -1,13 +1,17 @@
 import express from "express";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
 import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
   const oPayload = req.body;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     const vaData = await DB("mst_confidentiality_levels")
@@ -16,8 +20,8 @@ router.get("/", async (req, res) => {
         "confidentiality_level_code",
         "confidentiality_level_name",
         "confidentiality_level", // <--- Angka levelnya
-        "description",
-        "status"
+        "deskripsi",
+        "status",
       )
       .where("status", "active")
       .orderBy("confidentiality_level", "asc"); // Urutkan berdasarkan levelnya
@@ -41,7 +45,7 @@ router.get("/", async (req, res) => {
       func: "get",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

@@ -4,7 +4,6 @@ import { Logging } from "../components/tools/servertool.js";
 const createDocumentVersion = async (req, res) => {
   const oPayload = req.body;
   try {
-
     const nDocumentId = oPayload.document_id;
     const nVersionNumber = oPayload.version_number;
     const cChangeNotes = oPayload.change_notes;
@@ -41,7 +40,7 @@ const createDocumentVersion = async (req, res) => {
       func: "createDocumentVersion",
       request: oPayload,
       response: oResult,
-      user: req?.auth?.username || "system",
+      user: req?.auth?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

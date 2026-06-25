@@ -42,17 +42,16 @@ DB_PORT=3306
 
 ### 2.1 Aturan Wajib Database
 
-* Wajib **Timestamp** : CreatedAt, UpdatedAt
-* Jika menggunakan **MySQL**, collation **WAJIB**:
+- Wajib **Timestamp** : CreatedAt, UpdatedAt
+- Jika menggunakan **MySQL**, collation **WAJIB**:
 
 ```sql
 utf8mb4_unicode_ci
 ```
 
-* **Konvensi penamaan:**
-
-  * Nama table: `snake_case`
-  * Nama field/column: `PascalCase`
+- **Konvensi penamaan:**
+  - Nama table: `snake_case`
+  - Nama field/column: `PascalCase`
 
 **Contoh:**
 
@@ -63,7 +62,7 @@ CreatedAt
 UpdatedAt
 ```
 
->  Pelanggaran standar penamaan akan menyebabkan penolakan code review.
+> Pelanggaran standar penamaan akan menyebabkan penolakan code review.
 
 ---
 
@@ -77,10 +76,10 @@ USER_SECRET=random
 
 ### Aturan Keamanan
 
-* Semua key **HARUS random**
-* **TIDAK BOLEH hardcoded** di source code
-* **HARUS berbeda** untuk setiap environment (dev, staging, prod)
-* Key disimpan **hanya** di environment variable
+- Semua key **HARUS random**
+- **TIDAK BOLEH hardcoded** di source code
+- **HARUS berbeda** untuk setiap environment (dev, staging, prod)
+- Key disimpan **hanya** di environment variable
 
 ---
 
@@ -117,7 +116,7 @@ v1/
  │       └─ user_delete.js
 ```
 
->  Dilarang menggabungkan banyak endpoint dalam satu file.
+> Dilarang menggabungkan banyak endpoint dalam satu file.
 
 ---
 
@@ -187,14 +186,14 @@ router.use("/auth/login", [validateAccessToken], Login);
 router.use(
   "/setup",
   [validateAccessToken, validateSignature, contextMiddleware],
-  Setup
+  Setup,
 );
 
 // Function module
 router.use(
   "/function",
   [validateAccessToken, validateSignature, contextMiddleware],
-  Function
+  Function,
 );
 
 export default router;
@@ -208,17 +207,16 @@ export default router;
 
 Terdapat **3 middleware inti**:
 
-* `validateAccessToken`
-* `validateSignature`
-* `contextMiddleware`
+- `validateAccessToken`
+- `validateSignature`
+- `contextMiddleware`
 
 ### 6.2 Aturan Penggunaan
 
-* **SEMUA route WAJIB** menggunakan ketiga middleware di atas
-* **KECUALI** route auth berikut:
-
-  * `/auth/login`
-  * `/auth/token`
+- **SEMUA route WAJIB** menggunakan ketiga middleware di atas
+- **KECUALI** route auth berikut:
+  - `/auth/login`
+  - `/auth/token`
 
 ### 6.3 Fungsi Middleware
 
@@ -232,12 +230,12 @@ Terdapat **3 middleware inti**:
 
 ## 7. Best Practices (WAJIB DIPATUHI)
 
-* Satu file = satu endpoint
-* Semua route harus versioned
-* Semua route non-auth **WAJIB** memakai middleware
-* Field database `PascalCase`
-* Table database `snake_case`
-* MySQL collation `utf8mb4_unicode_ci`
+- Satu file = satu endpoint
+- Semua route harus versioned
+- Semua route non-auth **WAJIB** memakai middleware
+- Field database `PascalCase`
+- Table database `snake_case`
+- MySQL collation `utf8mb4_unicode_ci`
 
 ---
 
@@ -249,15 +247,15 @@ Standar ini **WAJIB digunakan di seluruh backend** untuk menjaga konsistensi, ke
 
 ### 8.1 Variable dari FE / Payload
 
-* **Nama variable dari request body / payload HARUS sama persis dengan field di database**
-* Format penamaan: **PascalCase**
+- **Nama variable dari request body / payload HARUS sama persis dengan field di database**
+- Format penamaan: **PascalCase**
 
 **Contoh:**
 
 ```js
 // Payload dari FE
 {
-  Fullname: "John Doe",
+  nama_lengkap: "John Doe",
   Username: "johnd",
   Telp: "08123456789",
   Status: "active"
@@ -266,13 +264,13 @@ Standar ini **WAJIB digunakan di seluruh backend** untuk menjaga konsistensi, ke
 
 ```js
 // Database field
-Fullname
-Username
-Telp
-Status
+nama_lengkap;
+Username;
+Telp;
+Status;
 ```
 
->  Dilarang mengubah payload menjadi `camelCase` atau `snake_case`.
+> Dilarang mengubah payload menjadi `camelCase` atau `snake_case`.
 
 ---
 
@@ -301,10 +299,9 @@ const bIsActive = oPayload.Status === "active";
 
 ### 8.3 Function Standard
 
-* Semua function **WAJIB**:
-
-  * Menggunakan **camelCase**
-  * Menggunakan **arrow function**
+- Semua function **WAJIB**:
+  - Menggunakan **camelCase**
+  - Menggunakan **arrow function**
 
 **Contoh benar:**
 
@@ -325,8 +322,8 @@ function createuser() {}
 
 ### 8.4 Penamaan Router & Endpoint
 
-* File endpoint: `snake_case.js`
-* Nama function internal: `camelCase`
+- File endpoint: `snake_case.js`
+- Nama function internal: `camelCase`
 
 **Contoh:**
 
@@ -342,8 +339,8 @@ const createUser = async () => {};
 
 ### 8.5 Logging & Error Handling
 
-* Variable log mengikuti standar prefix
-* Payload log **TIDAK BOLEH dimodifikasi**
+- Variable log mengikuti standar prefix
+- Payload log **TIDAK BOLEH dimodifikasi**
 
 **Contoh:**
 
@@ -402,9 +399,9 @@ npx knex seed:run --specific=superadmin.js
 
 Seed ini akan:
 
-* Membuat user **superadmin**
-* Mengisi data credential awal
-* Menyiapkan akses awal ke sistem
+- Membuat user **superadmin**
+- Mengisi data credential awal
+- Menyiapkan akses awal ke sistem
 
 ---
 
@@ -416,8 +413,8 @@ Seed ini akan:
 npm run dev
 ```
 
-* Mengaktifkan **debug mode**
-* Digunakan untuk local development
+- Mengaktifkan **debug mode**
+- Digunakan untuk local development
 
 #### Production Mode
 
@@ -425,8 +422,8 @@ npm run dev
 node server.js
 ```
 
-* Digunakan untuk server production
-* Pastikan `APP_DEBUG=false`
+- Digunakan untuk server production
+- Pastikan `APP_DEBUG=false`
 
 ---
 

@@ -1,13 +1,17 @@
 import express from "express";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
 import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
   const oPayload = req.body;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     const vaData = await DB("mst_archive_classifications")
@@ -15,8 +19,8 @@ router.get("/", async (req, res) => {
         "archive_classification_id",
         "classification_code",
         "classification_name",
-        "description",
-        "status"
+        "deskripsi",
+        "status",
       )
       .where("status", "active")
       .orderBy("created_at", "desc");
@@ -35,7 +39,13 @@ router.get("/", async (req, res) => {
       datetime: datetime(),
     };
 
-    Logging(error, { file: "archive_get.js", func: "get", request: oPayload, response: oResult, user: username });
+    Logging(error, {
+      file: "archive_get.js",
+      func: "get",
+      request: oPayload,
+      response: oResult,
+      user: nama_pengguna,
+    });
     return res.status(500).json(oResult);
   }
 });

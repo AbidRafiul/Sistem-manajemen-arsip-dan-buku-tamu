@@ -15,7 +15,10 @@ export async function up(knex) {
 
     table.integer("uploaded_by").unsigned().nullable();
 
-    table.enu("status", ["active", "nonactive"]).notNullable().defaultTo("active");
+    table
+      .enu("status", ["active", "nonactive"])
+      .notNullable()
+      .defaultTo("active");
     table.dateTime("created_at").notNullable().defaultTo(knex.fn.now());
     table.dateTime("updated_at").notNullable().defaultTo(knex.fn.now());
 
@@ -25,7 +28,10 @@ export async function up(knex) {
       .inTable("trx_incoming_letters")
       .onDelete("CASCADE");
 
-    table.foreign("uploaded_by").references("user_id").inTable("mst_users");
+    table
+      .foreign("uploaded_by")
+      .references("nama_pengguna")
+      .inTable("mst_pengguna");
   });
 }
 

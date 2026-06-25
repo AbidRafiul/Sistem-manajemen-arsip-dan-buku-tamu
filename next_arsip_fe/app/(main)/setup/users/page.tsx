@@ -1,30 +1,23 @@
-'use client'
-import postData from "@/lib/axios/postData";
-import apiGetData from "@/lib/axios/getData";
-import { Toast } from "primereact/toast";
-import { useEffect, useRef, useState } from "react";
-import { showError, showSuccess } from "@/lib/tools/generalTools";
-import { useFormik } from "formik";
-import { initValue, NavState, State } from "./components/interfaces";
-import Table from "./components/display/table";
-import { FilterMatchMode } from "primereact/api";
-import Form from "./components/display/form";
-import { useSession } from "next-auth/react";
-import { DataRekap } from "@/types/print-tools";
-import Print from "./components/display/print";
-import { 
-    apiEndpointGetNavDataEdit, 
-    apiEndpointUpdateNav, 
-    apiEndpointCreate, 
-    apiEndpointUpdate, 
-    apiEndpointDelete, 
-    apiEndpointGet 
-} from "./components/endpoints";
-import NavForm from "./components/display/navbar";
+'use client';
+import postData from '@/lib/axios/postData';
+import apiGetData from '@/lib/axios/getData';
+import { Toast } from 'primereact/toast';
+import { useEffect, useRef, useState } from 'react';
+import { showError, showSuccess } from '@/lib/tools/generalTools';
+import { useFormik } from 'formik';
+import { initValue, NavState, State } from './components/interfaces';
+import Table from './components/display/table';
+import { FilterMatchMode } from 'primereact/api';
+import Form from './components/display/form';
+import { useSession } from 'next-auth/react';
+import { DataRekap } from '@/types/print-tools';
+import Print from './components/display/print';
+import { apiEndpointGetNavDataEdit, apiEndpointUpdateNav, apiEndpointCreate, apiEndpointUpdate, apiEndpointDelete, apiEndpointGet } from './components/endpoints';
+import NavForm from './components/display/navbar';
 
 const Page = () => {
-    const toast = useRef<Toast>(null)
-    const { data: session } = useSession()
+    const toast = useRef<Toast>(null);
+    const { data: session } = useSession();
 
     // 1. TAMBAH MASTER DATA KE STATE GLOBAL
     const [state, setState] = useState<State & { masterData?: any }>({
@@ -46,7 +39,7 @@ const Page = () => {
             workUnits: [],
             roles: [] // Tempat nyimpen data mst_roles
         }
-    })
+    });
 
     const [dataRekap, setDataRekap] = useState<DataRekap>({
         data: {},
@@ -64,65 +57,74 @@ const Page = () => {
     const [navBar, setNavBar] = useState<NavState>({
         data: [],
         menu: [],
-        userId: "",
+        IdPengguna: '',
         load: false,
-        show: false,
-    })
+        show: false
+    });
 
     const formik = useFormik({
         initialValues: {
-            user_id: '',
-            fullname: '',
-            username: '',
-            password: '',
-            telp: '',
-            status: '0',
-            role: '', // 2. PERBAIKAN: Jangan pakai 'superadmin', kosongkan saja karena isinya angka ID
+            id_pengguna: '',
+            nama_lengkap: '',
+            nama_pengguna: '',
+            kata_sandi: '',
+            telepon: '',
+            status: 'active', // Lebih baik default ke 'active' daripada '0'
+            id_peran: '',
+
+            // --- TAMBAHKAN INI ---
+            id_cabang: '',
+            id_jabatan: '',
+            id_divisi: '',
+            id_departemen: '',
+            id_unit_kerja: ''
         },
         validate: (data: initValue) => {
             let errors = {} as initValue;
-            
-            if (!data.fullname) {
-                errors.fullname = 'Nama wajib diisi';
-            } else if (data.fullname.length < 3) {
-                errors.fullname = 'Nama harus terdiri dari minimal 3 karakter';
-            } else if (!/^[a-zA-Z\s]+$/.test(data.fullname)) {
-                errors.fullname = 'Nama hanya boleh berisi huruf dan spasi';
+
+            if (!data.nama_lengkap) {
+                errors.nama_lengkap = 'Nama wajib diisi';
+            } else if (data.nama_lengkap.length < 3) {
+                errors.nama_lengkap = 'Nama harus terdiri dari minimal 3 karakter';
+            } else if (!/^[a-zA-Z\s]+$/.test(data.nama_lengkap)) {
+                errors.nama_lengkap = 'Nama hanya boleh berisi huruf dan spasi';
             }
 
-            if (!data.username) {
-                errors.username = 'Username wajib diisi';
+            if (!data.nama_pengguna) {
+                errors.nama_pengguna = 'nama_pengguna wajib diisi';
             }
 
-            if (!data.password && !state.edit) {
-                errors.password = 'Password wajib diisi';
+            if (!data.kata_sandi && !state.edit) {
+                errors.kata_sandi = 'kata_sandi wajib diisi';
             }
 
-            if (data.password) {
-                if (data.password.length < 8) {
-                    errors.password = 'Password harus terdiri dari minimal 8 karakter';
-                } else if (!/[A-Z]/.test(data.password)) {
-                    errors.password = 'Password harus mengandung huruf besar';
-                } else if (!/[a-z]/.test(data.password)) {
-                    errors.password = 'Password harus mengandung huruf kecil';
-                } else if (!/[0-9]/.test(data.password)) {
-                    errors.password = 'Password harus mengandung angka';
-                } else if (!/[\W_]/.test(data.password)) {
-                    errors.password = 'Password harus mengandung simbol';
+            if (data.kata_sandi) {
+                if (data.kata_sandi.length < 8) {
+                    errors.kata_sandi = 'kata_sandi harus terdiri dari minimal 8 karakter';
+                } else if (!/[A-Z]/.test(data.kata_sandi)) {
+                    errors.kata_sandi = 'kata_sandi harus mengandung huruf besar';
+                } else if (!/[a-z]/.test(data.kata_sandi)) {
+                    errors.kata_sandi = 'kata_sandi harus mengandung huruf kecil';
+                } else if (!/[0-9]/.test(data.kata_sandi)) {
+                    errors.kata_sandi = 'kata_sandi harus mengandung angka';
+                } else if (!/[\W_]/.test(data.kata_sandi)) {
+                    errors.kata_sandi = 'kata_sandi harus mengandung simbol';
                 }
             }
 
-            if (!data.telp) {
-                errors.telp = 'Nomor HP wajib diisi';
-            } else if (!/^(08|(\+62))\d{8,13}$/.test(data.telp)) {
-                errors.telp = 'Nomor HP harus dimulai dengan 08 dan panjang 9-13 digit';
+            if (!data.telepon) {
+                errors.telepon = 'Nomor HP wajib diisi';
+            } else if (!/^(08|(\+62))\d{8,13}$/.test(data.telepon)) {
+                errors.telepon = 'Nomor HP harus dimulai dengan 08 dan panjang 9-13 digit';
+            } else if (!data.id_peran) {
+                errors.id_peran = 'Role wajib dipilih';
             }
 
             return errors;
         },
-        onSubmit: (data) => {
-            setState(p => ({ ...p, submittedData: data }));
-        },
+        onSubmit: async (data) => {
+            await handleSave(data);
+        }
     });
 
     // A. Mengambil Master Data (Dropdown)
@@ -134,25 +136,29 @@ const Page = () => {
                 { key: 'divisions', path: '/master/organisasi/divisions' },
                 { key: 'departments', path: '/master/organisasi/department' },
                 { key: 'workUnits', path: '/master/organisasi/work-unit' },
-                { key: 'roles', path: '/setup/roles' } // Mengambil Role Dinamis
+                { key: 'roles', path: '/master/organisasi/roles' }
             ];
 
             const token = (session as any)?.accessToken || localStorage.getItem('token');
-            const myUserId = (session as any)?.user?.UserId || (session as any)?.user?.id || '';
+            const myIdPengguna = (session as any)?.user?.IdPengguna || (session as any)?.user?.id || '';
 
             vaEndpoints.forEach((oItem) => {
-                apiGetData(oItem.path, {}, {
-                    Authorization: `Bearer ${token}`,
-                    'x-uniqueid': myUserId,
-                    'x-timestamp': new Date().toISOString()
-                })
-                .then((oRes) => {
-                    setState((prev: any) => ({
-                        ...prev,
-                        masterData: { ...prev.masterData, [oItem.key]: oRes.data.data }
-                    }));
-                })
-                .catch((e) => console.error(`Error loading ${oItem.key}:`, e));
+                apiGetData(
+                    oItem.path,
+                    {},
+                    {
+                        Authorization: `Bearer ${token}`,
+                        'x-uniqueid': myIdPengguna,
+                        'x-timestamp': new Date().toISOString()
+                    }
+                )
+                    .then((oRes) => {
+                        setState((prev: any) => ({
+                            ...prev,
+                            masterData: { ...prev.masterData, [oItem.key]: oRes.data.data }
+                        }));
+                    })
+                    .catch((e) => console.error(`Error loading ${oItem.key}:`, e));
             });
         }
     }, [state.add, state.edit, session]);
@@ -162,32 +168,32 @@ const Page = () => {
         setState((p) => ({ ...p, load: true }));
 
         try {
-            const idUser = input.user_id;
+            const idUser = input.id_pengguna;
             const isEdit = Boolean(idUser);
             const cEndPoint = isEdit ? apiEndpointUpdate : apiEndpointCreate;
 
             const oHeaders: Record<string, string> = {
                 'X-Credential': JSON.stringify({
-                    username: input.username,
-                    password: input.password
+                    nama_pengguna: input.nama_pengguna,
+                    kata_sandi: input.kata_sandi
                 })
             };
 
             const oBody: Record<string, any> = {
-                fullname: input.fullname,
-                username: input.username,
-                password: input.password,
-                telp: input.telp,
+                nama_lengkap: input.nama_lengkap,
+                nama_pengguna: input.nama_pengguna,
+                kata_sandi: input.kata_sandi,
+                telepon: input.telepon,
                 status: input.status,
-                role: input.role,
-                branch_id: input.branch_id,
-                position_id: input.position_id,
-                division_id: input.division_id,
-                department_id: input.department_id,
-                work_unit_id: input.work_unit_id
+                peran: input.id_peran,
+                id_cabang: input.id_cabang,
+                id_jabatan: input.id_jabatan,
+                id_divisi: input.id_divisi,
+                id_departemen: input.id_departemen,
+                id_unit_kerja: input.id_unit_kerja
             };
 
-            if (isEdit) oBody['user_id'] = idUser;
+            if (isEdit) oBody['id_pengguna'] = idUser;
 
             const vaData = await postData(cEndPoint, oBody, oHeaders);
             showSuccess(toast, vaData.data?.data?.message || 'Berhasil Menyimpan Data');
@@ -211,14 +217,22 @@ const Page = () => {
         try {
             if (state.selectedUsers.length < 1) return;
 
-            const vaUserId = state.selectedUsers.map((v: any) => v.user_id);
-            const finalPayload = { userId: vaUserId.map(Number) };
+            // KITA HACK DI SINI:
+            // Karena id_pengguna itu null, kita coba ambil dari 'v.id'
+            // Pastikan data ini isinya beneran ANGKA (Number)
+            const vaIdPengguna = state.selectedUsers.map((v: any) => v.id || v.id_pengguna);
+            
+            // Kita bungkus angka tersebut ke dalam key 'NamaPengguna' demi backend
+            const finalPayload = { NamaPengguna: vaIdPengguna.map(Number) };
+
+            // (Opsional) Intip payload-nya sebelum dikirim, pastikan BUKAN [ null ] atau [ NaN ]
+            console.log("PAYLOAD KE BACKEND:", finalPayload);
 
             const vaData = await postData(apiEndpointDelete, finalPayload);
             showSuccess(toast, vaData.data?.data?.message || 'Berhasil Menghapus Data');
 
             setState((p) => ({ ...p, selectedUsers: [], delete: false }));
-            
+
             // Refresh tabel
             getData(apiEndpointGet);
         } catch (error: any) {
@@ -227,7 +241,7 @@ const Page = () => {
         } finally {
             setState((p) => ({ ...p, load: false }));
         }
-    };
+    }
 
     const getData = async (apiEndpoint: string) => {
         setState((p) => ({ ...p, load: true }));
@@ -243,23 +257,23 @@ const Page = () => {
         } finally {
             setState((p) => ({ ...p, load: false }));
         }
-    }
+    };
 
-    const getNav = async (userId: string | number) => {
+    const getNav = async (IdPengguna: string | number) => {
         setNavBar((p) => ({ ...p, load: true }));
 
         try {
             const headers = {
-                'X-Level': '1',
+                'X-Level': '1'
             };
-                const vaData = await apiGetData(apiEndpointGetNavDataEdit, { UserId: userId }, headers);
-            
+            const vaData = await apiGetData(apiEndpointGetNavDataEdit, { IdPengguna: IdPengguna }, headers);
+
             let res = vaData.data;
             setNavBar((p) => ({
                 ...p,
                 data: JSON.parse(JSON.stringify(res.data)),
                 menu: JSON.parse(JSON.stringify(res.menu)),
-                userId,
+                IdPengguna,
                 show: true
             }));
         } catch (error: any) {
@@ -274,22 +288,19 @@ const Page = () => {
         setNavBar((p) => ({ ...p, load: true }));
 
         try {
-            const res = await postData(
-                apiEndpointUpdateNav,
-                {
-                    UserId: navBar.userId,
-                    Menu: JSON.stringify(navBar.menu),
-                },
-            );
+            const res = await postData(apiEndpointUpdateNav, {
+                IdPengguna: navBar.IdPengguna,
+                Menu: JSON.stringify(navBar.menu)
+            });
             showSuccess(toast, res.data.message);
-            setNavBar((p) => ({ ...p, show: false, }));
+            setNavBar((p) => ({ ...p, show: false }));
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || 'Terjadi Kesalahan');
         } finally {
             setNavBar((p) => ({ ...p, load: false }));
         }
-    }
+    };
 
     useEffect(() => {
         if (session) {
@@ -300,25 +311,19 @@ const Page = () => {
         }
     }, [session]);
 
-    return <>
-        <div className="p-4">
-            <Toast ref={toast} position="top-right" />
+    return (
+        <>
+            <div className="p-4">
+                <Toast ref={toast} position="top-right" />
 
-           <Table getNav={getNav} dataRekap={dataRekap} setDataRekap={setDataRekap} state={state} toast={toast} setState={setState} formik={formik} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />
-            <Print dataRekap={dataRekap} setDataRekap={setDataRekap} state={state} toast={toast} setState={setState} formik={formik} getData={getData} />
-            
-            {/* 3. KOMPONEN FORM DIPANGGIL DI SINI DENGAN PROPS YANG LENGKAP */}
-            <Form 
-                formik={formik} 
-                state={state} 
-                setState={setState} 
-                toast={toast} 
-                getData={getData} 
-                handleSave={handleSave} 
-                handleDelete={handleDelete} 
-            />
-        </div>
-    </>
-}
+                <Table getNav={getNav} dataRekap={dataRekap} setDataRekap={setDataRekap} state={state} toast={toast} setState={setState} formik={formik} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />
+                <Print dataRekap={dataRekap} setDataRekap={setDataRekap} state={state} toast={toast} setState={setState} formik={formik} getData={getData} />
 
-export default Page
+                {/* 3. KOMPONEN FORM DIPANGGIL DI SINI DENGAN PROPS YANG LENGKAP */}
+                <Form formik={formik} state={state} setState={setState} toast={toast} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />
+            </div>
+        </>
+    );
+};
+
+export default Page;

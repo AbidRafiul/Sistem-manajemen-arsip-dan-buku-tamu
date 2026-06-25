@@ -9,14 +9,14 @@ import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
-router.delete("/:id_divisi", async (req, res) => {
-  const cIdDivisi = req.params.id_divisi;
+router.delete("/:id_jabatan", async (req, res) => {
+  const cIdPeran = req.params.id_peran;
   const cnama_pengguna = req?.auth?.nama_pengguna || "";
-  const oPayload = { id: cIdDivisi };
+  const oPayload = { id: cIdPeran };
 
   try {
-    const nUpdated = await DB("mst_divisi")
-      .where("id_divisi", cIdDivisi)
+    const nUpdated = await DB("mst_peran")
+      .where("id_peran", cIdPeran)
       .update({ status: "nonactive", updated_at: new Date() });
 
     if (!nUpdated)
@@ -36,7 +36,7 @@ router.delete("/:id_divisi", async (req, res) => {
       datetime: datetime(),
     };
     Logging(error, {
-      file: "division_delete.js",
+      file: "roles_delete.js",
       func: "delete",
       request: oPayload,
       response: oResult,

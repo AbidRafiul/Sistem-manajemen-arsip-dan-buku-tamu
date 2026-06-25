@@ -6,13 +6,13 @@ import userCreate from "./user_login/user_create.js";
 import userUpdate from "./user_login/user_update.js";
 import userDelete from "./user_login/user_delete.js";
 
-import navBase from "./navigation/mst_navigation_data.js";
+import navBase from "./navigation//mst_navigation_data.js"; 
 import navUser from "./navigation/user_navigation_data.js";
 import navUserEdit from "./navigation/user_navigation_data_edit.js";
 import navUserInsert from "./navigation/user_navigation_insert.js";
 
-import configCreate from './config/config_create.js'
-import configData from './config/config_data.js'
+import configCreate from "./config/config_create.js";
+import configData from "./config/config_data.js";
 
 // master
 // user

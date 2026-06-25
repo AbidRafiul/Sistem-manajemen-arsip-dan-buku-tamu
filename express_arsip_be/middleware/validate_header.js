@@ -94,20 +94,29 @@ export const validateSignature = async (req, res, next) => {
 
     const cUserUnique = req.headers["x-uniqueid"];
 
-    //  PERBAIKAN: Ganti "user_credential" jadi "mst_users"
-    const oUser = await DB("mst_users")
-      // 1. Join user_roles pake user_id (bukan username)
-      .leftJoin("mst_user_roles", "mst_users.user_id", "mst_user_roles.user_id")
-      // 2. Join mst_roles buat dapetin nama jabatannya
-      .leftJoin("mst_roles", "mst_user_roles.role_id", "mst_roles.role_id")
-      .select(
-        "mst_users.username",
-        "mst_users.fullname",
-        "mst_roles.role_name as Role",
-        "mst_users.telp",
-        "mst_users.user_id as UniqueId",
+    //  PERBAIKAN: Ganti "user_credential" jadi "mst_pengguna"
+    const oUser = await DB("mst_pengguna")
+      // 1. Join mst_pengguna_peran pake id_pengguna (Sesuai database murni)
+      .leftJoin(
+        "mst_pengguna_peran",
+        "mst_pengguna.id_pengguna",
+        "mst_pengguna_peran.id_pengguna",
       )
-      .where("mst_users.user_id", cUserUnique)
+      // 2. Join mst_peran buat dapetin nama jabatannya
+      .leftJoin(
+        "mst_peran",
+        "mst_pengguna_peran.id_peran",
+        "mst_peran.id_peran",
+      )
+      .select(
+        "mst_pengguna.nama_pengguna",
+        "mst_pengguna.nama_lengkap",
+        "mst_peran.nama_peran as peran", // <-- UBAH KE mst_peran
+        "mst_pengguna.telepon",
+        "mst_pengguna.nama_pengguna as UniqueId",
+      )
+      // 3. Pencarian wajib pake id_pengguna karena cUserUnique isinya angka ID
+      .where("mst_pengguna.id_pengguna", cUserUnique)
       .first();
 
     if (!oUser) {
@@ -120,10 +129,10 @@ export const validateSignature = async (req, res, next) => {
 
     req.auth = {
       uniqueId: oUser.UniqueId,
-      username: oUser.username,
-      telp: oUser.telp,
-      fullname: oUser.fullname,
-      role: oUser.Role,
+      nama_pengguna: oUser.nama_pengguna,
+      telepon: oUser.telepon,
+      nama_lengkap: oUser.nama_lengkap,
+      peran: oUser.peran,
     };
 
     req.context = oUser;
@@ -160,11 +169,11 @@ export const validateBaseToken = async (req, res, next) => {
 
   try {
     const cCredentials = Buffer.from(cToken, "base64").toString("utf-8");
-    const [cUsername, cPassword] = cCredentials.split(":");
+    const [cnama_pengguna, ckata_sandi] = cCredentials.split(":");
 
     if (
-      !hashEquals(cUsername, hmac(getClientKey(), getClientSecret())) &&
-      !hashEquals(cPassword, hmac(getClientPassKey(), getClientSecret()))
+      !hashEquals(cnama_pengguna, hmac(getClientKey(), getClientSecret())) &&
+      !hashEquals(ckata_sandi, hmac(getClientPassKey(), getClientSecret()))
     ) {
       return res.status(400).json({
         status: status.BAD_REQUEST,

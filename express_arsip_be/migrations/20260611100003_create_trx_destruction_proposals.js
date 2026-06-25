@@ -33,7 +33,7 @@ export async function up(knex) {
     // Alasan pemusnahan
     table.text("proposal_reason").notNullable();
 
-    // Yang mengusulkan (username)
+    // Yang mengusulkan (nama_pengguna)
     table.string("proposed_by", 50).notNullable();
 
     // Waktu pengajuan

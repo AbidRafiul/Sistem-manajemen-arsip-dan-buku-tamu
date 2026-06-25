@@ -11,8 +11,8 @@ const getConfidentialityLevels = async (req, res) => {
         "confidentiality_level_code",
         "confidentiality_level_name",
         "confidentiality_level",
-        "description",
-        "status"
+        "deskripsi",
+        "status",
       )
       .where("status", cStatus)
       .orderBy("confidentiality_level", "asc");
@@ -36,7 +36,7 @@ const getConfidentialityLevels = async (req, res) => {
       func: "getConfidentialityLevels",
       request: req.query,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

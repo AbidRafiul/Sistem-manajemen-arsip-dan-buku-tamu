@@ -1,5 +1,5 @@
 export interface LoginFormik {
-    username: string
-    password: string
-    remember_me: boolean | string
+    nama_pengguna: string;
+    kata_sandi: string;
+    remember_me: boolean | string;
 }

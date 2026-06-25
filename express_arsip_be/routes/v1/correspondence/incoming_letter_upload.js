@@ -4,7 +4,6 @@ import path from "path";
 import fs from "fs";
 import DB from "../../../core/config/knex.js";
 
-
 const router = express.Router();
 
 const cUploadDir = "uploads/incoming_letters";
@@ -99,10 +98,10 @@ const incomingLetterUpload = async (req, res) => {
 
     await DB("trx_incoming_letter_trackings").insert({
       incoming_letter_id: oPayload.incoming_letter_id,
-      disposition_id: null,
+      disid_jabatan: null,
       action_name: "file_surat_diupload",
-      from_user_id: null,
-      to_user_id: null,
+      from_nama_pengguna: null,
+      to_nama_pengguna: null,
       previous_status: oLetter.status,
       current_status: oLetter.status,
       notes: `File ${oFile.originalname} berhasil diupload`,

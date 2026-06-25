@@ -6,7 +6,7 @@
  */
 export async function up(knex) {
   await knex.schema.alterTable("trx_document_versions", (table) => {
-    // Username yang mengupload versi
+    // nama_pengguna yang mengupload versi
     table.string("uploaded_by", 50).nullable().after("file_path");
 
     // Status approval versi (default pending)

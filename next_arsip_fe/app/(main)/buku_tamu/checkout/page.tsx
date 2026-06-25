@@ -1,18 +1,18 @@
-'use client'
+'use client';
 
-import { Toast } from "primereact/toast";
-import { useEffect, useRef, useState } from "react";
-import postData from "@/lib/axios/postData";
-import { showError, showSuccess } from "@/lib/tools/generalTools";
-import { formatDateCalendar } from "@/lib/tools/dateTools";
-import { State } from "./components/interfaces";
-import { apiEndpointGet, apiEndpointCheckout } from "./components/endpoints";
-import GuestDataTable from "./components/display/table";
-import { Dialog } from "primereact/dialog";
-import { InputText } from "primereact/inputtext";
-import { InputTextarea } from "primereact/inputtextarea";
-import { Button } from "primereact/button";
-import { FilterMatchMode } from "primereact/api";
+import { Toast } from 'primereact/toast';
+import { useEffect, useRef, useState } from 'react';
+import postData from '@/lib/axios/postData';
+import { showError, showSuccess } from '@/lib/tools/generalTools';
+import { formatDateCalendar } from '@/lib/tools/dateTools';
+import { State } from './components/interfaces';
+import { apiEndpointGet, apiEndpointCheckout } from './components/endpoints';
+import GuestDataTable from './components/display/table';
+import { Dialog } from 'primereact/dialog';
+import { InputText } from 'primereact/inputtext';
+import { InputTextarea } from 'primereact/inputtextarea';
+import { Button } from 'primereact/button';
+import { FilterMatchMode } from 'primereact/api';
 
 const CheckoutPage = () => {
     const toast = useRef<Toast>(null);
@@ -25,7 +25,7 @@ const CheckoutPage = () => {
         showCheckoutDialog: false,
         checkoutToken: '',
         checkoutNotes: '',
-        detailRecord: null,
+        detailRecord: null
     });
 
     const getData = async (apiEndpoint: string, payload: Record<string, any> = {}) => {
@@ -95,14 +95,7 @@ const CheckoutPage = () => {
         <div className="p-4 bg-slate-50 min-h-screen">
             <Toast ref={toast} position="top-right" />
 
-            <GuestDataTable 
-                state={state} 
-                setState={setState} 
-                onCheckout={onCheckout} 
-                onDetail={onDetail} 
-                onFilterStatus={onFilterStatus} 
-                onRefresh={fetchAll} 
-            />
+            <GuestDataTable state={state} setState={setState} onCheckout={onCheckout} onDetail={onDetail} onFilterStatus={onFilterStatus} onRefresh={fetchAll} />
 
             <Dialog header="Check-Out Tamu" visible={state.showCheckoutDialog} modal style={{ width: '480px' }} onHide={() => setState((p: State) => ({ ...p, showCheckoutDialog: false }))}>
                 <div className="grid grid-nogutter gap-3">
@@ -124,15 +117,42 @@ const CheckoutPage = () => {
             <Dialog header="Detail Riwayat Kunjungan" visible={!!state.detailRecord} modal style={{ width: '600px' }} onHide={() => setState((p: State) => ({ ...p, detailRecord: null }))}>
                 {state.detailRecord && (
                     <div className="grid grid-nogutter gap-3">
-                        <div className="col-12 md:col-6"><strong>Nama Tamu</strong><div>{state.detailRecord.guest_name}</div></div>
-                        <div className="col-12 md:col-6"><strong>No. Telepon</strong><div>{state.detailRecord.phone_number}</div></div>
-                        <div className="col-12 md:col-6"><strong>Instansi/Perusahaan</strong><div>{state.detailRecord.guest_company}</div></div>
-                        <div className="col-12 md:col-6"><strong>Tujuan Alasan</strong><div>{state.detailRecord.VisitPurposeName}</div></div>
-                        <div className="col-12 md:col-6"><strong>Pegawai yang Ditemui</strong><div>{state.detailRecord.HostFullname || state.detailRecord.host_name || '-'}</div></div>
-                        <div className="col-12 md:col-6"><strong>Status Saat Ini</strong><div>{state.detailRecord.status}</div></div>
-                        <div className="col-12"><strong>Waktu Check-In</strong><div>{formatDateCalendar(state.detailRecord.check_in_time, 'HH:mm dd/MM/yyyy')}</div></div>
-                        <div className="col-12"><strong>Waktu Check-Out</strong><div>{state.detailRecord.check_out_time ? formatDateCalendar(state.detailRecord.check_out_time, 'HH:mm dd/MM/yyyy') : '-'}</div></div>
-                        <div className="col-12"><strong>Catatan Tambahan</strong><div>{state.detailRecord.visit_notes}</div></div>
+                        <div className="col-12 md:col-6">
+                            <strong>Nama Tamu</strong>
+                            <div>{state.detailRecord.guest_name}</div>
+                        </div>
+                        <div className="col-12 md:col-6">
+                            <strong>No. Telepon</strong>
+                            <div>{state.detailRecord.phone_number}</div>
+                        </div>
+                        <div className="col-12 md:col-6">
+                            <strong>Instansi/Perusahaan</strong>
+                            <div>{state.detailRecord.guest_company}</div>
+                        </div>
+                        <div className="col-12 md:col-6">
+                            <strong>Tujuan Alasan</strong>
+                            <div>{state.detailRecord.VisitPurposeName}</div>
+                        </div>
+                        <div className="col-12 md:col-6">
+                            <strong>Pegawai yang Ditemui</strong>
+                            <div>{state.detailRecord.Hostnama_lengkap || state.detailRecord.host_name || '-'}</div>
+                        </div>
+                        <div className="col-12 md:col-6">
+                            <strong>Status Saat Ini</strong>
+                            <div>{state.detailRecord.status}</div>
+                        </div>
+                        <div className="col-12">
+                            <strong>Waktu Check-In</strong>
+                            <div>{formatDateCalendar(state.detailRecord.check_in_time, 'HH:mm dd/MM/yyyy')}</div>
+                        </div>
+                        <div className="col-12">
+                            <strong>Waktu Check-Out</strong>
+                            <div>{state.detailRecord.check_out_time ? formatDateCalendar(state.detailRecord.check_out_time, 'HH:mm dd/MM/yyyy') : '-'}</div>
+                        </div>
+                        <div className="col-12">
+                            <strong>Catatan Tambahan</strong>
+                            <div>{state.detailRecord.visit_notes}</div>
+                        </div>
                     </div>
                 )}
             </Dialog>

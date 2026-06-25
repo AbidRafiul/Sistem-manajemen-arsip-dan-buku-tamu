@@ -11,11 +11,11 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   const oPayload = req.body;
-  const cUsername = req?.auth?.username || "";
+  const cnama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
-    const vaData = await DB("mst_positions")
-      .select("position_id as id", "position_name as name", "status")
+    const vaData = await DB("mst_jabatan")
+      .select("id_jabatan as id", "nama_jabatan as name", "status")
       .where("status", "active");
 
     return res.status(200).json({
@@ -35,7 +35,7 @@ router.get("/", async (req, res) => {
       func: "get",
       request: oPayload,
       response: oResult,
-      user: cUsername,
+      user: cnama_pengguna,
     });
     return res.status(500).json(oResult);
   }

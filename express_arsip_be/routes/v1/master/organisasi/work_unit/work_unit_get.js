@@ -14,8 +14,8 @@ router.get("/", async (req, res) => {
   const cUsername = req?.auth?.username || "";
 
   try {
-    const vaData = await DB("mst_work_units")
-      .select("work_unit_id as id", "work_unit_name as name", "status")
+    const vaData = await DB("mst_unit_kerja")
+      .select("id_unit_kerja as id", "nama_unit_kerja as name", "status")
       .where("status", "active");
 
     return res.status(200).json({

@@ -11,8 +11,8 @@ const letterDispositionData = async (req, res) => {
 
     const oValidation = {
       incoming_letter_id: Joi.number().allow(null).optional(),
-      to_user_id: Joi.number().allow(null).optional(),
-      from_user_id: Joi.number().allow(null).optional(),
+      to_nama_pengguna: Joi.number().allow(null).optional(),
+      from_nama_pengguna: Joi.number().allow(null).optional(),
       status: Joi.string()
         .valid("baru", "dibaca", "diproses", "selesai")
         .allow(null, "")
@@ -22,8 +22,8 @@ const letterDispositionData = async (req, res) => {
 
     const oMessage = {
       "incoming_letter_id.number": "incoming_letter_id harus berupa angka",
-      "to_user_id.number": "to_user_id harus berupa angka",
-      "from_user_id.number": "from_user_id harus berupa angka",
+      "to_nama_pengguna.number": "to_nama_pengguna harus berupa angka",
+      "from_nama_pengguna.number": "from_nama_pengguna harus berupa angka",
       "status.valid": "status disposisi tidak valid",
     };
 
@@ -42,18 +42,30 @@ const letterDispositionData = async (req, res) => {
       .leftJoin(
         "trx_incoming_letters as til",
         "tld.incoming_letter_id",
-        "til.incoming_letter_id"
+        "til.incoming_letter_id",
       )
       .leftJoin(
         "mst_disposition_instructions as mdi",
         "tld.disposition_instruction_id",
-        "mdi.disposition_instruction_id"
+        "mdi.disposition_instruction_id",
       )
-      .leftJoin("mst_users as from_user", "tld.from_user_id", "from_user.user_id")
-      .leftJoin("mst_users as to_user", "tld.to_user_id", "to_user.user_id")
-      .leftJoin("mst_users as processed_user", "tld.updated_by", "processed_user.user_id")
+      .leftJoin(
+        "mst_pengguna as from_user",
+        "tld.from_nama_pengguna",
+        "from_user.nama_pengguna",
+      )
+      .leftJoin(
+        "mst_pengguna as to_user",
+        "tld.to_nama_pengguna",
+        "to_user.nama_pengguna",
+      )
+      .leftJoin(
+        "mst_pengguna as processed_user",
+        "tld.updated_by",
+        "processed_user.nama_pengguna",
+      )
       .select(
-        "tld.disposition_id",
+        "tld.disid_jabatan",
         "tld.incoming_letter_id",
         "til.agenda_number",
         "til.letter_number",
@@ -61,12 +73,12 @@ const letterDispositionData = async (req, res) => {
         "til.sender_name",
         "til.status as letter_status",
 
-        "tld.parent_disposition_id",
-        "tld.from_user_id",
-        "from_user.Fullname as from_user_name",
-        "tld.to_user_id",
-        "to_user.Fullname as to_user_name",
-        "processed_user.Fullname as processed_by_name",
+        "tld.parent_disid_jabatan",
+        "tld.from_nama_pengguna",
+        "from_user.nama_lengkap as from_nama_pengguna",
+        "tld.to_nama_pengguna",
+        "to_user.nama_lengkap as to_nama_pengguna",
+        "processed_user.nama_lengkap as processed_by_name",
         "tld.disposition_instruction_id",
         "mdi.instruction_name",
 
@@ -81,7 +93,7 @@ const letterDispositionData = async (req, res) => {
         "tld.created_by",
         "tld.updated_by",
         "tld.created_at",
-        "tld.updated_at"
+        "tld.updated_at",
       )
       .orderBy("tld.created_at", "desc");
 
@@ -89,12 +101,12 @@ const letterDispositionData = async (req, res) => {
       oQuery.where("tld.incoming_letter_id", oPayload.incoming_letter_id);
     }
 
-    if (oPayload.to_user_id) {
-      oQuery.where("tld.to_user_id", oPayload.to_user_id);
+    if (oPayload.to_nama_pengguna) {
+      oQuery.where("tld.to_nama_pengguna", oPayload.to_nama_pengguna);
     }
 
-    if (oPayload.from_user_id) {
-      oQuery.where("tld.from_user_id", oPayload.from_user_id);
+    if (oPayload.from_nama_pengguna) {
+      oQuery.where("tld.from_nama_pengguna", oPayload.from_nama_pengguna);
     }
 
     if (oPayload.status) {

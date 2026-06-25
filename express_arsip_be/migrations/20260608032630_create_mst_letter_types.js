@@ -13,10 +13,16 @@ export async function up(knex) {
 
       table.string("letter_type_code", 50).notNullable().unique();
       table.string("letter_type_name", 150).notNullable();
-      table.enu("direction", ["incoming", "outgoing", "both"]).notNullable().defaultTo("both");
-      table.text("description").nullable();
+      table
+        .enu("direction", ["incoming", "outgoing", "both"])
+        .notNullable()
+        .defaultTo("both");
+      table.text("deskripsi").nullable();
 
-      table.enu("status", ["active", "nonactive"]).notNullable().defaultTo("active");
+      table
+        .enu("status", ["active", "nonactive"])
+        .notNullable()
+        .defaultTo("active");
       table.dateTime("created_at").notNullable().defaultTo(knex.fn.now());
       table.dateTime("updated_at").notNullable().defaultTo(knex.fn.now());
     });

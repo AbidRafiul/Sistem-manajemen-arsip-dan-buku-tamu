@@ -24,19 +24,19 @@ const LoginPage = () => {
 
     const formik = useFormik({
         initialValues: {
-            username: '',
-            password: '',
+            nama_pengguna: '',
+            kata_sandi: '',
             remember_me: false
         },
         validate: (data: LoginFormik) => {
             const errors = {} as LoginFormik;
 
-            if (!data.username) {
-                errors.username = 'Username tidak boleh kosong';
+            if (!data.nama_pengguna) {
+                errors.nama_pengguna = 'nama_pengguna tidak boleh kosong';
             }
 
-            if (!data.password) {
-                errors.password = 'Password tidak boleh kosong';
+            if (!data.kata_sandi) {
+                errors.kata_sandi = 'kata_sandi tidak boleh kosong';
             }
 
             return errors;
@@ -51,8 +51,8 @@ const LoginPage = () => {
 
         try {
             const { data: vaLogin } = await axios.post('/api/auth/login', {
-                username: data.username,
-                password: data.password,
+                nama_pengguna: data.nama_pengguna,
+                kata_sandi: data.kata_sandi,
                 remember_me: data.remember_me ? '1' : '0'
             });
 
@@ -80,8 +80,8 @@ const LoginPage = () => {
         showError(toast, message);
     };
 
-    const usernameInvalid = !!(formik.touched.username && formik.errors.username);
-    const passwordInvalid = !!(formik.touched.password && formik.errors.password);
+    const nama_penggunaInvalid = !!(formik.touched.nama_pengguna && formik.errors.nama_pengguna);
+    const kata_sandiInvalid = !!(formik.touched.kata_sandi && formik.errors.kata_sandi);
 
     return (
         <>
@@ -129,55 +129,55 @@ const LoginPage = () => {
 
                         <form className="login-form" onSubmit={formik.handleSubmit} noValidate>
                             <div className="field-group">
-                                <label htmlFor="username">Username</label>
-                                <span className={`input-shell ${usernameInvalid ? 'is-invalid' : ''}`}>
+                                <label htmlFor="nama_pengguna">nama_pengguna</label>
+                                <span className={`input-shell ${nama_penggunaInvalid ? 'is-invalid' : ''}`}>
                                     <i className="pi pi-user" aria-hidden="true" />
                                     <InputText
-                                        id="username"
-                                        name="username"
-                                        value={formik.values.username}
-                                        onChange={(e) => formik.setFieldValue('username', e.target.value)}
+                                        id="nama_pengguna"
+                                        name="nama_pengguna"
+                                        value={formik.values.nama_pengguna}
+                                        onChange={(e) => formik.setFieldValue('nama_pengguna', e.target.value)}
                                         onBlur={formik.handleBlur}
-                                        placeholder="masukkan username"
+                                        placeholder="masukkan nama_pengguna"
                                         disabled={state.load}
-                                        aria-invalid={usernameInvalid}
-                                        aria-describedby={usernameInvalid ? 'username-error' : undefined}
+                                        aria-invalid={nama_penggunaInvalid}
+                                        aria-describedby={nama_penggunaInvalid ? 'nama_pengguna-error' : undefined}
                                     />
                                 </span>
-                                {usernameInvalid && (
-                                    <small id="username-error" className="field-error">
-                                        {formik.errors.username}
+                                {nama_penggunaInvalid && (
+                                    <small id="nama_pengguna-error" className="field-error">
+                                        {formik.errors.nama_pengguna}
                                     </small>
                                 )}
                             </div>
 
                             <div className="field-group">
                                 <div className="label-row">
-                                    <label htmlFor="password">Password</label>
-                                    <button type="button" className="link-button" onClick={() => handleUnavailableAction('Fitur lupa password belum tersedia di sistem ini.')}>
-                                        Lupa password?
+                                    <label htmlFor="kata_sandi">kata_sandi</label>
+                                    <button type="button" className="link-button" onClick={() => handleUnavailableAction('Fitur lupa kata_sandi belum tersedia di sistem ini.')}>
+                                        Lupa kata_sandi?
                                     </button>
                                 </div>
-                                <span className={`input-shell password-shell ${passwordInvalid ? 'is-invalid' : ''}`}>
+                                <span className={`input-shell kata_sandi-shell ${kata_sandiInvalid ? 'is-invalid' : ''}`}>
                                     <i className="pi pi-lock" aria-hidden="true" />
                                     <Password
-                                        inputId="password"
-                                        name="password"
-                                        value={formik.values.password}
-                                        onChange={(e) => formik.setFieldValue('password', e.target.value)}
+                                        inputId="kata_sandi"
+                                        name="kata_sandi"
+                                        value={formik.values.kata_sandi}
+                                        onChange={(e) => formik.setFieldValue('kata_sandi', e.target.value)}
                                         onBlur={formik.handleBlur}
                                         toggleMask
                                         feedback={false}
-                                        placeholder="masukkan password"
+                                        placeholder="masukkan kata_sandi"
                                         disabled={state.load}
-                                        inputClassName="password-input"
-                                        aria-invalid={passwordInvalid}
-                                        aria-describedby={passwordInvalid ? 'password-error' : undefined}
+                                        inputClassName="kata_sandi-input"
+                                        aria-invalid={kata_sandiInvalid}
+                                        aria-describedby={kata_sandiInvalid ? 'kata_sandi-error' : undefined}
                                     />
                                 </span>
-                                {passwordInvalid && (
-                                    <small id="password-error" className="field-error">
-                                        {formik.errors.password}
+                                {kata_sandiInvalid && (
+                                    <small id="kata_sandi-error" className="field-error">
+                                        {formik.errors.kata_sandi}
                                     </small>
                                 )}
                             </div>
@@ -556,14 +556,14 @@ const LoginPage = () => {
                 }
 
                 .input-shell .p-inputtext,
-                .input-shell .p-password,
+                .input-shell .p-kata_sandi,
                 .input-shell .p-inputwrapper,
                 .input-shell .p-icon-field,
-                .input-shell .password-input {
+                .input-shell .kata_sandi-input {
                     width: 100%;
                 }
 
-                .input-shell .p-password,
+                .input-shell .p-kata_sandi,
                 .input-shell .p-inputwrapper,
                 .input-shell .p-icon-field {
                     display: flex;
@@ -576,7 +576,7 @@ const LoginPage = () => {
                 }
 
                 .input-shell .p-inputtext,
-                .input-shell .password-input {
+                .input-shell .kata_sandi-input {
                     height: 3.1rem;
                     padding: 0;
                     color: var(--login-text);
@@ -590,23 +590,23 @@ const LoginPage = () => {
 
                 .input-shell .p-inputtext:enabled:focus,
                 .input-shell .p-inputtext:enabled:hover,
-                .input-shell .password-input:enabled:focus {
+                .input-shell .kata_sandi-input:enabled:focus {
                     background: transparent !important;
                     box-shadow: none !important;
                     border: 0 !important;
                 }
 
                 .input-shell .p-inputtext::placeholder,
-                .input-shell .password-input::placeholder {
+                .input-shell .kata_sandi-input::placeholder {
                     color: #8f93a3;
                     font-weight: 500;
                 }
 
-                .password-shell .p-icon-field {
+                .kata_sandi-shell .p-icon-field {
                     width: 100%;
                 }
 
-                .password-shell .p-password-input {
+                .kata_sandi-shell .p-kata_sandi-input {
                     padding-right: 2.3rem !important;
                 }
 

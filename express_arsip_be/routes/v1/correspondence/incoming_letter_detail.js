@@ -30,7 +30,11 @@ const incomingLetterDetail = async (req, res) => {
     }
 
     const oLetter = await DB("trx_incoming_letters as til")
-      .leftJoin("mst_letter_types as mlt", "til.letter_type_id", "mlt.letter_type_id")
+      .leftJoin(
+        "mst_letter_types as mlt",
+        "til.letter_type_id",
+        "mlt.letter_type_id",
+      )
       .select(
         "til.incoming_letter_id",
         "til.agenda_number",
@@ -40,7 +44,7 @@ const incomingLetterDetail = async (req, res) => {
         "til.sender_name",
         "til.sender_institution",
         "til.subject",
-        "til.attachment_description",
+        "til.attachment_deskripsi",
         "til.letter_type_id",
         "mlt.letter_type_name",
         "til.document_type_id",
@@ -50,7 +54,7 @@ const incomingLetterDetail = async (req, res) => {
         "til.created_by",
         "til.updated_by",
         "til.created_at",
-        "til.updated_at"
+        "til.updated_at",
       )
       .where("til.incoming_letter_id", oPayload.incoming_letter_id)
       .first();
@@ -73,7 +77,7 @@ const incomingLetterDetail = async (req, res) => {
         "uploaded_by",
         "status",
         "created_at",
-        "updated_at"
+        "updated_at",
       )
       .where("incoming_letter_id", oPayload.incoming_letter_id)
       .where("status", "active")
@@ -83,14 +87,14 @@ const incomingLetterDetail = async (req, res) => {
       .leftJoin(
         "mst_disposition_instructions as mdi",
         "tld.disposition_instruction_id",
-        "mdi.disposition_instruction_id"
+        "mdi.disposition_instruction_id",
       )
       .select(
-        "tld.disposition_id",
+        "tld.disid_jabatan",
         "tld.incoming_letter_id",
-        "tld.parent_disposition_id",
-        "tld.from_user_id",
-        "tld.to_user_id",
+        "tld.parent_disid_jabatan",
+        "tld.from_nama_pengguna",
+        "tld.to_nama_pengguna",
         "tld.disposition_instruction_id",
         "mdi.instruction_name",
         "tld.instruction",
@@ -103,7 +107,7 @@ const incomingLetterDetail = async (req, res) => {
         "tld.created_by",
         "tld.updated_by",
         "tld.created_at",
-        "tld.updated_at"
+        "tld.updated_at",
       )
       .where("tld.incoming_letter_id", oPayload.incoming_letter_id)
       .orderBy("tld.created_at", "desc");
@@ -112,17 +116,17 @@ const incomingLetterDetail = async (req, res) => {
       .select(
         "incoming_letter_tracking_id",
         "incoming_letter_id",
-        "disposition_id",
+        "disid_jabatan",
         "action_name",
-        "from_user_id",
-        "to_user_id",
+        "from_nama_pengguna",
+        "to_nama_pengguna",
         "previous_status",
         "current_status",
         "notes",
         "processed_at",
         "created_by",
         "created_at",
-        "updated_at"
+        "updated_at",
       )
       .where("incoming_letter_id", oPayload.incoming_letter_id)
       .orderBy("processed_at", "desc");

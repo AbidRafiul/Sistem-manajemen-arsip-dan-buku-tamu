@@ -39,8 +39,8 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        username: Joi.string().required().label("Username"),
-        password: Joi.string().required().label("Password"),
+        nama_pengguna: Joi.string().required().label("nama_pengguna"),
+        kata_sandi: Joi.string().required().label("kata_sandi"),
       },
       {
         "string.base": "{#label} harus berupa string",
@@ -62,22 +62,22 @@ router.post("/", async (req, res) => {
         func: "login",
         request: oPayload,
         response: oResult,
-        user: oPayload?.username || "",
+        user: oPayload?.nama_pengguna || "",
       });
 
       return res.status(422).json(oResult);
     }
 
-    // 1. CARI USER DI TABEL BARU (mst_users)
-    const oUser = await DB("mst_users")
-      .where("username", oPayload.username)
+    // 1. CARI USER DI TABEL BARU (mst_pengguna)
+    const oUser = await DB("mst_pengguna")
+      .where("nama_pengguna", oPayload.nama_pengguna)
       .select(
-        "user_id", // Pengganti UniqueId
-        "password",
-        "username",
-        "fullname",
+        "id_pengguna",
+        "nama_pengguna", // Pengganti UniqueId
+        "kata_sandi",
+        "nama_lengkap",
         "status",
-        "telp",
+        "telepon",
         "created_at",
       )
       .first();
@@ -89,14 +89,14 @@ router.post("/", async (req, res) => {
       );
       const secret = process.env.USER_SECRET;
 
-      // 2. LOGIKA HASHING BARU (UniqueId diganti Username)
-      const cPassword =
-        process.env.USER_KEY + oUser.username + oPayload.password;
+      // 2. LOGIKA HASHING BARU (UniqueId diganti nama_pengguna)
+      const ckata_sandi =
+        process.env.USER_KEY + oUser.nama_pengguna + oPayload.kata_sandi;
 
-      if (!hashEquals(hmac(cPassword, secret, "sha512"), oUser.password)) {
+      if (!hashEquals(hmac(ckata_sandi, secret, "sha512"), oUser.kata_sandi)) {
         return res.status(400).json({
           status: status.GAGAL,
-          message: "Password salah",
+          message: "kata_sandi salah",
           datetime: formatDateSystem(),
         });
       }
@@ -110,10 +110,10 @@ router.post("/", async (req, res) => {
         });
       }
 
-      // 4. AMBIL MENU DARI TABEL BARU (Pakai UserId)
-      const oNavigation = await DB("user_navigation")
+      // 4. AMBIL MENU DARI TABEL BARU (Pakai NamaPengguna)
+      const oNavigation = await DB("navigasi_pengguna")
         .select("menu")
-        .where("user_id", oUser.user_id)
+        .where("id_pengguna", oUser.id_pengguna)
         .first();
 
       if (!oNavigation || !oNavigation.menu) {
@@ -124,28 +124,32 @@ router.post("/", async (req, res) => {
         });
       }
 
-      // 5. AMBIL JABATAN DARI TABEL ROLE (Pakai UserId)
-      const oUserRole = await DB("mst_user_roles")
-        .leftJoin("mst_roles", "mst_user_roles.role_id", "mst_roles.role_id")
-        .select(
-          "mst_user_roles.role_id",
-          "mst_roles.role_code",
-          "mst_roles.role_name",
+      // 5. AMBIL JABATAN DARI TABEL peran (Pakai NamaPengguna)
+      const oUserperan = await DB("mst_pengguna_peran")
+        .leftJoin(
+          "mst_peran",
+          "mst_pengguna_peran.id_peran",
+          "mst_peran.id_peran",
         )
-        .where("mst_user_roles.user_id", oUser.user_id)
+        .select(
+          "mst_pengguna_peran.id_peran",
+          "mst_peran.kode_peran",
+          "mst_peran.nama_peran",
+        )
+        .where("mst_pengguna_peran.id_pengguna", oUser.id_pengguna)
         .first();
 
-      const roleId = oUserRole ? oUserRole.role_id : null;
+      const peranId = oUserperan ? oUserperan.id_peran : null;
 
       // 6. BUNGKUS PAYLOAD JWT BARU
       const credential = {
-        UserId: oUser.user_id, // HURUF BESAR: Biar NextAuth & AppMenu.tsx lo mulus baca UserId
-        username: oUser.username,
-        fullname: oUser.fullname,
-        name: oUser.fullname, // UBAH fullname JADI name: NextAuth butuh 'name' buat profile
-        roleId: roleId,
-        role: oUserRole?.role_name || null,
-        roleCode: oUserRole?.role_code || null,
+        IdPengguna: oUser.id_pengguna, // HURUF BESAR: Biar NextAuth & AppMenu.tsx lo mulus baca NamaPengguna
+        nama_pengguna: oUser.nama_pengguna,
+        nama_lengkap: oUser.nama_lengkap,
+        name: oUser.nama_lengkap, // UBAH nama_lengkap JADI name: NextAuth butuh 'name' buat profile
+        peranId: peranId,
+        peran: oUserperan?.nama_peran || null,
+        peranCode: oUserperan?.kode_peran || null,
       };
 
       const secretKey = new TextEncoder().encode(process.env.USER_KEY);
@@ -154,22 +158,22 @@ router.post("/", async (req, res) => {
         .setProtectedHeader({ alg: "HS512" })
         .sign(secretKey);
 
-      recordAuditTrail(oUser.Username, String(roleId), "LOGIN", req);
+      recordAuditTrail(oUser.nama_pengguna, String(peranId), "LOGIN", req);
 
-      // 7. UBAHAN CUMA DI RETURN INI 
+      // 7. UBAHAN CUMA DI RETURN INI
       // Ditambahin key `data` isinya objek `credential`, biar Frontend & NextAuth gampang bacanya
       return res.status(200).json({
         status: status.SUKSES,
         message: "Login Berhasil",
         datetime: formatDateSystem(),
         credential: jwtCredential,
-        data: credential // <--- INI KUNCI UTAMANYA!
+        data: credential, // <--- INI KUNCI UTAMANYA!
       });
     }
 
     return res.status(400).json({
       status: status.GAGAL,
-      message: "Username tidak ditemukan",
+      message: "nama_pengguna tidak ditemukan",
       datetime: formatDateSystem(),
     });
   } catch (error) {
@@ -184,7 +188,7 @@ router.post("/", async (req, res) => {
       func: "login",
       request: oPayload,
       response: oResult,
-      user: oPayload?.username || "",
+      user: oPayload?.nama_pengguna || "",
     });
 
     return res.status(500).json(oResult);

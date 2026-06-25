@@ -1,15 +1,22 @@
 import express from "express";
 import Joi from "joi";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
-import { Logging, validatePayload } from "../../../components/tools/servertool.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
+import {
+  Logging,
+  validatePayload,
+} from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
 router.put("/:DocumentCategoryId", async (req, res) => {
   const { body: oPayload } = req;
   const cDocumentCategoryId = req.params.DocumentCategoryId;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
@@ -22,16 +29,28 @@ router.put("/:DocumentCategoryId", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        archive_classification_id: Joi.number().required().label("ID Klasifikasi Arsip"),
-        document_category_code: Joi.string().max(45).required().label("Kode Kategori"),
-        document_category_name: Joi.string().max(45).required().label("Nama Kategori"),
-        description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
+        archive_classification_id: Joi.number()
+          .required()
+          .label("ID Klasifikasi Arsip"),
+        document_category_code: Joi.string()
+          .max(45)
+          .required()
+          .label("Kode Kategori"),
+        document_category_name: Joi.string()
+          .max(45)
+          .required()
+          .label("Nama Kategori"),
+        deskripsi: Joi.string()
+          .max(45)
+          .optional()
+          .allow(null, "")
+          .label("Deskripsi"),
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
         "any.required": "{#label} wajib diisi",
       },
-      oPayload
+      oPayload,
     );
 
     if (cValidation) {
@@ -46,7 +65,7 @@ router.put("/:DocumentCategoryId", async (req, res) => {
         func: "update",
         request: oPayload,
         response: oResult,
-        user: username,
+        user: nama_pengguna,
       });
 
       return res.status(422).json(oResult);
@@ -58,7 +77,7 @@ router.put("/:DocumentCategoryId", async (req, res) => {
         archive_classification_id: oPayload.archive_classification_id,
         document_category_code: oPayload.document_category_code,
         document_category_name: oPayload.document_category_name,
-        description: oPayload.description || null,
+        deskripsi: oPayload.deskripsi || null,
         updated_at: new Date(),
       });
 
@@ -75,7 +94,6 @@ router.put("/:DocumentCategoryId", async (req, res) => {
       message: "Data berhasil diupdate",
       datetime: formatDateSystem(),
     });
-
   } catch (error) {
     const oResult = {
       status: status.BAD_REQUEST,
@@ -88,7 +106,7 @@ router.put("/:DocumentCategoryId", async (req, res) => {
       func: "update",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);
