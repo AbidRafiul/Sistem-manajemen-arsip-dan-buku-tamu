@@ -126,7 +126,10 @@ const ensureCorrespondenceMenu = (menu: AppMenuItem[]) => {
             });
     };
 
-    const correspondence = menu.find((item) => item.label?.toLowerCase() === 'correspondence');
+    const correspondence = menu.find((item) => {
+        const label = item.label?.toLowerCase();
+        return label === 'correspondence' || label === 'korespondensi';
+    });
 
     if (correspondence) {
         correspondence.items = [...cleanMailInItems(correspondence.items || []), mailInMenu];
@@ -136,7 +139,7 @@ const ensureCorrespondenceMenu = (menu: AppMenuItem[]) => {
     return [
         ...menu,
         {
-            label: 'Correspondence',
+            label: 'Korespondensi',
             icon: 'pi pi-envelope',
             items: [mailInMenu]
         }
@@ -368,7 +371,7 @@ const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
                                 filteredMenu: filtered
                             }));
                         }}
-                        placeholder="Search..."
+                        placeholder="Cari..."
                     />
                 </span>
             </div>

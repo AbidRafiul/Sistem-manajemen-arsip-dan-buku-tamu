@@ -1,5 +1,7 @@
 import React from 'react';
 import { Skeleton } from 'primereact/skeleton';
+import { Card } from 'primereact/card';
+import { Timeline } from 'primereact/timeline';
 
 interface AuditTimelineProps {
     logs: any[];
@@ -9,35 +11,45 @@ interface AuditTimelineProps {
 export default function AuditTimeline({ logs, isLoading }: AuditTimelineProps) {
     if (isLoading) {
         return (
-            <div className="dashboard-panel-card">
-                <Skeleton width="100%" height="430px" borderRadius="24px" />
-            </div>
+            <Card className="shadow-1 border-round-2xl border-none h-full">
+                <Skeleton width="100%" height="400px" borderRadius="16px" />
+            </Card>
         );
     }
 
-    return (
-        <article className="dashboard-panel-card dashboard-audit-panel">
-            <div className="dashboard-panel-header">
-                <div>
-                    <h2>Audit Trail</h2>
-                    <p>Aktivitas terbaru yang butuh visibilitas.</p>
-                </div>
-            </div>
+    const customizedMarker = (item: any) => {
+        return (
+            <span className="flex w-2rem h-2rem align-items-center justify-content-center text-white border-circle z-1 shadow-1" style={{ backgroundColor: item.color }}>
+                <i className="pi pi-check text-xs"></i>
+            </span>
+        );
+    };
 
-            <div className="dashboard-audit-list">
-                {logs.map((oLog) => (
-                    <div className="dashboard-audit-item" key={oLog.id}>
-                        <span className="dashboard-audit-marker" style={{ backgroundColor: oLog.color }}>
-                            <i className="pi pi-check"></i>
-                        </span>
-                        <div>
-                            <strong>{oLog.action}</strong>
-                            <p>{oLog.user}</p>
-                        </div>
-                        <em>{oLog.time}</em>
-                    </div>
-                ))}
+    const customizedContent = (item: any) => {
+        return (
+            <div className="mb-4">
+                <div className="font-bold text-900 text-sm mb-1">{item.action}</div>
+                <div className="text-color-secondary text-sm">{item.user}</div>
+                <div className="text-color-secondary text-xs mt-2 font-medium bg-gray-50 inline-block px-2 py-1 border-round border-1 border-200">{item.time}</div>
             </div>
-        </article>
+        );
+    };
+
+    return (
+        <Card className="shadow-1 border-round-2xl border-none h-full" pt={{ body: { className: 'p-4' } }}>
+            <div className="mb-4">
+                <h2 className="m-0 text-900 font-bold text-xl mb-1" style={{ letterSpacing: '-0.02em' }}>Log Audit</h2>
+                <p className="m-0 text-color-secondary text-sm font-medium">Aktivitas terbaru yang butuh visibilitas.</p>
+            </div>
+            
+            <Timeline 
+                value={logs} 
+                align="left"
+                marker={customizedMarker} 
+                content={customizedContent} 
+                className="w-full" 
+                pt={{ event: { className: 'min-h-0' } }} 
+            />
+        </Card>
     );
 }

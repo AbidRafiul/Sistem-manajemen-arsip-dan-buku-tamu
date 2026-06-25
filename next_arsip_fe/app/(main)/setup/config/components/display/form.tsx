@@ -70,7 +70,7 @@ const Form = ({
 
             showSuccess(
                 toast,
-                res.data?.message || "Data saved successfully"
+                res.data?.message || "Konfigurasi berhasil disimpan"
             );
 
             formik.resetForm();
@@ -88,7 +88,7 @@ const Form = ({
             const e = error?.response?.data || error;
             showError(
                 toast,
-                e?.message || "An unexpected error occurred"
+                e?.message || "Terjadi kesalahan yang tidak terduga"
             );
         } finally {
             setState((p) => ({ ...p, load: false, submittedData: null }));
@@ -113,7 +113,7 @@ const Form = ({
         <>
             <Button
                 type="submit"
-                label="Save"
+                label="Simpan"
                 icon="pi pi-check"
                 className="p-button-text"
                 onClick={() => formik.handleSubmit()}

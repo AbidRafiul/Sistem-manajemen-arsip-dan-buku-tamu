@@ -1,13 +1,17 @@
 'use client';
 
-import { Toast } from 'primereact/toast';
 import React, { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Toast } from 'primereact/toast';
+import { Card } from 'primereact/card';
+import { Button } from 'primereact/button';
 import postData from '@/lib/axios/postData';
 import { apiEndpointMonitoring } from './components/endpoints';
 import { DashboardStats } from './components/interfaces';
 import ChartDisplay from './components/display/chart';
 
 const MonitoringPage: React.FC = () => {
+    const router = useRouter();
     const toast = useRef<Toast>(null);
     const [load, setLoad] = useState<boolean>(false);
     const [stats, setStats] = useState<DashboardStats>({
@@ -49,52 +53,110 @@ const MonitoringPage: React.FC = () => {
     }, []);
 
     return (
-        <div className="p-4 bg-slate-50 min-h-screen">
+        <div className="p-4 surface-ground min-h-screen">
             <Toast ref={toast} position="top-right" />
 
-            <div className="flex justify-content-between align-items-center mb-4">
-                <h4 className="m-0 font-bold text-slate-800">Dashboard Monitoring Buku Tamu</h4>
-                <button onClick={fetchMonitoringData} className="p-button p-component p-button-outlined p-button-sm flex gap-2 align-items-center bg-white px-3 py-2 border-round border-300 hover:surface-100" disabled={load}>
-                    <i className={`pi pi-refresh ${load ? 'pi-spin' : ''}`}></i>
-                    <span>Refresh</span>
-                </button>
+            {/* Header Section */}
+            <div className="flex flex-column lg:flex-row lg:align-items-center justify-content-between gap-3 mb-4">
+                <div>
+                    <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: '0.1em' }}>
+                        Real-time tracking
+                    </span>
+                    <h1 className="m-0 text-900 font-extrabold text-3xl mb-2 mt-1" style={{ letterSpacing: '-0.02em' }}>
+                        Monitoring Buku Tamu
+                    </h1>
+                    <p className="m-0 text-color-secondary font-medium text-sm">
+                        Pantau statistik kunjungan harian, tamu aktif, dan tren mingguan secara real-time.
+                    </p>
+                </div>
+                <div className="flex flex-wrap gap-2 flex-shrink-0">
+                    <Button
+                        type="button"
+                        icon="pi pi-plus"
+                        label="Registrasi Tamu Baru"
+                        className="py-2 px-3 border-round-lg font-semibold text-sm text-white"
+                        style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)', border: 'none' }}
+                        onClick={() => router.push('/buku_tamu/registrasi')}
+                    />
+                    <Button
+                        type="button"
+                        icon="pi pi-sign-out"
+                        label="Checkout Tamu"
+                        severity="warning"
+                        outlined
+                        className="py-2 px-3 border-round-lg font-semibold text-sm bg-white"
+                        onClick={() => router.push('/buku_tamu/checkout')}
+                    />
+                    <Button
+                        type="button"
+                        icon={`pi pi-refresh ${load ? 'pi-spin' : ''}`}
+                        label="Refresh"
+                        outlined
+                        severity="secondary"
+                        className="py-2 px-3 border-round-lg font-semibold text-sm bg-white"
+                        onClick={fetchMonitoringData}
+                        loading={load}
+                    />
+                </div>
             </div>
 
+            {/* Stats Metrics Cards */}
             <div className="grid">
                 <div className="col-12 md:col-4">
-                    <div className="card shadow-2 border-round p-4 bg-white flex align-items-center justify-content-between">
-                        <div>
-                            <span className="block text-500 font-medium mb-3">Total Tamu Hari Ini</span>
-                            <div className="text-900 font-bold text-3xl">{stats.total_tamu_hari_ini}</div>
+                    <Card className="border-none shadow-1 border-round-xl p-1 bg-white h-full">
+                        <div className="flex align-items-center gap-3">
+                            <div
+                                className="flex align-items-center justify-content-center border-round-xl"
+                                style={{ width: '3.5rem', height: '3.5rem', background: '#EFF6FF', color: 'var(--primary-color)', flexShrink: 0 }}
+                            >
+                                <i className="pi pi-users text-2xl" />
+                            </div>
+                            <div>
+                                <span className="text-xs font-bold text-color-secondary uppercase tracking-wider" style={{ letterSpacing: '0.05em' }}>
+                                    Total Tamu Hari Ini
+                                </span>
+                                <div className="text-3xl font-extrabold text-900 mt-1">{stats.total_tamu_hari_ini}</div>
+                            </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-blue-100 border-round" style={{ width: '3rem', height: '3rem' }}>
-                            <i className="pi pi-users text-blue-500 text-2xl"></i>
-                        </div>
-                    </div>
+                    </Card>
                 </div>
 
                 <div className="col-12 md:col-4">
-                    <div className="card shadow-2 border-round p-4 bg-white flex align-items-center justify-content-between">
-                        <div>
-                            <span className="block text-500 font-medium mb-3">Sedang Berkunjung</span>
-                            <div className="text-900 font-bold text-3xl text-orange-500">{stats.sedang_berkunjung}</div>
+                    <Card className="border-none shadow-1 border-round-xl p-1 bg-white h-full">
+                        <div className="flex align-items-center gap-3">
+                            <div
+                                className="flex align-items-center justify-content-center border-round-xl"
+                                style={{ width: '3.5rem', height: '3.5rem', background: '#FFFBEB', color: '#D97706', flexShrink: 0 }}
+                            >
+                                <i className="pi pi-id-card text-2xl" />
+                            </div>
+                            <div>
+                                <span className="text-xs font-bold text-color-secondary uppercase tracking-wider" style={{ letterSpacing: '0.05em' }}>
+                                    Sedang Berkunjung
+                                </span>
+                                <div className="text-3xl font-extrabold text-900 mt-1">{stats.sedang_berkunjung}</div>
+                            </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-orange-100 border-round" style={{ width: '3rem', height: '3rem' }}>
-                            <i className="pi pi-id-card text-orange-500 text-2xl"></i>
-                        </div>
-                    </div>
+                    </Card>
                 </div>
 
                 <div className="col-12 md:col-4">
-                    <div className="card shadow-2 border-round p-4 bg-white flex align-items-center justify-content-between">
-                        <div>
-                            <span className="block text-500 font-medium mb-3">Selesai Kunjungan</span>
-                            <div className="text-900 font-bold text-3xl text-green-500">{stats.selesai_kunjungan}</div>
+                    <Card className="border-none shadow-1 border-round-xl p-1 bg-white h-full">
+                        <div className="flex align-items-center gap-3">
+                            <div
+                                className="flex align-items-center justify-content-center border-round-xl"
+                                style={{ width: '3.5rem', height: '3.5rem', background: '#F0FDF4', color: '#16A34A', flexShrink: 0 }}
+                            >
+                                <i className="pi pi-check-circle text-2xl" />
+                            </div>
+                            <div>
+                                <span className="text-xs font-bold text-color-secondary uppercase tracking-wider" style={{ letterSpacing: '0.05em' }}>
+                                    Selesai Kunjungan
+                                </span>
+                                <div className="text-3xl font-extrabold text-900 mt-1">{stats.selesai_kunjungan}</div>
+                            </div>
                         </div>
-                        <div className="flex align-items-center justify-content-center bg-green-100 border-round" style={{ width: '3rem', height: '3rem' }}>
-                            <i className="pi pi-check-circle text-green-500 text-2xl"></i>
-                        </div>
-                    </div>
+                    </Card>
                 </div>
             </div>
 

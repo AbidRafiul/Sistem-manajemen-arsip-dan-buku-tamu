@@ -10,8 +10,7 @@ import { SessionProvider } from 'next-auth/react';
 import NextTopLoader from 'nextjs-toploader';
 import { RootLayoutProps } from '@/types/layout';
 import { Metadata, Viewport } from 'next';
-import './tailwind.css';
-import './global.css';
+
 
 export const viewport: Viewport = {
     initialScale: 1,
@@ -22,14 +21,14 @@ export const metadata: Metadata = {
     title: 'Standart',
     description: 'Dashboard Standart',
     robots: { index: false, follow: false },
-    // openGraph: {
-    //     type: 'website',
-    //     title: 'PrimeReact SAKAI-REACT',
-    //     url: 'https://sakai.primereact.org/',
-    //     description: 'The ultimate collection of design-agnostic, flexible and accessible React UI Components.',
-    //     images: ['https://www.primefaces.org/static/social/sakai-react.png'],
-    //     ttl: 604800
-    // },
+    openGraph: {
+        type: 'website',
+        title: 'PrimeReact SAKAI-REACT',
+        url: 'https://sakai.primereact.org/',
+        description: 'The ultimate collection of design-agnostic, flexible and accessible React UI Components.',
+        images: ['https://www.primefaces.org/static/social/sakai-react.png'],
+        ttl: 604800
+    },
     icons: {
         icon: '/favicon.ico'
     },
@@ -45,8 +44,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
                     href={`/themes/lara-light-blue/theme.css`}
                     rel="stylesheet"
                 />
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
             </head>
-            <body suppressHydrationWarning>
+            <body suppressHydrationWarning style={{ fontFamily: "'Inter', sans-serif" }}>
                 <SessionProvider>
                     <PrimeReactProvider>
                         <LayoutProvider>

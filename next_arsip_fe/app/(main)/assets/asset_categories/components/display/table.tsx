@@ -23,7 +23,7 @@ const Table = ({
 
     const headerTemplate = (
         <div className="flex flex-wrap align-items-center justify-content-between gap-2">
-            <span className="text-xl font-bold">Table Data</span>
+            <span className="text-xl font-bold">Data Tabel</span>
 
             <div className="flex gap-2">
                 <span className="p-input-icon-left">
@@ -36,7 +36,7 @@ const Table = ({
                             _filters['global'].value = value;
                             setState((p) => ({ ...p, searchVal: value, filters: _filters }));
                         }}
-                        placeholder="Search users..."
+                        placeholder="Cari kategori..."
                     />
                 </span>
             </div>
@@ -58,7 +58,7 @@ const Table = ({
 
                     setState(p => ({ ...p, add: false, delete: false, edit: true }))
                 }}
-                tooltip="Edit"
+                tooltip="Ubah"
             />
             <Button
                 icon="pi pi-trash"
@@ -67,7 +67,7 @@ const Table = ({
                 severity="danger"
                 className="p-button-sm"
                 onClick={() => setState(p => ({ ...p, delete: true, selectedUsers: [rowData] }))}
-                tooltip="Delete"
+                tooltip="Hapus"
             />
         </div>
     );
@@ -81,14 +81,14 @@ const Table = ({
         <div className="card">
             <div className="flex justify-content-between items-start mb-4">
                 <div>
-                    <h3 className="text-2xl font-semibold">Asset Categories Management</h3>
+                    <h3 className="text-2xl font-semibold">Manajemen Kategori Aset</h3>
                 </div>
             </div>
 
             <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
                 <Button
                     size="small"
-                    label="New"
+                    label="Baru"
                     icon="pi pi-plus"
                     outlined
                     severity="success"
@@ -96,10 +96,9 @@ const Table = ({
                         setState(p => ({ ...p, selectedUser: [], add: true }))
                     }}
                 />
-                <Divider layout="vertical" />
                 <Button
                     size="small"
-                    label="Import"
+                    label="Impor"
                     icon="pi pi-file-import"
                     outlined
                 // onClick={() => fileInputRef.current?.click()}
@@ -107,7 +106,7 @@ const Table = ({
 
                 <Button
                     size="small"
-                    label="Print"
+                    label="Cetak"
                     icon="pi pi-print"
                     outlined
                 // onClick={() => setAdjustDialog(true)}
@@ -115,7 +114,7 @@ const Table = ({
                 <Divider layout="vertical" />
                 <Button
                     size="small"
-                    label={`Delete${state.selectedUsers.length > 0 ? ` (${state.selectedUsers.length})` : ''}`}
+                    label={`Hapus${state.selectedUsers.length > 0 ? ` (${state.selectedUsers.length})` : ''}`}
                     icon="pi pi-trash"
                     severity="danger"
                     outlined
@@ -132,7 +131,7 @@ const Table = ({
                 <Divider layout="vertical" />
                 <Button
                     size="small"
-                    label="Refresh"
+                    label="Muat Ulang"
                     icon="pi pi-refresh"
                     outlined
                     onClick={() => getData(apiEndpointGet)}
@@ -157,10 +156,10 @@ const Table = ({
                 currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data"
             >
                 <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
-                <Column field="Name" header="Category Name"></Column>
+                <Column field="Name" header="Nama Kategori"></Column>
                 <Column
                     field="Description"
-                    header="Description"
+                    header="Deskripsi"
                     body={(rowData: TableData) => (
                         <>
                             <Tooltip target={`.description-tooltip-${rowData.Code}`} position="bottom" />
@@ -180,8 +179,8 @@ const Table = ({
                         </>
                     )}
                 />
-                <Column field="CreatedAt" sortable body={rowData => formatDateCalendar(rowData.CreatedAt)} header="Datetime"></Column>
-                <Column headerStyle={{ textAlign: 'center' }} header="Action" body={actionBodyTemplate}></Column>
+                <Column field="CreatedAt" sortable body={rowData => formatDateCalendar(rowData.CreatedAt)} header="Tanggal & Waktu"></Column>
+                <Column headerStyle={{ textAlign: 'center' }} header="Aksi" body={actionBodyTemplate}></Column>
             </DataTable>
         </div>
 
