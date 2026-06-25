@@ -49,9 +49,6 @@ const letterDispositionData = async (req, res) => {
         "tld.instruksi_disposisi_id",
         "mdi.instruksi_disposisi_id"
       )
-      .leftJoin("mst_users as from_user", "tld.from_user_id", "from_user.user_id")
-      .leftJoin("mst_users as to_user", "tld.to_user_id", "to_user.user_id")
-      .leftJoin("mst_users as processed_user", "tld.updated_by", "processed_user.user_id")
       .select(
         "tld.disposisi_id",
         "tld.surat_masuk_id",
@@ -81,7 +78,7 @@ const letterDispositionData = async (req, res) => {
         "tld.created_by",
         "tld.updated_by",
         "tld.created_at",
-        "tld.updated_at"
+        "tld.updated_at",
       )
       .orderBy("tld.created_at", "desc");
 

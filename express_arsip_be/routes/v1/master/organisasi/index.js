@@ -57,4 +57,15 @@ router.use("/work-unit", workUnitCreate);
 router.use("/work-unit", workUnitUpdate);
 router.use("/work-unit", workUnitDelete);
 
+// 5. peran
+import peranGet from "./roles/roles_get.js";
+import peranCreate from "./roles/roles_create.js";
+import peranUpdate from "./roles/roles_update.js";
+import peranDelete from "./roles/roles_delete.js";
+
+router.use("/roles", peranGet);
+router.use("/roles", peranCreate);
+router.use("/roles", peranUpdate);
+router.use("/roles", peranDelete);
+
 export default router;

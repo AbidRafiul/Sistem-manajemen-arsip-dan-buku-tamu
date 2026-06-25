@@ -32,7 +32,7 @@ const incomingLetterData = async (req, res) => {
         "til.created_by",
         "til.updated_by",
         "til.created_at",
-        "til.updated_at"
+        "til.updated_at",
       )
       .orderBy("til.created_at", "desc");
 
@@ -71,7 +71,7 @@ const incomingLetterData = async (req, res) => {
       func: cFunc,
       request: JSON.stringify(req.body || {}),
       response: error.message,
-      user: req?.user?.UserId || "",
+      user: req?.user?.NamaPengguna || "",
     });
 
     return res.status(500).json({

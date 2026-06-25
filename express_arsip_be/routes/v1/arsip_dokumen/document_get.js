@@ -41,32 +41,32 @@ const getDocuments = async (req, res) => {
         "cl.confidentiality_level as confidentiality_level",
         "rs.retention_schedule_id as retention_schedule_id",
         "rs.retention_name as retention_name",
-        "rs.retention_years as retention_years"
+        "rs.retention_years as retention_years",
       )
       .leftJoin(
         "mst_document_type as dt",
         "d.document_type_id",
-        "dt.document_type_id"
+        "dt.document_type_id",
       )
       .leftJoin(
         "mst_document_categories as dc",
         "d.document_category_id",
-        "dc.document_category_id"
+        "dc.document_category_id",
       )
       .leftJoin(
         "mst_archive_classifications as ac",
         "d.archive_classification_id",
-        "ac.archive_classification_id"
+        "ac.archive_classification_id",
       )
       .leftJoin(
         "mst_confidentiality_levels as cl",
         "d.confidentiality_level_id",
-        "cl.confidentiality_level_id"
+        "cl.confidentiality_level_id",
       )
       .leftJoin(
         "mst_retention_schedule as rs",
         "d.retention_schedule_id",
-        "rs.retention_schedule_id"
+        "rs.retention_schedule_id",
       );
 
     // Filter: status (default active)
@@ -151,7 +151,7 @@ const getDocuments = async (req, res) => {
       func: "getDocuments",
       request: req.query,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

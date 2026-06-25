@@ -1,34 +1,68 @@
 import express from "express";
 import Joi from "joi";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
-import { Logging, validatePayload } from "../../../components/tools/servertool.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
+import {
+  Logging,
+  validatePayload,
+} from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
 router.put("/:ArchiveClassificationId", async (req, res) => {
   const { body: oPayload } = req;
   const cArchiveClassificationId = req.params.ArchiveClassificationId;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
-      return res.status(400).json({ status: status.BAD_REQUEST, message: "Invalid request body", datetime: formatDateSystem() });
+      return res.status(400).json({
+        status: status.BAD_REQUEST,
+        message: "Invalid request body",
+        datetime: formatDateSystem(),
+      });
     }
 
     const cValidation = await validatePayload(
       {
-        classification_code: Joi.string().max(45).required().label("Kode Klasifikasi"),
-        classification_name: Joi.string().max(45).required().label("Nama Klasifikasi"),
-        description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
+        classification_code: Joi.string()
+          .max(45)
+          .required()
+          .label("Kode Klasifikasi"),
+        classification_name: Joi.string()
+          .max(45)
+          .required()
+          .label("Nama Klasifikasi"),
+        deskripsi: Joi.string()
+          .max(45)
+          .optional()
+          .allow(null, "")
+          .label("Deskripsi"),
       },
-      { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
-      oPayload
+      {
+        "string.empty": "{#label} tidak boleh kosong",
+        "any.required": "{#label} wajib diisi",
+      },
+      oPayload,
     );
 
     if (cValidation) {
-      const oResult = { status: status.BAD_REQUEST, message: cValidation, datetime: datetime() };
-      Logging(null, { file: "archive_update.js", func: "update", request: oPayload, response: oResult, user: username });
+      const oResult = {
+        status: status.BAD_REQUEST,
+        message: cValidation,
+        datetime: datetime(),
+      };
+      Logging(null, {
+        file: "archive_update.js",
+        func: "update",
+        request: oPayload,
+        response: oResult,
+        user: nama_pengguna,
+      });
       return res.status(422).json(oResult);
     }
 
@@ -37,16 +71,34 @@ router.put("/:ArchiveClassificationId", async (req, res) => {
       .update({
         classification_code: oPayload.classification_code,
         classification_name: oPayload.classification_name,
-        description: oPayload.description || null,
+        deskripsi: oPayload.deskripsi || null,
         updated_at: new Date(),
       });
 
-    if (!nUpdated) return res.status(404).json({ status: status.NOT_FOUND, message: "Data tidak ditemukan", datetime: formatDateSystem() });
-    return res.status(200).json({ status: status.SUKSES, message: "Berhasil diupdate!", datetime: formatDateSystem() });
-
+    if (!nUpdated)
+      return res.status(404).json({
+        status: status.NOT_FOUND,
+        message: "Data tidak ditemukan",
+        datetime: formatDateSystem(),
+      });
+    return res.status(200).json({
+      status: status.SUKSES,
+      message: "Berhasil diupdate!",
+      datetime: formatDateSystem(),
+    });
   } catch (error) {
-    const oResult = { status: status.BAD_REQUEST, message: "Sistem sedang maintenance", datetime: datetime() };
-    Logging(error, { file: "archive_update.js", func: "update", request: oPayload, response: oResult, user: username });
+    const oResult = {
+      status: status.BAD_REQUEST,
+      message: "Sistem sedang maintenance",
+      datetime: datetime(),
+    };
+    Logging(error, {
+      file: "archive_update.js",
+      func: "update",
+      request: oPayload,
+      response: oResult,
+      user: nama_pengguna,
+    });
     return res.status(500).json(oResult);
   }
 });

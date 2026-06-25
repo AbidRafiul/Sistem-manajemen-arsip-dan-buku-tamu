@@ -39,7 +39,7 @@ const getDocumentVersions = async (req, res) => {
         "change_notes",
         "file_path",
         "created_at",
-        "updated_at"
+        "updated_at",
       )
       .where("document_id", nDocumentId)
       .orderBy("version_number", "desc");
@@ -63,7 +63,7 @@ const getDocumentVersions = async (req, res) => {
       func: "getDocumentVersions",
       request: oQuery,
       response: oResult,
-      user: req?.auth?.username || "system",
+      user: req?.auth?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

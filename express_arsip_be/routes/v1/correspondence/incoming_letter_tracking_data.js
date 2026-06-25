@@ -3,7 +3,6 @@ import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { validatePayload } from "../components/tools/servertool.js";
 
-
 const router = express.Router();
 
 const incomingLetterTrackingData = async (req, res) => {

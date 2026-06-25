@@ -9,9 +9,9 @@ const approveDocumentVersion = async (req, res) => {
     const cStatus = oPayload.status;
     const cApprovalNotes = oPayload.approval_notes || null;
     const cApprovedBy =
-      req?.auth?.username ||
-      req?.context?.username ||
-      req?.context?.Username ||
+      req?.auth?.nama_pengguna ||
+      req?.context?.nama_pengguna ||
+      req?.context?.nama_pengguna ||
       oPayload.approved_by ||
       "system";
     const dNow = new Date();
@@ -90,7 +90,11 @@ const approveDocumentVersion = async (req, res) => {
       func: "approveDocumentVersion",
       request: oPayload,
       response: oResult,
-      user: req?.auth?.username || req?.context?.username || req?.context?.Username || "system",
+      user:
+        req?.auth?.nama_pengguna ||
+        req?.context?.nama_pengguna ||
+        req?.context?.nama_pengguna ||
+        "system",
     });
 
     return res.status(500).json(oResult);

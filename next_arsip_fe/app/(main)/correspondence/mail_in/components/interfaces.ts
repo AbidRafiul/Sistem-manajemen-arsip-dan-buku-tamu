@@ -1,10 +1,10 @@
-import { FilterMatchMode } from "primereact/api";
-import { FormikProps } from "formik";
-import { Session } from "next-auth";
-import { Toast } from "primereact/toast";
-import { RefObject } from "react";
+import { FilterMatchMode } from 'primereact/api';
+import { FormikProps } from 'formik';
+import { Session } from 'next-auth';
+import { Toast } from 'primereact/toast';
+import { RefObject } from 'react';
 
-export type IncomingLetterStatus = "baru" | "diproses" | "didisposisi" | "selesai";
+export type IncomingLetterStatus = 'baru' | 'diproses' | 'didisposisi' | 'selesai';
 
 export interface initValue {
     surat_masuk_id: number | null;

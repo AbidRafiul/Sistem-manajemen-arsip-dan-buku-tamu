@@ -10,7 +10,7 @@ const letterDispositionComplete = async (req, res) => {
     const oPayload = req.body || {};
 
     const oValidation = {
-      disposition_id: Joi.number().required(),
+      disid_jabatan: Joi.number().required(),
       complete_note: Joi.string().allow(null, "").optional(),
       updated_by: Joi.number().allow(null).optional(),
     };

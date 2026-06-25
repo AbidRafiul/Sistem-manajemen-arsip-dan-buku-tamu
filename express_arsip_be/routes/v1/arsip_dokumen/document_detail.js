@@ -44,13 +44,33 @@ const getDocumentDetail = async (req, res) => {
         "rs.retention_schedule_id",
         "rs.retention_name",
         "rs.retention_years",
-        "rs.retention_action"
+        "rs.retention_action",
       )
-      .leftJoin("mst_document_type as dt", "d.document_type_id", "dt.document_type_id")
-      .leftJoin("mst_document_categories as dc", "d.document_category_id", "dc.document_category_id")
-      .leftJoin("mst_archive_classifications as ac", "d.archive_classification_id", "ac.archive_classification_id")
-      .leftJoin("mst_confidentiality_levels as cl", "d.confidentiality_level_id", "cl.confidentiality_level_id")
-      .leftJoin("mst_retention_schedule as rs", "d.retention_schedule_id", "rs.retention_schedule_id")
+      .leftJoin(
+        "mst_document_type as dt",
+        "d.document_type_id",
+        "dt.document_type_id",
+      )
+      .leftJoin(
+        "mst_document_categories as dc",
+        "d.document_category_id",
+        "dc.document_category_id",
+      )
+      .leftJoin(
+        "mst_archive_classifications as ac",
+        "d.archive_classification_id",
+        "ac.archive_classification_id",
+      )
+      .leftJoin(
+        "mst_confidentiality_levels as cl",
+        "d.confidentiality_level_id",
+        "cl.confidentiality_level_id",
+      )
+      .leftJoin(
+        "mst_retention_schedule as rs",
+        "d.retention_schedule_id",
+        "rs.retention_schedule_id",
+      )
       .where("d.document_id", nDocumentId)
       .first();
 
@@ -76,7 +96,7 @@ const getDocumentDetail = async (req, res) => {
         "approved_at",
         "approval_notes",
         "created_at",
-        "updated_at"
+        "updated_at",
       )
       .where("document_id", nDocumentId)
       .orderBy("version_number", "desc");
@@ -97,7 +117,7 @@ const getDocumentDetail = async (req, res) => {
         "approval_notes",
         "is_overdue",
         "created_at",
-        "updated_at"
+        "updated_at",
       )
       .where("document_id", nDocumentId)
       .orderBy("loan_id", "desc");
@@ -111,7 +131,7 @@ const getDocumentDetail = async (req, res) => {
         "proposed_at",
         "reviewed_by",
         "reviewed_at",
-        "review_notes"
+        "review_notes",
       )
       .where("document_id", nDocumentId)
       .whereNotIn("status", ["rejected", "executed"])
@@ -142,7 +162,7 @@ const getDocumentDetail = async (req, res) => {
       func: "getDocumentDetail",
       request: oQuery,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

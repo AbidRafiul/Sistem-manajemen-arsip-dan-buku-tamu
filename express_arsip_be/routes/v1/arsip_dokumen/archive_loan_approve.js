@@ -9,9 +9,9 @@ const approveArchiveLoan = async (req, res) => {
     const cStatus = oPayload.status;
     const cApprovalNotes = oPayload.approval_notes || null;
     const cApprovedBy =
-      req?.auth?.username ||
-      req?.context?.username ||
-      req?.context?.Username ||
+      req?.auth?.nama_pengguna ||
+      req?.context?.nama_pengguna ||
+      req?.context?.nama_pengguna ||
       oPayload.approved_by ||
       "system";
     const dNow = new Date();
@@ -64,9 +64,7 @@ const approveArchiveLoan = async (req, res) => {
       updated_at: dNow,
     };
 
-    await Knex("trx_archive_loans")
-      .where("loan_id", nLoanId)
-      .update(oData);
+    await Knex("trx_archive_loans").where("loan_id", nLoanId).update(oData);
 
     const oResult = {
       status: "success",
@@ -92,7 +90,11 @@ const approveArchiveLoan = async (req, res) => {
       func: "approveArchiveLoan",
       request: oPayload,
       response: oResult,
-      user: req?.auth?.username || req?.context?.username || req?.context?.Username || "system",
+      user:
+        req?.auth?.nama_pengguna ||
+        req?.context?.nama_pengguna ||
+        req?.context?.nama_pengguna ||
+        "system",
     });
 
     return res.status(500).json(oResult);

@@ -7,19 +7,19 @@ export async function up(knex) {
     table.charset("utf8mb4");
     table.collate("utf8mb4_unicode_ci");
 
-    table.increments("DocumentId").primary();
-    table.integer("ArchiveClassificationId").unsigned();
-    table.string("DocumentName");
-    table.string("DocumentNumber");
-    table.date("DocumentDate");
-    table.date("ExpiredDate");
-    table.string("PicName");
+    table.increments("document_id").primary();
+    table.integer("archive_classification_id").unsigned();
+    table.string("document_name");
+    table.string("document_number");
+    table.date("document_date");
+    table.date("expired_date");
+    table.string("pic_name");
     table
-      .enu("Status", ["active", "nonactive"])
+      .enu("status", ["active", "nonactive"])
       .notNullable()
       .defaultTo("active");
-    table.datetime("CreatedAt").notNullable();
-    table.datetime("UpdatedAt").notNullable();
+    table.datetime("created_at").notNullable();
+    table.datetime("updated_at").notNullable();
   });
 };
 

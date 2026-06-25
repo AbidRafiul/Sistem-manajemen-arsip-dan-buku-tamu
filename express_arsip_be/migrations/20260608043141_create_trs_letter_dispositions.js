@@ -4,13 +4,13 @@
  */
 export async function up(knex) {
   await knex.schema.createTable("trx_letter_dispositions", (table) => {
-    table.bigIncrements("disposition_id").primary();
+    table.bigIncrements("disid_jabatan").primary();
 
     table.bigInteger("incoming_letter_id").unsigned().notNullable();
-    table.bigInteger("parent_disposition_id").unsigned().nullable();
+    table.bigInteger("parent_disid_jabatan").unsigned().nullable();
 
-    table.integer("from_user_id").unsigned().nullable();
-    table.integer("to_user_id").unsigned().notNullable();
+    table.integer("from_nama_pengguna").unsigned().nullable();
+    table.integer("to_nama_pengguna").unsigned().notNullable();
 
     table.bigInteger("disposition_instruction_id").unsigned().nullable();
 
@@ -18,7 +18,10 @@ export async function up(knex) {
     table.text("disposition_note").nullable();
     table.date("due_date").nullable();
 
-    table.enu("status", ["baru", "dibaca", "diproses", "selesai"]).notNullable().defaultTo("baru");
+    table
+      .enu("status", ["baru", "dibaca", "diproses", "selesai"])
+      .notNullable()
+      .defaultTo("baru");
 
     table.dateTime("received_at").nullable();
     table.dateTime("processed_at").nullable();
@@ -37,20 +40,32 @@ export async function up(knex) {
       .onDelete("CASCADE");
 
     table
-      .foreign("parent_disposition_id")
-      .references("disposition_id")
+      .foreign("parent_disid_jabatan")
+      .references("disid_jabatan")
       .inTable("trx_letter_dispositions");
 
-    table.foreign("from_user_id").references("UserId").inTable("mst_users");
-    table.foreign("to_user_id").references("UserId").inTable("mst_users");
+    table
+      .foreign("from_nama_pengguna")
+      .references("nama_pengguna")
+      .inTable("mst_pengguna");
+    table
+      .foreign("to_nama_pengguna")
+      .references("nama_pengguna")
+      .inTable("mst_pengguna");
 
     table
       .foreign("disposition_instruction_id")
       .references("disposition_instruction_id")
       .inTable("mst_disposition_instructions");
 
-    table.foreign("created_by").references("UserId").inTable("mst_users");
-    table.foreign("updated_by").references("UserId").inTable("mst_users");
+    table
+      .foreign("created_by")
+      .references("nama_pengguna")
+      .inTable("mst_pengguna");
+    table
+      .foreign("updated_by")
+      .references("nama_pengguna")
+      .inTable("mst_pengguna");
   });
 }
 

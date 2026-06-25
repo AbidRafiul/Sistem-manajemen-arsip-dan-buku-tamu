@@ -65,15 +65,15 @@ const letterDispositionCreate = async (req, res) => {
 
     const vaReferenceChecks = [
       {
-        field: "from_user_id",
-        table: "mst_users",
-        key: "user_id",
+        field: "from_nama_pengguna",
+        table: "mst_pengguna",
+        key: "nama_pengguna",
         label: "User asal disposisi",
       },
       {
-        field: "to_user_id",
-        table: "mst_users",
-        key: "user_id",
+        field: "to_nama_pengguna",
+        table: "mst_pengguna",
+        key: "nama_pengguna",
         label: "User tujuan disposisi",
       },
       {
@@ -84,14 +84,14 @@ const letterDispositionCreate = async (req, res) => {
       },
       {
         field: "created_by",
-        table: "mst_users",
-        key: "user_id",
+        table: "mst_pengguna",
+        key: "nama_pengguna",
         label: "User pembuat",
       },
       {
         field: "updated_by",
-        table: "mst_users",
-        key: "user_id",
+        table: "mst_pengguna",
+        key: "nama_pengguna",
         label: "User pengubah",
       },
     ];
@@ -168,13 +168,16 @@ const letterDispositionCreate = async (req, res) => {
 
       await trs("trx_incoming_letter_trackings").insert({
         incoming_letter_id: oPayload.incoming_letter_id,
-        disposition_id: nId,
+        disid_jabatan: nId,
         action_name: "surat_didisposisi",
-        from_user_id: oPayload.from_user_id || null,
-        to_user_id: oPayload.to_user_id,
+        from_nama_pengguna: oPayload.from_nama_pengguna || null,
+        to_nama_pengguna: oPayload.to_nama_pengguna,
         previous_status: oLetter.status,
         current_status: "didisposisi",
-        notes: oPayload.disposition_note || oPayload.instruction || "Surat didisposisikan",
+        notes:
+          oPayload.disposition_note ||
+          oPayload.instruction ||
+          "Surat didisposisikan",
         processed_at: dNow,
         created_by: oPayload.created_by || null,
         created_at: dNow,
@@ -188,7 +191,7 @@ const letterDispositionCreate = async (req, res) => {
       status: true,
       message: "Disposisi surat berhasil dibuat",
       data: {
-        disposition_id: nDispositionId,
+        disid_jabatan: nDisIdJabatan,
       },
     });
   } catch (error) {

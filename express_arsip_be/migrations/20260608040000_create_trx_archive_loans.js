@@ -4,14 +4,25 @@
  */
 export async function up(knex) {
   await knex.schema.createTable("trx_archive_loans", (table) => {
-    table.increments("LoanId").primary();
-    table.integer("DocumentId").unsigned().notNullable();
-    table.string("BorrowerName").notNullable();
-    table.date("LoanDate").notNullable();
-    table.date("ReturnDate").nullable();
-    table.text("Purpose").nullable();
+    table.charset("utf8mb4");
+    table.collate("utf8mb4_unicode_ci");
+
+    table.increments("loan_id").primary();
     table
-      .enu("Status", [
+      .integer("document_id")
+      .unsigned()
+      .notNullable()
+      .references("document_id")
+      .inTable("trx_documents")
+      .onDelete("CASCADE")
+      .onUpdate("CASCADE");
+      
+    table.string("borrower_name").notNullable();
+    table.date("loan_date").notNullable();
+    table.date("return_date").nullable();
+    table.text("purpose").nullable();
+    table
+      .enu("status", [
         "pending",
         "approved",
         "borrowed",
@@ -20,10 +31,9 @@ export async function up(knex) {
       ])
       .notNullable()
       .defaultTo("pending");
-    table.datetime("CreatedAt").notNullable();
-    table.datetime("UpdatedAt").notNullable();
-    table.charset("utf8mb4");
-    table.collate("utf8mb4_unicode_ci");
+      
+    table.datetime("created_at").notNullable();
+    table.datetime("updated_at").notNullable();
   });
 }
 

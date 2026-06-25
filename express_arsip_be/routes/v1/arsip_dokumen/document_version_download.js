@@ -28,7 +28,7 @@ const downloadDocumentVersion = async (req, res) => {
         "v.file_path",
         "v.approval_status",
         "d.document_name",
-        "d.document_number"
+        "d.document_number",
       )
       .leftJoin("trx_documents as d", "v.document_id", "d.document_id")
       .where("v.version_id", nVersionId)
@@ -45,7 +45,11 @@ const downloadDocumentVersion = async (req, res) => {
     // Bangun absolute path file
     // FilePath tersimpan sebagai /uploads/documents/filename.ext
     const cRelativePath = oVersion.file_path.replace(/^\//, "");
-    const cAbsolutePath = path.join(__dirname, "../../../../public", cRelativePath);
+    const cAbsolutePath = path.join(
+      __dirname,
+      "../../../../public",
+      cRelativePath,
+    );
 
     // Cek file ada di disk
     if (!fs.existsSync(cAbsolutePath)) {
@@ -60,7 +64,10 @@ const downloadDocumentVersion = async (req, res) => {
     const cFileExtension = path.extname(oVersion.file_path);
     const cDownloadName = `${oVersion.document_number}_V${oVersion.version_number}${cFileExtension}`;
 
-    res.setHeader("Content-Disposition", `attachment; filename="${cDownloadName}"`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${cDownloadName}"`,
+    );
     res.setHeader("Content-Type", "application/octet-stream");
 
     return res.sendFile(cAbsolutePath);
@@ -76,7 +83,7 @@ const downloadDocumentVersion = async (req, res) => {
       func: "downloadDocumentVersion",
       request: oQuery,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

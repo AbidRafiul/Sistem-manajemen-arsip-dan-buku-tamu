@@ -12,21 +12,20 @@ const router = express.Router();
 router.post("/", async (req, res) => {
   const { body } = req;
   const oPayload = body;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
-    // JOIN murni cuma buat ngambil Role dari mst_user_roles
-    const vaData = await DB("mst_users as mu")
-      .leftJoin("mst_user_roles as mur", "mu.user_id", "mur.user_id")
-      .leftJoin("mst_roles as mr", "mur.role_id", "mr.role_id")
+    // JOIN murni cuma buat ngambil peran dari mst_pengguna_perans
+    const vaData = await DB("mst_pengguna as mu")
+      .leftJoin("mst_pengguna_peran as mur", "mu.id_pengguna", "mur.id_pengguna")
+      .leftJoin("mst_peran as mr", "mur.id_peran", "mr.id_peran")
       .select(
-        "mu.user_id as user_id",
-        "mu.username as username",
-        "mu.fullname as fullname",
-        "mu.telp as telp",
+        "mu.nama_pengguna as nama_pengguna",
+        "mu.nama_lengkap as nama_lengkap",
+        "mu.telepon as telepon",
         "mu.status as status",
         "mu.created_at as created_at",
-        "mr.role_name as role", 
+        "mr.nama_peran as role",
       )
       .orderBy("mu.created_at", "desc");
 
@@ -48,7 +47,7 @@ router.post("/", async (req, res) => {
       func: "get",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
     return res.status(500).json(oResult);
   }

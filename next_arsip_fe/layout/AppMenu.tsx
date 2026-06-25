@@ -1,14 +1,17 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
-
-import React, { useEffect, useRef, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { InputText } from 'primereact/inputtext';
-import { Skeleton } from 'primereact/skeleton';
-import postData from '@/lib/axios/postData';
-import { AppMenuItem } from '@/types';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import AppMenuitem from './AppMenuitem';
+import { LayoutContext } from './context/layoutcontext';
 import { MenuProvider } from './context/menucontext';
+
+//HIDUPKAN LAGI IMPORT NEXT-AUTH
+import { useSession } from 'next-auth/react';
+
+import postData from '@/lib/axios/postData';
+import { InputText } from 'primereact/inputtext';
+import { AppMenuItem } from '@/types';
+import { Skeleton } from 'primereact/skeleton';
 
 interface MenuState {
     searchVal: string;
@@ -130,8 +133,8 @@ const ensureGuestBookMenu = (menu: AppMenuItem[]) => {
     });
 
     if (guestBookGroup) {
-        const existingTos = (guestBookGroup.items || []).map(item => item.to);
-        const missingItems = guestBookItems.filter(item => !existingTos.includes(item.to));
+        const existingTos = (guestBookGroup.items || []).map((item) => item.to);
+        const missingItems = guestBookItems.filter((item) => !existingTos.includes(item.to));
         guestBookGroup.items = [...(guestBookGroup.items || []), ...missingItems];
         return menu;
     }
@@ -150,38 +153,38 @@ const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
     return menu.filter((item) => item.label?.toLowerCase() !== 'korespondensi');
 };
 
-    const AppMenu = () => {
-        // HAPUS DUMMY, PAKAI SESSION ASLI DARI NEXT-AUTH
-        const { data: session } = useSession();
+const AppMenu = () => {
+    const { data: session } = useSession();
 
-        const { layoutConfig } = useContext(LayoutContext);
-        const searchRef = useRef<HTMLInputElement>(null);
-        const lastPressTime = useRef<number>(0);
+    const { layoutConfig } = useContext(LayoutContext);
+    const searchRef = useRef<HTMLInputElement>(null);
+    const lastPressTime = useRef<number>(0);
 
-        const [state, setState] = useState<MenuState>({
-            searchVal: '',
-            filteredMenu: [],
-            load: true,
-            menu: []
-        });
+    const [state, setState] = useState<MenuState>({
+        searchVal: '',
+        filteredMenu: [],
+        load: true,
+        menu: []
+    });
 
-        //  AMBIL UserId DARI SESSION UNTUK DIKIRIM KE BACKEND
-        useEffect(() => {
-            const user = session?.user as any;
+    //  AMBIL IdPengguna DARI SESSION UNTUK DIKIRIM KE BACKEND
+    useEffect(() => {
+        const user = session?.user as any;
 
-            if (user) {
-                // Kita log untuk memastikan UserId sudah ada
-                console.log('ISI SESSION USER:', user);
+        if (user) {
+            // Kita log untuk memastikan IdPengguna sudah ada
+            console.log('ISI SESSION USER:', user);
 
-                // Gunakan UserId (sesuai yang kita pasang di session tadi)
-                const activeId = user.UserId || user.id;
+            // Gunakan IdPengguna (sesuai yang kita pasang di session tadi)
+            const activeId = user.IdPengguna || user.id;
 
-                if (activeId) {
-                    getMenu(activeId);
-                }
+            if (activeId) {
+                getMenu(activeId);
             }
-        }, [session]);
+        }
+    }, [session]);
 
+<<<<<<< HEAD
        const getMenu = async (userId: string | number) => {
 =======
         if (status === 'loading') {
@@ -244,6 +247,71 @@ const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
                     return;
                 }
 
+=======
+    const getMenu = async (IdPengguna: string | number) => {
+        setState((prev) => ({ ...prev, load: true }));
+        try {
+            const { data: vaData } = await postData('setup/nav/user-data', { IdPengguna: IdPengguna });
+
+            // 1. Log data mentah untuk debugging di Console Browser
+            console.log('MENTAHAN DARI BACKEND:', vaData);
+
+            if (!vaData?.data) {
+                throw new Error('Data menu tidak ditemukan dari backend');
+            }
+
+            // 2. Filter Anti-Crash: Pastikan menu adalah Array
+            let menuArray = vaData.data;
+
+            // Kalau MySQL ngirim string, kita bongkar dulu jadi Array
+            if (typeof menuArray === 'string') {
+                try {
+                    menuArray = JSON.parse(menuArray);
+                } catch (e) {
+                    console.error('Gagal memecah string menu dari database:', e);
+                    menuArray = [];
+                }
+            }
+
+            // Pengaman ekstra: Kalau ternyata tetap bukan array, paksa jadi array kosong
+            if (!Array.isArray(menuArray)) {
+                console.error('Format menu tidak valid (bukan array):', menuArray);
+                menuArray = [];
+            }
+
+            // 3. Olah data yang sudah dipastikan aman
+            const normalizedMenu = ensureGuestBookMenu(ensureArchiveDocumentMenu(ensureCorrespondenceMenu(removeLegacyCorrespondenceMenu(menuArray))));
+            const menu: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
+            const menu2: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
+
+            setState((prev) => ({
+                ...prev,
+                filteredMenu: menu2,
+                menu: menu
+            }));
+        } catch (error) {
+            console.error('Error loading menu:', error);
+            setState((prev) => ({
+                ...prev,
+                filteredMenu: [],
+                menu: []
+            }));
+        } finally {
+            setState((prev) => ({ ...prev, load: false }));
+        }
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.ctrlKey && e.key.toLowerCase() === 'f') {
+                const now = Date.now();
+
+                if (now - lastPressTime.current < 1000) {
+                    lastPressTime.current = 0;
+                    return;
+                }
+
+>>>>>>> main
                 e.preventDefault();
                 lastPressTime.current = now;
                 searchRef.current?.focus();
@@ -351,6 +419,7 @@ const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
                               <Skeleton className="py-4" />
                           </li>
                       ))
+<<<<<<< HEAD
                     : state.filteredMenu?.map((item, i) =>
                           !item.separator ? (
                               <AppMenuitem load={state.load} item={item} root={true} index={i} key={item.label || `menu-item-${i}`} />
@@ -358,6 +427,9 @@ const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
                               <li className="menu-separator" key={`separator-${i}`}></li>
                           )
                       )}
+=======
+                    : state.filteredMenu?.map((item, i) => (!item.separator ? <AppMenuitem load={state.load} item={item} root={true} index={i} key={item.label || `menu-item-${i}`} /> : <li className="menu-separator" key={`separator-${i}`}></li>))}
+>>>>>>> main
             </ul>
         </MenuProvider>
     );

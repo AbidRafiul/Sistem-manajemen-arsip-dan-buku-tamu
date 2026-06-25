@@ -7,25 +7,30 @@ const db = knex({
   connection: {
     host: process.env.DB_HOST || "127.0.0.1",
     user: process.env.DB_USERNAME || "root",
-    password: process.env.DB_PASSWORD || "",
+    kata_sandi: process.env.DB_kata_sandi || "",
     database: process.env.DB_DATABASE || "db_magang",
     port: Number(process.env.DB_PORT) || 3306,
-  }
+  },
 });
 
 async function main() {
   try {
-    const userNav = await db("user_navigation").where("UserId", 1).first();
+    const userNav = await db("navigasi_pengguna")
+      .where("NamaPengguna", 1)
+      .first();
     if (!userNav) {
-      console.log("User navigation for UserId 1 not found!");
+      console.log("User navigation for NamaPengguna 1 not found!");
       return;
     }
 
     const currentMenu = JSON.parse(userNav.Menu);
-    
+
     // Remove any existing ARSIP DOKUMEN group to avoid duplicates
     const filteredMenu = currentMenu.filter(
-      item => item.label?.toUpperCase() !== "ARSIP DOKUMEN" && item.label?.toUpperCase() !== "EDMS" && item.label?.toUpperCase() !== "ARSIP"
+      (item) =>
+        item.label?.toUpperCase() !== "ARSIP DOKUMEN" &&
+        item.label?.toUpperCase() !== "EDMS" &&
+        item.label?.toUpperCase() !== "ARSIP",
     );
 
     // Add updated ARSIP DOKUMEN group
@@ -33,16 +38,24 @@ async function main() {
       label: "ARSIP DOKUMEN",
       icon: "pi pi-folder",
       items: [
-        { label: "Dokumen Arsip", icon: "pi pi-fw pi-folder-open", to: "/edms/archive_document" },
-        { label: "Peminjaman Arsip", icon: "pi pi-fw pi-share-alt", to: "/edms/archive_loan" }
-      ]
+        {
+          label: "Dokumen Arsip",
+          icon: "pi pi-fw pi-folder-open",
+          to: "/edms/archive_document",
+        },
+        {
+          label: "Peminjaman Arsip",
+          icon: "pi pi-fw pi-share-alt",
+          to: "/edms/archive_loan",
+        },
+      ],
     });
 
-    await db("user_navigation")
-      .where("UserId", 1)
+    await db("navigasi_pengguna")
+      .where("NamaPengguna", 1)
       .update({
         Menu: JSON.stringify(filteredMenu),
-        UpdatedAt: new Date()
+        UpdatedAt: new Date(),
       });
 
     console.log("Successfully updated menu in database!");

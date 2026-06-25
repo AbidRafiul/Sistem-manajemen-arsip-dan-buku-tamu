@@ -12,21 +12,28 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { body: oPayload } = req;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
-    if (!oPayload || !oPayload.userId || !Array.isArray(oPayload.userId)) {
+    if (
+      !oPayload ||
+      !oPayload.NamaPengguna ||
+      !Array.isArray(oPayload.NamaPengguna)
+    ) {
       return res.status(400).json({
         status: status.BAD_REQUEST,
-        message: "Invalid request body: userId (array) is required",
+        message: "Invalid request body: NamaPengguna (array) is required",
         datetime: formatDateSystem(),
       });
     }
 
-    // 🔥 PERBAIKAN VALIDASI: Ganti Username jadi userId
+    // 🔥 PERBAIKAN VALIDASI: Ganti nama_pengguna jadi NamaPengguna
     const cValidation = await validatePayload(
       {
-        userId: Joi.array().items(Joi.number()).required().label("UserId"),
+        NamaPengguna: Joi.array()
+          .items(Joi.number())
+          .required()
+          .label("NamaPengguna"),
       },
       { "any.required": "{#label} wajib diisi" },
       oPayload,
@@ -39,19 +46,19 @@ router.post("/", async (req, res) => {
         datetime: datetime(),
       });
 
-    //  TRANSAKSI SOFT DELETE (Mencakup mst_users & mst_user_roles)
+    //  TRANSAKSI SOFT DELETE (Mencakup mst_pengguna & mst_pengguna_perans)
     await DB.transaction(async (trx) => {
-      // 1. Nonaktifkan di mst_users
-      await trx("mst_users")
-        .whereIn("user_id", oPayload.userId)
+      // 1. Nonaktifkan di mst_pengguna
+      await trx("mst_pengguna")
+        .whereIn("nama_pengguna", oPayload.NamaPengguna)
         .update({
           status: "nonactive",
           updated_at: formatDateSystem(),
         });
 
-      // 2. Nonaktifkan juga di mst_user_roles
-      await trx("mst_user_roles")
-        .whereIn("user_id", oPayload.userId)
+      // 2. Nonaktifkan juga di mst_pengguna_perans
+      await trx("mst_pengguna_peran")
+        .whereIn("nama_pengguna", oPayload.NamaPengguna)
         .update({
           status: "nonactive",
           updated_at: formatDateSystem(),
@@ -64,7 +71,12 @@ router.post("/", async (req, res) => {
       datetime: formatDateSystem(),
     });
   } catch (error) {
-    Logging(error, { file: "user_delete.js", func: "delete", request: oPayload, user: username });
+    Logging(error, {
+      file: "user_delete.js",
+      func: "delete",
+      request: oPayload,
+      user: nama_pengguna,
+    });
     return res.status(500).json({
       status: status.BAD_REQUEST,
       message: "Sistem maintenance",

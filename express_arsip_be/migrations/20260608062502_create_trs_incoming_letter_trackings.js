@@ -7,12 +7,12 @@ export async function up(knex) {
     table.bigIncrements("incoming_letter_tracking_id").primary();
 
     table.bigInteger("incoming_letter_id").unsigned().notNullable();
-    table.bigInteger("disposition_id").unsigned().nullable();
+    table.bigInteger("disid_jabatan").unsigned().nullable();
 
     table.string("action_name", 100).notNullable();
 
-    table.integer("from_user_id").unsigned().nullable();
-    table.integer("to_user_id").unsigned().nullable();
+    table.integer("from_nama_pengguna").unsigned().nullable();
+    table.integer("to_nama_pengguna").unsigned().nullable();
 
     table.string("previous_status", 50).nullable();
     table.string("current_status", 50).notNullable();
@@ -32,13 +32,22 @@ export async function up(knex) {
       .onDelete("CASCADE");
 
     table
-      .foreign("disposition_id")
-      .references("disposition_id")
+      .foreign("disid_jabatan")
+      .references("disid_jabatan")
       .inTable("trx_letter_dispositions");
 
-    table.foreign("from_user_id").references("UserId").inTable("mst_users");
-    table.foreign("to_user_id").references("UserId").inTable("mst_users");
-    table.foreign("created_by").references("UserId").inTable("mst_users");
+    table
+      .foreign("from_nama_pengguna")
+      .references("nama_pengguna")
+      .inTable("mst_pengguna");
+    table
+      .foreign("to_nama_pengguna")
+      .references("nama_pengguna")
+      .inTable("mst_pengguna");
+    table
+      .foreign("created_by")
+      .references("nama_pengguna")
+      .inTable("mst_pengguna");
   });
 }
 

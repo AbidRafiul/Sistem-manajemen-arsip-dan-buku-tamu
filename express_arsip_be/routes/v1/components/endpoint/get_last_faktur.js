@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { body } = req;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
   const oPayload = body;
 
   try {
@@ -42,7 +42,7 @@ router.post("/", async (req, res) => {
       {
         uniqueField: ["Code"],
         table: "nomor_faktur",
-      }
+      },
     );
 
     if (cValidation) {
@@ -57,7 +57,7 @@ router.post("/", async (req, res) => {
         func: "get",
         request: oPayload,
         response: oResult,
-        user: username,
+        user: nama_pengguna,
       });
 
       return res.status(422).json(oResult);
@@ -83,7 +83,7 @@ router.post("/", async (req, res) => {
       func: "get",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

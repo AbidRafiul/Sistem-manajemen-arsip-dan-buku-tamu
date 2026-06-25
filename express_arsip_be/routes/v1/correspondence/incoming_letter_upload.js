@@ -4,7 +4,6 @@ import path from "path";
 import fs from "fs";
 import DB from "../../../core/config/knex.js";
 
-
 const router = express.Router();
 
 const cUploadDir = "uploads/surat_masuk";

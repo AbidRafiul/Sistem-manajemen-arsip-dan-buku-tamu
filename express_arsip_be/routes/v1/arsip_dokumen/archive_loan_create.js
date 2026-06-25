@@ -16,7 +16,8 @@ const createArchiveLoan = async (req, res) => {
     if (!nDocumentId || !cBorrowerName || !dLoanDate || !dExpectedReturnDate) {
       const oResult = {
         status: "error",
-        message: "document_id, borrower_name, loan_date, dan expected_return_date wajib diisi",
+        message:
+          "document_id, borrower_name, loan_date, dan expected_return_date wajib diisi",
       };
       return res.status(422).json(oResult);
     }
@@ -78,7 +79,8 @@ const createArchiveLoan = async (req, res) => {
 
     const oResult = {
       status: "success",
-      message: "Pengajuan peminjaman arsip berhasil dibuat dan menunggu approval",
+      message:
+        "Pengajuan peminjaman arsip berhasil dibuat dan menunggu approval",
       data: {
         loan_id: nLoanId,
         ...oData,
@@ -98,7 +100,7 @@ const createArchiveLoan = async (req, res) => {
       func: "createArchiveLoan",
       request: oPayload,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

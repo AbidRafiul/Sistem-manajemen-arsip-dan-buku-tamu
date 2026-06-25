@@ -50,6 +50,7 @@ const incomingLetterDetail = async (req, res) => {
         "til.created_by",
         "til.updated_by",
         "til.created_at",
+        "til.updated_at",
       )
       .where("til.surat_masuk_id", oPayload.incoming_letter_id)
       .first();
@@ -72,7 +73,7 @@ const incomingLetterDetail = async (req, res) => {
         "uploaded_by",
         "status",
         "created_at",
-        "updated_at"
+        "updated_at",
       )
       .where("surat_masuk_id", oPayload.incoming_letter_id)
       .where("status", "active")
@@ -102,7 +103,7 @@ const incomingLetterDetail = async (req, res) => {
         "tld.created_by",
         "tld.updated_by",
         "tld.created_at",
-        "tld.updated_at"
+        "tld.updated_at",
       )
       .where("tld.surat_masukid", oPayload.incoming_letter_id)
       .orderBy("tld.created_at", "desc");
@@ -121,7 +122,7 @@ const incomingLetterDetail = async (req, res) => {
         "processed_at",
         "created_by",
         "created_at",
-        "updated_at"
+        "updated_at",
       )
       .where("surat_masuk_id", oPayload.incoming_letter_id)
       .orderBy("processed_at", "desc");

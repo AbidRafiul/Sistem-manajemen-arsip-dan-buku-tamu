@@ -15,7 +15,7 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { body: oPayload } = req;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
@@ -40,7 +40,7 @@ router.post("/", async (req, res) => {
           .required()
           .label("Nama Kategori"),
 
-        description: Joi.string()
+        deskripsi: Joi.string()
           .max(45)
           .optional()
           .allow(null, "")
@@ -65,7 +65,7 @@ router.post("/", async (req, res) => {
         func: "create",
         request: oPayload,
         response: oResult,
-        user: username,
+        user: nama_pengguna,
       });
 
       return res.status(422).json(oResult);
@@ -76,7 +76,7 @@ router.post("/", async (req, res) => {
       archive_classification_id: oPayload.archive_classification_id,
       document_category_code: oPayload.document_category_code,
       document_category_name: oPayload.document_category_name,
-      description: oPayload.description || null,
+      deskripsi: oPayload.deskripsi || null,
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -99,7 +99,7 @@ router.post("/", async (req, res) => {
       func: "create",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

@@ -7,7 +7,8 @@ const createDestructionProposal = async (req, res) => {
   try {
     const nDocumentId = oPayload.document_id;
     const cProposalReason = oPayload.proposal_reason;
-    const cProposedBy = req?.context?.Username || oPayload.proposed_by || "system";
+    const cProposedBy =
+      req?.context?.nama_pengguna || oPayload.proposed_by || "system";
     const dNow = new Date();
 
     if (!nDocumentId || !cProposalReason) {
@@ -28,12 +29,12 @@ const createDestructionProposal = async (req, res) => {
         "d.expired_date",
         "d.retention_schedule_id",
         "rs.retention_years",
-        "rs.retention_action"
+        "rs.retention_action",
       )
       .leftJoin(
         "mst_retention_schedule as rs",
         "d.retention_schedule_id",
-        "rs.retention_schedule_id"
+        "rs.retention_schedule_id",
       )
       .where("d.document_id", nDocumentId)
       .where("d.status", "active")
@@ -82,7 +83,8 @@ const createDestructionProposal = async (req, res) => {
 
     const oResult = {
       status: "success",
-      message: "Proposal pemusnahan arsip berhasil diajukan dan menunggu review",
+      message:
+        "Proposal pemusnahan arsip berhasil diajukan dan menunggu review",
       data: {
         proposal_id: nProposalId,
         document_name: oDocument.document_name,
@@ -106,7 +108,7 @@ const createDestructionProposal = async (req, res) => {
       func: "createDestructionProposal",
       request: oPayload,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

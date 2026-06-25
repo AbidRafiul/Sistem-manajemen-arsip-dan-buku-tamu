@@ -36,9 +36,7 @@ const updateDocumentLocation = async (req, res) => {
       updated_at: dNow,
     };
 
-    await DB("trx_documents")
-      .where("document_id", nDocumentId)
-      .update(oData);
+    await DB("trx_documents").where("document_id", nDocumentId).update(oData);
 
     const oResult = {
       status: "success",
@@ -65,7 +63,7 @@ const updateDocumentLocation = async (req, res) => {
       func: "updateDocumentLocation",
       request: oPayload,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

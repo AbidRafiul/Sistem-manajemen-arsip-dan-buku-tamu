@@ -1,13 +1,17 @@
 import express from "express";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
 import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
 router.delete("/:ConfidentialityLevelId", async (req, res) => {
   const cConfidentialityLevelId = req.params.ConfidentialityLevelId;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
   const oPayload = { id: cConfidentialityLevelId };
 
   try {
@@ -40,7 +44,7 @@ router.delete("/:ConfidentialityLevelId", async (req, res) => {
       func: "delete",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

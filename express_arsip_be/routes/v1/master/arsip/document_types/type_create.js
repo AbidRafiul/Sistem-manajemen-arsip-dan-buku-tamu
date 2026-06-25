@@ -1,14 +1,21 @@
 import express from "express";
 import Joi from "joi";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
-import { Logging, validatePayload } from "../../../components/tools/servertool.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
+import {
+  Logging,
+  validatePayload,
+} from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { body: oPayload } = req;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
@@ -21,16 +28,26 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        document_type_code: Joi.string().max(45).required().label("Kode Jenis Dokumen"),
-        document_type_name: Joi.string().max(45).required().label("Nama Jenis Dokumen"),
-        description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
+        document_type_code: Joi.string()
+          .max(45)
+          .required()
+          .label("Kode Jenis Dokumen"),
+        document_type_name: Joi.string()
+          .max(45)
+          .required()
+          .label("Nama Jenis Dokumen"),
+        deskripsi: Joi.string()
+          .max(45)
+          .optional()
+          .allow(null, "")
+          .label("Deskripsi"),
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
         "string.max": "{#label} maksimal {#limit} karakter",
         "any.required": "{#label} wajib diisi",
       },
-      oPayload
+      oPayload,
     );
 
     if (cValidation) {
@@ -45,7 +62,7 @@ router.post("/", async (req, res) => {
         func: "create",
         request: oPayload,
         response: oResult,
-        user: username,
+        user: nama_pengguna,
       });
 
       return res.status(422).json(oResult);
@@ -55,7 +72,7 @@ router.post("/", async (req, res) => {
     await DB("mst_document_type").insert({
       document_type_code: oPayload.document_type_code,
       document_type_name: oPayload.document_type_name,
-      description: oPayload.description || null,
+      deskripsi: oPayload.deskripsi || null,
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -78,7 +95,7 @@ router.post("/", async (req, res) => {
       func: "create",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

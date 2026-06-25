@@ -34,13 +34,33 @@ const scanDocumentQR = async (req, res) => {
         "ac.classification_name",
         "cl.confidentiality_level_name",
         "rs.retention_name",
-        "rs.retention_years"
+        "rs.retention_years",
       )
-      .leftJoin("mst_document_type as dt", "d.document_type_id", "dt.document_type_id")
-      .leftJoin("mst_document_categories as dc", "d.document_category_id", "dc.document_category_id")
-      .leftJoin("mst_archive_classifications as ac", "d.archive_classification_id", "ac.archive_classification_id")
-      .leftJoin("mst_confidentiality_levels as cl", "d.confidentiality_level_id", "cl.confidentiality_level_id")
-      .leftJoin("mst_retention_schedule as rs", "d.retention_schedule_id", "rs.retention_schedule_id")
+      .leftJoin(
+        "mst_document_type as dt",
+        "d.document_type_id",
+        "dt.document_type_id",
+      )
+      .leftJoin(
+        "mst_document_categories as dc",
+        "d.document_category_id",
+        "dc.document_category_id",
+      )
+      .leftJoin(
+        "mst_archive_classifications as ac",
+        "d.archive_classification_id",
+        "ac.archive_classification_id",
+      )
+      .leftJoin(
+        "mst_confidentiality_levels as cl",
+        "d.confidentiality_level_id",
+        "cl.confidentiality_level_id",
+      )
+      .leftJoin(
+        "mst_retention_schedule as rs",
+        "d.retention_schedule_id",
+        "rs.retention_schedule_id",
+      )
       .where("d.qr_code", cQRCode)
       .first();
 
@@ -62,7 +82,13 @@ const scanDocumentQR = async (req, res) => {
 
     // Status peminjaman aktif
     const oActiveLoan = await DB("trx_archive_loans")
-      .select("loan_id", "borrower_name", "loan_date", "expected_return_date", "status")
+      .select(
+        "loan_id",
+        "borrower_name",
+        "loan_date",
+        "expected_return_date",
+        "status",
+      )
       .where("document_id", oDocument.document_id)
       .where("status", "borrowed")
       .first();
@@ -91,7 +117,7 @@ const scanDocumentQR = async (req, res) => {
       func: "scanDocumentQR",
       request: oQuery,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

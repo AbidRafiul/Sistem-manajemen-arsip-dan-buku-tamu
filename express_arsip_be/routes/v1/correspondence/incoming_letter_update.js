@@ -98,8 +98,8 @@ const incomingLetterUpdate = async (req, res) => {
       },
       {
         field: "updated_by",
-        table: "mst_users",
-        key: "UserId",
+        table: "mst_pengguna",
+        key: "NamaPengguna",
         label: "User pengubah",
       },
     ];
@@ -156,10 +156,10 @@ const incomingLetterUpdate = async (req, res) => {
 
       await trx("trs_tracking_surat_masuk").insert({
         incoming_letter_id: oPayload.incoming_letter_id,
-        disposition_id: null,
+        disid_jabatan: null,
         action_name: "surat_diupdate",
-        from_user_id: null,
-        to_user_id: null,
+        from_nama_pengguna: null,
+        to_nama_pengguna: null,
         previous_status: oLetter.status,
         current_status: oUpdate.status || oLetter.status,
         notes: "Data surat masuk diperbarui",

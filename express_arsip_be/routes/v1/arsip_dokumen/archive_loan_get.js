@@ -43,7 +43,7 @@ const getArchiveLoans = async (req, res) => {
         "l.approval_notes",
         "l.is_overdue",
         "l.created_at",
-        "l.updated_at"
+        "l.updated_at",
       )
       .orderBy("l.loan_id", "desc");
 
@@ -80,7 +80,7 @@ const getArchiveLoans = async (req, res) => {
       func: "getArchiveLoans",
       request: oQuery,
       response: oResult,
-      user: req?.auth?.username || "system",
+      user: req?.auth?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

@@ -8,13 +8,21 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { body: oPayload } = req;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     const cValidation = await validatePayload(
       {
-        QRToken: Joi.string().max(100).optional().allow(null, "").label("QRToken"),
-        VisitCode: Joi.string().max(30).optional().allow(null, "").label("VisitCode"),
+        QRToken: Joi.string()
+          .max(100)
+          .optional()
+          .allow(null, "")
+          .label("QRToken"),
+        VisitCode: Joi.string()
+          .max(30)
+          .optional()
+          .allow(null, "")
+          .label("VisitCode"),
         VisitationId: Joi.alternatives()
           .try(Joi.string().max(36), Joi.number())
           .optional()
@@ -27,7 +35,7 @@ router.post("/", async (req, res) => {
         "string.max": "{#label} tidak boleh lebih dari {#limit} karakter",
       },
       oPayload,
-      { allowUnknown: true }
+      { allowUnknown: true },
     );
 
     if (cValidation) {
@@ -42,7 +50,7 @@ router.post("/", async (req, res) => {
         func: "check-out",
         request: oPayload,
         response: oResult,
-        user: username,
+        user: nama_pengguna,
       });
 
       return res.status(422).json(oResult);
@@ -58,24 +66,27 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const query = DB("trx_visitations").where("status", "Sedang Berkunjung").andWhere(function () {
-      if (QRToken) {
-        this.orWhere("qr_token", QRToken);
-      }
-      if (VisitCode) {
-        this.orWhere("visit_code", VisitCode);
-      }
-      if (VisitationId) {
-        this.orWhere("visitation_id", VisitationId);
-      }
-    });
+    const query = DB("trx_visitations")
+      .where("status", "Sedang Berkunjung")
+      .andWhere(function () {
+        if (QRToken) {
+          this.orWhere("qr_token", QRToken);
+        }
+        if (VisitCode) {
+          this.orWhere("visit_code", VisitCode);
+        }
+        if (VisitationId) {
+          this.orWhere("visitation_id", VisitationId);
+        }
+      });
 
     const record = await query.first();
 
     if (!record) {
       return res.status(404).json({
         status: "44",
-        message: "Tamu dengan data yang diberikan dan status 'Sedang Berkunjung' tidak ditemukan",
+        message:
+          "Tamu dengan data yang diberikan dan status 'Sedang Berkunjung' tidak ditemukan",
         datetime: formatDateSystem(),
       });
     }
@@ -86,13 +97,17 @@ router.post("/", async (req, res) => {
     };
 
     if (VisitNotes) {
-      const existingNotes = record.visit_notes ? String(record.visit_notes).trim() : "";
+      const existingNotes = record.visit_notes
+        ? String(record.visit_notes).trim()
+        : "";
       updateData.visit_notes = existingNotes
         ? `${existingNotes}\n${VisitNotes}`
         : VisitNotes;
     }
 
-    await DB("trx_visitations").where("visitation_id", record.visitation_id).update(updateData);
+    await DB("trx_visitations")
+      .where("visitation_id", record.visitation_id)
+      .update(updateData);
 
     return res.status(200).json({
       status: "00",
@@ -116,7 +131,7 @@ router.post("/", async (req, res) => {
       func: "check-out",
       request: req.body,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

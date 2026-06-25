@@ -55,9 +55,7 @@ const returnArchiveLoan = async (req, res) => {
       updated_at: dNow,
     };
 
-    await DB("trx_archive_loans")
-      .where("loan_id", nLoanId)
-      .update(oData);
+    await DB("trx_archive_loans").where("loan_id", nLoanId).update(oData);
 
     const cOverdueMessage = bIsOverdue
       ? ` (TERLAMBAT: seharusnya kembali ${oLoan.expected_return_date})`
@@ -89,7 +87,7 @@ const returnArchiveLoan = async (req, res) => {
       func: "returnArchiveLoan",
       request: oPayload,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

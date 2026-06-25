@@ -13,7 +13,9 @@ const MENU_CATALOG = {
   utility: {
     label: "Utility",
     icon: "pi pi-fw pi-cog",
-    items: [{ label: "Config", icon: "pi pi-fw pi-wrench", to: "/setup/config" }],
+    items: [
+      { label: "Config", icon: "pi pi-fw pi-wrench", to: "/setup/config" },
+    ],
   },
   buku_tamu_input: {
     label: "Registrasi Tamu",
@@ -67,7 +69,7 @@ const MENU_CATALOG = {
   },
 };
 
-const ROLE_ALIASES = {
+const peran_ALIASES = {
   superadmin: ["superadmin", "admin", "master", "ADM", "Administrator"],
   admin: ["admin", "master", "ADM", "Administrator"],
   master: ["master", "ADM", "Administrator"],
@@ -99,17 +101,21 @@ const archiveDocumentItems = [
     label: "Peminjaman Arsip",
     icon: "pi pi-fw pi-share-alt",
     to: "/edms/archive_loan",
-  }
+  },
 ];
 
 const ensureArchiveDocumentMenu = (menu) => {
   if (!Array.isArray(menu)) return [];
 
   const hasItem = (items = [], toPath) => {
-    return items.some((item) => item.to === toPath || hasItem(item.items || [], toPath));
+    return items.some(
+      (item) => item.to === toPath || hasItem(item.items || [], toPath),
+    );
   };
 
-  const hasAll = archiveDocumentItems.every((reqItem) => hasItem(menu, reqItem.to));
+  const hasAll = archiveDocumentItems.every((reqItem) =>
+    hasItem(menu, reqItem.to),
+  );
   if (hasAll) return menu;
 
   const archiveGroup = menu.find((item) => {
@@ -118,8 +124,10 @@ const ensureArchiveDocumentMenu = (menu) => {
   });
 
   if (archiveGroup) {
-    const existingTos = (archiveGroup.items || []).map(item => item.to);
-    const missingItems = archiveDocumentItems.filter(item => !existingTos.includes(item.to)).map(cloneMenu);
+    const existingTos = (archiveGroup.items || []).map((item) => item.to);
+    const missingItems = archiveDocumentItems
+      .filter((item) => !existingTos.includes(item.to))
+      .map(cloneMenu);
     archiveGroup.items = [...(archiveGroup.items || []), ...missingItems];
     return menu;
   }
@@ -134,10 +142,12 @@ const ensureArchiveDocumentMenu = (menu) => {
   ];
 };
 
-const roleAliases = (role) => {
-  const normalized = String(role || "").trim();
+const peranAliases = (peran) => {
+  const normalized = String(peran || "").trim();
   const key = normalized.toLowerCase();
-  return Array.from(new Set([normalized, ...(ROLE_ALIASES[key] || [])].filter(Boolean)));
+  return Array.from(
+    new Set([normalized, ...(peran_ALIASES[key] || [])].filter(Boolean)),
+  );
 };
 
 const normalizeLegacyMenu = (rawMenu) => {
@@ -163,24 +173,31 @@ const normalizeLegacyMenu = (rawMenu) => {
   }
 
   if (Array.isArray(parsed?.menus)) {
-    const grouped = parsed.menus.reduce((acc, code) => {
-      const menu = MENU_CATALOG[code];
-      if (!menu) return acc;
+    const grouped = parsed.menus.reduce(
+      (acc, code) => {
+        const menu = MENU_CATALOG[code];
+        if (!menu) return acc;
 
-      if (code === "dashboard") {
-        acc.home.push(cloneMenu(menu));
-      } else if (code.startsWith("buku_tamu")) {
-        acc.guest.push(cloneMenu(menu));
-      } else if (code.startsWith("arsip") || code === "report_arsip" || code === "approval") {
-        acc.archive.push(cloneMenu(menu));
-      } else if (code === "audit_log" || code === "report") {
-        acc.report.push(cloneMenu(menu));
-      } else {
-        acc.setup.push(cloneMenu(menu));
-      }
+        if (code === "dashboard") {
+          acc.home.push(cloneMenu(menu));
+        } else if (code.startsWith("buku_tamu")) {
+          acc.guest.push(cloneMenu(menu));
+        } else if (
+          code.startsWith("arsip") ||
+          code === "report_arsip" ||
+          code === "approval"
+        ) {
+          acc.archive.push(cloneMenu(menu));
+        } else if (code === "audit_log" || code === "report") {
+          acc.report.push(cloneMenu(menu));
+        } else {
+          acc.setup.push(cloneMenu(menu));
+        }
 
-      return acc;
-    }, { home: [], setup: [], guest: [], archive: [], report: [] });
+        return acc;
+      },
+      { home: [], setup: [], guest: [], archive: [], report: [] },
+    );
 
     return [
       grouped.home.length && { label: "HOME", items: grouped.home },
@@ -218,12 +235,13 @@ const buildTree = (rows) => {
     }
   });
 
-  const clean = (items) => items
-    .sort((a, b) => a.sortOrder - b.sortOrder)
-    .map(({ id, parentId, sortOrder, items, ...item }) => ({
-      ...item,
-      ...(items.length ? { items: clean(items) } : {}),
-    }));
+  const clean = (items) =>
+    items
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map(({ id, parentId, sortOrder, items, ...item }) => ({
+        ...item,
+        ...(items.length ? { items: clean(items) } : {}),
+      }));
 
   return clean(roots);
 };
@@ -237,82 +255,106 @@ const querySafely = async (queryBuilder) => {
 };
 
 const getUser = async (DB, uniqueId) => {
-  return await querySafely(() => DB("mst_users")
-    .leftJoin("mst_user_roles", "mst_users.user_id", "mst_user_roles.user_id")
-    .leftJoin("mst_roles", "mst_user_roles.role_id", "mst_roles.role_id")
-    .select("mst_users.user_id as user_id", "mst_users.username as username", "mst_roles.role_name as role")
-    .where("mst_users.user_id", uniqueId)
-    .first());
+  return await querySafely(() =>
+    DB("mst_pengguna")
+      .leftJoin(
+        "mst_pengguna_perans",
+        "mst_pengguna.nama_pengguna",
+        "mst_pengguna_perans.nama_pengguna",
+      )
+      .leftJoin(
+        "mst_perans",
+        "mst_pengguna_perans.id_peran",
+        "mst_perans.id_peran",
+      )
+      .select(
+        "mst_pengguna.nama_pengguna as nama_pengguna",
+        "mst_pengguna.nama_pengguna as nama_pengguna",
+        "mst_perans.nama_peran as peran",
+      )
+      .where("mst_pengguna.nama_pengguna", uniqueId)
+      .first(),
+  );
 };
 
 const getLegacyUserMenu = async (DB, uniqueId) => {
-  const navigation = await querySafely(() => DB("user_navigation")
-    .select("menu")
-    .where("user_id", uniqueId)
-    .first());
+  const navigation = await querySafely(() =>
+    DB("navigasi_pengguna")
+      .select("menu")
+      .where("nama_pengguna", uniqueId)
+      .first(),
+  );
 
   return normalizeLegacyMenu(navigation?.menu);
 };
 
-const getLegacyRoleMenu = async (DB, role) => {
-  const aliases = roleAliases(role);
-  const navigation = await querySafely(() => DB("mst_navigation")
-    .select("menu")
-    .whereIn("role", aliases)
-    .orderByRaw(`CASE WHEN role = ? THEN 0 ELSE 1 END`, [role || ""])
-    .first());
+const getLegacyperanMenu = async (DB, peran) => {
+  const aliases = peranAliases(peran);
+  const navigation = await querySafely(() =>
+    DB("mst_navigasi")
+      .select("menu")
+      .whereIn("peran", aliases)
+      .orderByRaw(`CASE WHEN peran = ? THEN 0 ELSE 1 END`, [peran || ""])
+      .first(),
+  );
 
   return normalizeLegacyMenu(navigation?.menu);
 };
 
 const getRbacMenu = async (DB, user) => {
-  if (!user?.username && !user?.role) return [];
+  if (!user?.nama_pengguna && !user?.peran) return [];
 
   let rows = [];
 
-  if (user?.username) {
-    rows = await querySafely(() => DB("mst_menus as m")
-      .distinct(
-        "m.menu_id as MenuId",
-        "m.parent_menu_id as ParentMenuId",
-        "m.menu_name as MenuName",
-        "m.menu_path as MenuPath",
-        "m.menu_icon as MenuIcon",
-        "m.sort_order as SortOrder",
-      )
-      .join("mst_role_menus as rm", "rm.menu_id", "m.menu_id")
-      .join("mst_roles as r", "r.role_id", "rm.role_id")
-      .join("mst_user_roles as ur", "ur.role_id", "r.role_id")
-      .join("mst_users as u", "u.user_id", "ur.user_id")
-      .where("u.username", user.username)
-      .where("m.is_active", 1)
-      .where("rm.can_view", 1)
-      .where("r.status", "active")
-      .where("ur.status", "active")
-      .orderBy("m.sort_order", "asc")) || [];
+  if (user?.nama_pengguna) {
+    rows =
+      (await querySafely(() =>
+        DB("mst_menus as m")
+          .distinct(
+            "m.menu_id as MenuId",
+            "m.parent_menu_id as ParentMenuId",
+            "m.menu_name as MenuName",
+            "m.menu_path as MenuPath",
+            "m.menu_icon as MenuIcon",
+            "m.sort_order as SortOrder",
+          )
+          .join("mst_peran_menus as rm", "rm.menu_id", "m.menu_id")
+          .join("mst_perans as r", "r.id_peran", "rm.id_peran")
+          .join("mst_pengguna_perans as ur", "ur.id_peran", "r.id_peran")
+          .join("mst_pengguna as u", "u.nama_pengguna", "ur.nama_pengguna")
+          .where("u.nama_pengguna", user.nama_pengguna)
+          .where("m.is_active", 1)
+          .where("rm.can_view", 1)
+          .where("r.status", "active")
+          .where("ur.status", "active")
+          .orderBy("m.sort_order", "asc"),
+      )) || [];
   }
 
-  if (rows.length < 1 && user?.role) {
-    rows = await querySafely(() => DB("mst_menus as m")
-      .distinct(
-        "m.menu_id as MenuId",
-        "m.parent_menu_id as ParentMenuId",
-        "m.menu_name as MenuName",
-        "m.menu_path as MenuPath",
-        "m.menu_icon as MenuIcon",
-        "m.sort_order as SortOrder",
-      )
-      .join("mst_role_menus as rm", "rm.menu_id", "m.menu_id")
-      .join("mst_roles as r", "r.role_id", "rm.role_id")
-      .where((builder) => {
-        builder
-          .whereIn("r.role_code", roleAliases(user.role))
-          .orWhereIn("r.role_name", roleAliases(user.role));
-      })
-      .where("m.is_active", 1)
-      .where("rm.can_view", 1)
-      .where("r.status", "active")
-      .orderBy("m.sort_order", "asc")) || [];
+  if (rows.length < 1 && user?.peran) {
+    rows =
+      (await querySafely(() =>
+        DB("mst_menus as m")
+          .distinct(
+            "m.menu_id as MenuId",
+            "m.parent_menu_id as ParentMenuId",
+            "m.menu_name as MenuName",
+            "m.menu_path as MenuPath",
+            "m.menu_icon as MenuIcon",
+            "m.sort_order as SortOrder",
+          )
+          .join("mst_peran_menus as rm", "rm.menu_id", "m.menu_id")
+          .join("mst_perans as r", "r.id_peran", "rm.id_peran")
+          .where((builder) => {
+            builder
+              .whereIn("r.kode_peran", peranAliases(user.peran))
+              .orWhereIn("r.nama_peran", peranAliases(user.peran));
+          })
+          .where("m.is_active", 1)
+          .where("rm.can_view", 1)
+          .where("r.status", "active")
+          .orderBy("m.sort_order", "asc"),
+      )) || [];
   }
 
   return rows.length ? buildTree(rows) : [];
@@ -323,17 +365,29 @@ const getNavigationMenu = async (DB, uniqueId) => {
 
   const legacyUserMenu = await getLegacyUserMenu(DB, uniqueId);
   if (legacyUserMenu.length) {
-    return { menu: ensureArchiveDocumentMenu(legacyUserMenu), source: "user_navigation", user };
+    return {
+      menu: ensureArchiveDocumentMenu(legacyUserMenu),
+      source: "navigasi_pengguna",
+      user,
+    };
   }
 
   const rbacMenu = await getRbacMenu(DB, user);
   if (rbacMenu.length) {
-    return { menu: ensureArchiveDocumentMenu(rbacMenu), source: "mst_role_menus", user };
+    return {
+      menu: ensureArchiveDocumentMenu(rbacMenu),
+      source: "mst_peran_menus",
+      user,
+    };
   }
 
-  const legacyRoleMenu = await getLegacyRoleMenu(DB, user?.role);
-  if (legacyRoleMenu.length) {
-    return { menu: ensureArchiveDocumentMenu(legacyRoleMenu), source: "mst_navigation", user };
+  const legacyperanMenu = await getLegacyperanMenu(DB, user?.peran);
+  if (legacyperanMenu.length) {
+    return {
+      menu: ensureArchiveDocumentMenu(legacyperanMenu),
+      source: "mst_navigasi",
+      user,
+    };
   }
 
   return { menu: [], source: null, user };

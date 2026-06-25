@@ -34,10 +34,16 @@ async function getData(endpoint: string, params: Record<string, any> = {}, custo
 
         const apiEndpoint = query.toString() ? `${endpoint}?${query.toString()}` : endpoint;
 
-        const headers: Record<string, string> = {
-            'X-ENDPOINT': apiEndpoint,
+        // 1. Gabungkan header tambahan
+        const mergedCustomHeaders = {
             'X-Level': "1",
             ...customHeader
+        };
+
+        // 2. Bungkus ke dalam x-custom-header (Sesuai maunya Interceptor)
+        const headers: Record<string, string> = {
+            'X-ENDPOINT': apiEndpoint,
+            'x-custom-header': JSON.stringify(mergedCustomHeaders) // <-- INI KUNCINYA
         };
 
         const response = await Axios.get('', { headers });

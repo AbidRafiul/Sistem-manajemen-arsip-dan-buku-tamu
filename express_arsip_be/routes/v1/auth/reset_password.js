@@ -2,7 +2,12 @@ import "dotenv/config";
 import express from "express";
 import Joi from "joi";
 import DB from "../../../core/config/knex.js";
-import { formatDateSystem, hashEquals, hmac, status } from "../components/tools/general.js";
+import {
+  formatDateSystem,
+  hashEquals,
+  hmac,
+  status,
+} from "../components/tools/general.js";
 import { Logging, validatePayload } from "../components/tools/servertool.js";
 import { recordAuditTrail } from "../components/tools/audit_tool.js";
 
@@ -10,15 +15,15 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { body: oPayload } = req;
-  const cUsernameActor = req?.auth?.username || "Unknown"; // Ngambil dari token JWT
+  const cnama_penggunaActor = req?.auth?.nama_pengguna || "Unknown"; // Ngambil dari token JWT
 
   try {
     // 1. Validasi Input User
     const cValidation = await validatePayload(
       {
-        username: Joi.string().required().label("Username"),
-        old_password: Joi.string().required().label("Password Lama"),
-        new_password: Joi.string().min(6).required().label("Password Baru"),
+        nama_pengguna: Joi.string().required().label("nama_pengguna"),
+        old_kata_sandi: Joi.string().required().label("kata_sandi Lama"),
+        new_kata_sandi: Joi.string().min(6).required().label("kata_sandi Baru"),
       },
       {
         "string.base": "{#label} harus berupa string",
@@ -26,7 +31,7 @@ router.post("/", async (req, res) => {
         "any.required": "{#label} wajib diisi",
         "string.min": "{#label} minimal {#limit} karakter",
       },
-      oPayload
+      oPayload,
     );
 
     if (cValidation) {
@@ -39,58 +44,74 @@ router.post("/", async (req, res) => {
     }
 
     // 2. Cari Data User di Database
-    const oUser = await DB("mst_users")
-      .leftJoin("mst_user_roles", "mst_users.user_id", "mst_user_roles.user_id")
-      .leftJoin("mst_roles", "mst_user_roles.role_id", "mst_roles.role_id")
-      .select(
-        "mst_users.user_id",
-        "mst_users.username",
-        "mst_users.password",
-        "mst_roles.role_name as role"
+    const oUser = await DB("mst_pengguna")
+      .leftJoin(
+        "mst_pengguna_perans",
+        "mst_pengguna.nama_pengguna",
+        "mst_pengguna_perans.nama_pengguna",
       )
-      .where("mst_users.username", oPayload.username)
+      .leftJoin(
+        "mst_perans",
+        "mst_pengguna_perans.id_peran",
+        "mst_perans.id_peran",
+      )
+      .select(
+        "mst_pengguna.nama_pengguna",
+        "mst_pengguna.nama_pengguna",
+        "mst_pengguna.kata_sandi",
+        "mst_perans.nama_peran as peran",
+      )
+      .where("mst_pengguna.nama_pengguna", oPayload.nama_pengguna)
       .first();
 
     if (!oUser) {
       return res.status(400).json({
         status: status.GAGAL,
-        message: "Username tidak ditemukan",
+        message: "nama_pengguna tidak ditemukan",
         datetime: formatDateSystem(),
       });
     }
 
-    // 3. Verifikasi Password Lama
+    // 3. Verifikasi kata_sandi Lama
     const cSecret = process.env.USER_SECRET;
-    const cOldPassword = process.env.USER_KEY + oUser.username + oPayload.old_password;
+    const cOldkata_sandi =
+      process.env.USER_KEY + oUser.nama_pengguna + oPayload.old_kata_sandi;
 
-    if (!hashEquals(hmac(cOldPassword, cSecret, "sha512"), oUser.password)) {
+    if (
+      !hashEquals(hmac(cOldkata_sandi, cSecret, "sha512"), oUser.kata_sandi)
+    ) {
       return res.status(400).json({
         status: status.GAGAL,
-        message: "Password lama salah!",
+        message: "kata_sandi lama salah!",
         datetime: formatDateSystem(),
       });
     }
 
-    // 4. Hash (Sandikan) Password Baru
-    const cNewPassword = process.env.USER_KEY + oUser.username + oPayload.new_password;
-    const cHashedNewPassword = hmac(cNewPassword, cSecret, "sha512");
+    // 4. Hash (Sandikan) kata_sandi Baru
+    const cNewkata_sandi =
+      process.env.USER_KEY + oUser.nama_pengguna + oPayload.new_kata_sandi;
+    const cHashedNewkata_sandi = hmac(cNewkata_sandi, cSecret, "sha512");
 
-    // 5. Update Database dengan Password Baru
-    await DB("mst_users")
-      .where("username", oUser.username)
+    // 5. Update Database dengan kata_sandi Baru
+    await DB("mst_pengguna")
+      .where("nama_pengguna", oUser.nama_pengguna)
       .update({
-        password: cHashedNewPassword
+        kata_sandi: cHashedNewkata_sandi,
       });
 
     // 6. Catat Aktivitas ke CCTV
-    recordAuditTrail(oUser.username, String(oUser.role || ""), "RESET_PASSWORD", req);
+    recordAuditTrail(
+      oUser.nama_pengguna,
+      String(oUser.peran || ""),
+      "RESET_kata_sandi",
+      req,
+    );
 
     return res.status(200).json({
       status: status.SUKSES,
-      message: "Password berhasil diubah",
+      message: "kata_sandi berhasil diubah",
       datetime: formatDateSystem(),
     });
-
   } catch (oError) {
     const oResult = {
       status: status.BAD_REQUEST,
@@ -99,11 +120,11 @@ router.post("/", async (req, res) => {
     };
 
     Logging(oError, {
-      file: "reset_password.js",
+      file: "reset_kata_sandi.js",
       func: "POST /",
       request: oPayload,
       response: oResult,
-      user: cUsernameActor,
+      user: cnama_penggunaActor,
     });
 
     return res.status(500).json(oResult);

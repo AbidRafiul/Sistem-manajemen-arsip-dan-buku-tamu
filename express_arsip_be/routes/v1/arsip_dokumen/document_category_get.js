@@ -10,16 +10,16 @@ const getDocumentCategories = async (req, res) => {
         "dc.document_category_id",
         "dc.document_category_code",
         "dc.document_category_name",
-        "dc.description",
+        "dc.deskripsi",
         "dc.status",
         "ac.archive_classification_id",
         "ac.classification_code",
-        "ac.classification_name"
+        "ac.classification_name",
       )
       .leftJoin(
         "mst_archive_classifications as ac",
         "dc.archive_classification_id",
-        "ac.archive_classification_id"
+        "ac.archive_classification_id",
       )
       .where("dc.status", cStatus)
       .orderBy("dc.document_category_name", "asc");
@@ -43,7 +43,7 @@ const getDocumentCategories = async (req, res) => {
       func: "getDocumentCategories",
       request: req.query,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

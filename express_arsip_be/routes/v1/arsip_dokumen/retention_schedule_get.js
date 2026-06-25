@@ -13,15 +13,15 @@ const getRetentionSchedules = async (req, res) => {
         "rs.retention_name",
         "rs.retention_years",
         "rs.retention_action",
-        "rs.description",
+        "rs.deskripsi",
         "rs.status",
         "dc.document_category_id",
-        "dc.document_category_name"
+        "dc.document_category_name",
       )
       .leftJoin(
         "mst_document_categories as dc",
         "rs.document_category_id",
-        "dc.document_category_id"
+        "dc.document_category_id",
       )
       .where("rs.status", cStatus);
 
@@ -50,7 +50,7 @@ const getRetentionSchedules = async (req, res) => {
       func: "getRetentionSchedules",
       request: req.query,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

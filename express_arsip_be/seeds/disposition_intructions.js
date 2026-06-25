@@ -9,7 +9,7 @@ export async function seed(knex) {
     {
       instruction_code: "TINDAK_LANJUT",
       instruction_name: "Tindak Lanjut",
-      description: "Menindaklanjuti surat",
+      deskripsi: "Menindaklanjuti surat",
       status: "active",
       created_at: new Date(),
       updated_at: new Date(),
@@ -17,7 +17,7 @@ export async function seed(knex) {
     {
       instruction_code: "PELAJARI",
       instruction_name: "Pelajari",
-      description: "Mempelajari isi surat",
+      deskripsi: "Mempelajari isi surat",
       status: "active",
       created_at: new Date(),
       updated_at: new Date(),
@@ -25,7 +25,7 @@ export async function seed(knex) {
     {
       instruction_code: "KOORDINASIKAN",
       instruction_name: "Koordinasikan",
-      description: "Koordinasi dengan pihak terkait",
+      deskripsi: "Koordinasi dengan pihak terkait",
       status: "active",
       created_at: new Date(),
       updated_at: new Date(),
@@ -33,7 +33,7 @@ export async function seed(knex) {
     {
       instruction_code: "ARSIPKAN",
       instruction_name: "Arsipkan",
-      description: "Mengarsipkan surat",
+      deskripsi: "Mengarsipkan surat",
       status: "active",
       created_at: new Date(),
       updated_at: new Date(),
@@ -41,7 +41,7 @@ export async function seed(knex) {
     {
       instruction_code: "BUAT_BALASAN",
       instruction_name: "Buat Balasan",
-      description: "Membuat surat balasan",
+      deskripsi: "Membuat surat balasan",
       status: "active",
       created_at: new Date(),
       updated_at: new Date(),
