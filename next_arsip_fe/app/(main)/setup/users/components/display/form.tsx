@@ -206,14 +206,14 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
                 <form onSubmit={formik?.handleSubmit} className="flex gap-2 flex-column">
                     <div className="flex md:flex-row flex-column gap-2 w-full">
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="fullname">Name</label>
+                            <label htmlFor="fullname">Nama Lengkap</label>
                             <div className="p-inputgroup">
                                 <InputText
                                     id="fullname"
                                     name="fullname"
                                     value={formik?.values.fullname}
                                     style={{ padding: '1rem' }}
-                                    placeholder="Fullname"
+                                    placeholder="Nama Lengkap"
                                     onChange={(e) => {
                                         formik?.setFieldValue('fullname', e.target.value);
                                     }}
@@ -243,7 +243,7 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
 
                     <div className="flex md:flex-row flex-column gap-2 w-full">
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="telp">Telp</label>
+                            <label htmlFor="telp">No. Telepon</label>
                             <div className="p-inputgroup">
                                 <InputText
                                     id="telp"
@@ -398,8 +398,8 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
                                 optionValue="kode"
                                 optionLabel="label"
                                 options={[
-                                    { kode: '0', label: 'nonactive' },
-                                    { kode: '1', label: 'active' }
+                                    { kode: '0', label: 'Nonaktif' },
+                                    { kode: '1', label: 'Aktif' }
                                 ]}
                                 value={formik?.values.status}
                                 onChange={(e) => {
@@ -410,12 +410,12 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
                         </div>
                         {isFormFieldInvalid('status') ? getFormErrorMessage('status') : ''}
                     </div>
-                    <Button type="submit" label={state?.edit ? 'Update' : 'Save'} className="mt-2" loading={state?.load} />
+                    <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} className="mt-2" loading={state?.load} />
                 </form>
             </Dialog>
 
             <Dialog
-                header="Confirm Delete"
+                header="Konfirmasi Hapus"
                 visible={state.delete}
                 onHide={() => {
                     setState((p) => ({ ...p, add: false, edit: false, delete: false }));
@@ -428,18 +428,18 @@ const Form = ({ state, setState, formik, toast, getData: apiGetData }: FormProps
                     <i className="pi pi-exclamation-triangle text-red-500 text-6xl" />
 
                     <div>
-                        <h3 className="font-bold mb-2">{state.selectedUsers.length > 1 ? `Delete ${state.selectedUsers.length} units?` : 'Delete this unit?'}</h3>
+                        <h3 className="font-bold mb-2">{state.selectedUsers.length > 1 ? `Hapus ${state.selectedUsers.length} pengguna?` : 'Hapus pengguna ini?'}</h3>
                         <p className="text-color-secondary">
                             {state.selectedUsers.length > 1 ? (
-                                `You are going to delete all this selected ${state.selectedUsers.length} units`
+                                `Anda akan menghapus ${state.selectedUsers.length} pengguna yang dipilih`
                             ) : (
                                 <>
-                                    You are going to delete this unit as follow : <strong>{state.selectedUsers[0]?.user_id || ''}</strong>
-                                    {`(${state.selectedUsers[0]?.fullname})`}.
+                                    Anda akan menghapus pengguna berikut: <strong>{state.selectedUsers[0]?.user_id || ''}</strong>
+                                    {` (${state.selectedUsers[0]?.fullname})`}.
                                 </>
                             )}
                             <br />
-                            This action can&apos;t be undone
+                            Tindakan ini tidak dapat dibatalkan
                         </p>
                     </div>
                 </div>

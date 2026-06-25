@@ -1,0 +1,625 @@
+'use client'
+
+import { Button } from "primereact/button";
+import { Card } from "primereact/card";
+import { Chip } from "primereact/chip";
+import { Column } from "primereact/column";
+import { DataTable } from "primereact/datatable";
+import { Dialog } from "primereact/dialog";
+import { Divider } from "primereact/divider";
+import { Dropdown } from "primereact/dropdown";
+import { InputText } from "primereact/inputtext";
+import { InputTextarea } from "primereact/inputtextarea";
+import { Message } from "primereact/message";
+import { Tag } from "primereact/tag";
+import { Toast } from "primereact/toast";
+import { RefObject } from "react";
+import { TableData } from "../../../components/interfaces";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type DialogMode = "create" | "forward" | "process" | "complete";
+
+type UserOption = {
+    user_id: number;
+    fullname: string;
+    username: string;
+};
+
+type InstructionOption = {
+    disposition_instruction_id: number;
+    instruction_name: string;
+    instruction_code: string;
+};
+
+export interface DispositionViewProps {
+    toast: RefObject<Toast>;
+    letters: TableData[];
+    dispositions: Record<string, any>[];
+    users: UserOption[];
+    instructions: InstructionOption[];
+    search: string;
+    loading: boolean;
+    dialogMode: DialogMode | null;
+    selectedLetter: TableData | null;
+    selectedDisposition: Record<string, any> | null;
+    form: {
+        incoming_letter_id: number | null;
+        parent_disposition_id: number | null;
+        from_user_id: number | null;
+        to_user_id: number | null;
+        disposition_instruction_id: number | null;
+        instruction: string;
+        disposition_note: string;
+        due_date: string;
+    };
+    actionNote: string;
+    statusSummary: Record<string, number>;
+    letterOptions: { label: string; value: number | null }[];
+    onSearchChange: (val: string) => void;
+    onFormChange: (key: string, value: any) => void;
+    onActionNoteChange: (val: string) => void;
+    onOpenCreate: (letter?: TableData) => void;
+    onOpenForward: (disposition: Record<string, any>) => void;
+    onOpenAction: (mode: "process" | "complete", disposition: Record<string, any>) => void;
+    onCloseDialog: () => void;
+    onSaveDisposition: () => void;
+    onSaveAction: () => void;
+    onRefresh: () => void;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const formatDate = (value?: string) => {
+    if (!value) return "-";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "-";
+    return new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "short", year: "numeric" }).format(date);
+};
+
+const getStatus = (value?: string) => String(value || "baru").toLowerCase();
+
+const statusLabel: Record<string, string> = {
+    baru: "Baru",
+    didisposisi: "Didisposisi",
+    dibaca: "Dibaca",
+    diproses: "Diproses",
+    selesai: "Selesai",
+};
+
+const renderStatusTag = (statusValue?: string) => {
+    const status = getStatus(statusValue);
+    const severityMap: Record<string, "info" | "warning" | "success" | "danger"> = {
+        baru: "info",
+        didisposisi: "warning",
+        dibaca: "warning",
+        diproses: "warning",
+        selesai: "success",
+    };
+    const iconMap: Record<string, string> = {
+        baru: "pi pi-envelope",
+        didisposisi: "pi pi-share-alt",
+        dibaca: "pi pi-eye",
+        diproses: "pi pi-cog",
+        selesai: "pi pi-check-circle",
+    };
+    return (
+        <Tag
+            value={statusLabel[status] || status}
+            severity={severityMap[status] || "info"}
+            icon={iconMap[status] || "pi pi-circle"}
+            style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }}
+        />
+    );
+};
+
+const dialogTitleConfig: Record<DialogMode, { title: string; icon: string; color: string }> = {
+    create: { title: "Buat Disposisi Surat", icon: "pi pi-send", color: "text-primary" },
+    forward: { title: "Teruskan Disposisi", icon: "pi pi-share-alt", color: "text-blue-500" },
+    process: { title: "Proses Disposisi", icon: "pi pi-cog", color: "text-orange-500" },
+    complete: { title: "Selesaikan Disposisi", icon: "pi pi-check-circle", color: "text-green-500" },
+};
+
+// ─── Main View Component ───────────────────────────────────────────────────────
+
+const DispositionView = ({
+    letters,
+    dispositions,
+    users,
+    instructions,
+    search,
+    loading,
+    dialogMode,
+    selectedLetter,
+    selectedDisposition,
+    form,
+    actionNote,
+    statusSummary,
+    letterOptions,
+    onSearchChange,
+    onFormChange,
+    onActionNoteChange,
+    onOpenCreate,
+    onOpenForward,
+    onOpenAction,
+    onCloseDialog,
+    onSaveDisposition,
+    onSaveAction,
+    onRefresh,
+}: DispositionViewProps) => {
+
+    const pendingLetters = letters.filter((l) => l.status !== "selesai");
+    const completionRate = letters.length ? Math.round(((statusSummary.selesai || 0) / letters.length) * 100) : 0;
+
+    const metricCards = [
+        { label: "Baru", value: statusSummary.baru || 0, icon: "pi pi-envelope", bg: "#EEF2FF", color: "#4F46E5", severity: "info" as const },
+        { label: "Didisposisi", value: statusSummary.didisposisi || 0, icon: "pi pi-share-alt", bg: "#FFFBEB", color: "#D97706", severity: "warning" as const },
+        { label: "Diproses", value: statusSummary.diproses || 0, icon: "pi pi-cog", bg: "#FFF7ED", color: "#EA580C", severity: "warning" as const },
+        { label: "Selesai", value: statusSummary.selesai || 0, icon: "pi pi-check-circle", bg: "#F0FDF4", color: "#16A34A", severity: "success" as const },
+    ];
+
+    // ─── Column Templates ────────────────────────────────────────────────────
+
+    const pendingLetterNoTemplate = (rowData: TableData) => (
+        <div>
+            <div className="font-semibold text-sm text-900">{rowData.agenda_number || rowData.letter_number || "-"}</div>
+            <div className="text-xs text-color-secondary">{rowData.sender_name || "-"}</div>
+        </div>
+    );
+
+    const pendingLetterSubjectTemplate = (rowData: TableData) => (
+        <div>
+            <div className="text-sm text-900">{rowData.subject || "-"}</div>
+            {rowData.attachment_description && (
+                <div className="text-xs text-color-secondary mt-1">{rowData.attachment_description}</div>
+            )}
+        </div>
+    );
+
+    const pendingActionTemplate = (rowData: TableData) => (
+        <Button
+            size="small"
+            icon="pi pi-send"
+            label={rowData.status === "baru" ? "Disposisikan" : "Tambah"}
+            style={{ background: "linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)", border: "none", fontSize: "0.75rem" }}
+            onClick={() => onOpenCreate(rowData)}
+        />
+    );
+
+    const dispositionLetterTemplate = (row: Record<string, any>) => (
+        <div>
+            <div className="font-semibold text-sm text-900">{row.agenda_number || row.letter_number || "-"}</div>
+            <div className="text-xs text-color-secondary">{row.subject || "-"}</div>
+        </div>
+    );
+
+    const dispositionFlowTemplate = (row: Record<string, any>) => (
+        <div>
+            <div className="font-semibold text-sm text-900 flex align-items-center gap-1">
+                <span>{row.from_user_name || "Sekretariat"}</span>
+                <i className="pi pi-arrow-right text-xs text-color-secondary" />
+                <span>{row.to_user_name || "-"}</span>
+            </div>
+            <div className="text-xs text-color-secondary mt-1">
+                {row.parent_disposition_id ? `Lanjutan dari #${row.parent_disposition_id}` : "Disposisi awal"}
+            </div>
+        </div>
+    );
+
+    const dispositionInstructionTemplate = (row: Record<string, any>) => (
+        <div>
+            <div className="font-semibold text-sm text-900">{row.instruction_name || row.instruction || "-"}</div>
+            {row.disposition_note && <div className="text-xs text-color-secondary mt-1">{row.disposition_note}</div>}
+        </div>
+    );
+
+    const dispositionActionTemplate = (row: Record<string, any>) => {
+        const status = getStatus(row.status);
+        const isDone = status === "selesai";
+        const isProcess = status === "diproses";
+        return (
+            <div className="flex gap-1 align-items-center justify-content-center">
+                {!isDone && !isProcess && (
+                    <Button size="small" icon="pi pi-play" text severity="warning" tooltip="Proses" tooltipOptions={{ position: "top" }} onClick={() => onOpenAction("process", row)} />
+                )}
+                {!isDone && (
+                    <Button size="small" icon="pi pi-share-alt" text severity="info" tooltip="Teruskan" tooltipOptions={{ position: "top" }} onClick={() => onOpenForward(row)} />
+                )}
+                {!isDone && (
+                    <Button size="small" icon="pi pi-check" text severity="success" tooltip="Selesaikan" tooltipOptions={{ position: "top" }} onClick={() => onOpenAction("complete", row)} />
+                )}
+                {isDone && <span className="text-xs text-color-secondary">—</span>}
+            </div>
+        );
+    };
+
+    const trackingReceiverTemplate = (item: Record<string, any>) => (
+        <div>
+            <div className="font-semibold text-sm text-900">{item.to_user_name || "-"}</div>
+            <div className="text-xs text-color-secondary">{item.agenda_number || item.letter_number || "-"} · {item.subject || "-"}</div>
+        </div>
+    );
+
+    const trackingProcessedTemplate = (item: Record<string, any>) => {
+        const status = getStatus(item.status);
+        const processedBy = item.processed_by_name || (status === "baru" ? "-" : item.to_user_name);
+        return (
+            <div>
+                <div className="font-semibold text-sm text-900">{processedBy || "-"}</div>
+                <div className="text-xs text-color-secondary">
+                    {item.parent_disposition_id ? `Disposisi lanjutan #${item.parent_disposition_id}` : "Disposisi awal"}
+                </div>
+            </div>
+        );
+    };
+
+    const trackingTimeTemplate = (item: Record<string, any>) => {
+        const processedAt = item.processed_at || item.completed_at || item.received_at || item.updated_at;
+        return (
+            <div>
+                <div className="font-semibold text-sm text-900">{processedAt ? formatDate(processedAt) : "-"}</div>
+                <div className="text-xs text-color-secondary">{item.instruction_name || item.instruction || "Instruksi belum diisi"}</div>
+            </div>
+        );
+    };
+
+    const currentDialogConfig = dialogMode ? dialogTitleConfig[dialogMode] : null;
+
+    return (
+        <>
+            {/* ─── Page Header ──────────────────────────────────────────────── */}
+            <Card className="shadow-1 border-round-2xl border-none mb-4">
+                <div className="flex flex-column md:flex-row md:align-items-start justify-content-between gap-3 mb-4">
+                    <div>
+                        <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: "0.1em" }}>Mail In · Korespondensi</span>
+                        <h2 className="m-0 text-900 font-extrabold text-2xl mt-1 mb-2" style={{ letterSpacing: "-0.02em" }}>Workflow Disposisi</h2>
+                        <p className="m-0 text-color-secondary text-sm font-medium">Kelola disposisi berjenjang, instruksi pimpinan, catatan, dan tracking status surat masuk.</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 flex-shrink-0">
+                        <span className="p-input-icon-left">
+                            <i className="pi pi-search" />
+                            <InputText
+                                value={search}
+                                onChange={(e) => onSearchChange(e.target.value)}
+                                placeholder="Cari surat atau disposisi..."
+                                className="text-sm" style={{ height: "2.25rem" }}
+                            />
+                        </span>
+                        <Button
+                            icon="pi pi-send" label="Buat Disposisi" size="small"
+                            style={{ background: "linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)", border: "none", boxShadow: "0 4px 12px rgba(59,130,246,0.2)" }}
+                            onClick={() => onOpenCreate()}
+                        />
+                        <Button
+                            icon="pi pi-refresh" label="Refresh" text size="small"
+                            loading={loading} onClick={onRefresh}
+                        />
+                    </div>
+                </div>
+
+                {/* ─── Metric Cards ──────────────────────── */}
+                <div className="grid">
+                    {metricCards.map((m) => (
+                        <div key={m.label} className="col-12 sm:col-6 lg:col-3">
+                            <div className="p-3 border-round-xl border-1 surface-border flex align-items-center gap-3" style={{ background: m.bg }}>
+                                <div className="flex align-items-center justify-content-center border-round-lg" style={{ width: "3rem", height: "3rem", background: "rgba(255,255,255,0.6)", color: m.color, flexShrink: 0 }}>
+                                    <i className={`${m.icon} text-xl`} />
+                                </div>
+                                <div>
+                                    <div className="text-xs font-bold uppercase text-color-secondary" style={{ letterSpacing: "0.08em" }}>{m.label}</div>
+                                    <div className="text-2xl font-extrabold mt-1" style={{ color: m.color }}>{m.value.toLocaleString("id-ID")}</div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Progress */}
+                <div className="mt-3 p-3 surface-50 border-round-xl border-1 surface-border flex align-items-center justify-content-between gap-3">
+                    <div>
+                        <div className="text-xs font-bold uppercase text-color-secondary mb-1" style={{ letterSpacing: "0.08em" }}>Tingkat Penyelesaian</div>
+                        <div className="text-color-secondary text-sm">Status surat bergerak otomatis berdasarkan aksi disposisi.</div>
+                    </div>
+                    <div className="flex align-items-center justify-content-center border-circle font-extrabold text-lg"
+                        style={{ width: "4rem", height: "4rem", background: "linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)", color: "#fff", flexShrink: 0 }}>
+                        {completionRate}%
+                    </div>
+                </div>
+            </Card>
+
+            {/* ─── Surat Perlu Disposisi + Alur Realita ─────────────────────── */}
+            <div className="grid mb-4">
+                <div className="col-12 lg:col-8">
+                    <Card className="shadow-1 border-round-2xl border-none h-full">
+                        <div className="flex align-items-center justify-content-between mb-3">
+                            <div className="flex align-items-center gap-2">
+                                <i className="pi pi-inbox text-primary" />
+                                <span className="font-bold text-900">Surat Perlu Disposisi</span>
+                            </div>
+                            <Chip label={`${pendingLetters.length} surat`} className="text-xs" style={{ height: "auto", padding: "0.2rem 0.6rem" }} />
+                        </div>
+                        <DataTable
+                            value={pendingLetters}
+                            loading={loading}
+                            emptyMessage={
+                                <div className="flex flex-column align-items-center py-4 gap-2 text-color-secondary">
+                                    <i className="pi pi-check-circle text-2xl text-green-400" />
+                                    <span className="text-sm">Tidak ada surat yang menunggu disposisi.</span>
+                                </div>
+                            }
+                            className="text-sm"
+                            rowHover
+                        >
+                            <Column header="No / Pengirim" body={pendingLetterNoTemplate} style={{ minWidth: "150px" }} />
+                            <Column header="Perihal" body={pendingLetterSubjectTemplate} style={{ minWidth: "200px" }} />
+                            <Column body={(r) => renderStatusTag(r.status)} header="Status" style={{ width: "120px" }} />
+                            <Column header="Aksi" body={pendingActionTemplate} style={{ width: "130px", textAlign: "center" }} />
+                        </DataTable>
+                    </Card>
+                </div>
+                <div className="col-12 lg:col-4">
+                    <Card className="shadow-1 border-round-2xl border-none h-full">
+                        <div className="flex align-items-center gap-2 mb-4">
+                            <i className="pi pi-sitemap text-primary" />
+                            <span className="font-bold text-900">Alur Disposisi</span>
+                        </div>
+                        <div className="flex flex-column gap-3">
+                            {[
+                                { step: "1", label: "Surat Baru Diterima", desc: "Sekretariat mencatat surat masuk", icon: "pi pi-envelope", bg: "#EEF2FF", color: "#4F46E5" },
+                                { step: "2", label: "Disposisi Pimpinan", desc: "Pimpinan mendisposisi ke unit/staf", icon: "pi pi-send", bg: "#FFFBEB", color: "#D97706" },
+                                { step: "3", label: "Proses Unit", desc: "Unit tujuan memproses surat", icon: "pi pi-cog", bg: "#FFF7ED", color: "#EA580C" },
+                                { step: "4", label: "Teruskan / Selesai", desc: "Delegasi lanjutan atau penyelesaian", icon: "pi pi-check-circle", bg: "#F0FDF4", color: "#16A34A" },
+                            ].map((s) => (
+                                <div key={s.step} className="flex align-items-start gap-3">
+                                    <div className="flex align-items-center justify-content-center border-round-lg flex-shrink-0" style={{ width: "2.5rem", height: "2.5rem", background: s.bg, color: s.color }}>
+                                        <i className={`${s.icon} text-sm`} />
+                                    </div>
+                                    <div>
+                                        <div className="font-semibold text-sm text-900">{s.label}</div>
+                                        <div className="text-xs text-color-secondary mt-1">{s.desc}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <Divider className="mt-4 mb-3" />
+                        <Message
+                            severity="info"
+                            text="Gunakan 'Teruskan' agar parent disposisi tetap tercatat dalam riwayat."
+                            className="w-full text-xs"
+                        />
+                    </Card>
+                </div>
+            </div>
+
+            {/* ─── Alur Disposisi Berjenjang ────────────────────────────────── */}
+            <Card className="shadow-1 border-round-2xl border-none mb-4">
+                <div className="flex align-items-center justify-content-between mb-3">
+                    <div className="flex align-items-center gap-2">
+                        <i className="pi pi-share-alt text-primary" />
+                        <span className="font-bold text-900">Alur Disposisi Berjenjang</span>
+                    </div>
+                    <Chip label={`${dispositions.length} disposisi`} className="text-xs" style={{ height: "auto", padding: "0.2rem 0.6rem" }} />
+                </div>
+                <DataTable
+                    value={dispositions}
+                    loading={loading}
+                    paginator rows={8}
+                    emptyMessage={
+                        <div className="flex flex-column align-items-center py-4 gap-2 text-color-secondary">
+                            <i className="pi pi-inbox text-2xl text-300" />
+                            <span className="text-sm">Belum ada disposisi. Mulai dari tombol Buat Disposisi.</span>
+                        </div>
+                    }
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+                    className="text-sm"
+                    rowHover
+                >
+                    <Column header="Surat" body={dispositionLetterTemplate} style={{ minWidth: "160px" }} />
+                    <Column header="Alur" body={dispositionFlowTemplate} style={{ minWidth: "200px" }} />
+                    <Column header="Instruksi Pimpinan" body={dispositionInstructionTemplate} style={{ minWidth: "180px" }} />
+                    <Column field="due_date" header="Tenggat Waktu" body={(r) => formatDate(r.due_date)} style={{ width: "110px" }} />
+                    <Column header="Status" body={(r) => renderStatusTag(r.status)} style={{ width: "120px" }} />
+                    <Column header="Aksi" body={dispositionActionTemplate} style={{ width: "140px", textAlign: "center" }} />
+                </DataTable>
+            </Card>
+
+            {/* ─── Tracking Surat ───────────────────────────────────────────── */}
+            <Card className="shadow-1 border-round-2xl border-none">
+                <div className="flex align-items-center gap-2 mb-3">
+                    <i className="pi pi-history text-primary" />
+                    <span className="font-bold text-900">Tracking Surat</span>
+                    <span className="text-color-secondary text-sm ml-1">— Riwayat penerimaan dan proses disposisi</span>
+                </div>
+                <DataTable
+                    value={dispositions}
+                    loading={loading}
+                    paginator rows={8}
+                    emptyMessage={
+                        <div className="flex flex-column align-items-center py-4 gap-2 text-color-secondary">
+                            <i className="pi pi-list text-2xl text-300" />
+                            <span className="text-sm">Belum ada tracking disposisi.</span>
+                        </div>
+                    }
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+                    className="text-sm"
+                    rowHover
+                >
+                    <Column header="Penerima" body={trackingReceiverTemplate} style={{ minWidth: "200px" }} />
+                    <Column header="Diproses Oleh" body={trackingProcessedTemplate} style={{ minWidth: "180px" }} />
+                    <Column header="Waktu Proses" body={trackingTimeTemplate} style={{ width: "140px" }} />
+                    <Column header="Status" body={(r) => renderStatusTag(r.status)} style={{ width: "120px" }} />
+                </DataTable>
+            </Card>
+
+            {/* ─── Dialog Disposisi (Create / Forward / Process / Complete) ─── */}
+            <Dialog
+                visible={Boolean(dialogMode)}
+                header={
+                    currentDialogConfig ? (
+                        <div className="flex align-items-center gap-2">
+                            <i className={`${currentDialogConfig.icon} ${currentDialogConfig.color}`} />
+                            <span className="font-bold text-900">{currentDialogConfig.title}</span>
+                        </div>
+                    ) : "Disposisi"
+                }
+                modal
+                style={{ width: "44rem", maxWidth: "95vw" }}
+                onHide={onCloseDialog}
+                pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}
+            >
+                {(dialogMode === "create" || dialogMode === "forward") && (
+                    <div className="flex flex-column gap-1 pt-3 text-sm">
+                        {dialogMode === "forward" && selectedDisposition && (
+                            <div className="mb-3 p-3 surface-50 border-round-lg border-1 border-blue-100 flex align-items-center gap-2">
+                                <i className="pi pi-info-circle text-blue-500" />
+                                <span className="text-sm text-900">
+                                    Lanjutan dari disposisi <strong>#{selectedDisposition.disposition_id}</strong>: <strong>{selectedDisposition.to_user_name || "-"}</strong>
+                                </span>
+                            </div>
+                        )}
+
+                        <div className="flex flex-column gap-1 mb-3">
+                            <label htmlFor="disp_letter" className="font-semibold text-900">Surat <span className="text-red-500">*</span></label>
+                            <Dropdown
+                                id="disp_letter"
+                                value={form.incoming_letter_id}
+                                options={letterOptions}
+                                onChange={(e) => onFormChange("incoming_letter_id", e.value)}
+                                placeholder="Pilih surat yang akan didisposisikan"
+                                filter
+                                filterPlaceholder="Cari surat..."
+                                disabled={dialogMode === "forward" || Boolean(selectedLetter)}
+                                className="w-full"
+                            />
+                        </div>
+
+                        <div className="flex flex-column gap-1 mb-3">
+                            <label htmlFor="disp_to_user" className="font-semibold text-900">Tujuan Disposisi <span className="text-red-500">*</span></label>
+                            <Dropdown
+                                id="disp_to_user"
+                                value={form.to_user_id}
+                                options={users}
+                                optionLabel="fullname"
+                                optionValue="user_id"
+                                onChange={(e) => onFormChange("to_user_id", e.value)}
+                                placeholder="Pilih pimpinan / unit / staf"
+                                filter
+                                filterPlaceholder="Cari nama..."
+                                className="w-full"
+                            />
+                        </div>
+
+                        <div className="flex flex-column gap-1 mb-3">
+                            <label htmlFor="disp_instruction_id" className="font-semibold text-900">Instruksi Pimpinan</label>
+                            <Dropdown
+                                id="disp_instruction_id"
+                                value={form.disposition_instruction_id}
+                                options={instructions}
+                                optionLabel="instruction_name"
+                                optionValue="disposition_instruction_id"
+                                onChange={(e) => onFormChange("disposition_instruction_id", e.value)}
+                                placeholder="Pilih instruksi (opsional)"
+                                showClear
+                                className="w-full"
+                            />
+                        </div>
+
+                        <div className="flex flex-column gap-1 mb-3">
+                            <label htmlFor="disp_instruction" className="font-semibold text-900">Instruksi Tambahan</label>
+                            <InputText
+                                id="disp_instruction"
+                                value={form.instruction}
+                                onChange={(e) => onFormChange("instruction", e.target.value)}
+                                placeholder="Contoh: Mohon telaah dan siapkan bahan tindak lanjut"
+                                className="w-full"
+                            />
+                        </div>
+
+                        <div className="flex flex-column gap-1 mb-3">
+                            <label htmlFor="disp_note" className="font-semibold text-900">Catatan Disposisi</label>
+                            <InputTextarea
+                                id="disp_note"
+                                value={form.disposition_note}
+                                onChange={(e) => onFormChange("disposition_note", e.target.value)}
+                                rows={3}
+                                placeholder="Catatan khusus untuk penerima (opsional)"
+                                style={{ resize: "none" }}
+                                className="w-full"
+                            />
+                        </div>
+
+                        <div className="flex flex-column gap-1 mb-3">
+                            <label htmlFor="disp_due_date" className="font-semibold text-900">Batas Waktu</label>
+                            <InputText
+                                id="disp_due_date"
+                                type="date"
+                                value={form.due_date}
+                                onChange={(e) => onFormChange("due_date", e.target.value)}
+                                className="w-full"
+                            />
+                        </div>
+
+                        <Divider className="my-2" />
+
+                        <div className="flex justify-content-end gap-2">
+                            <Button label="Batal" icon="pi pi-times" severity="secondary" outlined size="small" onClick={onCloseDialog} disabled={loading} />
+                            <Button
+                                label={dialogMode === "forward" ? "Teruskan" : "Buat Disposisi"}
+                                icon="pi pi-send" size="small"
+                                style={{ background: "linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)", border: "none" }}
+                                onClick={onSaveDisposition} loading={loading}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {(dialogMode === "process" || dialogMode === "complete") && (
+                    <div className="flex flex-column gap-1 pt-3 text-sm">
+                        <div className={`mb-3 p-3 border-round-lg border-1 ${dialogMode === "complete" ? "surface-50 border-green-100" : "surface-50 border-orange-100"}`}>
+                            <div className="flex align-items-center gap-2">
+                                <i className={`${dialogMode === "complete" ? "pi pi-check-circle text-green-500" : "pi pi-cog text-orange-500"}`} />
+                                <div>
+                                    <div className="font-semibold text-900">{selectedDisposition?.agenda_number || selectedDisposition?.letter_number || "-"}</div>
+                                    <div className="text-color-secondary text-xs mt-1">{selectedDisposition?.subject || "-"}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-column gap-1 mb-3">
+                            <label htmlFor="action_note" className="font-semibold text-900">
+                                {dialogMode === "complete" ? "Catatan Penyelesaian" : "Catatan Proses"}
+                                <span className="text-color-secondary font-normal ml-1">(Opsional)</span>
+                            </label>
+                            <InputTextarea
+                                id="action_note"
+                                value={actionNote}
+                                onChange={(e) => onActionNoteChange(e.target.value)}
+                                rows={4}
+                                placeholder={dialogMode === "complete"
+                                    ? "Contoh: Sudah ditindaklanjuti dan dokumen diarsipkan"
+                                    : "Contoh: Sedang ditelaah oleh unit terkait"}
+                                style={{ resize: "none" }}
+                                className="w-full"
+                            />
+                        </div>
+
+                        <Divider className="my-2" />
+
+                        <div className="flex justify-content-end gap-2">
+                            <Button label="Batal" icon="pi pi-times" severity="secondary" outlined size="small" onClick={onCloseDialog} disabled={loading} />
+                            <Button
+                                label={dialogMode === "complete" ? "Selesaikan" : "Proses"}
+                                icon={dialogMode === "complete" ? "pi pi-check" : "pi pi-play"}
+                                severity={dialogMode === "complete" ? "success" : "warning"}
+                                size="small"
+                                onClick={onSaveAction} loading={loading}
+                            />
+                        </div>
+                    </div>
+                )}
+            </Dialog>
+        </>
+    );
+};
+
+export default DispositionView;

@@ -80,7 +80,7 @@ const Form = ({
         try {
 
             if (state.selectedUsers.length < 1) {
-                showError(toast, 'Tidak Ada User yang Dipilih')
+                showError(toast, 'Tidak Ada Aset yang Dipilih')
                 return
             }
 
@@ -144,7 +144,7 @@ const Form = ({
     return <>
         <Dialog
             visible={state.add || state.edit}
-            header={state.edit ? 'Edit' : 'Add New'}
+            header={state.edit ? 'Ubah Data Aset' : 'Tambah Data Aset'}
             modal
             style={{ width: '50%' }}
             onHide={() => {
@@ -156,7 +156,7 @@ const Form = ({
 
                 <div className="flex flex-column gap-2 w-full">
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="code">Code</label>
+                        <label htmlFor="code">Kode Aset</label>
                         <div className="p-inputgroup">
                             <InputText
                                 id="code"
@@ -175,7 +175,7 @@ const Form = ({
                         {isFormFieldInvalid('Code') ? getFormErrorMessage('Code') : ''}
                     </div>
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="name">Name</label>
+                        <label htmlFor="name">Nama Aset</label>
                         <div className="p-inputgroup">
                             <InputText
                                 id="name"
@@ -192,7 +192,7 @@ const Form = ({
                         {isFormFieldInvalid('Name') ? getFormErrorMessage('Name') : ''}
                     </div>
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="Location">Location</label>
+                        <label htmlFor="Location">Lokasi</label>
                         <div className="p-inputgroup">
                             <InputText
                                 id="Location"
@@ -209,7 +209,7 @@ const Form = ({
                         {isFormFieldInvalid('Location') ? getFormErrorMessage('Location') : ''}
                     </div>
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="Type">Type</label>
+                        <label htmlFor="Type">Tipe</label>
                         <div className="p-inputgroup">
                             <InputText
                                 id="Type"
@@ -233,9 +233,9 @@ const Form = ({
                                 name="Status"
                                 value={formik?.values.Status}
                                 options={[
-                                    { label: 'Operational', value: 'operational' },
-                                    { label: 'Maintenance', value: 'maintenance' },
-                                    { label: 'Down', value: 'down' },
+                                    { label: 'Operasional', value: 'operational' },
+                                    { label: 'Pemeliharaan', value: 'maintenance' },
+                                    { label: 'Rusak', value: 'down' },
                                 ]}
                                 onChange={(e) => {
                                     formik?.setFieldValue('Status', e.value);
@@ -249,7 +249,7 @@ const Form = ({
 
                 <div className="flex gap-2 flex-column md:flex-row w-full">
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="CategoryCode">Category</label>
+                        <label htmlFor="CategoryCode">Kategori</label>
                         <div className="p-inputgroup">
                             <Dropdown
                                 id="CategoryCode"
@@ -267,7 +267,7 @@ const Form = ({
                         {isFormFieldInvalid('CategoryCode') ? getFormErrorMessage('CategoryCode') : ''}
                     </div>
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="DivisionCode">Division</label>
+                        <label htmlFor="DivisionCode">Divisi</label>
                         <div className="p-inputgroup">
                             <Dropdown
                                 id="DivisionCode"
@@ -285,12 +285,12 @@ const Form = ({
                         {isFormFieldInvalid('DivisionCode') ? getFormErrorMessage('DivisionCode') : ''}
                     </div>
                 </div>
-                <Button type="submit" label={state?.edit ? 'Update' : 'Save'} className="mt-2" loading={state?.load} />
+                <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} className="mt-2" loading={state?.load} />
             </form>
         </Dialog>
 
         <Dialog
-            header="Delete Confirm"
+            header="Konfirmasi Hapus"
             visible={state.delete}
             onHide={() => {
                 setState((p) => ({ ...p, add: false, edit: false, delete: false }));
@@ -305,21 +305,21 @@ const Form = ({
                 <div>
                     <h3 className="font-bold mb-2">
                         {state.selectedUsers.length > 1
-                            ? `Delete ${state.selectedUsers.length} units?`
-                            : "Delete this unit?"
+                            ? `Hapus ${state.selectedUsers.length} aset?`
+                            : "Hapus aset ini?"
                         }
                     </h3>
                     <p className="text-color-secondary">
                         {state.selectedUsers.length > 1 ? (
-                            `You are going to delete all this selected ${state.selectedUsers.length} units`
+                            `Anda akan menghapus ${state.selectedUsers.length} aset yang dipilih`
                         ) : (
                             <>
-                                You are going to delete this unit as follow : <strong>{state.selectedUsers[0]?.Code || ""}</strong>
-                                {`(${state.selectedUsers[0]?.Name})`}.
+                                Anda akan menghapus aset berikut: <strong>{state.selectedUsers[0]?.Code || ""}</strong>
+                                {` (${state.selectedUsers[0]?.Name})`}.
                             </>
                         )}
                         <br />
-                        This action can&apos;t be undone
+                        Tindakan ini tidak dapat dibatalkan
                     </p>
                 </div>
             </div>

@@ -5,13 +5,17 @@ import postData from "@/lib/axios/postData";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
 import { showError } from "@/lib/tools/generalTools";
 import { FilterMatchMode } from "primereact/api";
+import { Avatar } from "primereact/avatar";
 import { Button } from "primereact/button";
+import { Card } from "primereact/card";
+import { Chip } from "primereact/chip";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Divider } from "primereact/divider";
 import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
+import { Message } from "primereact/message";
 import { Tag } from "primereact/tag";
 import { useEffect, useState } from "react";
 import { apiEndpointDetail, apiEndpointFileDownload, apiEndpointGet } from "../endpoints";
@@ -32,6 +36,16 @@ const formatFileSize = (size?: number | null) => {
     return `${(size / (1024 * 1024)).toFixed(2)} MB`;
 };
 
+const getStatusConfig = (status: string): { label: string; severity: "success" | "warning" | "danger" | "info"; icon: string } => {
+    const map: Record<string, { label: string; severity: "success" | "warning" | "danger" | "info"; icon: string }> = {
+        baru: { label: "Baru", severity: "info", icon: "pi pi-envelope" },
+        diproses: { label: "Diproses", severity: "warning", icon: "pi pi-spin pi-cog" },
+        didisposisi: { label: "Didisposisi", severity: "warning", icon: "pi pi-share-alt" },
+        selesai: { label: "Selesai", severity: "success", icon: "pi pi-check-circle" },
+    };
+    return map[String(status).toLowerCase()] || { label: status, severity: "info", icon: "pi pi-circle" };
+};
+
 const Table = ({
     state,
     setState,
@@ -39,24 +53,13 @@ const Table = ({
     getData,
     toast
 }: TableProps) => {
-    const [previewFile, setPreviewFile] = useState<{
-        url: string;
-        mimeType: string;
-        fileName: string;
-    } | null>(null);
+    const [previewFile, setPreviewFile] = useState<{ url: string; mimeType: string; fileName: string } | null>(null);
 
-    const buildPayload = () => ({
-        keyword: state.searchVal || "",
-        status: state.statusFilter || "",
-    });
-
+    const buildPayload = () => ({ keyword: state.searchVal || "", status: state.statusFilter || "" });
     const refreshData = () => getData(apiEndpointGet, buildPayload());
 
     const closePreview = () => {
-        if (previewFile?.url) {
-            window.URL.revokeObjectURL(previewFile.url);
-        }
-
+        if (previewFile?.url) window.URL.revokeObjectURL(previewFile.url);
         setPreviewFile(null);
     };
 
@@ -68,16 +71,9 @@ const Table = ({
     const openDetail = async (rowData: TableData) => {
         closePreview();
         setState((p) => ({ ...p, detail: true, detailLoad: true, detailData: null }));
-
         try {
-            const res = await postData(apiEndpointDetail, {
-                incoming_letter_id: rowData.incoming_letter_id,
-            });
-
-            setState((p) => ({
-                ...p,
-                detailData: res.data?.data || null,
-            }));
+            const res = await postData(apiEndpointDetail, { incoming_letter_id: rowData.incoming_letter_id });
+            setState((p) => ({ ...p, detailData: res.data?.data || null }));
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || "Detail surat gagal diambil");
@@ -87,26 +83,16 @@ const Table = ({
         }
     };
 
-    const getFileBlob = async (file: IncomingLetterFile) => {
-        return fileDownload(apiEndpointFileDownload, {
-            incoming_letter_file_id: file.incoming_letter_file_id,
-        });
-    };
+    const getFileBlob = async (file: IncomingLetterFile) =>
+        fileDownload(apiEndpointFileDownload, { incoming_letter_file_id: file.incoming_letter_file_id });
 
     const previewUploadedFile = async (file: IncomingLetterFile) => {
         closePreview();
-
         try {
             const res = await getFileBlob(file);
             const mimeType = file.file_mime_type || res.headers["content-type"] || "application/octet-stream";
             const blob = new Blob([res.data], { type: mimeType });
-            const url = window.URL.createObjectURL(blob);
-
-            setPreviewFile({
-                url,
-                mimeType,
-                fileName: file.file_name || "file-surat",
-            });
+            setPreviewFile({ url: window.URL.createObjectURL(blob), mimeType, fileName: file.file_name || "file-surat" });
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || "File surat gagal dibuka");
@@ -131,60 +117,50 @@ const Table = ({
         }
     };
 
-    const headerTemplate = (
-        <div className="flex flex-wrap align-items-center justify-content-between gap-2">
-            <span className="text-xl font-bold">Data Surat Masuk</span>
+    // ─── Column Templates ───────────────────────────────────────────────────
 
-            <div className="flex flex-wrap gap-2">
-                <span className="p-input-icon-left">
-                    <i className="pi pi-search" />
-                    <InputText
-                        value={state.searchVal}
-                        onChange={(e) => {
-                            const value = e.target.value;
-                            const filters = { ...state.filters };
-                            filters.global = { value, matchMode: FilterMatchMode.CONTAINS };
-                            setState((p) => ({ ...p, searchVal: value, filters }));
-                        }}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") refreshData();
-                        }}
-                        placeholder="Cari surat..."
-                    />
-                </span>
-                <Dropdown
-                    value={state.statusFilter}
-                    options={statusOptions}
-                    onChange={(e) => setState((p) => ({ ...p, statusFilter: e.value }))}
-                    placeholder="Status"
-                    style={{ minWidth: "11rem" }}
-                />
-                <Button
-                    size="small"
-                    icon="pi pi-filter"
-                    outlined
-                    onClick={refreshData}
-                    tooltip="Terapkan filter"
-                />
+    const senderTemplate = (rowData: TableData) => (
+        <div className="flex align-items-center gap-2">
+            <Avatar
+                label={rowData.sender_name?.slice(0, 1).toUpperCase() || "S"}
+                shape="circle"
+                style={{ width: "2rem", height: "2rem", fontSize: "0.7rem", background: "#EEF2FF", color: "#4F46E5", fontWeight: "700", flexShrink: 0 }}
+            />
+            <div>
+                <div className="font-semibold text-sm text-900">{rowData.sender_name}</div>
+                {rowData.sender_institution && (
+                    <div className="text-xs text-color-secondary">{rowData.sender_institution}</div>
+                )}
             </div>
         </div>
     );
 
-    const actionBodyTemplate = (rowData: TableData) => (
-        <div className="flex gap-2">
+    const letterTemplate = (rowData: TableData) => (
+        <div>
+            <div className="font-semibold text-sm text-900">{rowData.subject}</div>
+            <div className="text-xs text-color-secondary mt-1">
+                <span className="mr-2">No. Agenda: <strong>{rowData.agenda_number || "-"}</strong></span>
+            </div>
+        </div>
+    );
+
+    const statusTemplate = (rowData: TableData) => {
+        const config = getStatusConfig(rowData.status as string);
+        return <Tag value={config.label} severity={config.severity} icon={config.icon} style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }} />;
+    };
+
+    const actionTemplate = (rowData: TableData) => (
+        <div className="flex gap-1 justify-content-center">
             <Button
                 icon="pi pi-eye"
-                rounded
-                outlined
-                className="p-button-sm"
+                rounded text size="small"
+                tooltip="Lihat Detail" tooltipOptions={{ position: "top" }}
                 onClick={() => openDetail(rowData)}
-                tooltip="Detail"
             />
             <Button
                 icon="pi pi-pencil"
-                rounded
-                outlined
-                className="p-button-sm"
+                rounded text severity="secondary" size="small"
+                tooltip="Edit" tooltipOptions={{ position: "top" }}
                 onClick={() => {
                     formik.setValues({
                         incoming_letter_id: rowData.incoming_letter_id,
@@ -205,38 +181,52 @@ const Table = ({
                         created_by: rowData.created_by,
                         updated_by: rowData.updated_by,
                     });
-
                     setState((p) => ({ ...p, add: false, delete: false, edit: true }));
                 }}
-                tooltip="Edit"
             />
             <Button
                 icon="pi pi-trash"
-                rounded
-                outlined
-                severity="danger"
-                className="p-button-sm"
+                rounded text severity="danger" size="small"
+                tooltip="Hapus" tooltipOptions={{ position: "top" }}
                 onClick={() => setState((p) => ({ ...p, delete: true, selectedLetters: [rowData] }))}
-                tooltip="Delete"
             />
         </div>
     );
 
-    const statusBodyTemplate = (rowData: TableData) => {
-        type SeverityType = "success" | "warning" | "danger" | "info";
-
-        const status = rowData.status?.toLowerCase() as IncomingLetterStatus;
-        const statusConfig: Record<string, { label: string; severity: SeverityType }> = {
-            baru: { label: "Baru", severity: "info" },
-            diproses: { label: "Diproses", severity: "warning" },
-            didisposisi: { label: "Didisposisi", severity: "warning" },
-            selesai: { label: "Selesai", severity: "success" },
-        };
-
-        const config = statusConfig[status] || { label: rowData.status, severity: "info" as SeverityType };
-
-        return <Tag value={config.label} severity={config.severity} />;
-    };
+    const headerTemplate = (
+        <div className="flex flex-wrap align-items-center justify-content-between gap-2">
+            <span className="font-semibold text-color text-sm">Daftar Surat Masuk</span>
+            <div className="flex flex-wrap gap-2 align-items-center">
+                <span className="p-input-icon-left">
+                    <i className="pi pi-search" />
+                    <InputText
+                        value={state.searchVal}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            setState((p) => ({ ...p, searchVal: value, filters: { global: { value, matchMode: FilterMatchMode.CONTAINS } } }));
+                        }}
+                        onKeyDown={(e) => { if (e.key === "Enter") refreshData(); }}
+                        placeholder="Cari surat..."
+                        className="text-sm" style={{ height: "2.25rem" }}
+                    />
+                </span>
+                <Dropdown
+                    value={state.statusFilter}
+                    options={statusOptions}
+                    onChange={(e) => setState((p) => ({ ...p, statusFilter: e.value }))}
+                    placeholder="Filter Status"
+                    style={{ minWidth: "10rem", height: "2.25rem" }}
+                />
+                <Button
+                    icon="pi pi-filter"
+                    outlined size="small"
+                    onClick={refreshData}
+                    tooltip="Terapkan filter"
+                    style={{ height: "2.25rem" }}
+                />
+            </div>
+        </div>
+    );
 
     useEffect(() => {
         getData(apiEndpointGet);
@@ -244,11 +234,7 @@ const Table = ({
     }, []);
 
     useEffect(() => {
-        return () => {
-            if (previewFile?.url) {
-                window.URL.revokeObjectURL(previewFile.url);
-            }
-        };
+        return () => { if (previewFile?.url) window.URL.revokeObjectURL(previewFile.url); };
     }, [previewFile?.url]);
 
     const detailLetter = state.detailData?.letter || null;
@@ -256,41 +242,35 @@ const Table = ({
 
     return (
         <>
-            <div className="card">
-                <div className="flex justify-content-between items-start mb-4">
-                    <div>
-                        <h3 className="text-2xl font-semibold">Mail In</h3>
-                    </div>
+            <Card className="shadow-1 border-round-2xl border-none">
+                {/* Page Header */}
+                <div className="mb-4">
+                    <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: "0.1em" }}>Korespondensi</span>
+                    <h2 className="m-0 text-900 font-extrabold text-2xl mt-1 mb-2" style={{ letterSpacing: "-0.02em" }}>Surat Masuk</h2>
+                    <p className="m-0 text-color-secondary text-sm font-medium">Kelola seluruh surat masuk, upload file, dan pantau status disposisi.</p>
                 </div>
 
                 <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
                     <Button
                         size="small"
-                        label="New"
+                        label="Tambah Surat"
                         icon="pi pi-plus"
                         outlined
                         severity="success"
-                        onClick={() => {
-                            formik.resetForm();
-                            setState((p) => ({ ...p, selectedLetters: [], add: true, edit: false, delete: false }));
-                        }}
+                        onClick={() => { formik.resetForm(); setState((p) => ({ ...p, selectedLetters: [], add: true, edit: false, delete: false })); }}
                     />
                     <Divider layout="vertical" />
                     <Button
                         size="small"
-                        label={`Delete${state.selectedLetters.length > 0 ? ` (${state.selectedLetters.length})` : ""}`}
+                        label={`Hapus${state.selectedLetters.length > 0 ? ` (${state.selectedLetters.length})` : ""}`}
                         icon="pi pi-trash"
                         severity="danger"
                         outlined
+                        disabled={state.selectedLetters.length === 0}
                         onClick={() => {
-                            if (state.selectedLetters.length < 1) {
-                                setState((p) => ({ ...p, delete: false }));
-                                return;
-                            }
-
+                            if (state.selectedLetters.length < 1) return;
                             setState((p) => ({ ...p, delete: true }));
                         }}
-                        disabled={state.selectedLetters.length === 0}
                     />
                     <Divider layout="vertical" />
                     <Button
@@ -298,8 +278,8 @@ const Table = ({
                         label="Refresh"
                         icon="pi pi-refresh"
                         outlined
-                        onClick={refreshData}
                         loading={state.load}
+                        onClick={refreshData}
                     />
                 </div>
 
@@ -315,80 +295,94 @@ const Table = ({
                     selection={state.selectedLetters}
                     onSelectionChange={(e) => setState((p) => ({ ...p, selectedLetters: e.value }))}
                     dataKey="incoming_letter_id"
-                    emptyMessage="Data Kosong"
+                    emptyMessage={
+                        <div className="flex flex-column align-items-center py-5 gap-3 text-color-secondary">
+                            <i className="pi pi-inbox text-4xl text-300" />
+                            <span className="font-medium text-sm">Belum ada surat masuk</span>
+                        </div>
+                    }
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data"
+                    currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data"
+                    rowHover
+                    className="text-sm"
                 >
                     <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
-                    <Column field="agenda_number" header="No Agenda" sortable />
-                    <Column field="letter_number" header="No Surat" sortable />
-                    <Column field="received_date" header="Tanggal Terima" sortable body={(rowData) => formatDateCalendar(rowData.received_date)} />
-                    <Column field="sender_name" header="Pengirim" sortable />
-                    <Column field="sender_institution" header="Instansi" />
-                    <Column field="subject" header="Perihal" />
-                    <Column field="letter_type_name" header="Jenis Surat" />
-                    <Column body={statusBodyTemplate} header="Status" sortable />
-                    <Column field="created_at" sortable body={(rowData) => formatDateCalendar(rowData.created_at)} header="Datetime" />
-                    <Column headerStyle={{ textAlign: "center" }} header="Action" body={actionBodyTemplate} />
+                    <Column field="agenda_number" header="No. Surat" body={(r) => (
+                        <div>
+                            <div className="font-semibold text-sm text-900">{r.agenda_number || "-"}</div>
+                            <div className="text-xs text-color-secondary">{r.letter_number || "-"}</div>
+                        </div>
+                    )} sortable style={{ minWidth: "140px" }} />
+                    <Column header="Perihal & Agenda" body={letterTemplate} style={{ minWidth: "200px" }} />
+                    <Column header="Pengirim" body={senderTemplate} style={{ minWidth: "180px" }} />
+                    <Column field="received_date" header="Tgl. Terima" sortable body={(r) => formatDateCalendar(r.received_date)} style={{ width: "120px" }} />
+                    <Column field="letter_type_name" header="Jenis Surat" style={{ width: "120px" }} />
+                    <Column body={statusTemplate} header="Status" style={{ width: "130px", textAlign: "center" }} />
+                    <Column field="created_at" header="Dibuat" sortable body={(r) => formatDateCalendar(r.created_at)} style={{ width: "120px" }} />
+                    <Column header="Aksi" body={actionTemplate} style={{ width: "130px", textAlign: "center" }} />
                 </DataTable>
-            </div>
+            </Card>
 
             <Form getData={getData} toast={toast} state={state} setState={setState} formik={formik} />
 
+            {/* ── Detail Dialog ──────────────────────────────────── */}
             <Dialog
-                header="Detail Surat Masuk"
+                header={
+                    <div className="flex align-items-center gap-2">
+                        <i className="pi pi-envelope text-primary" />
+                        <span className="font-bold text-900">Detail Surat Masuk</span>
+                    </div>
+                }
                 visible={state.detail}
                 modal
                 style={{ width: "72rem", maxWidth: "96vw" }}
                 onHide={closeDetail}
+                pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}
             >
                 {state.detailLoad ? (
-                    <div className="flex align-items-center gap-2 py-5">
-                        <i className="pi pi-spin pi-spinner" />
-                        <span>Memuat detail surat...</span>
+                    <div className="flex flex-column align-items-center py-6 gap-3 text-color-secondary">
+                        <i className="pi pi-spin pi-spinner text-3xl text-primary" />
+                        <span className="text-sm font-medium">Memuat detail surat...</span>
                     </div>
                 ) : (
-                    <div className="flex flex-column gap-4">
-                        <section>
-                            <div className="flex justify-content-between align-items-start gap-3 mb-3">
-                                <div>
-                                    <h3 className="m-0">{detailLetter?.subject || "-"}</h3>
-                                    <small className="text-color-secondary">{detailLetter?.agenda_number || "-"} / {detailLetter?.letter_number || "-"}</small>
-                                </div>
-                                {detailLetter?.status && statusBodyTemplate({ status: detailLetter.status } as TableData)}
-                            </div>
-
-                            <div className="grid">
-                                <div className="col-12 md:col-6">
-                                    <small className="text-color-secondary">Nomor Agenda</small>
-                                    <div className="font-semibold">{detailLetter?.agenda_number || "-"}</div>
-                                </div>
-                                <div className="col-12 md:col-6">
-                                    <small className="text-color-secondary">Nomor Surat</small>
-                                    <div className="font-semibold">{detailLetter?.letter_number || "-"}</div>
-                                </div>
-                                <div className="col-12 md:col-6">
-                                    <small className="text-color-secondary">Tanggal Surat</small>
-                                    <div className="font-semibold">{formatDateCalendar(detailLetter?.letter_date) || "-"}</div>
-                                </div>
-                                <div className="col-12 md:col-6">
-                                    <small className="text-color-secondary">Tanggal Diterima</small>
-                                    <div className="font-semibold">{formatDateCalendar(detailLetter?.received_date) || "-"}</div>
-                                </div>
-                                <div className="col-12 md:col-6">
-                                    <small className="text-color-secondary">Pengirim</small>
-                                    <div className="font-semibold">{detailLetter?.sender_name || "-"}</div>
-                                </div>
-                                <div className="col-12 md:col-6">
-                                    <small className="text-color-secondary">Lampiran</small>
-                                    <div className="font-semibold">{detailLetter?.attachment_description || "-"}</div>
+                    <div className="flex flex-column gap-4 pt-3">
+                        {/* Header info */}
+                        <div className="flex align-items-start justify-content-between gap-3 p-3 surface-50 border-round-xl border-1 surface-border">
+                            <div>
+                                <h3 className="m-0 text-900 font-bold text-lg">{detailLetter?.subject || "-"}</h3>
+                                <div className="flex gap-2 mt-2 flex-wrap">
+                                    <Chip label={`Agenda: ${detailLetter?.agenda_number || "-"}`} className="text-xs" style={{ height: "auto", padding: "0.2rem 0.6rem" }} />
+                                    <Chip label={`Surat: ${detailLetter?.letter_number || "-"}`} className="text-xs" style={{ height: "auto", padding: "0.2rem 0.6rem" }} />
                                 </div>
                             </div>
-                        </section>
+                            {detailLetter?.status && statusTemplate({ status: detailLetter.status } as TableData)}
+                        </div>
 
-                        <section>
-                            <div className="flex justify-content-between align-items-center mb-3">
-                                <h4 className="m-0">File Surat</h4>
+                        <div className="grid text-sm">
+                            {[
+                                { label: "Pengirim", value: detailLetter?.sender_name },
+                                { label: "Instansi", value: detailLetter?.sender_institution },
+                                { label: "Tanggal Surat", value: formatDateCalendar(detailLetter?.letter_date) },
+                                { label: "Tanggal Diterima", value: formatDateCalendar(detailLetter?.received_date) },
+                                { label: "Jenis Surat", value: detailLetter?.letter_type_name },
+                                { label: "Lampiran", value: detailLetter?.attachment_description },
+                            ].map(({ label, value }) => (
+                                <div key={label} className="col-12 md:col-4">
+                                    <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: "0.08em" }}>{label}</div>
+                                    <div className="font-semibold text-900">{value || "-"}</div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <Divider className="my-0" />
+
+                        {/* File section */}
+                        <div>
+                            <div className="flex align-items-center justify-content-between mb-3">
+                                <div className="font-bold text-900 flex align-items-center gap-2">
+                                    <i className="pi pi-paperclip text-primary" />
+                                    File Surat
+                                </div>
                                 <Tag value={`${detailFiles.length} file`} severity="info" />
                             </div>
 
@@ -397,29 +391,20 @@ const Table = ({
                                     <div className="col-12 lg:col-5">
                                         <div className="flex flex-column gap-2">
                                             {detailFiles.map((file) => (
-                                                <div key={file.incoming_letter_file_id} className="surface-50 border-1 border-200 border-round p-3">
-                                                    <div className="flex justify-content-between gap-3">
-                                                        <div>
-                                                            <strong>{file.file_name || "File surat"}</strong>
-                                                            <small className="block text-color-secondary mt-1">
-                                                                {file.file_mime_type || "-"} · {formatFileSize(file.file_size)}
-                                                            </small>
+                                                <div key={file.incoming_letter_file_id} className="p-3 surface-50 border-round-lg border-1 surface-border">
+                                                    <div className="flex justify-content-between align-items-start gap-2">
+                                                        <div className="flex align-items-center gap-2">
+                                                            <div className="flex align-items-center justify-content-center border-round" style={{ width: "2rem", height: "2rem", background: "#EEF2FF", color: "#4F46E5", flexShrink: 0 }}>
+                                                                <i className="pi pi-file text-sm" />
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-semibold text-sm text-900">{file.file_name || "File surat"}</div>
+                                                                <div className="text-xs text-color-secondary mt-1">{file.file_mime_type || "-"} · {formatFileSize(file.file_size)}</div>
+                                                            </div>
                                                         </div>
-                                                        <div className="flex gap-2">
-                                                            <Button
-                                                                icon="pi pi-eye"
-                                                                rounded
-                                                                text
-                                                                tooltip="Lihat file"
-                                                                onClick={() => previewUploadedFile(file)}
-                                                            />
-                                                            <Button
-                                                                icon="pi pi-download"
-                                                                rounded
-                                                                text
-                                                                tooltip="Download file"
-                                                                onClick={() => downloadUploadedFile(file)}
-                                                            />
+                                                        <div className="flex gap-1">
+                                                            <Button icon="pi pi-eye" rounded text size="small" tooltip="Lihat file" onClick={() => previewUploadedFile(file)} />
+                                                            <Button icon="pi pi-download" rounded text size="small" tooltip="Download" onClick={() => downloadUploadedFile(file)} />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -427,37 +412,28 @@ const Table = ({
                                         </div>
                                     </div>
                                     <div className="col-12 lg:col-7">
-                                        <div className="surface-50 border-1 border-200 border-round p-3" style={{ minHeight: "26rem" }}>
+                                        <div className="surface-50 border-round-lg border-1 surface-border p-3 flex align-items-center justify-content-center" style={{ minHeight: "26rem" }}>
                                             {previewFile ? (
                                                 previewFile.mimeType.startsWith("image/") ? (
-                                                    <img
-                                                        src={previewFile.url}
-                                                        alt={previewFile.fileName}
-                                                        className="w-full"
-                                                        style={{ maxHeight: "34rem", objectFit: "contain" }}
-                                                    />
+                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                    <img src={previewFile.url} alt={previewFile.fileName} className="w-full" style={{ maxHeight: "34rem", objectFit: "contain" }} />
                                                 ) : previewFile.mimeType === "application/pdf" ? (
-                                                    <iframe
-                                                        src={previewFile.url}
-                                                        title={previewFile.fileName}
-                                                        className="w-full border-none"
-                                                        style={{ minHeight: "34rem" }}
-                                                    />
+                                                    <iframe src={previewFile.url} title={previewFile.fileName} className="w-full" style={{ minHeight: "34rem", border: "none" }} />
                                                 ) : (
-                                                    <div className="flex flex-column align-items-center justify-content-center text-center gap-3" style={{ minHeight: "24rem" }}>
-                                                        <i className="pi pi-file text-5xl text-color-secondary" />
+                                                    <div className="flex flex-column align-items-center text-center gap-3 text-color-secondary">
+                                                        <i className="pi pi-file text-5xl text-300" />
                                                         <div>
-                                                            <strong>{previewFile.fileName}</strong>
-                                                            <p className="m-0 mt-2 text-color-secondary">File ini tidak bisa dipreview langsung. Gunakan tombol download.</p>
+                                                            <div className="font-semibold text-900">{previewFile.fileName}</div>
+                                                            <p className="m-0 mt-1 text-sm">Format ini tidak bisa dipreview. Gunakan tombol download.</p>
                                                         </div>
                                                     </div>
                                                 )
                                             ) : (
-                                                <div className="flex flex-column align-items-center justify-content-center text-center gap-3" style={{ minHeight: "24rem" }}>
-                                                    <i className="pi pi-file-pdf text-5xl text-color-secondary" />
+                                                <div className="flex flex-column align-items-center text-center gap-3 text-color-secondary">
+                                                    <i className="pi pi-file-pdf text-5xl text-300" />
                                                     <div>
-                                                        <strong>Pilih file untuk preview</strong>
-                                                        <p className="m-0 mt-2 text-color-secondary">PDF dan gambar akan tampil di panel ini.</p>
+                                                        <div className="font-semibold text-900">Preview File</div>
+                                                        <p className="m-0 mt-1 text-sm">Klik ikon mata di samping file untuk preview.</p>
                                                     </div>
                                                 </div>
                                             )}
@@ -465,12 +441,9 @@ const Table = ({
                                     </div>
                                 </div>
                             ) : (
-                                <div className="surface-50 border-1 border-200 border-round p-4 text-center text-color-secondary">
-                                    Belum ada file surat yang diupload.
-                                </div>
+                                <Message severity="info" text="Belum ada file surat yang diupload." className="w-full" />
                             )}
-                        </section>
-
+                        </div>
                     </div>
                 )}
             </Dialog>

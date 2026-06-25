@@ -40,75 +40,210 @@ export default function RegistrasiForm({
     return (
         <form onSubmit={handleSubmit} className="grid">
             <div className="col-12 lg:col-6 p-fluid flex flex-column gap-3">
-                <Card title="Data Lengkap Tamu" className="shadow-2 border-round">
-                    <div className="flex flex-column gap-3">
+                <Card 
+                    title={
+                        <div className="flex align-items-center gap-2 mb-2">
+                            <i className="pi pi-user text-primary text-xl" />
+                            <span className="text-xl font-bold text-900">Data Lengkap Tamu</span>
+                        </div>
+                    } 
+                    className="border-none shadow-1 border-round-2xl p-2 bg-white"
+                >
+                    <div className="flex flex-column gap-3 mt-2">
                         <div className="field">
-                            <label htmlFor="guest_name" className="font-semibold block mb-1">Nama Tamu <span className="text-red-500">*</span></label>
-                            <InputText id="guest_name" value={formData.guest_name} onChange={(e) => handleChange('guest_name', e.target.value)} placeholder="Masukkan nama lengkap tamu" />
+                            <label htmlFor="guest_name" className="font-semibold block mb-2 text-sm text-800">
+                                Nama Lengkap Tamu <span className="p-error">*</span>
+                            </label>
+                            <InputText 
+                                id="guest_name" 
+                                value={formData.guest_name} 
+                                onChange={(e) => handleChange('guest_name', e.target.value)} 
+                                placeholder="Masukkan nama lengkap tamu" 
+                                className="p-inputtext-sm"
+                            />
                         </div>
                         <div className="field">
-                            <label htmlFor="phone_number" className="font-semibold block mb-1">Nomor Telepon <span className="text-red-500">*</span></label>
-                            <InputText id="phone_number" value={formData.phone_number} onChange={(e) => handleChange('phone_number', e.target.value)} placeholder="Contoh: 0812345678" />
+                            <label htmlFor="phone_number" className="font-semibold block mb-2 text-sm text-800">
+                                Nomor Telepon / WhatsApp <span className="p-error">*</span>
+                            </label>
+                            <InputText 
+                                id="phone_number" 
+                                value={formData.phone_number} 
+                                onChange={(e) => handleChange('phone_number', e.target.value)} 
+                                placeholder="Contoh: 0812345678" 
+                                className="p-inputtext-sm"
+                            />
                         </div>
                         <div className="field">
-                            <label htmlFor="guest_email" className="font-semibold block mb-1">Email Tamu</label>
-                            <InputText id="guest_email" value={formData.guest_email} onChange={(e) => handleChange('guest_email', e.target.value)} placeholder="Contoh: tamu@email.com" />
+                            <label htmlFor="guest_email" className="font-semibold block mb-2 text-sm text-800">Email Tamu</label>
+                            <InputText 
+                                id="guest_email" 
+                                value={formData.guest_email} 
+                                onChange={(e) => handleChange('guest_email', e.target.value)} 
+                                placeholder="Contoh: tamu@email.com" 
+                                className="p-inputtext-sm"
+                            />
                         </div>
                         <div className="field">
-                            <label htmlFor="guest_company" className="font-semibold block mb-1">Instansi / Perusahaan</label>
-                            <InputText id="guest_company" value={formData.guest_company} onChange={(e) => handleChange('guest_company', e.target.value)} placeholder="Nama instansi/perusahaan asal" />
+                            <label htmlFor="guest_company" className="font-semibold block mb-2 text-sm text-800">Instansi / Perusahaan</label>
+                            <InputText 
+                                id="guest_company" 
+                                value={formData.guest_company} 
+                                onChange={(e) => handleChange('guest_company', e.target.value)} 
+                                placeholder="Nama instansi/perusahaan asal" 
+                                className="p-inputtext-sm"
+                            />
                         </div>
-                        <div className="grid grid-nogutter gap-2">
-                            <div className="field col">
-                                <label htmlFor="identity_type" className="font-semibold block mb-1">Jenis ID</label>
-                                <Dropdown id="identity_type" value={formData.identity_type} options={identityTypes} onChange={(e) => handleChange('identity_type', e.value)} placeholder="Pilih" />
+                        <div className="grid">
+                            <div className="field col-4">
+                                <label htmlFor="identity_type" className="font-semibold block mb-2 text-sm text-800">Jenis ID</label>
+                                <Dropdown 
+                                    id="identity_type" 
+                                    value={formData.identity_type} 
+                                    options={identityTypes} 
+                                    onChange={(e) => handleChange('identity_type', e.value)} 
+                                    placeholder="Pilih" 
+                                    className="p-inputtext-sm"
+                                />
                             </div>
                             <div className="field col-8">
-                                <label htmlFor="identity_number" className="font-semibold block mb-1">Nomor ID (NIK/SIM)</label>
-                                <InputText id="identity_number" value={formData.identity_number} onChange={(e) => handleChange('identity_number', e.target.value)} placeholder="Masukkan nomor identitas" disabled={!formData.identity_type} />
+                                <label htmlFor="identity_number" className="font-semibold block mb-2 text-sm text-800">Nomor ID (NIK/SIM/Paspor)</label>
+                                <InputText 
+                                    id="identity_number" 
+                                    value={formData.identity_number} 
+                                    onChange={(e) => handleChange('identity_number', e.target.value)} 
+                                    placeholder="Masukkan nomor identitas" 
+                                    disabled={!formData.identity_type} 
+                                    className="p-inputtext-sm"
+                                />
                             </div>
                         </div>
                         <div className="field">
-                            <label className="font-semibold block mb-1">Unggah Identitas (KTP/SIM/Paspor)</label>
-                            <FileUpload mode="basic" accept="image/*" maxFileSize={2000000} onSelect={(e) => setIdentityFile(e.files[0])} chooseLabel="Pilih Foto ID" className="w-full" />
+                            <label className="font-semibold block mb-2 text-sm text-800">Unggah Identitas (KTP/SIM/Paspor)</label>
+                            <FileUpload 
+                                mode="basic" 
+                                accept="image/*" 
+                                maxFileSize={2000000} 
+                                onSelect={(e) => setIdentityFile(e.files[0])} 
+                                chooseLabel="Pilih Foto ID" 
+                                className="w-full text-sm" 
+                            />
                         </div>
                         <div className="field">
-                            <label className="font-semibold block mb-1">Foto Selfie Tamu</label>
-                            <FileUpload mode="basic" accept="image/*" maxFileSize={2000000} onSelect={(e) => setSelfieFile(e.files[0])} chooseLabel="Ambil/Pilih Foto Selfie" className="w-full" />
+                            <label className="font-semibold block mb-2 text-sm text-800">Foto Selfie Tamu</label>
+                            <FileUpload 
+                                mode="basic" 
+                                accept="image/*" 
+                                maxFileSize={2000000} 
+                                onSelect={(e) => setSelfieFile(e.files[0])} 
+                                chooseLabel="Ambil/Pilih Foto Selfie" 
+                                className="w-full text-sm" 
+                            />
                         </div>
                     </div>
                 </Card>
             </div>
 
             <div className="col-12 lg:col-6 p-fluid flex flex-column gap-3">
-                <Card title="Informasi Kunjungan" className="shadow-2 border-round">
-                    <div className="flex flex-column gap-3">
+                <Card 
+                    title={
+                        <div className="flex align-items-center gap-2 mb-2">
+                            <i className="pi pi-info-circle text-primary text-xl" />
+                            <span className="text-xl font-bold text-900">Informasi Kunjungan</span>
+                        </div>
+                    } 
+                    className="border-none shadow-1 border-round-2xl p-2 bg-white"
+                >
+                    <div className="flex flex-column gap-3 mt-2">
                         <div className="field">
-                            <label htmlFor="visit_purpose_id" className="font-semibold block mb-1">Tujuan Kunjungan <span className="text-red-500">*</span></label>
-                            <Dropdown id="visit_purpose_id" value={formData.visit_purpose_id} options={visitPurposeOptions} optionLabel="VisitPurposeName" optionValue="VisitPurposeId" onChange={(e) => handleChange('visit_purpose_id', e.value)} placeholder="Pilih Tujuan Kunjungan" />
+                            <label htmlFor="visit_purpose_id" className="font-semibold block mb-2 text-sm text-800">
+                                Tujuan Kunjungan <span className="p-error">*</span>
+                            </label>
+                            <Dropdown 
+                                id="visit_purpose_id" 
+                                value={formData.visit_purpose_id} 
+                                options={visitPurposeOptions} 
+                                optionLabel="VisitPurposeName" 
+                                optionValue="VisitPurposeId" 
+                                onChange={(e) => handleChange('visit_purpose_id', e.value)} 
+                                placeholder="Pilih Tujuan Kunjungan" 
+                                className="p-inputtext-sm"
+                            />
                         </div>
                         <div className="field">
-                            <label htmlFor="host_user_id" className="font-semibold block mb-1">Pegawai yang Ditemui (Host)</label>
-                            <Dropdown id="host_user_id" value={formData.host_user_id} options={hostUserOptions} optionLabel="Fullname" optionValue="UniqueId" onChange={(e) => handleChange('host_user_id', e.value)} placeholder="Cari & Pilih Pegawai Internal" filter showClear />
+                            <label htmlFor="host_user_id" className="font-semibold block mb-2 text-sm text-800">Pegawai yang Ditemui (Host)</label>
+                            <Dropdown 
+                                id="host_user_id" 
+                                value={formData.host_user_id} 
+                                options={hostUserOptions} 
+                                optionLabel="Fullname" 
+                                optionValue="UniqueId" 
+                                onChange={(e) => handleChange('host_user_id', e.value)} 
+                                placeholder="Cari & Pilih Pegawai Internal" 
+                                filter 
+                                showClear 
+                                className="p-inputtext-sm"
+                            />
                         </div>
                         <div className="field">
-                            <label htmlFor="host_name" className="font-semibold block mb-1">Nama Pegawai (Manual)</label>
-                            <InputText id="host_name" value={formData.host_name} onChange={(e) => handleChange('host_name', e.target.value)} placeholder="Isi manual jika tidak terdaftar di sistem" />
+                            <label htmlFor="host_name" className="font-semibold block mb-2 text-sm text-800">Nama Pegawai (Manual)</label>
+                            <InputText 
+                                id="host_name" 
+                                value={formData.host_name} 
+                                onChange={(e) => handleChange('host_name', e.target.value)} 
+                                placeholder="Isi manual jika tidak terdaftar di sistem" 
+                                className="p-inputtext-sm"
+                            />
                         </div>
                         <div className="field">
-                            <label htmlFor="check_in_time" className="font-semibold block mb-1">Rencana Waktu Kedatangan <span className="text-red-500">*</span></label>
-                            <Calendar id="check_in_time" value={formData.check_in_time} onChange={(e) => handleChange('check_in_time', e.value)} showTime hourFormat="24" placeholder="Pilih tanggal dan jam rencana" minDate={new Date()} showIcon />
+                            <label htmlFor="check_in_time" className="font-semibold block mb-2 text-sm text-800">
+                                Rencana Waktu Kedatangan <span className="p-error">*</span>
+                            </label>
+                            <Calendar 
+                                id="check_in_time" 
+                                value={formData.check_in_time} 
+                                onChange={(e) => handleChange('check_in_time', e.value)} 
+                                showTime 
+                                hourFormat="24" 
+                                placeholder="Pilih tanggal dan jam rencana" 
+                                minDate={new Date()} 
+                                showIcon 
+                                className="p-inputtext-sm"
+                            />
                         </div>
                         <div className="field">
-                            <label htmlFor="visit_notes" className="font-semibold block mb-1">Catatan Tambahan</label>
-                            <InputTextarea id="visit_notes" value={formData.visit_notes} onChange={(e) => handleChange('visit_notes', e.target.value)} rows={4} placeholder="Tuliskan poin pembahasan..." autoResize />
+                            <label htmlFor="visit_notes" className="font-semibold block mb-2 text-sm text-800">Catatan Tambahan</label>
+                            <InputTextarea 
+                                id="visit_notes" 
+                                value={formData.visit_notes} 
+                                onChange={(e) => handleChange('visit_notes', e.target.value)} 
+                                rows={4} 
+                                placeholder="Tuliskan poin pembahasan..." 
+                                autoResize 
+                                className="p-inputtext-sm"
+                            />
                         </div>
                     </div>
                 </Card>
 
-                <div className="flex justify-content-end gap-2 mt-2">
-                    <Button type="button" label="Reset Form" icon="pi pi-refresh" severity="secondary" outlined onClick={() => handleChange('reset', null)} />
-                    <Button type="submit" label="Daftarkan Rencana Kunjungan" icon="pi pi-check" severity="success" loading={loading} />
+                <div className="flex justify-content-end gap-2 mt-3">
+                    <Button 
+                        type="button" 
+                        label="Reset Form" 
+                        icon="pi pi-refresh" 
+                        severity="secondary" 
+                        outlined 
+                        className="py-2 px-4 font-semibold text-sm border-round-lg"
+                        onClick={() => handleChange('reset', null)} 
+                    />
+                    <Button 
+                        type="submit" 
+                        label="Daftarkan Rencana Kunjungan" 
+                        icon="pi pi-check" 
+                        loading={loading} 
+                        className="py-2 px-4 font-semibold text-sm border-round-lg text-white"
+                        style={{ background: "linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)", border: "none" }}
+                    />
                 </div>
             </div>
         </form>

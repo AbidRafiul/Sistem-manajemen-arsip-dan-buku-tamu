@@ -169,7 +169,7 @@ const Page = () => {
                     outlined
                     severity="secondary"
                     className="p-button-sm"
-                    tooltip="Download File"
+                    tooltip="Unduh File"
                     onClick={() => downloadVersion(rowData)}
                 />
                 {status === 'approved' && !isLatest && (
@@ -179,7 +179,7 @@ const Page = () => {
                         outlined
                         severity="warning"
                         className="p-button-sm"
-                        tooltip="Rollback to this version"
+                        tooltip="Rollback ke versi ini"
                         onClick={() => rollbackVersion(rowData)}
                     />
                 )}
@@ -191,7 +191,7 @@ const Page = () => {
                             outlined
                             severity="success"
                             className="p-button-sm"
-                            tooltip="Approve Version"
+                            tooltip="Setujui Versi"
                             onClick={() => approveVersion(rowData.version_id, 'approved')}
                         />
                         <Button
@@ -200,7 +200,7 @@ const Page = () => {
                             outlined
                             severity="danger"
                             className="p-button-sm"
-                            tooltip="Reject Version"
+                            tooltip="Tolak Versi"
                             onClick={() => approveVersion(rowData.version_id, 'rejected')}
                         />
                     </>
@@ -216,25 +216,25 @@ const Page = () => {
     return (
         <div className="p-4">
             <Toast ref={toast} position="top-right" />
-            <div className="card shadow-xl rounded-2xl bg-white border border-slate-100 p-5">
+            <div className="card p-5">
                 <div className="flex flex-column md:flex-row md:align-items-center justify-content-between gap-3 mb-4">
                     <div>
                         <Button
                             type="button"
                             icon="pi pi-arrow-left"
-                            label="Back"
+                            label="Kembali"
                             text
                             className="p-0 mb-2"
                             onClick={() => router.push('/edms/archive_document')}
                         />
-                        <h3 className="text-2xl font-bold text-slate-800 mb-1">Document Versions</h3>
-                        <span className="text-slate-500 text-sm">
+                        <h3 className="text-2xl font-bold text-color mb-1">Versi Dokumen</h3>
+                        <span className="text-color-secondary text-sm">
                             {detailData?.document?.document_number || '-'} - {detailData?.document?.document_name || '-'}
                         </span>
                     </div>
                     <Button
                         size="small"
-                        label="Refresh"
+                        label="Muat Ulang"
                         icon="pi pi-refresh"
                         outlined
                         loading={load}
@@ -244,47 +244,47 @@ const Page = () => {
 
                 <div className="grid text-sm mb-3">
                     <div className="col-12 md:col-3">
-                        <div className="text-color-secondary mb-1 font-semibold">Document Number</div>
-                        <div className="font-semibold text-slate-800">{detailData?.document?.document_number || '-'}</div>
+                        <div className="text-color-secondary mb-1 font-semibold">Nomor Dokumen</div>
+                        <div className="font-semibold text-color">{detailData?.document?.document_number || '-'}</div>
                     </div>
                     <div className="col-12 md:col-3">
                         <div className="text-color-secondary mb-1 font-semibold">PIC</div>
-                        <div className="text-slate-700">{detailData?.document?.pic_name || '-'}</div>
+                        <div className="text-color">{detailData?.document?.pic_name || '-'}</div>
                     </div>
                     <div className="col-12 md:col-3">
-                        <div className="text-color-secondary mb-1 font-semibold">Document Date</div>
-                        <div className="text-slate-700">{detailData?.document?.document_date ? formatDateCalendar(detailData.document.document_date, 'yyyy-MM-dd') : '-'}</div>
+                        <div className="text-color-secondary mb-1 font-semibold">Tanggal Dokumen</div>
+                        <div className="text-color">{detailData?.document?.document_date ? formatDateCalendar(detailData.document.document_date, 'yyyy-MM-dd') : '-'}</div>
                     </div>
                     <div className="col-12 md:col-3">
-                        <div className="text-color-secondary mb-1 font-semibold">Expired Date</div>
-                        <div className="text-slate-700">{detailData?.document?.expired_date ? formatDateCalendar(detailData.document.expired_date, 'yyyy-MM-dd') : '-'}</div>
+                        <div className="text-color-secondary mb-1 font-semibold">Tanggal Kedaluwarsa</div>
+                        <div className="text-color">{detailData?.document?.expired_date ? formatDateCalendar(detailData.document.expired_date, 'yyyy-MM-dd') : '-'}</div>
                     </div>
                 </div>
 
                 <Divider />
 
-                <div className="border-1 border-dashed surface-border p-4 flex flex-column gap-3 bg-slate-50 rounded-xl mb-4">
-                    <div className="font-semibold text-lg text-slate-800 mb-1">Upload New Version</div>
+                <div className="border-1 border-dashed surface-border p-4 flex flex-column gap-3 surface-50 mb-4">
+                    <div className="font-semibold text-lg text-color mb-1">Unggah Versi Baru</div>
                     <div className="flex flex-column md:flex-row gap-3 align-items-end">
                         <div className="flex-1 w-full">
-                            <label className="block text-color-secondary mb-1 text-xs font-semibold">Select File</label>
+                            <label className="block text-color-secondary mb-1 text-sm font-semibold">Pilih File</label>
                             <input
                                 type="file"
-                                className="p-inputtext w-full text-xs"
+                                className="p-inputtext w-full text-sm"
                                 onChange={(e) => setNewVersionFile(e.target.files?.[0] || null)}
                             />
                         </div>
                         <div className="flex-1 w-full">
-                            <label className="block text-color-secondary mb-1 text-xs font-semibold">Change Notes</label>
+                            <label className="block text-color-secondary mb-1 text-sm font-semibold">Catatan Perubahan</label>
                             <InputText
-                                className="w-full text-xs"
-                                placeholder="E.g., Update content, fix typo..."
+                                className="w-full text-sm"
+                                placeholder="Contoh: Memperbarui konten, memperbaiki typo..."
                                 value={changeNotes}
                                 onChange={(e) => setChangeNotes(e.target.value)}
                             />
                         </div>
                         <Button
-                            label="Upload"
+                            label="Unggah"
                             icon="pi pi-upload"
                             size="small"
                             disabled={!newVersionFile || !changeNotes.trim() || load}
@@ -303,13 +303,13 @@ const Page = () => {
                     className="text-sm"
                     dataKey="version_id"
                 >
-                    <Column field="version_number" header="Version" sortable />
-                    <Column field="change_notes" header="Change Notes" />
-                    <Column field="uploaded_by" header="Uploaded By" body={(rowData: VersionData) => rowData.uploaded_by || '-'} />
+                    <Column field="version_number" header="Versi" sortable />
+                    <Column field="change_notes" header="Catatan Perubahan" />
+                    <Column field="uploaded_by" header="Diunggah Oleh" body={(rowData: VersionData) => rowData.uploaded_by || '-'} />
                     <Column field="approval_status" header="Status" body={versionStatusTemplate} />
-                    <Column field="approved_by" header="Approved/Rejected By" body={(rowData: VersionData) => rowData.approved_by || '-'} />
-                    <Column field="created_at" header="Created At" body={(rowData: VersionData) => formatDateCalendar(rowData.created_at)} />
-                    <Column headerStyle={{ textAlign: 'center' }} header="Action" body={versionActionTemplate} style={{ width: '14rem' }} />
+                    <Column field="approved_by" header="Disetujui/Ditolak Oleh" body={(rowData: VersionData) => rowData.approved_by || '-'} />
+                    <Column field="created_at" header="Tanggal Dibuat" body={(rowData: VersionData) => formatDateCalendar(rowData.created_at)} />
+                    <Column headerStyle={{ textAlign: 'center' }} header="Aksi" body={versionActionTemplate} style={{ width: '14rem' }} />
                 </DataTable>
             </div>
         </div>
