@@ -101,8 +101,8 @@ export default function LoginView({ formik, isLoading, usernameInvalid, password
                                 <InputText
                                     id="username"
                                     name="username"
-                                    value={formik.values.username}
-                                    onChange={(e) => formik.setFieldValue('username', e.target.value)}
+                                    value={formik.values.nama_pengguna}
+                                    onChange={(e) => formik.setFieldValue('nama_pengguna', e.target.value)}
                                     onBlur={formik.handleBlur}
                                     placeholder="Masukkan username"
                                     disabled={isLoading}
@@ -114,7 +114,7 @@ export default function LoginView({ formik, isLoading, usernameInvalid, password
                             </span>
                             {usernameInvalid && (
                                 <small id="username-error" className="p-error block mt-1">
-                                    {formik.errors.username}
+                                    {formik.errors.nama_pengguna}
                                 </small>
                             )}
                         </div>
@@ -129,8 +129,8 @@ export default function LoginView({ formik, isLoading, usernameInvalid, password
                                 <Password
                                     inputId="password"
                                     name="password"
-                                    value={formik.values.password}
-                                    onChange={(e) => formik.setFieldValue('password', e.target.value)}
+                                    value={formik.values.kata_sandi}
+                                    onChange={(e) => formik.setFieldValue('kata_sandi', e.target.value)}
                                     onBlur={formik.handleBlur}
                                     toggleMask
                                     feedback={false}
@@ -146,7 +146,7 @@ export default function LoginView({ formik, isLoading, usernameInvalid, password
                             </span>
                             {passwordInvalid && (
                                 <small id="password-error" className="p-error block mt-1">
-                                    {formik.errors.password}
+                                    {formik.errors.kata_sandi}
                                 </small>
                             )}
                         </div>
