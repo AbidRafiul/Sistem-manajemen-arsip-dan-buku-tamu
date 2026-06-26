@@ -6,7 +6,7 @@ import DB from "../../../core/config/knex.js";
 
 const router = express.Router();
 
-const cUploadDir = "uploads/incoming_letters";
+const cUploadDir = "uploads/surat_masuk";
 
 if (!fs.existsSync(cUploadDir)) {
   fs.mkdirSync(cUploadDir, { recursive: true });
@@ -57,10 +57,10 @@ const incomingLetterUpload = async (req, res) => {
     const oPayload = req.body || {};
     const oFile = req.file;
 
-    if (!oPayload.incoming_letter_id) {
+    if (!oPayload.surat_masuk_id) {
       return res.status(400).json({
         status: false,
-        message: "IncomingLetterId wajib diisi",
+        message: "id surat masuk wajib diisi",
       });
     }
 
@@ -71,8 +71,8 @@ const incomingLetterUpload = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trx_incoming_letters")
-      .where("incoming_letter_id", oPayload.incoming_letter_id)
+    const oLetter = await DB("trs_surat_masuk")
+      .where("surat_masuk_id", oPayload.surat_masuk_id)
       .first();
 
     if (!oLetter) {
@@ -84,27 +84,27 @@ const incomingLetterUpload = async (req, res) => {
 
     const dNow = new Date();
 
-    const vaInserted = await DB("trx_incoming_letter_files").insert({
-      incoming_letter_id: oPayload.incoming_letter_id,
-      file_path: oFile.path.replace(/\\/g, "/"),
-      file_name: oFile.originalname,
-      file_mime_type: oFile.mimetype,
-      file_size: oFile.size,
+    const vaInserted = await DB("trs_file_surat_masuk").insert({
+      surat_masuk_id: oPayload.surat_masuk_id,
+      path_file: oFile.path.replace(/\\/g, "/"),
+      nama_file: oFile.originalname,
+      tipe_mime_file: oFile.mimetype,
+      ukuran_file: oFile.size,
       uploaded_by: oPayload.uploaded_by || oPayload.UploadedBy || null,
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     });
 
-    await DB("trx_incoming_letter_trackings").insert({
-      incoming_letter_id: oPayload.incoming_letter_id,
-      disid_jabatan: null,
-      action_name: "file_surat_diupload",
-      from_nama_pengguna: null,
-      to_nama_pengguna: null,
-      previous_status: oLetter.status,
-      current_status: oLetter.status,
-      notes: `File ${oFile.originalname} berhasil diupload`,
+    await DB("trs_tracking_surat_masuk").insert({
+      surat_masuk_id: oPayload.surat_masuk_id,
+      disposisi_surat_id: null,
+      nama_aksi: "file_surat_diupload",
+      dari_pengguna_id: null,
+      kepada_pengguna_id: null,
+      status_sebelumnya: oLetter.status,
+      status_saat_ini: oLetter.status,
+      catatan: `File ${oFile.originalname} berhasil diupload`,
       processed_at: dNow,
       created_by: oPayload.uploaded_by || oPayload.UploadedBy || null,
       created_at: dNow,
@@ -115,11 +115,11 @@ const incomingLetterUpload = async (req, res) => {
       status: true,
       message: "File surat masuk berhasil diupload",
       data: {
-        incoming_letter_file_id: vaInserted[0],
-        file_path: oFile.path.replace(/\\/g, "/"),
-        file_name: oFile.originalname,
-        file_mime_type: oFile.mimetype,
-        file_size: oFile.size,
+        file_surat_masuk_id: vaInserted[0],
+        path_file: oFile.path.replace(/\\/g, "/"),
+        nama_file: oFile.originalname,
+        tipe_mime_file: oFile.mimetype,
+        ukuran_file: oFile.size,
       },
     });
   } catch (error) {

@@ -50,7 +50,7 @@ const Print = ({ state, setState, formik, getData, toast, dataRekap, setDataReka
                 halign: 'center'
             },
             didDrawPage: () => {
-                AddPageInfo({ doc, nama_pengguna, marginRightInMm });
+                AddPageInfo({ doc, userName: nama_pengguna, marginRightInMm });
             }
         });
 

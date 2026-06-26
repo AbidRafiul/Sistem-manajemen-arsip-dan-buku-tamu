@@ -23,6 +23,9 @@ import incomingLetterFileDownload from "./incoming_letter_file_download.js";
 //Endpoint POST - disposition-reference-data
 import dispositionReferenceData from "./disposition_reference_data.js";
 
+//Endpoint POST - letter-type-data
+import letterTypeData from "./letter_type_data.js";
+
 //Endpoint - letter-diposition-create
 import letterDispositionCreate from "./letter_disposition_create.js";
 
@@ -49,6 +52,7 @@ router.use("/incoming-letter-delete", incomingLetterDelete);
 router.use("/incoming-file-upload", incomingLetterUpload);
 router.use("/incoming-file-download", incomingLetterFileDownload);
 router.use("/disposition-reference-data", dispositionReferenceData);
+router.use("/letter-type-data", letterTypeData);
 router.use("/letter-disposition-create", letterDispositionCreate)
 router.use("/incoming-letter-tracking-data", incomingLetterTrackingData)
 router.use("/letter-disposition-data", letterDispositionData)

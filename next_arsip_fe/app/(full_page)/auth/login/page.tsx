@@ -8,14 +8,7 @@ import { Toast } from 'primereact/toast';
 import { useRef, useState } from 'react';
 import { showError } from '../../../../lib/tools/generalTools';
 import { LoginFormik } from './component/interfaces';
-import { Inter } from 'next/font/google';
 import LoginView from './component/loginView';
-
-const inter = Inter({
-    subsets: ['latin'],
-    weight: ['400', '500', '600', '700', '800'],
-    variable: '--font-inter'
-});
 
 const LoginPage = () => {
     const router = useRouter();
@@ -79,9 +72,8 @@ const LoginPage = () => {
         }
     };
 
-    //PERBAIKAN BUG TYPO DI SINI
-    const usernameInvalid = !!(formik.touched.nama_pengguna && formik.errors.nama_pengguna);
-    const passwordInvalid = !!(formik.touched.kata_sandi && formik.errors.kata_sandi);
+    const namaPenggunaInvalid = !!(formik.touched.nama_pengguna && formik.errors.nama_pengguna);
+    const kataSandiInvalid = !!(formik.touched.kata_sandi && formik.errors.kata_sandi);
 
     return (
         <>
@@ -89,9 +81,9 @@ const LoginPage = () => {
             <LoginView
                 formik={formik}
                 isLoading={state.load}
-                usernameInvalid={usernameInvalid}
-                passwordInvalid={passwordInvalid}
-                fontVariable={inter.variable}
+                namaPenggunaInvalid={namaPenggunaInvalid}
+                kataSandiInvalid={kataSandiInvalid}
+                fontVariable=""
             />
         </>
     );

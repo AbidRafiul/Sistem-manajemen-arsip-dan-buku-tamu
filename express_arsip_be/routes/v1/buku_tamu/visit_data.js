@@ -1,5 +1,4 @@
 import express from "express";
-import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { formatDateSystem } from "../components/tools/general.js";
 
@@ -16,14 +15,14 @@ router.post("/", async (req, res) => {
       .select(
         "t.*",
         "mp.visit_purpose_name as VisitPurposeName",
-        "u.nama_lengkap as Hostnama_lengkap",
+        "u.fullname as Hostnama_lengkap",
       )
       .leftJoin(
         "mst_visit_purpose as mp",
         "t.visit_purpose_id",
         "mp.visit_purpose_id",
       )
-      .leftJoin("mst_pengguna as u", "t.host_nama_pengguna", "u.nama_pengguna");
+      .leftJoin("mst_pengguna as u", "t.host_user_id", "u.user_id");
 
     const qCount = DB("trx_visitations as t").count({ total: "*" });
 

@@ -56,10 +56,10 @@ router.post("/", async (req, res) => {
     }
 
     const dNow = new Date();
-    await DB("mst_jabatan").insert({
-      kode_peran: oPayload.kode_peran,
-      nama_peran: oPayload.nama_peran,
-      deskripsi: oPayload.deskripsi || null,
+    await DB("mst_peran").insert({
+      role_code: oPayload.kode_peran,
+      role_name: oPayload.nama_peran,
+      description: oPayload.deskripsi || null,
       status: "active",
       created_at: dNow,
       updated_at: dNow,

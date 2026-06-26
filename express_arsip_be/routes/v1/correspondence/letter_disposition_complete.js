@@ -16,8 +16,8 @@ const letterDispositionComplete = async (req, res) => {
     };
 
     const oMessage = {
-      "disid_jabatan.required": "disid_jabatan wajib diisi",
-      "disid_jabatan.number": "disid_jabatan harus berupa angka",
+      "disposisi_id.required": "id disposisi wajib diisi",
+      "disposisi_id.number": "id disposisi harus berupa angka",
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
@@ -31,8 +31,8 @@ const letterDispositionComplete = async (req, res) => {
       });
     }
 
-    const oDisposition = await DB("trx_letter_dispositions")
-      .where("disid_jabatan", oPayload.disid_jabatan)
+    const oDisposition = await DB("trs_disposisi_surat")
+      .where("disposisi_id", oPayload.disposition_id)
       .first();
 
     if (!oDisposition) {
@@ -49,8 +49,8 @@ const letterDispositionComplete = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trx_incoming_letters")
-      .where("incoming_letter_id", oDisposition.incoming_letter_id)
+    const oLetter = await DB("trs_surat_masuk")
+      .where("surat_masuk_id", oDisposition.incoming_letter_id)
       .first();
 
     if (!oLetter) {
@@ -72,8 +72,8 @@ const letterDispositionComplete = async (req, res) => {
     let bAllDispositionCompleted = false;
 
     await DB.transaction(async (trx) => {
-      await trx("trx_letter_dispositions")
-        .where("disid_jabatan", oPayload.disid_jabatan)
+      await trx("trs_disposisi_surat")
+        .where("disposisi_id", oPayload.disposisi_id)
         .update({
           status: "selesai",
           received_at: oDisposition.received_at || dNow,
@@ -83,12 +83,12 @@ const letterDispositionComplete = async (req, res) => {
           updated_at: dNow,
         });
 
-      await trx("trx_incoming_letter_trackings").insert({
-        incoming_letter_id: oDisposition.incoming_letter_id,
-        disid_jabatan: oPayload.disid_jabatan,
+      await trx("trs_tracking_surat_masuk").insert({
+        incoming_letter_id: oDisposition.surat_masuk_id,
+        disposition_id: oPayload.disposisi_id,
         action_name: "disposisi_selesai",
-        from_nama_pengguna: oDisposition.from_nama_pengguna || null,
-        to_nama_pengguna: oDisposition.to_nama_pengguna || null,
+        from_user_id: oDisposition.dari_pengguna_id || null,
+        to_user_id: oDisposition.kepada_pengguna_id || null,
         previous_status: oLetter.status,
         current_status: "diproses",
         notes: oPayload.complete_note || "Disposisi telah diselesaikan",
@@ -98,27 +98,27 @@ const letterDispositionComplete = async (req, res) => {
         updated_at: dNow,
       });
 
-      const vaUnfinishedDispositions = await trx("trx_letter_dispositions")
-        .where("incoming_letter_id", oDisposition.incoming_letter_id)
+      const vaUnfinishedDispositions = await trx("trs_disposisi_surat")
+        .where("surat_masuk_id", oDisposition.surat_masuk_id)
         .whereNot("status", "selesai");
 
       if (vaUnfinishedDispositions.length === 0) {
         bAllDispositionCompleted = true;
 
-        await trx("trx_incoming_letters")
-          .where("incoming_letter_id", oDisposition.incoming_letter_id)
+        await trx("trs_surat_masuk")
+          .where("surat_masuk_id", oDisposition.surat_masuk_id)
           .update({
             status: "selesai",
             updated_by: oPayload.updated_by || null,
             updated_at: dNow,
           });
 
-        await trx("trx_incoming_letter_trackings").insert({
-          incoming_letter_id: oDisposition.incoming_letter_id,
-          disid_jabatan: oPayload.disid_jabatan,
+        await trx("trs_tracking_surat_masuk").insert({
+          incoming_letter_id: oDisposition.surat_masuk_id,
+          disposition_id: oPayload.disposisi_id,
           action_name: "surat_selesai",
-          from_nama_pengguna: oDisposition.from_nama_pengguna || null,
-          to_nama_pengguna: oDisposition.to_nama_pengguna || null,
+          from_user_id: oDisposition.dari_pengguna_id || null,
+          to_user_id: oDisposition.kepada_pengguna_id || null,
           previous_status: oLetter.status,
           current_status: "selesai",
           notes: "Semua disposisi selesai, surat masuk dinyatakan selesai",
@@ -128,8 +128,8 @@ const letterDispositionComplete = async (req, res) => {
           updated_at: dNow,
         });
       } else {
-        await trx("trx_incoming_letters")
-          .where("incoming_letter_id", oDisposition.incoming_letter_id)
+        await trx("trs_surat_masuk")
+          .where("surat_masuk_id", oDisposition.surat_masuk_id)
           .update({
             status: "diproses",
             updated_by: oPayload.updated_by || null,

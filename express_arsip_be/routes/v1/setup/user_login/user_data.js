@@ -15,17 +15,26 @@ router.post("/", async (req, res) => {
   const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
-    // JOIN murni cuma buat ngambil peran dari mst_pengguna_perans
+    // DB aktif memakai nama kolom Inggris; response tetap pakai alias lama
+    // supaya frontend setup/users tidak perlu berubah.
     const vaData = await DB("mst_pengguna as mu")
-      .leftJoin("mst_pengguna_peran as mur", "mu.id_pengguna", "mur.id_pengguna")
-      .leftJoin("mst_peran as mr", "mur.id_peran", "mr.id_peran")
+      .leftJoin("mst_pengguna_peran as mur", "mu.user_id", "mur.user_id")
+      .leftJoin("mst_peran as mr", "mur.role_id", "mr.role_id")
       .select(
-        "mu.nama_pengguna as nama_pengguna",
-        "mu.nama_lengkap as nama_lengkap",
-        "mu.telepon as telepon",
+        "mu.user_id as id_pengguna",
+        "mu.fullname as nama_lengkap",
+        "mu.username as nama_pengguna",
+        "mu.telp as telepon",
+        "mu.email as surel",
+        "mu.branch_id as id_cabang",
+        "mu.division_id as id_divisi",
+        "mu.department_id as id_departemen",
+        "mu.position_id as id_jabatan",
+        "mu.work_unit_id as id_unit_kerja",
         "mu.status as status",
         "mu.created_at as created_at",
-        "mr.nama_peran as role",
+        "mr.role_id as id_peran",
+        "mr.role_name as role",
       )
       .orderBy("mu.created_at", "desc");
 
