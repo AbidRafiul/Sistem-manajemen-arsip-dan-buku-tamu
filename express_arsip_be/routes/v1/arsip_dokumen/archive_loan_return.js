@@ -44,7 +44,7 @@ const returnArchiveLoan = async (req, res) => {
     // Deteksi keterlambatan: bandingkan tanggal kembali aktual vs tanggal_pengembalian
     const bIsOverdue =
       oLoan.tanggal_pengembalian &&
-      new Date(dActualReturnDate) > new Date(oLoan.tanggal_pengembalian)
+        new Date(dActualReturnDate) > new Date(oLoan.tanggal_pengembalian)
         ? 1
         : 0;
 
@@ -89,7 +89,7 @@ const returnArchiveLoan = async (req, res) => {
       func: "returnArchiveLoan",
       request: oPayload,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

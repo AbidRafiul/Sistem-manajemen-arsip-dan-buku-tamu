@@ -21,15 +21,15 @@ import { TableData } from "../../../components/interfaces";
 type DialogMode = "create" | "forward" | "process" | "complete";
 
 type UserOption = {
-    user_id: number;
-    fullname: string;
-    username: string;
+    id_pengguna: number;
+    nama_lengkap: string;
+    nama_pengguna: string;
 };
 
 type InstructionOption = {
-    disposition_instruction_id: number;
-    instruction_name: string;
-    instruction_code: string;
+    instruksi_disposisi_id: number;
+    nama_instruksi: string;
+    kode_instruksi: string;
 };
 
 export interface DispositionViewProps {
@@ -44,14 +44,14 @@ export interface DispositionViewProps {
     selectedLetter: TableData | null;
     selectedDisposition: Record<string, any> | null;
     form: {
-        incoming_letter_id: number | null;
-        parent_disposition_id: number | null;
-        from_user_id: number | null;
-        to_user_id: number | null;
-        disposition_instruction_id: number | null;
-        instruction: string;
-        disposition_note: string;
-        due_date: string;
+        surat_masuk_id: number | null;
+        disposisi_induk_id: number | null;
+        dari_pengguna_id: number | null;
+        kepada_pengguna_id: number | null;
+        instruksi_disposisi_id: number | null;
+        instruksi: string;
+        catatan_disposisi: string;
+        batas_waktu: string;
     };
     actionNote: string;
     statusSummary: Record<string, number>;
@@ -162,16 +162,16 @@ const DispositionView = ({
 
     const pendingLetterNoTemplate = (rowData: TableData) => (
         <div>
-            <div className="font-semibold text-sm text-900">{rowData.agenda_number || rowData.letter_number || "-"}</div>
-            <div className="text-xs text-color-secondary">{rowData.sender_name || "-"}</div>
+            <div className="font-semibold text-sm text-900">{rowData.nomor_agenda || rowData.nomor_surat || "-"}</div>
+            <div className="text-xs text-color-secondary">{rowData.nama_pengirim || "-"}</div>
         </div>
     );
 
     const pendingLetterSubjectTemplate = (rowData: TableData) => (
         <div>
-            <div className="text-sm text-900">{rowData.subject || "-"}</div>
-            {rowData.attachment_description && (
-                <div className="text-xs text-color-secondary mt-1">{rowData.attachment_description}</div>
+            <div className="text-sm text-900">{rowData.perihal || "-"}</div>
+            {rowData.keterangan_lampiran && (
+                <div className="text-xs text-color-secondary mt-1">{rowData.keterangan_lampiran}</div>
             )}
         </div>
     );
@@ -188,8 +188,8 @@ const DispositionView = ({
 
     const dispositionLetterTemplate = (row: Record<string, any>) => (
         <div>
-            <div className="font-semibold text-sm text-900">{row.agenda_number || row.letter_number || "-"}</div>
-            <div className="text-xs text-color-secondary">{row.subject || "-"}</div>
+            <div className="font-semibold text-sm text-900">{row.nomor_agenda || row.nomor_surat || "-"}</div>
+            <div className="text-xs text-color-secondary">{row.perihal || "-"}</div>
         </div>
     );
 
@@ -201,15 +201,15 @@ const DispositionView = ({
                 <span>{row.to_user_name || "-"}</span>
             </div>
             <div className="text-xs text-color-secondary mt-1">
-                {row.parent_disposition_id ? `Lanjutan dari #${row.parent_disposition_id}` : "Disposisi awal"}
+                {row.disposisi_induk_id ? `Lanjutan dari #${row.disposisi_induk_id}` : "Disposisi awal"}
             </div>
         </div>
     );
 
     const dispositionInstructionTemplate = (row: Record<string, any>) => (
         <div>
-            <div className="font-semibold text-sm text-900">{row.instruction_name || row.instruction || "-"}</div>
-            {row.disposition_note && <div className="text-xs text-color-secondary mt-1">{row.disposition_note}</div>}
+            <div className="font-semibold text-sm text-900">{row.nama_instruksi || row.instruksi || "-"}</div>
+            {row.catatan_disposisi && <div className="text-xs text-color-secondary mt-1">{row.catatan_disposisi}</div>}
         </div>
     );
 
@@ -229,36 +229,6 @@ const DispositionView = ({
                     <Button size="small" icon="pi pi-check" text severity="success" tooltip="Selesaikan" tooltipOptions={{ position: "top" }} onClick={() => onOpenAction("complete", row)} />
                 )}
                 {isDone && <span className="text-xs text-color-secondary">—</span>}
-            </div>
-        );
-    };
-
-    const trackingReceiverTemplate = (item: Record<string, any>) => (
-        <div>
-            <div className="font-semibold text-sm text-900">{item.to_user_name || "-"}</div>
-            <div className="text-xs text-color-secondary">{item.agenda_number || item.letter_number || "-"} · {item.subject || "-"}</div>
-        </div>
-    );
-
-    const trackingProcessedTemplate = (item: Record<string, any>) => {
-        const status = getStatus(item.status);
-        const processedBy = item.processed_by_name || (status === "baru" ? "-" : item.to_user_name);
-        return (
-            <div>
-                <div className="font-semibold text-sm text-900">{processedBy || "-"}</div>
-                <div className="text-xs text-color-secondary">
-                    {item.parent_disposition_id ? `Disposisi lanjutan #${item.parent_disposition_id}` : "Disposisi awal"}
-                </div>
-            </div>
-        );
-    };
-
-    const trackingTimeTemplate = (item: Record<string, any>) => {
-        const processedAt = item.processed_at || item.completed_at || item.received_at || item.updated_at;
-        return (
-            <div>
-                <div className="font-semibold text-sm text-900">{processedAt ? formatDate(processedAt) : "-"}</div>
-                <div className="text-xs text-color-secondary">{item.instruction_name || item.instruction || "Instruksi belum diisi"}</div>
             </div>
         );
     };
@@ -417,37 +387,9 @@ const DispositionView = ({
                     <Column header="Surat" body={dispositionLetterTemplate} style={{ minWidth: "160px" }} />
                     <Column header="Alur" body={dispositionFlowTemplate} style={{ minWidth: "200px" }} />
                     <Column header="Instruksi Pimpinan" body={dispositionInstructionTemplate} style={{ minWidth: "180px" }} />
-                    <Column field="due_date" header="Tenggat Waktu" body={(r) => formatDate(r.due_date)} style={{ width: "110px" }} />
+                    <Column field="batas_waktu" header="Tenggat Waktu" body={(r) => formatDate(r.batas_waktu)} style={{ width: "110px" }} />
                     <Column header="Status" body={(r) => renderStatusTag(r.status)} style={{ width: "120px" }} />
                     <Column header="Aksi" body={dispositionActionTemplate} style={{ width: "140px", textAlign: "center" }} />
-                </DataTable>
-            </Card>
-
-            {/* ─── Tracking Surat ───────────────────────────────────────────── */}
-            <Card className="shadow-1 border-round-2xl border-none">
-                <div className="flex align-items-center gap-2 mb-3">
-                    <i className="pi pi-history text-primary" />
-                    <span className="font-bold text-900">Tracking Surat</span>
-                    <span className="text-color-secondary text-sm ml-1">— Riwayat penerimaan dan proses disposisi</span>
-                </div>
-                <DataTable
-                    value={dispositions}
-                    loading={loading}
-                    paginator rows={8}
-                    emptyMessage={
-                        <div className="flex flex-column align-items-center py-4 gap-2 text-color-secondary">
-                            <i className="pi pi-list text-2xl text-300" />
-                            <span className="text-sm">Belum ada tracking disposisi.</span>
-                        </div>
-                    }
-                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-                    className="text-sm"
-                    rowHover
-                >
-                    <Column header="Penerima" body={trackingReceiverTemplate} style={{ minWidth: "200px" }} />
-                    <Column header="Diproses Oleh" body={trackingProcessedTemplate} style={{ minWidth: "180px" }} />
-                    <Column header="Waktu Proses" body={trackingTimeTemplate} style={{ width: "140px" }} />
-                    <Column header="Status" body={(r) => renderStatusTag(r.status)} style={{ width: "120px" }} />
                 </DataTable>
             </Card>
 
@@ -473,7 +415,7 @@ const DispositionView = ({
                             <div className="mb-3 p-3 surface-50 border-round-lg border-1 border-blue-100 flex align-items-center gap-2">
                                 <i className="pi pi-info-circle text-blue-500" />
                                 <span className="text-sm text-900">
-                                    Lanjutan dari disposisi <strong>#{selectedDisposition.disposition_id}</strong>: <strong>{selectedDisposition.to_user_name || "-"}</strong>
+                                    Lanjutan dari disposisi <strong>#{selectedDisposition.disposisi_surat_id}</strong>: <strong>{selectedDisposition.to_user_name || "-"}</strong>
                                 </span>
                             </div>
                         )}
@@ -482,9 +424,9 @@ const DispositionView = ({
                             <label htmlFor="disp_letter" className="font-semibold text-900">Surat <span className="text-red-500">*</span></label>
                             <Dropdown
                                 id="disp_letter"
-                                value={form.incoming_letter_id}
+                                value={form.surat_masuk_id}
                                 options={letterOptions}
-                                onChange={(e) => onFormChange("incoming_letter_id", e.value)}
+                                onChange={(e) => onFormChange("surat_masuk_id", e.value)}
                                 placeholder="Pilih surat yang akan didisposisikan"
                                 filter
                                 filterPlaceholder="Cari surat..."
@@ -497,11 +439,11 @@ const DispositionView = ({
                             <label htmlFor="disp_to_user" className="font-semibold text-900">Tujuan Disposisi <span className="text-red-500">*</span></label>
                             <Dropdown
                                 id="disp_to_user"
-                                value={form.to_user_id}
+                                value={form.kepada_pengguna_id}
                                 options={users}
-                                optionLabel="fullname"
-                                optionValue="user_id"
-                                onChange={(e) => onFormChange("to_user_id", e.value)}
+                                optionLabel="nama_lengkap"
+                                optionValue="id_pengguna"
+                                onChange={(e) => onFormChange("kepada_pengguna_id", e.value)}
                                 placeholder="Pilih pimpinan / unit / staf"
                                 filter
                                 filterPlaceholder="Cari nama..."
@@ -513,11 +455,11 @@ const DispositionView = ({
                             <label htmlFor="disp_instruction_id" className="font-semibold text-900">Instruksi Pimpinan</label>
                             <Dropdown
                                 id="disp_instruction_id"
-                                value={form.disposition_instruction_id}
+                                value={form.instruksi_disposisi_id}
                                 options={instructions}
-                                optionLabel="instruction_name"
-                                optionValue="disposition_instruction_id"
-                                onChange={(e) => onFormChange("disposition_instruction_id", e.value)}
+                                optionLabel="nama_instruksi"
+                                optionValue="instruksi_disposisi_id"
+                                onChange={(e) => onFormChange("instruksi_disposisi_id", e.value)}
                                 placeholder="Pilih instruksi (opsional)"
                                 showClear
                                 className="w-full"
@@ -528,8 +470,8 @@ const DispositionView = ({
                             <label htmlFor="disp_instruction" className="font-semibold text-900">Instruksi Tambahan</label>
                             <InputText
                                 id="disp_instruction"
-                                value={form.instruction}
-                                onChange={(e) => onFormChange("instruction", e.target.value)}
+                                value={form.instruksi}
+                                onChange={(e) => onFormChange("instruksi", e.target.value)}
                                 placeholder="Contoh: Mohon telaah dan siapkan bahan tindak lanjut"
                                 className="w-full"
                             />
@@ -539,8 +481,8 @@ const DispositionView = ({
                             <label htmlFor="disp_note" className="font-semibold text-900">Catatan Disposisi</label>
                             <InputTextarea
                                 id="disp_note"
-                                value={form.disposition_note}
-                                onChange={(e) => onFormChange("disposition_note", e.target.value)}
+                                value={form.catatan_disposisi}
+                                onChange={(e) => onFormChange("catatan_disposisi", e.target.value)}
                                 rows={3}
                                 placeholder="Catatan khusus untuk penerima (opsional)"
                                 style={{ resize: "none" }}
@@ -549,12 +491,12 @@ const DispositionView = ({
                         </div>
 
                         <div className="flex flex-column gap-1 mb-3">
-                            <label htmlFor="disp_due_date" className="font-semibold text-900">Batas Waktu</label>
+                            <label htmlFor="disp_batas_waktu" className="font-semibold text-900">Batas Waktu</label>
                             <InputText
-                                id="disp_due_date"
+                                id="disp_batas_waktu"
                                 type="date"
-                                value={form.due_date}
-                                onChange={(e) => onFormChange("due_date", e.target.value)}
+                                value={form.batas_waktu}
+                                onChange={(e) => onFormChange("batas_waktu", e.target.value)}
                                 className="w-full"
                             />
                         </div>
@@ -579,8 +521,8 @@ const DispositionView = ({
                             <div className="flex align-items-center gap-2">
                                 <i className={`${dialogMode === "complete" ? "pi pi-check-circle text-green-500" : "pi pi-cog text-orange-500"}`} />
                                 <div>
-                                    <div className="font-semibold text-900">{selectedDisposition?.agenda_number || selectedDisposition?.letter_number || "-"}</div>
-                                    <div className="text-color-secondary text-xs mt-1">{selectedDisposition?.subject || "-"}</div>
+                                    <div className="font-semibold text-900">{selectedDisposition?.nomor_agenda || selectedDisposition?.nomor_surat || "-"}</div>
+                                    <div className="text-color-secondary text-xs mt-1">{selectedDisposition?.perihal || "-"}</div>
                                 </div>
                             </div>
                         </div>

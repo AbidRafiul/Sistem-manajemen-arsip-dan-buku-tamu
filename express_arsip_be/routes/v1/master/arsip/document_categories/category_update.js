@@ -1,8 +1,15 @@
 import express from "express";
 import Joi from "joi";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
-import { Logging, validatePayload } from "../../../components/tools/servertool.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
+import {
+  Logging,
+  validatePayload,
+} from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
@@ -10,6 +17,7 @@ const updateDocumentCategory = async (req, res) => {
   const { body: oPayload } = req;
   const cIdKategoriDokumen = req.params.id_kategori_dokumen;
   const username = req?.auth?.username || "";
+
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
@@ -26,12 +34,13 @@ const updateDocumentCategory = async (req, res) => {
         kode_kategori_dokumen: Joi.string().max(255).required().label("Kode Kategori"),
         nama_kategori_dokumen: Joi.string().max(255).required().label("Nama Kategori"),
         deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
+
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
         "any.required": "{#label} wajib diisi",
       },
-      oPayload
+      oPayload,
     );
 
     if (cValidation) {
@@ -46,7 +55,7 @@ const updateDocumentCategory = async (req, res) => {
         func: "updateDocumentCategory",
         request: oPayload,
         response: oResult,
-        user: username,
+        user: nama_pengguna,
       });
 
       return res.status(422).json(oResult);
@@ -58,6 +67,7 @@ const updateDocumentCategory = async (req, res) => {
         kode_klasifikasi: oPayload.kode_klasifikasi,
         kode_kategori_dokumen: oPayload.kode_kategori_dokumen,
         nama_kategori_dokumen: oPayload.nama_kategori_dokumen,
+
         deskripsi: oPayload.deskripsi || null,
         updated_at: new Date(),
       });
@@ -75,7 +85,6 @@ const updateDocumentCategory = async (req, res) => {
       message: "Data berhasil diupdate",
       datetime: formatDateSystem(),
     });
-
   } catch (error) {
     const oResult = {
       status: status.BAD_REQUEST,
@@ -88,7 +97,7 @@ const updateDocumentCategory = async (req, res) => {
       func: "updateDocumentCategory",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

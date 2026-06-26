@@ -6,20 +6,26 @@ const router = express.Router();
 const dispositionReferenceData = async (req, res) => {
   try {
     const [vaUsers, vaInstructions] = await Promise.all([
-      DB("mst_users")
-        .select("user_id", "fullname", "username", "position_id", "status")
-        .where("status", "active")
-        .orderBy("fullname", "asc"),
-      DB("mst_disposition_instructions")
+      DB("mst_pengguna")
         .select(
-          "disposition_instruction_id",
-          "instruction_code",
-          "instruction_name",
-          "description",
+          "id_pengguna",
+          "nama_lengkap",
+          "nama_pengguna",
+          "id_jabatan",
+          "status",
+        )
+        .where("status", "active")
+        .orderBy("nama_lengkap", "asc"),
+      DB("mst_instruksi_disposisi")
+        .select(
+          "instruksi_disposisi_id",
+          "kode_instruksi",
+          "nama_instruksi",
+          "deskripsi",
           "status"
         )
         .where("status", "active")
-        .orderBy("instruction_name", "asc"),
+        .orderBy("nama_instruksi", "asc"),
     ]);
 
     return res.status(200).json({

@@ -14,12 +14,12 @@ import { LoginFormik } from './interfaces';
 interface LoginViewProps {
     formik: FormikProps<LoginFormik>;
     isLoading: boolean;
-    usernameInvalid: boolean;
-    passwordInvalid: boolean;
+    namaPenggunaInvalid: boolean;
+    kataSandiInvalid: boolean;
     fontVariable: string;
 }
 
-export default function LoginView({ formik, isLoading, usernameInvalid, passwordInvalid, fontVariable }: LoginViewProps) {
+export default function LoginView({ formik, isLoading, namaPenggunaInvalid, kataSandiInvalid, fontVariable }: LoginViewProps) {
     return (
         <main
             className={`${fontVariable} min-h-screen grid grid-nogutter m-0 p-0`}
@@ -93,60 +93,60 @@ export default function LoginView({ formik, isLoading, usernameInvalid, password
                     <form className="flex flex-column gap-4" onSubmit={formik.handleSubmit} noValidate>
                         {/* Username Input */}
                         <div className="flex flex-column gap-2">
-                            <label htmlFor="username" className="font-semibold text-900 text-sm">
-                                Username
+                            <label htmlFor="nama_pengguna" className="font-semibold text-900 text-sm">
+                                Nama Pengguna
                             </label>
                             <span className="p-input-icon-left w-full">
                                 <i className="pi pi-user text-color-secondary" />
                                 <InputText
-                                    id="username"
-                                    name="username"
-                                    value={formik.values.username}
-                                    onChange={(e) => formik.setFieldValue('username', e.target.value)}
+                                    id="nama_pengguna"
+                                    name="nama_pengguna"
+                                    value={formik.values.nama_pengguna}
+                                    onChange={(e) => formik.setFieldValue('nama_pengguna', e.target.value)}
                                     onBlur={formik.handleBlur}
-                                    placeholder="Masukkan username"
+                                    placeholder="Masukkan nama pengguna"
                                     disabled={isLoading}
-                                    className={`w-full ${usernameInvalid ? 'p-invalid' : ''}`}
+                                    className={`w-full ${namaPenggunaInvalid ? 'p-invalid' : ''}`}
                                     style={{ height: '50px', borderRadius: '10px' }}
-                                    aria-invalid={usernameInvalid}
-                                    aria-describedby={usernameInvalid ? 'username-error' : undefined}
+                                    aria-invalid={namaPenggunaInvalid}
+                                    aria-describedby={namaPenggunaInvalid ? 'nama_pengguna-error' : undefined}
                                 />
                             </span>
-                            {usernameInvalid && (
-                                <small id="username-error" className="p-error block mt-1">
-                                    {formik.errors.username}
+                            {namaPenggunaInvalid && (
+                                <small id="nama_pengguna-error" className="p-error block mt-1">
+                                    {formik.errors.nama_pengguna}
                                 </small>
                             )}
                         </div>
 
                         {/* Password Input */}
                         <div className="flex flex-column gap-2">
-                            <label htmlFor="password" className="font-semibold text-900 text-sm">
-                                Password
+                            <label htmlFor="kata_sandi" className="font-semibold text-900 text-sm">
+                                Kata Sandi
                             </label>
                             <span className="p-input-icon-left w-full">
                                 <i className="pi pi-lock text-color-secondary" />
                                 <Password
-                                    inputId="password"
-                                    name="password"
-                                    value={formik.values.password}
-                                    onChange={(e) => formik.setFieldValue('password', e.target.value)}
+                                    inputId="kata_sandi"
+                                    name="kata_sandi"
+                                    value={formik.values.kata_sandi}
+                                    onChange={(e) => formik.setFieldValue('kata_sandi', e.target.value)}
                                     onBlur={formik.handleBlur}
                                     toggleMask
                                     feedback={false}
-                                    placeholder="Masukkan password"
+                                    placeholder="Masukkan kata sandi"
                                     disabled={isLoading}
                                     className="w-full"
-                                    inputClassName={`w-full ${passwordInvalid ? 'p-invalid' : ''}`}
+                                    inputClassName={`w-full ${kataSandiInvalid ? 'p-invalid' : ''}`}
                                     inputStyle={{ height: '50px', borderRadius: '10px' }}
                                     style={{ width: '100%' }}
-                                    aria-invalid={passwordInvalid}
-                                    aria-describedby={passwordInvalid ? 'password-error' : undefined}
+                                    aria-invalid={kataSandiInvalid}
+                                    aria-describedby={kataSandiInvalid ? 'kata_sandi-error' : undefined}
                                 />
                             </span>
-                            {passwordInvalid && (
-                                <small id="password-error" className="p-error block mt-1">
-                                    {formik.errors.password}
+                            {kataSandiInvalid && (
+                                <small id="kata_sandi-error" className="p-error block mt-1">
+                                    {formik.errors.kata_sandi}
                                 </small>
                             )}
                         </div>

@@ -3,20 +3,23 @@ import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { validatePayload } from "../components/tools/servertool.js";
 
-
 const router = express.Router();
 
 const incomingLetterTrackingData = async (req, res) => {
   try {
     const oPayload = req.body || {};
+    if (!oPayload.surat_masuk_id && oPayload.incoming_letter_id) {
+      oPayload.surat_masuk_id = oPayload.incoming_letter_id;
+      delete oPayload.incoming_letter_id;
+    }
 
     const oValidation = {
-      incoming_letter_id: Joi.number().required(),
+      surat_masuk_id: Joi.number().required(),
     };
 
     const oMessage = {
-      "incoming_letter_id.required": "incoming_letter_id wajib diisi",
-      "incoming_letter_id.number": "incoming_letter_id harus berupa angka",
+      "surat_masuk_id.required": "id surat masuk  wajib diisi",
+      "surat_masuk_id.number": " id surat masuk harus berupa angka",
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
@@ -30,16 +33,16 @@ const incomingLetterTrackingData = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trx_incoming_letters")
+    const oLetter = await DB("trs_surat_masuk")
       .select(
-        "incoming_letter_id",
-        "agenda_number",
-        "letter_number",
-        "subject",
-        "sender_name",
+        "surat_masuk_id",
+        "nomor_agenda",
+        "nomor_surat",
+        "perihal",
+        "nama_pengirim",
         "status"
       )
-      .where("incoming_letter_id", oPayload.incoming_letter_id)
+      .where("surat_masuk_id", oPayload.surat_masuk_id)
       .first();
 
     if (!oLetter) {
@@ -49,34 +52,34 @@ const incomingLetterTrackingData = async (req, res) => {
       });
     }
 
-    const vaData = await DB("trx_incoming_letter_trackings as tilt")
+    const vaData = await DB("trs_tracking_surat_masuk as tilt")
       .leftJoin(
-        "trx_letter_dispositions as tld",
-        "tilt.disposition_id",
-        "tld.disposition_id"
+        "trs_disposisi_surat as tld",
+        "tilt.disposisi_surat_id",
+        "tld.disposisi_surat_id"
       )
       .select(
-        "tilt.incoming_letter_tracking_id",
-        "tilt.incoming_letter_id",
-        "tilt.disposition_id",
-        "tilt.action_name",
-        "tilt.from_user_id",
-        "tilt.to_user_id",
-        "tilt.previous_status",
-        "tilt.current_status",
-        "tilt.notes",
+        "tilt.tracking_surat_masuk_id",
+        "tilt.surat_masuk_id",
+        "tilt.disposisi_surat_id",
+        "tilt.nama_aksi",
+        "tilt.dari_pengguna_id",
+        "tilt.kepada_pengguna_id",
+        "tilt.status_sebelumnya",
+        "tilt.status_saat_ini",
+        "tilt.catatan",
         "tilt.processed_at",
         "tilt.created_by",
         "tilt.created_at",
         "tilt.updated_at",
 
-        "tld.parent_disposition_id",
-        "tld.instruction",
-        "tld.disposition_note",
-        "tld.due_date",
-        "tld.status as disposition_status"
+        "tld.disposisi_induk_id",
+        "tld.instruksi",
+        "tld.catatan_disposisi",
+        "tld.batas_waktu",
+        "tld.status as status_disposisi"
       )
-      .where("tilt.incoming_letter_id", oPayload.incoming_letter_id)
+      .where("tilt.surat_masuk_id", oPayload.surat_masuk_id)
       .orderBy("tilt.processed_at", "asc");
 
     return res.status(200).json({

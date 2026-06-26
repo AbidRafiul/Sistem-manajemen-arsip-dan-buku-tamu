@@ -91,7 +91,8 @@ const createDestructionProposal = async (req, res) => {
 
     const oResult = {
       status: "success",
-      message: "Proposal pemusnahan arsip berhasil diajukan dan menunggu review",
+      message:
+        "Proposal pemusnahan arsip berhasil diajukan dan menunggu review",
       data: {
         id_usulan: nProposalId,
         document_name: oDocument.nama_dokumen,
@@ -115,7 +116,7 @@ const createDestructionProposal = async (req, res) => {
       func: "createDestructionProposal",
       request: oPayload,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

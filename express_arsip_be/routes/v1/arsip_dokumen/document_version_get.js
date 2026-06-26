@@ -54,7 +54,7 @@ const getDocumentVersions = async (req, res) => {
         "disetujui_pada",
         "catatan_persetujuan",
         "created_at",
-        "updated_at"
+        "updated_at",
       )
       .where("kode_dokumen", oDocument.kode_dokumen)
       .orderBy("nomor_versi", "desc");
@@ -78,7 +78,7 @@ const getDocumentVersions = async (req, res) => {
       func: "getDocumentVersions",
       request: oQuery,
       response: oResult,
-      user: req?.auth?.username || "system",
+      user: req?.auth?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

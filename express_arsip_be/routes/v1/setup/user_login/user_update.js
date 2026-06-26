@@ -7,107 +7,181 @@ import {
 } from "../../components/tools/general.js";
 import Joi from "joi";
 import DB from "../../../../core/config/knex.js";
-import { Logging, validatePayload } from "../../components/tools/servertool.js";
+import { validatePayload } from "../../components/tools/servertool.js";
 
 const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { body: oPayload } = req;
-  const username = req?.auth?.username || "";
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
-      return res
-        .status(400)
-        .json({
-          status: status.BAD_REQUEST,
-          message: "Invalid request body",
-          datetime: formatDateSystem(),
-        });
+      return res.status(400).json({
+        status: status.BAD_REQUEST,
+        message: "Invalid request body",
+        datetime: formatDateSystem(),
+      });
     }
 
     const cValidation = await validatePayload(
       {
-        user_id: Joi.number().required().label("user_id"), 
-        fullname: Joi.string().max(100).required().label("fullname"),
-        username: Joi.string().max(100).required().label("username"),
-        telp: Joi.string()
+        id_pengguna: Joi.alternatives()
+          .try(Joi.number(), Joi.string())
+          .required()
+          .label("id_pengguna"),
+        nama_lengkap: Joi.string().max(100).required().label("nama_lengkap"),
+        nama_pengguna: Joi.string().max(100).required().label("nama_pengguna"),
+        telepon: Joi.string()
           .pattern(/^[0-9]+$/)
           .max(13)
           .required()
-          .label("telp"),
-        role: Joi.any().required(),
-        password: Joi.string().optional().allow(''),
+          .label("telepon"),
+        peran: Joi.any().required(),
+        kata_sandi: Joi.string().optional().allow(""),
         status: Joi.string().required().label("status"),
       },
       { "any.required": "{#label} wajib diisi" },
       oPayload,
       {
-        uniqueField: ["username", "telp"],
-        table: "mst_users",
-        excludedField: "user_id", 
         allowUnknown: true,
       },
     );
 
     if (cValidation)
-      return res
-        .status(422)
-        .json({
-          status: status.BAD_REQUEST,
-          message: cValidation,
-          datetime: datetime(),
-        });
+      return res.status(422).json({
+        status: status.BAD_REQUEST,
+        message: cValidation,
+        datetime: datetime(),
+      });
 
-    // Siapkan data update mst_users
+    const userId = Number(oPayload.id_pengguna);
+    if (!Number.isFinite(userId)) {
+      return res.status(422).json({
+        status: status.BAD_REQUEST,
+        message: "id_pengguna tidak valid",
+        datetime: datetime(),
+      });
+    }
+
+    const existingUser = await DB("mst_pengguna")
+      .where((builder) => {
+        builder
+          .where("username", oPayload.nama_pengguna)
+          .orWhere("telp", oPayload.telepon);
+      })
+      .whereNot("user_id", userId)
+      .first();
+
+    if (existingUser) {
+      return res.status(422).json({
+        status: status.BAD_REQUEST,
+        message:
+          existingUser.username === oPayload.nama_pengguna
+            ? "Data dengan nama_pengguna tersebut sudah digunakan"
+            : "Data dengan telepon tersebut sudah digunakan",
+        datetime: datetime(),
+      });
+    }
+
+    // Siapkan data update mst_pengguna
     const oDataUser = {
-      fullname: oPayload.fullname,
-      username: oPayload.username, // Update username jika berubah
-      telp: oPayload.telp,
-      status: (oPayload.status == "1" || oPayload.status == "active") ? "active" : "nonactive",
+      fullname: oPayload.nama_lengkap,
+      username: oPayload.nama_pengguna,
+      email: oPayload.surel || oPayload.email || oPayload.nama_pengguna,
+      telp: oPayload.telepon,
+      status:
+        oPayload.status == "1" || oPayload.status == "active"
+          ? "active"
+          : "nonactive",
+      branch_id: Number(oPayload.id_cabang) || 1,
+      position_id: Number(oPayload.id_jabatan) || 1,
+      division_id: Number(oPayload.id_divisi) || 1,
+      department_id: Number(oPayload.id_departemen) || 1,
+      work_unit_id: Number(oPayload.id_unit_kerja) || 1,
       updated_at: formatDateSystem(),
     };
 
-    if (oPayload.password) {
-      const cPassword =
-        process.env.USER_KEY + oPayload.username + oPayload.password;
+    if (oPayload.kata_sandi) {
+      const ckata_sandi =
+        process.env.USER_KEY + oPayload.nama_pengguna + oPayload.kata_sandi;
       const secret = process.env.USER_SECRET;
-      oDataUser["password"] = hmac(cPassword, secret, "sha512");
+      oDataUser.password = hmac(ckata_sandi, secret, "sha512");
     }
 
     // TRANSAKSI UPDATE
     await DB.transaction(async (trx) => {
-      const userId = oPayload.user_id;
-
-      // 2. Update mst_users
-      await trx("mst_users")
+      // 2. Update mst_pengguna
+      await trx("mst_pengguna")
         .where("user_id", userId)
         .update(oDataUser);
 
-      // 3. Update mst_user_roles (pake user_id)
-      await trx("mst_user_roles")
-        .where("user_id", userId)
-        .update({
-            role_id: oPayload.role || null,
-        });
+      // 3. Update/insert mst_pengguna_peran berdasarkan user_id
+      const roleId = Number(oPayload.peran) || null;
+      if (roleId) {
+        const existingRole = await trx("mst_pengguna_peran")
+          .where("user_id", userId)
+          .first();
+
+        if (existingRole) {
+          await trx("mst_pengguna_peran")
+            .where("user_id", userId)
+            .update({
+              role_id: roleId,
+              is_primary: 1,
+              status: "active",
+              updated_at: formatDateSystem(),
+            });
+        } else {
+          await trx("mst_pengguna_peran").insert({
+            user_id: userId,
+            role_id: roleId,
+            is_primary: 1,
+            status: "active",
+            created_at: formatDateSystem(),
+            updated_at: formatDateSystem(),
+          });
+        }
+      }
+
+      const navigation = await trx("mst_pengguna_peran as ur")
+        .leftJoin("mst_peran as r", "ur.role_id", "r.role_id")
+        .leftJoin("mst_navigasi as n", function () {
+          this.on("n.role", "r.role_name").orOn("n.role", "r.role_code");
+        })
+        .select("n.menu")
+        .where("ur.user_id", userId)
+        .where("ur.status", "active")
+        .orderBy("ur.is_primary", "desc")
+        .first();
+
+      if (navigation?.menu) {
+        await trx("user_navigation")
+          .insert({
+            user_id: userId,
+            menu: navigation.menu,
+            created_at: formatDateSystem(),
+            updated_at: formatDateSystem(),
+          })
+          .onConflict("user_id")
+          .merge({
+            menu: navigation.menu,
+            updated_at: formatDateSystem(),
+          });
+      }
     });
 
-    return res
-      .status(200)
-      .json({
-        status: status.SUKSES,
-        message: "Data berhasil diupdate",
-        datetime: formatDateSystem(),
-      });
+    return res.status(200).json({
+      status: status.SUKSES,
+      message: "Data berhasil diupdate",
+      datetime: formatDateSystem(),
+    });
   } catch (error) {
     console.log("ERROR DATABASE:", error); //TAMBAHKAN BARIS INI
-    return res
-      .status(500)
-      .json({
-        status: status.BAD_REQUEST,
-        message: "Sistem maintenance",
-        datetime: datetime(),
-      });
+    return res.status(500).json({
+      status: status.BAD_REQUEST,
+      message: "Sistem maintenance",
+      datetime: datetime(),
+    });
   }
 });
 

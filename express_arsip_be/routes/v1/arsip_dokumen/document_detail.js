@@ -81,7 +81,7 @@ const getDocumentDetail = async (req, res) => {
         "disetujui_pada",
         "catatan_persetujuan",
         "created_at",
-        "updated_at"
+        "updated_at",
       )
       .where("kode_dokumen", oDocument.kode_dokumen)
       .orderBy("nomor_versi", "desc");
@@ -102,7 +102,7 @@ const getDocumentDetail = async (req, res) => {
         "catatan_persetujuan",
         "terlambat",
         "created_at",
-        "updated_at"
+        "updated_at",
       )
       .where("kode_dokumen", oDocument.kode_dokumen)
       .orderBy("id_peminjaman", "desc");
@@ -118,6 +118,7 @@ const getDocumentDetail = async (req, res) => {
         "ditinjau_oleh",
         "ditinjau_pada",
         "catatan_tinjauan"
+
       )
       .where("kode_dokumen", oDocument.kode_dokumen)
       .whereNotIn("status", ["rejected", "executed"])
@@ -148,7 +149,7 @@ const getDocumentDetail = async (req, res) => {
       func: "getDocumentDetail",
       request: oQuery,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

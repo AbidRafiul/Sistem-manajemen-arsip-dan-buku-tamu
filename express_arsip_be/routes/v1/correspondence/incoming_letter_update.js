@@ -8,21 +8,25 @@ const router = express.Router();
 const incomingLetterUpdate = async (req, res) => {
   try {
     const oPayload = req.body || {};
+    if (!oPayload.surat_masuk_id && oPayload.incoming_letter_id) {
+      oPayload.surat_masuk_id = oPayload.incoming_letter_id;
+      delete oPayload.incoming_letter_id;
+    }
 
     const oValidation = {
-      incoming_letter_id: Joi.number().required(),
+      surat_masuk_id: Joi.number().required(),
 
-      agenda_number: Joi.string().max(100).optional(),
-      letter_number: Joi.string().max(100).optional(),
-      letter_date: Joi.date().optional(),
-      received_date: Joi.date().optional(),
-      sender_name: Joi.string().max(150).optional(),
-      sender_institution: Joi.string().max(150).allow(null, "").optional(),
-      subject: Joi.string().max(255).optional(),
-      attachment_description: Joi.string().allow(null, "").optional(),
+      nomor_agenda: Joi.string().max(100).optional(),
+      nomor_surat: Joi.string().max(100).optional(),
+      tanggal_surat: Joi.date().optional(),
+      tanggal_diterima: Joi.date().optional(),
+      nama_pengirim: Joi.string().max(150).optional(),
+      instansi_pengirim: Joi.string().max(150).allow(null, "").optional(),
+      perihal: Joi.string().max(255).optional(),
+      keterangan_lampiran: Joi.string().allow(null, "").optional(),
 
-      letter_type_id: Joi.number().allow(null).optional(),
-      document_type_id: Joi.number().allow(null).optional(),
+      jenis_surat_id: Joi.number().allow(null).optional(),
+      jenis_dokumen_id: Joi.number().allow(null).optional(),
       archive_classification_id: Joi.number().allow(null).optional(),
       confidentiality_level_id: Joi.number().allow(null).optional(),
 
@@ -34,22 +38,22 @@ const incomingLetterUpdate = async (req, res) => {
     };
 
     const oMessage = {
-      "incoming_letter_id.required": "incoming_letter_id wajib diisi",
-      "incoming_letter_id.number": "incoming_letter_id harus berupa angka",
+      "surat_masuk_id.required": "id surat masuk wajib diisi",
+      "surat_masuk_id.number": "id surat masuk harus berupa angka",
 
-      "agenda_number.max": "Nomor agenda maksimal 100 karakter",
-      "letter_number.max": "Nomor surat maksimal 100 karakter",
-      "sender_name.max": "Nama pengirim maksimal 150 karakter",
-      "subject.max": "Perihal maksimal 255 karakter",
+      "nomor_agenda.max": "Nomor agenda maksimal 100 karakter",
+      "nomor_surat.max": "Nomor surat maksimal 100 karakter",
+      "nama_pengirim.max": "Nama pengirim maksimal 150 karakter",
+      "perihal.max": "Perihal maksimal 255 karakter",
 
       "status.valid":
         "status hanya boleh baru, diproses, didisposisi, atau selesai",
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
-      uniqueField: ["agenda_number"],
-      table: "trx_incoming_letters",
-      excludedField: "incoming_letter_id",
+      uniqueField: ["nomor_agenda"],
+      table: "trs_surat_masuk",
+      excludedField: "surat_masuk_id",
       allowUnknown: false,
     });
 
@@ -60,8 +64,8 @@ const incomingLetterUpdate = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trx_incoming_letters")
-      .where("incoming_letter_id", oPayload.incoming_letter_id)
+    const oLetter = await DB("trs_surat_masuk")
+      .where("surat_masuk_id", oPayload.surat_masuk_id)
       .first();
 
     if (!oLetter) {
@@ -73,15 +77,16 @@ const incomingLetterUpdate = async (req, res) => {
 
     const vaReferenceChecks = [
       {
-        field: "letter_type_id",
-        table: "mst_letter_types",
-        key: "letter_type_id",
+        field: "jenis_surat_id",
+        table: "mst_jenis_surat",
+        key: "jenis_surat_id",
         label: "Jenis surat",
       },
       {
         field: "document_type_id",
         table: "mst_jenis_dokumen",
         key: "id_jenis_dokumen",
+
         label: "Tipe dokumen",
       },
       {
@@ -98,8 +103,8 @@ const incomingLetterUpdate = async (req, res) => {
       },
       {
         field: "updated_by",
-        table: "mst_users",
-        key: "UserId",
+        table: "mst_pengguna",
+        key: "user_id",
         label: "User pengubah",
       },
     ];
@@ -126,18 +131,18 @@ const incomingLetterUpdate = async (req, res) => {
     const dNow = new Date();
 
     const oUpdate = {
-      agenda_number: oPayload.agenda_number,
-      letter_number: oPayload.letter_number,
-      letter_date: oPayload.letter_date,
-      received_date: oPayload.received_date,
-      sender_name: oPayload.sender_name,
-      sender_institution: oPayload.sender_institution,
-      subject: oPayload.subject,
-      attachment_description: oPayload.attachment_description,
-      letter_type_id: oPayload.letter_type_id,
-      document_type_id: oPayload.document_type_id,
-      archive_classification_id: oPayload.archive_classification_id,
-      confidentiality_level_id: oPayload.confidentiality_level_id,
+      nomor_agenda: oPayload.nomor_agenda,
+      nomor_surat: oPayload.nomor_surat,
+      tanggal_surat: oPayload.tanggal_surat,
+      tanggal_diterima: oPayload.tanggal_diterima,
+      nama_pengirim: oPayload.nama_pengirim,
+      instansi_pengirim: oPayload.instansi_pengirim,
+      perihal: oPayload.perihal,
+      keterangan_lampiran: oPayload.keterangan_lampiran,
+      jenis_surat_id: oPayload.jenis_surat_id,
+      jenis_dokumen_id: oPayload.jenis_dokumen_id,
+      klasifikasi_arsip_id: oPayload.archive_classification_id,
+      tingkat_kerahasiaan_id: oPayload.confidentiality_level_id,
       status: oPayload.status,
       updated_by: oPayload.updated_by || null,
       updated_at: dNow,
@@ -150,19 +155,19 @@ const incomingLetterUpdate = async (req, res) => {
     });
 
     await DB.transaction(async (trx) => {
-      await trx("trx_incoming_letters")
-        .where("incoming_letter_id", oPayload.incoming_letter_id)
+      await trx("trs_surat_masuk")
+        .where("surat_masuk_id", oPayload.surat_masuk_id)
         .update(oUpdate);
 
-      await trx("trx_incoming_letter_trackings").insert({
-        incoming_letter_id: oPayload.incoming_letter_id,
-        disposition_id: null,
-        action_name: "surat_diupdate",
-        from_user_id: null,
-        to_user_id: null,
-        previous_status: oLetter.status,
-        current_status: oUpdate.status || oLetter.status,
-        notes: "Data surat masuk diperbarui",
+      await trx("trs_tracking_surat_masuk").insert({
+        surat_masuk_id: oPayload.surat_masuk_id,
+        disposisi_surat_id: null,
+        nama_aksi: "surat_diupdate",
+        dari_pengguna_id: null,
+        kepada_pengguna_id: null,
+        status_sebelumnya: oLetter.status,
+        status_saat_ini: oUpdate.status || oLetter.status,
+        catatan: "Data surat masuk diperbarui",
         processed_at: dNow,
         created_by: oPayload.updated_by || null,
         created_at: dNow,

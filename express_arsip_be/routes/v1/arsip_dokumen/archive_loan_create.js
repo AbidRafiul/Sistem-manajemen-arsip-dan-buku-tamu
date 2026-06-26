@@ -79,7 +79,8 @@ const createArchiveLoan = async (req, res) => {
 
     const oResult = {
       status: "success",
-      message: "Pengajuan peminjaman arsip berhasil dibuat dan menunggu approval",
+      message:
+        "Pengajuan peminjaman arsip berhasil dibuat dan menunggu approval",
       data: {
         id_peminjaman: nLoanId,
         ...oData,
@@ -99,7 +100,7 @@ const createArchiveLoan = async (req, res) => {
       func: "createArchiveLoan",
       request: oPayload,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

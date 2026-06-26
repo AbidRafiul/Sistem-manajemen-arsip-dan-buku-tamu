@@ -11,8 +11,8 @@ import { FileUpload, FileUploadHandlerEvent } from "primereact/fileupload";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Message } from "primereact/message";
-import { useEffect } from "react";
-import { apiEndpointCreate, apiEndpointDelete, apiEndpointGet, apiEndpointUpdate, apiEndpointUpload } from "../endpoints";
+import { useEffect, useState } from "react";
+import { apiEndpointCreate, apiEndpointDelete, apiEndpointGet, apiEndpointLetterTypeData, apiEndpointUpdate, apiEndpointUpload } from "../endpoints";
 import { FormProps, initValue } from "../interfaces";
 import { mapIncomingLetterPayload } from "../mappers";
 
@@ -25,6 +25,13 @@ const statusOptions = [
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
+interface LetterTypeOption {
+    jenis_surat_id: number;
+    kode_jenis_surat: string;
+    nama_jenis_surat: string;
+    arah_surat: string;
+}
+
 const Form = ({
     state,
     setState,
@@ -32,14 +39,26 @@ const Form = ({
     toast,
     getData
 }: FormProps) => {
+    const [letterTypeOptions, setLetterTypeOptions] = useState<LetterTypeOption[]>([]);
+
     const getIncomingLetterId = (res: any, input: initValue) =>
-        res?.data?.data?.incoming_letter_id || res?.data?.data?.IncomingLetterId || input.incoming_letter_id;
+        res?.data?.data?.surat_masuk_id || input.surat_masuk_id;
+
+    const getLetterTypeOptions = async () => {
+        try {
+            const res = await postData(apiEndpointLetterTypeData, {});
+            setLetterTypeOptions(res.data?.data || []);
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Jenis surat gagal diambil");
+        }
+    };
 
     const uploadLetterFile = async (input: initValue, incomingLetterId: number | null) => {
-        if (!input.letter_file || !incomingLetterId) return;
+        if (!input.file_surat || !incomingLetterId) return;
         const formData = new FormData();
-        formData.append("incoming_letter_id", String(incomingLetterId));
-        formData.append("File", input.letter_file);
+        formData.append("surat_masuk_id", String(incomingLetterId));
+        formData.append("File", input.file_surat);
         const uploadedBy = input.updated_by || input.created_by;
         if (uploadedBy) formData.append("uploaded_by", String(uploadedBy));
         await formUpload(apiEndpointUpload, formData, {});
@@ -55,7 +74,7 @@ const Form = ({
             const res = vaData.data;
             const incomingLetterId = getIncomingLetterId(vaData, input);
 
-            if (input.letter_file) {
+            if (input.file_surat) {
                 try {
                     await uploadLetterFile(input, incomingLetterId);
                 } catch (error: any) {
@@ -84,7 +103,7 @@ const Form = ({
                 return;
             }
             for (const letter of state.selectedLetters) {
-                await postData(apiEndpointDelete, { incoming_letter_id: letter.incoming_letter_id });
+                await postData(apiEndpointDelete, { surat_masuk_id: letter.surat_masuk_id });
             }
             showSuccess(toast, "Surat masuk berhasil dihapus");
             setState((p) => ({ ...p, selectedLetters: [], add: false, edit: false, delete: false }));
@@ -124,6 +143,11 @@ const Form = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.submittedData]);
 
+    useEffect(() => {
+        getLetterTypeOptions();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     return (
         <>
             {/* ─── Add / Edit Dialog ─────────────────────────── */}
@@ -143,88 +167,105 @@ const Form = ({
                 <form onSubmit={formik.handleSubmit} className="flex flex-column gap-1 pt-3 text-sm">
                     <div className="grid">
                         <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="agenda_number" className="font-semibold text-900">Nomor Agenda <span className="text-red-500">*</span></label>
+                            <label htmlFor="nomor_agenda" className="font-semibold text-900">Nomor Agenda <span className="text-red-500">*</span></label>
                             <InputText
-                                id="agenda_number"
-                                className={`w-full ${isFormFieldInvalid("agenda_number") ? "p-invalid" : ""}`}
-                                value={formik.values.agenda_number}
-                                onChange={(e) => formik.setFieldValue("agenda_number", e.target.value)}
+                                id="nomor_agenda"
+                                className={`w-full ${isFormFieldInvalid("nomor_agenda") ? "p-invalid" : ""}`}
+                                value={formik.values.nomor_agenda}
+                                onChange={(e) => formik.setFieldValue("nomor_agenda", e.target.value)}
                                 placeholder="Contoh: AG-2024-001"
                             />
-                            {getFormErrorMessage("agenda_number")}
+                            {getFormErrorMessage("nomor_agenda")}
                         </div>
                         <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="letter_number" className="font-semibold text-900">Nomor Surat <span className="text-red-500">*</span></label>
+                            <label htmlFor="nomor_surat" className="font-semibold text-900">Nomor Surat <span className="text-red-500">*</span></label>
                             <InputText
-                                id="letter_number"
-                                className={`w-full ${isFormFieldInvalid("letter_number") ? "p-invalid" : ""}`}
-                                value={formik.values.letter_number}
-                                onChange={(e) => formik.setFieldValue("letter_number", e.target.value)}
+                                id="nomor_surat"
+                                className={`w-full ${isFormFieldInvalid("nomor_surat") ? "p-invalid" : ""}`}
+                                value={formik.values.nomor_surat}
+                                onChange={(e) => formik.setFieldValue("nomor_surat", e.target.value)}
                                 placeholder="Contoh: 001/MEN/VI/2024"
                             />
-                            {getFormErrorMessage("letter_number")}
+                            {getFormErrorMessage("nomor_surat")}
                         </div>
                         <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="letter_date" className="font-semibold text-900">Tanggal Surat <span className="text-red-500">*</span></label>
+                            <label htmlFor="tanggal_surat" className="font-semibold text-900">Tanggal Surat <span className="text-red-500">*</span></label>
                             <InputText
-                                id="letter_date" type="date"
-                                className={`w-full ${isFormFieldInvalid("letter_date") ? "p-invalid" : ""}`}
-                                value={formik.values.letter_date}
-                                onChange={(e) => formik.setFieldValue("letter_date", e.target.value)}
+                                id="tanggal_surat" type="date"
+                                className={`w-full ${isFormFieldInvalid("tanggal_surat") ? "p-invalid" : ""}`}
+                                value={formik.values.tanggal_surat}
+                                onChange={(e) => formik.setFieldValue("tanggal_surat", e.target.value)}
                             />
-                            {getFormErrorMessage("letter_date")}
+                            {getFormErrorMessage("tanggal_surat")}
                         </div>
                         <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="received_date" className="font-semibold text-900">Tanggal Diterima <span className="text-red-500">*</span></label>
+                            <label htmlFor="tanggal_diterima" className="font-semibold text-900">Tanggal Diterima <span className="text-red-500">*</span></label>
                             <InputText
-                                id="received_date" type="date"
-                                className={`w-full ${isFormFieldInvalid("received_date") ? "p-invalid" : ""}`}
-                                value={formik.values.received_date}
-                                onChange={(e) => formik.setFieldValue("received_date", e.target.value)}
+                                id="tanggal_diterima" type="date"
+                                className={`w-full ${isFormFieldInvalid("tanggal_diterima") ? "p-invalid" : ""}`}
+                                value={formik.values.tanggal_diterima}
+                                onChange={(e) => formik.setFieldValue("tanggal_diterima", e.target.value)}
                             />
-                            {getFormErrorMessage("received_date")}
+                            {getFormErrorMessage("tanggal_diterima")}
                         </div>
                         <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="sender_name" className="font-semibold text-900">Nama Pengirim <span className="text-red-500">*</span></label>
+                            <label htmlFor="jenis_surat_id" className="font-semibold text-900">Jenis Surat <span className="text-red-500">*</span></label>
+                            <Dropdown
+                                id="jenis_surat_id"
+                                className={`w-full ${isFormFieldInvalid("jenis_surat_id") ? "p-invalid" : ""}`}
+                                value={formik.values.jenis_surat_id}
+                                options={letterTypeOptions}
+                                optionLabel="nama_jenis_surat"
+                                optionValue="jenis_surat_id"
+                                onChange={(e) => formik.setFieldValue("jenis_surat_id", e.value)}
+                                onBlur={() => formik.setFieldTouched("jenis_surat_id", true)}
+                                placeholder="Pilih jenis surat"
+                                filter
+                                showClear
+                            />
+                            {getFormErrorMessage("jenis_surat_id")}
+                        </div>
+                        <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
+                            <label htmlFor="nama_pengirim" className="font-semibold text-900">Nama Pengirim <span className="text-red-500">*</span></label>
                             <InputText
-                                id="sender_name"
-                                className={`w-full ${isFormFieldInvalid("sender_name") ? "p-invalid" : ""}`}
-                                value={formik.values.sender_name}
-                                onChange={(e) => formik.setFieldValue("sender_name", e.target.value)}
+                                id="nama_pengirim"
+                                className={`w-full ${isFormFieldInvalid("nama_pengirim") ? "p-invalid" : ""}`}
+                                value={formik.values.nama_pengirim}
+                                onChange={(e) => formik.setFieldValue("nama_pengirim", e.target.value)}
                                 placeholder="Nama pengirim surat"
                             />
-                            {getFormErrorMessage("sender_name")}
+                            {getFormErrorMessage("nama_pengirim")}
                         </div>
                         <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="sender_institution" className="font-semibold text-900">Instansi Pengirim</label>
+                            <label htmlFor="instansi_pengirim" className="font-semibold text-900">Instansi Pengirim</label>
                             <InputText
-                                id="sender_institution"
+                                id="instansi_pengirim"
                                 className="w-full"
-                                value={formik.values.sender_institution}
-                                onChange={(e) => formik.setFieldValue("sender_institution", e.target.value)}
+                                value={formik.values.instansi_pengirim}
+                                onChange={(e) => formik.setFieldValue("instansi_pengirim", e.target.value)}
                                 placeholder="Nama instansi / lembaga"
                             />
                             <small className="p-error">&nbsp;</small>
                         </div>
                         <div className="col-12 flex flex-column gap-1 mb-2">
-                            <label htmlFor="subject" className="font-semibold text-900">Perihal <span className="text-red-500">*</span></label>
+                            <label htmlFor="perihal" className="font-semibold text-900">Perihal <span className="text-red-500">*</span></label>
                             <InputText
-                                id="subject"
-                                className={`w-full ${isFormFieldInvalid("subject") ? "p-invalid" : ""}`}
-                                value={formik.values.subject}
-                                onChange={(e) => formik.setFieldValue("subject", e.target.value)}
+                                id="perihal"
+                                className={`w-full ${isFormFieldInvalid("perihal") ? "p-invalid" : ""}`}
+                                value={formik.values.perihal}
+                                onChange={(e) => formik.setFieldValue("perihal", e.target.value)}
                                 placeholder="Perihal / pokok isi surat"
                             />
-                            {getFormErrorMessage("subject")}
+                            {getFormErrorMessage("perihal")}
                         </div>
                         <div className="col-12 flex flex-column gap-1 mb-2">
-                            <label htmlFor="attachment_description" className="font-semibold text-900">Keterangan Lampiran</label>
+                            <label htmlFor="keterangan_lampiran" className="font-semibold text-900">Keterangan Lampiran</label>
                             <InputTextarea
-                                id="attachment_description"
+                                id="keterangan_lampiran"
                                 className="w-full"
                                 rows={2}
-                                value={formik.values.attachment_description}
-                                onChange={(e) => formik.setFieldValue("attachment_description", e.target.value)}
+                                value={formik.values.keterangan_lampiran}
+                                onChange={(e) => formik.setFieldValue("keterangan_lampiran", e.target.value)}
                                 placeholder="Deskripsi lampiran surat (opsional)"
                                 style={{ resize: "none" }}
                             />
@@ -235,39 +276,39 @@ const Form = ({
                         <div className="col-12 flex flex-column gap-1 mb-2">
                             <label className="font-semibold text-900">Upload File Surat</label>
                             <FileUpload
-                                name="letter_file"
+                                name="file_surat"
                                 accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
                                 maxFileSize={MAX_FILE_SIZE}
                                 mode="basic"
-                                chooseLabel={formik.values.letter_file ? formik.values.letter_file.name : "Pilih File..."}
+                                chooseLabel={formik.values.file_surat ? formik.values.file_surat.name : "Pilih File..."}
                                 chooseOptions={{ icon: "pi pi-upload" }}
                                 auto={false}
                                 customUpload
                                 uploadHandler={(e: FileUploadHandlerEvent) => {
                                     const file = e.files[0] || null;
-                                    formik.setFieldValue("letter_file", file);
+                                    formik.setFieldValue("file_surat", file);
                                 }}
                                 onSelect={(e) => {
                                     const file = e.files[0] || null;
                                     if (file && file.size > MAX_FILE_SIZE) {
                                         showError(toast, "Ukuran file maksimal 10 MB");
-                                        formik.setFieldValue("letter_file", null);
+                                        formik.setFieldValue("file_surat", null);
                                         return;
                                     }
-                                    formik.setFieldValue("letter_file", file);
+                                    formik.setFieldValue("file_surat", file);
                                 }}
                                 className="w-full"
                                 pt={{ basicButton: { className: "w-full justify-content-start" } }}
                             />
                             <small className="text-color-secondary mt-1">PDF, Word, Excel, JPG, atau PNG · Maks. 10 MB</small>
-                            {formik.values.letter_file && (
+                            {formik.values.file_surat && (
                                 <div className="flex align-items-center gap-2 mt-1 p-2 surface-50 border-round border-1 surface-border">
                                     <i className="pi pi-file-check text-green-500" />
-                                    <span className="text-xs text-900 font-semibold">{formik.values.letter_file.name}</span>
+                                    <span className="text-xs text-900 font-semibold">{formik.values.file_surat.name}</span>
                                     <Button
                                         icon="pi pi-times" text severity="danger" size="small"
                                         className="ml-auto p-0"
-                                        onClick={() => formik.setFieldValue("letter_file", null)}
+                                        onClick={() => formik.setFieldValue("file_surat", null)}
                                     />
                                 </div>
                             )}
@@ -333,7 +374,7 @@ const Form = ({
                         <p className="text-color-secondary text-sm m-0">
                             {state.selectedLetters.length > 1
                                 ? `${state.selectedLetters.length} surat yang dipilih akan dihapus secara permanen.`
-                                : <>Surat <strong>{state.selectedLetters[0]?.agenda_number || ""}</strong> akan dihapus secara permanen.</>
+                                : <>Surat <strong>{state.selectedLetters[0]?.nomor_agenda || ""}</strong> akan dihapus secara permanen.</>
                             }
                         </p>
                     </div>

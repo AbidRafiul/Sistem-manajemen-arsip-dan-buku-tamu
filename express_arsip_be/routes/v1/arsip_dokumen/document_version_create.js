@@ -41,7 +41,7 @@ const createDocumentVersion = async (req, res) => {
       func: "createDocumentVersion",
       request: oPayload,
       response: oResult,
-      user: req?.auth?.username || "system",
+      user: req?.auth?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

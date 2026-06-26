@@ -8,14 +8,7 @@ import { Toast } from 'primereact/toast';
 import { useRef, useState } from 'react';
 import { showError } from '../../../../lib/tools/generalTools';
 import { LoginFormik } from './component/interfaces';
-import { Inter } from 'next/font/google';
 import LoginView from './component/loginView';
-
-const inter = Inter({
-    subsets: ['latin'],
-    weight: ['400', '500', '600', '700', '800'],
-    variable: '--font-inter'
-});
 
 const LoginPage = () => {
     const router = useRouter();
@@ -27,19 +20,19 @@ const LoginPage = () => {
 
     const formik = useFormik<LoginFormik>({
         initialValues: {
-            username: '',
-            password: '',
+            nama_pengguna: '',
+            kata_sandi: '',
             remember_me: false
         },
         validate: (data: LoginFormik) => {
-            const errors = {} as LoginFormik;
+            const errors = {} as any;
 
-            if (!data.username) {
-                errors.username = 'Username tidak boleh kosong';
+            if (!data.nama_pengguna) {
+                errors.nama_pengguna = 'Username tidak boleh kosong';
             }
 
-            if (!data.password) {
-                errors.password = 'Password tidak boleh kosong';
+            if (!data.kata_sandi) {
+                errors.kata_sandi = 'Password tidak boleh kosong';
             }
 
             return errors;
@@ -54,8 +47,8 @@ const LoginPage = () => {
 
         try {
             const { data: vaLogin } = await axios.post('/api/auth/login', {
-                username: data.username,
-                password: data.password,
+                nama_pengguna: data.nama_pengguna,
+                kata_sandi: data.kata_sandi,
                 remember_me: data.remember_me ? '1' : '0'
             });
 
@@ -79,8 +72,8 @@ const LoginPage = () => {
         }
     };
 
-    const usernameInvalid = !!(formik.touched.username && formik.errors.username);
-    const passwordInvalid = !!(formik.touched.password && formik.errors.password);
+    const namaPenggunaInvalid = !!(formik.touched.nama_pengguna && formik.errors.nama_pengguna);
+    const kataSandiInvalid = !!(formik.touched.kata_sandi && formik.errors.kata_sandi);
 
     return (
         <>
@@ -88,9 +81,9 @@ const LoginPage = () => {
             <LoginView
                 formik={formik}
                 isLoading={state.load}
-                usernameInvalid={usernameInvalid}
-                passwordInvalid={passwordInvalid}
-                fontVariable={inter.variable}
+                namaPenggunaInvalid={namaPenggunaInvalid}
+                kataSandiInvalid={kataSandiInvalid}
+                fontVariable=""
             />
         </>
     );

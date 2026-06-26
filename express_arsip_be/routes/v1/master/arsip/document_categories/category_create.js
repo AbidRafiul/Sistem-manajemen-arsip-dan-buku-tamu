@@ -15,7 +15,7 @@ const router = express.Router();
 
 const createDocumentCategory = async (req, res) => {
   const { body: oPayload } = req;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
@@ -42,6 +42,7 @@ const createDocumentCategory = async (req, res) => {
           .label("Nama Kategori"),
         deskripsi: Joi.string()
           .max(255)
+
           .optional()
           .allow(null, "")
           .label("Deskripsi"),
@@ -65,7 +66,7 @@ const createDocumentCategory = async (req, res) => {
         func: "createDocumentCategory",
         request: oPayload,
         response: oResult,
-        user: username,
+        user: nama_pengguna,
       });
 
       return res.status(422).json(oResult);
@@ -76,6 +77,7 @@ const createDocumentCategory = async (req, res) => {
       kode_klasifikasi: oPayload.kode_klasifikasi,
       kode_kategori_dokumen: oPayload.kode_kategori_dokumen,
       nama_kategori_dokumen: oPayload.nama_kategori_dokumen,
+
       deskripsi: oPayload.deskripsi || null,
       status: "active",
       created_at: dNow,
@@ -99,7 +101,7 @@ const createDocumentCategory = async (req, res) => {
       func: "createDocumentCategory",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

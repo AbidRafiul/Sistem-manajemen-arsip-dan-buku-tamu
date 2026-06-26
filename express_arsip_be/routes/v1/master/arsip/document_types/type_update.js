@@ -1,8 +1,15 @@
 import express from "express";
 import Joi from "joi";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
-import { Logging, validatePayload } from "../../../components/tools/servertool.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
+import {
+  Logging,
+  validatePayload,
+} from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
@@ -10,6 +17,7 @@ const updateDocumentType = async (req, res) => {
   const { body: oPayload } = req;
   const cIdJenisDokumen = req.params.id_jenis_dokumen;
   const username = req?.auth?.username || "";
+
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
@@ -25,12 +33,13 @@ const updateDocumentType = async (req, res) => {
         kode_jenis_dokumen: Joi.string().max(255).required().label("Kode Jenis Dokumen"),
         nama_jenis_dokumen: Joi.string().max(255).required().label("Nama Jenis Dokumen"),
         deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
+
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
         "any.required": "{#label} wajib diisi",
       },
-      oPayload
+      oPayload,
     );
 
     if (cValidation) {
@@ -45,7 +54,7 @@ const updateDocumentType = async (req, res) => {
         func: "updateDocumentType",
         request: oPayload,
         response: oResult,
-        user: username,
+        user: nama_pengguna,
       });
 
       return res.status(422).json(oResult);
@@ -56,6 +65,7 @@ const updateDocumentType = async (req, res) => {
       .update({
         kode_jenis_dokumen: oPayload.kode_jenis_dokumen,
         nama_jenis_dokumen: oPayload.nama_jenis_dokumen,
+
         deskripsi: oPayload.deskripsi || null,
         updated_at: new Date(),
       });
@@ -73,7 +83,6 @@ const updateDocumentType = async (req, res) => {
       message: "Data berhasil diupdate",
       datetime: formatDateSystem(),
     });
-
   } catch (error) {
     const oResult = {
       status: status.BAD_REQUEST,
@@ -86,7 +95,7 @@ const updateDocumentType = async (req, res) => {
       func: "updateDocumentType",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

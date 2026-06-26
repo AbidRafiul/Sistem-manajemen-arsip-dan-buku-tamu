@@ -195,18 +195,25 @@ async function postCRUD(request: NextRequest, token: any, a2fCookie: string) {
             ...customHeader
         };
 
-        // 🔥 FIX MUTLAK: Selalu bongkar KTP (Token) dan pasang ke Header
+        // Selalu pasang x-uniqueid dari _A2R (cookie yang selalu ada setelah login)
         try {
             const secret = new TextEncoder().encode(process.env.USER_KEY);
             const { payload } = await jwtVerify<any>(a2fCookie, secret);
-            // Pakai huruf kecil 'x-uniqueid' biar aman dari satpam Express
-            requestHeaders['x-uniqueid'] = String(payload.userId || payload.UserId || payload.id || '');
+            const uid = payload.IdPengguna ?? payload.id_pengguna ?? payload.uid ?? payload.id;
+            if (uid) {
+                requestHeaders['x-uniqueid'] = String(uid);
+            }
         } catch (e) {
-            console.error("Gagal membaca cookie A2F:", e);
-        }
-
-        // Handle X-Level = 1 (biarkan kosong jika tidak ada logika khusus lainnya)
-        if (customHeader['X-Level'] && customHeader['X-Level'] == '1') {
+            // Fallback: coba dari _A2R jika _A2F gagal
+            try {
+                const a2rCookieVal = request.cookies.get('_A2R')?.value || '';
+                if (a2rCookieVal) {
+                    const secret = new TextEncoder().encode(process.env.USER_KEY);
+                    const { payload: rPayload } = await jwtVerify<any>(a2rCookieVal, secret);
+                    const uid = rPayload.IdPengguna ?? rPayload.id_pengguna ?? rPayload.uid ?? rPayload.id;
+                    if (uid) requestHeaders['x-uniqueid'] = String(uid);
+                }
+            } catch { /* ignore */ }
         }
 
         if (customHeader['X-Credential']) {
@@ -217,22 +224,15 @@ async function postCRUD(request: NextRequest, token: any, a2fCookie: string) {
 
         // --- TAMBAHKAN KODE INI UNTUK DEBUGGING ---
         const targetUrl = `${process.env.API_URL}/${endpoint.replace(/^\/+/, '')}`;
-        console.log(" [DEBUG INTERCEPTOR] Menembak ke Backend:", targetUrl);
-        console.log(" [DEBUG INTERCEPTOR] Isi Body:", body);
-        // ------------------------------------------
+        console.log(' [DEBUG INTERCEPTOR] Menembak ke Backend:', targetUrl);
+        console.log(' [DEBUG INTERCEPTOR] Isi Body:', body);
 
-        const result = await axios.post(
-            targetUrl,
-            body,
-            { headers: requestHeaders }
-        );
+        const result = await axios.post(targetUrl, body, { headers: requestHeaders });
 
         return NextResponse.json(result.data);
     } catch (err: any) {
         if (err?.response?.status === 401) {
-            const cookieStore = cookies();
-            cookieStore.delete('_A2R');
-            cookieStore.delete('_A2F');
+            // Jangan hapus cookie — hanya return error agar session tidak rusak
             return NextResponse.json(err?.response?.data || { error: 'Unauthorized' }, { status: 401 });
         }
         return NextResponse.json(err?.response?.data || { error: 'Internal server error' }, { status: err?.response?.status || 500 });
@@ -270,16 +270,15 @@ async function getCRUD(request: NextRequest, token: any, a2fCookie: string) {
             ...customHeader
         };
 
-        // 🔥 FIX MUTLAK: Selalu bongkar KTP (Token) dan pasang ke Header
-        try {
-            const secret = new TextEncoder().encode(process.env.USER_KEY);
-            const { payload } = await jwtVerify<any>(a2fCookie, secret);
-            requestHeaders['x-uniqueid'] = String(payload.userId || payload.UserId || payload.id || '');
-        } catch (e) {
-            console.error("Gagal membaca cookie A2F:", e);
-        }
-
+        // 🔥 MODE STRICT: Hanya pasang KTP jika Frontend menyuruh (X-Level = 1)
         if (customHeader['X-Level'] && customHeader['X-Level'] == '1') {
+            try {
+                const secret = new TextEncoder().encode(process.env.USER_KEY);
+                const { payload } = await jwtVerify<any>(a2fCookie, secret);
+                requestHeaders['x-uniqueid'] = String(payload.IdPengguna || payload.IdPengguna || payload.id || '');
+            } catch (e) {
+                console.error('Gagal membaca cookie A2F:', e);
+            }
         }
 
         delete requestHeaders['X-Level'];

@@ -10,7 +10,10 @@ const deleteDocument = async (req, res) => {
       : [oPayload.id_dokumen];
     const dNow = new Date();
 
-    if (!vaDocumentId.length || vaDocumentId.some((nDocumentId) => !nDocumentId)) {
+    if (
+      !vaDocumentId.length ||
+      vaDocumentId.some((nDocumentId) => !nDocumentId)
+    ) {
       const oResult = {
         status: "error",
         message: "id_dokumen is required",
@@ -60,7 +63,7 @@ const deleteDocument = async (req, res) => {
       func: "deleteDocument",
       request: oPayload,
       response: oResult,
-      user: req?.auth?.username || "system",
+      user: req?.auth?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

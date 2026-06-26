@@ -11,39 +11,39 @@ const incomingLetterData = async (req, res) => {
   try {
     const oPayload = req.body || {};
 
-    const oQuery = DB("trx_incoming_letters as til")
-      .leftJoin("mst_letter_types as mlt", "til.letter_type_id", "mlt.letter_type_id")
+    const oQuery = DB("trs_surat_masuk as til")
+      .leftJoin("mst_jenis_surat as mlt", "til.jenis_surat_id", "mlt.jenis_surat_id")
       .select(
-        "til.incoming_letter_id",
-        "til.agenda_number",
-        "til.letter_number",
-        "til.letter_date",
-        "til.received_date",
-        "til.sender_name",
-        "til.sender_institution",
-        "til.subject",
-        "til.attachment_description",
-        "til.letter_type_id",
-        "mlt.letter_type_name",
-        "til.document_type_id",
-        "til.archive_classification_id",
-        "til.confidentiality_level_id",
+        "til.surat_masuk_id",
+        "til.nomor_agenda",
+        "til.nomor_surat",
+        "til.tanggal_surat",
+        "til.tanggal_diterima",
+        "til.nama_pengirim",
+        "til.instansi_pengirim",
+        "til.perihal",
+        "til.keterangan_lampiran",
+        "til.jenis_surat_id",
+        "mlt.nama_jenis_surat",
+        "til.jenis_dokumen_id",
+        "til.klasifikasi_arsip_id",
+        "til.tingkat_kerahasiaan_id",
         "til.status",
         "til.created_by",
         "til.updated_by",
         "til.created_at",
-        "til.updated_at"
+        "til.updated_at",
       )
       .orderBy("til.created_at", "desc");
 
     if (oPayload.keyword) {
       oQuery.where((oBuilder) => {
         oBuilder
-          .where("til.agenda_number", "like", `%${oPayload.keyword}%`)
-          .orWhere("til.letter_number", "like", `%${oPayload.keyword}%`)
-          .orWhere("til.sender_name", "like", `%${oPayload.keyword}%`)
-          .orWhere("til.sender_institution", "like", `%${oPayload.keyword}%`)
-          .orWhere("til.subject", "like", `%${oPayload.keyword}%`);
+          .where("til.nomor_agenda", "like", `%${oPayload.keyword}%`)
+          .orWhere("til.nomor_surat", "like", `%${oPayload.keyword}%`)
+          .orWhere("til.nama_pengirim", "like", `%${oPayload.keyword}%`)
+          .orWhere("til.instansi_pengirim", "like", `%${oPayload.keyword}%`)
+          .orWhere("til.perihal", "like", `%${oPayload.keyword}%`);
       });
     }
 
@@ -52,7 +52,7 @@ const incomingLetterData = async (req, res) => {
     }
 
     if (oPayload.start_date && oPayload.end_date) {
-      oQuery.whereBetween("til.received_date", [
+      oQuery.whereBetween("til.tanggal_diterima", [
         oPayload.start_date,
         oPayload.end_date,
       ]);
@@ -71,7 +71,7 @@ const incomingLetterData = async (req, res) => {
       func: cFunc,
       request: JSON.stringify(req.body || {}),
       response: error.message,
-      user: req?.user?.UserId || "",
+      user: req?.user?.NamaPengguna || "",
     });
 
     return res.status(500).json({

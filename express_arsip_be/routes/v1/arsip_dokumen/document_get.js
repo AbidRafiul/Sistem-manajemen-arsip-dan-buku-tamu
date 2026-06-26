@@ -173,7 +173,7 @@ const getDocuments = async (req, res) => {
       func: "getDocuments",
       request: req.query,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

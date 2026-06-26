@@ -6,105 +6,65 @@ import DB from "../../../core/config/knex.js";
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
-  const { body: oPayload } = req;
-  const username = req?.auth?.username || "";
+router.put("/:id", async (req, res) => {
+  const { id } = req.params;
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
-    const cValidation = await validatePayload(
-      {
-        QRToken: Joi.string().max(100).optional().allow(null, "").label("QRToken"),
-        VisitCode: Joi.string().max(30).optional().allow(null, "").label("VisitCode"),
-        VisitationId: Joi.alternatives()
-          .try(Joi.string().max(36), Joi.number())
-          .optional()
-          .allow(null, "")
-          .label("VisitationId"),
-        VisitNotes: Joi.string().optional().allow(null, "").label("VisitNotes"),
-      },
-      {
-        "string.base": "{#label} harus berupa string",
-        "string.max": "{#label} tidak boleh lebih dari {#limit} karakter",
-      },
-      oPayload,
-      { allowUnknown: true }
-    );
-
-    if (cValidation) {
-      const oResult = {
-        status: "99",
-        message: cValidation || "Terdapat kesalahan pada data anda",
-        datetime: formatDateSystem(),
-      };
-
-      Logging(null, {
-        file: "visit_checkout.js",
-        func: "check-out",
-        request: oPayload,
-        response: oResult,
-        user: username,
-      });
-
-      return res.status(422).json(oResult);
-    }
-
-    const { QRToken, VisitCode, VisitationId, VisitNotes } = oPayload;
-
-    if (!QRToken && !VisitCode && !VisitationId) {
+    const { error } = Joi.number().integer().required().validate(id);
+    if (error) {
       return res.status(400).json({
         status: "99",
-        message: "QRToken, VisitCode, atau VisitationId wajib diisi salah satu",
+        message: "ID Kunjungan tidak valid",
         datetime: formatDateSystem(),
       });
     }
 
-    const query = DB("trx_visitations").where("status", "Sedang Berkunjung").andWhere(function () {
-      if (QRToken) {
-        this.orWhere("qr_token", QRToken);
-      }
-      if (VisitCode) {
-        this.orWhere("visit_code", VisitCode);
-      }
-      if (VisitationId) {
-        this.orWhere("visitation_id", VisitationId);
-      }
-    });
+    const checkKunjungan = await DB("trs_kunjungan")
+      .where("id_kunjungan", id)
+      .first();
 
-    const record = await query.first();
-
-    if (!record) {
+    if (!checkKunjungan) {
       return res.status(404).json({
-        status: "44",
-        message: "Tamu dengan data yang diberikan dan status 'Sedang Berkunjung' tidak ditemukan",
+        status: "01",
+        message: "Data kunjungan tamu tidak ditemukan",
         datetime: formatDateSystem(),
       });
     }
 
-    const updateData = {
-      status: "Selesai",
-      check_out_time: formatDateSystem(),
+    if (checkKunjungan.status === "out") {
+      return res.status(400).json({
+        status: "01",
+        message: "Tamu ini sudah melakukan check-out sebelumnya",
+        datetime: formatDateSystem(),
+      });
+    }
+
+    const oDataUpdate = {
+      status: "out",
+      waktu_keluar: formatDateSystem(),
+      updated_at: formatDateSystem()
     };
 
-    if (VisitNotes) {
-      const existingNotes = record.visit_notes ? String(record.visit_notes).trim() : "";
-      updateData.visit_notes = existingNotes
-        ? `${existingNotes}\n${VisitNotes}`
-        : VisitNotes;
-    }
-
-    await DB("trx_visitations").where("visitation_id", record.visitation_id).update(updateData);
+    await DB("trs_kunjungan")
+      .where("id_kunjungan", id)
+      .update(oDataUpdate);
 
     return res.status(200).json({
       status: "00",
-      message: "Check-out berhasil",
+      message: `Tamu ${checkKunjungan.nama_tamu} berhasil Check-out`,
       data: {
-        visitation_id: record.visitation_id,
-        visit_code: record.visit_code,
-        qr_token: record.qr_token,
+        id_kunjungan: id,
+        nama_tamu: checkKunjungan.nama_tamu,
+        waktu_masuk: checkKunjungan.waktu_masuk,
+        waktu_keluar: oDataUpdate.waktu_keluar
       },
       datetime: formatDateSystem(),
     });
+
   } catch (error) {
+    console.error("❌ [Database Checkout Error Log]:", error);
+
     const oResult = {
       status: "01",
       message: "Sistem sedang maintenance harap tunggu sebentar",
@@ -114,9 +74,9 @@ router.post("/", async (req, res) => {
     Logging(error, {
       file: "visit_checkout.js",
       func: "check-out",
-      request: req.body,
+      request: req.params,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

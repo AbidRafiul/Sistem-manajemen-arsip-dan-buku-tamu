@@ -1,14 +1,21 @@
 import express from "express";
 import Joi from "joi";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
-import { Logging, validatePayload } from "../../../components/tools/servertool.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
+import {
+  Logging,
+  validatePayload,
+} from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
 const createDocumentType = async (req, res) => {
   const { body: oPayload } = req;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
@@ -24,13 +31,14 @@ const createDocumentType = async (req, res) => {
         kode_jenis_dokumen: Joi.string().max(255).required().label("Kode Jenis Dokumen"),
         nama_jenis_dokumen: Joi.string().max(255).required().label("Nama Jenis Dokumen"),
         deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
+
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
         "string.max": "{#label} maksimal {#limit} karakter",
         "any.required": "{#label} wajib diisi",
       },
-      oPayload
+      oPayload,
     );
 
     if (cValidation) {
@@ -45,7 +53,7 @@ const createDocumentType = async (req, res) => {
         func: "createDocumentType",
         request: oPayload,
         response: oResult,
-        user: username,
+        user: nama_pengguna,
       });
 
       return res.status(422).json(oResult);
@@ -55,6 +63,7 @@ const createDocumentType = async (req, res) => {
     await DB("mst_jenis_dokumen").insert({
       kode_jenis_dokumen: oPayload.kode_jenis_dokumen,
       nama_jenis_dokumen: oPayload.nama_jenis_dokumen,
+
       deskripsi: oPayload.deskripsi || null,
       status: "active",
       created_at: dNow,
@@ -78,7 +87,7 @@ const createDocumentType = async (req, res) => {
       func: "createDocumentType",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

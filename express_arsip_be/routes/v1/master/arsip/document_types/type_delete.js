@@ -1,6 +1,10 @@
 import express from "express";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
 import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
@@ -9,6 +13,7 @@ const deleteDocumentType = async (req, res) => {
   const cIdJenisDokumen = req.params.id_jenis_dokumen;
   const username = req?.auth?.username || "";
   const oPayload = { id: cIdJenisDokumen };
+
 
   try {
     const nUpdated = await DB("mst_jenis_dokumen")
@@ -40,7 +45,7 @@ const deleteDocumentType = async (req, res) => {
       func: "deleteDocumentType",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

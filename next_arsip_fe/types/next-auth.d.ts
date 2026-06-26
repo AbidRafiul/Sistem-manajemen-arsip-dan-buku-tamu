@@ -5,10 +5,12 @@ import { UserRole } from './layout';
 declare module 'next-auth' {
     interface User {
         id?: string;
+        IdPengguna?: string | number;
         role?: string;
         roleCode?: string;
         roleId?: string | number;
         uniqueId?: string;
+        nama_pengguna?: string;
         username?: string;
         remember_me?: boolean;
         credential?: string;
@@ -17,14 +19,17 @@ declare module 'next-auth' {
     interface Session {
         user: {
             id?: string;
+            IdPengguna?: string | number;
             role?: string;
             roleCode?: string;
             roleId?: string | number;
             uniqueId?: string;
+            nama_pengguna?: string;
             name?: string;
             username?: string;
             email?: string;
             image?: string;
+            credential?: string;
         };
         expires: string;
     }
@@ -33,10 +38,12 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
     interface JWT {
         id?: string;
+        IdPengguna?: string | number;
         role?: string;
         roleCode?: string;
         roleId?: string | number;
         uniqueId?: string;
+        nama_pengguna?: string;
         username?: string;
         remember_me?: boolean;
         expiry?: number;

@@ -1,14 +1,21 @@
 import express from "express";
 import Joi from "joi";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
-import { Logging, validatePayload } from "../../../components/tools/servertool.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
+import {
+  Logging,
+  validatePayload,
+} from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
 const createRetentionSchedule = async (req, res) => {
   const { body: oPayload } = req;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
@@ -27,6 +34,7 @@ const createRetentionSchedule = async (req, res) => {
         tahun_retensi: Joi.number().required().label("Tahun Retensi"),
         tindakan_retensi: Joi.string().max(255).required().label("Tindakan Retensi"),
         deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
+
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
@@ -34,7 +42,7 @@ const createRetentionSchedule = async (req, res) => {
         "any.required": "{#label} wajib diisi",
         "number.base": "{#label} harus berupa angka",
       },
-      oPayload
+      oPayload,
     );
 
     if (cValidation) {
@@ -49,7 +57,7 @@ const createRetentionSchedule = async (req, res) => {
         func: "createRetentionSchedule",
         request: oPayload,
         response: oResult,
-        user: username,
+        user: nama_pengguna,
       });
 
       return res.status(422).json(oResult);
@@ -62,6 +70,7 @@ const createRetentionSchedule = async (req, res) => {
       nama_retensi: oPayload.nama_retensi,
       tahun_retensi: oPayload.tahun_retensi,
       tindakan_retensi: oPayload.tindakan_retensi,
+
       deskripsi: oPayload.deskripsi || null,
       status: "active",
       created_at: dNow,
@@ -85,7 +94,7 @@ const createRetentionSchedule = async (req, res) => {
       func: "createRetentionSchedule",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

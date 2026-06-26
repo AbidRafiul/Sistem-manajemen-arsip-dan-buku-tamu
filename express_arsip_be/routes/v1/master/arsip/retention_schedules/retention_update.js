@@ -1,15 +1,22 @@
 import express from "express";
 import Joi from "joi";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
-import { Logging, validatePayload } from "../../../components/tools/servertool.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
+import {
+  Logging,
+  validatePayload,
+} from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
 const updateRetentionSchedule = async (req, res) => {
   const { body: oPayload } = req;
-  const cIdJadwalRetensi = req.params.id_jadwal_retensi;
-  const username = req?.auth?.username || "";
+  const cRetentionScheduleId = req.params.RetentionScheduleId;
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
@@ -33,7 +40,7 @@ const updateRetentionSchedule = async (req, res) => {
         "string.empty": "{#label} tidak boleh kosong",
         "any.required": "{#label} wajib diisi",
       },
-      oPayload
+      oPayload,
     );
 
     if (cValidation) {
@@ -48,7 +55,7 @@ const updateRetentionSchedule = async (req, res) => {
         func: "updateRetentionSchedule",
         request: oPayload,
         response: oResult,
-        user: username,
+        user: nama_pengguna,
       });
 
       return res.status(422).json(oResult);
@@ -79,7 +86,6 @@ const updateRetentionSchedule = async (req, res) => {
       message: "Data berhasil diupdate",
       datetime: formatDateSystem(),
     });
-
   } catch (error) {
     const oResult = {
       status: status.BAD_REQUEST,
@@ -92,7 +98,7 @@ const updateRetentionSchedule = async (req, res) => {
       func: "updateRetentionSchedule",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

@@ -1,8 +1,15 @@
 import express from "express";
 import Joi from "joi";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
-import { Logging, validatePayload } from "../../../components/tools/servertool.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
+import {
+  Logging,
+  validatePayload,
+} from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
@@ -10,6 +17,7 @@ const updateConfidentialityLevel = async (req, res) => {
   const { body: oPayload } = req;
   const cIdTingkatKerahasiaan = req.params.id_tingkat_kerahasiaan;
   const username = req?.auth?.username || "";
+
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
@@ -26,12 +34,13 @@ const updateConfidentialityLevel = async (req, res) => {
         nama_tingkat_kerahasiaan: Joi.string().max(255).required().label("Nama Kerahasiaan"),
         tingkat_kerahasiaan: Joi.number().required().label("Level (Angka)"),
         deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
+
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
         "any.required": "{#label} wajib diisi",
       },
-      oPayload
+      oPayload,
     );
 
     if (cValidation) {
@@ -46,7 +55,7 @@ const updateConfidentialityLevel = async (req, res) => {
         func: "updateConfidentialityLevel",
         request: oPayload,
         response: oResult,
-        user: username,
+        user: nama_pengguna,
       });
 
       return res.status(422).json(oResult);
@@ -58,6 +67,7 @@ const updateConfidentialityLevel = async (req, res) => {
         kode_tingkat_kerahasiaan: oPayload.kode_tingkat_kerahasiaan,
         nama_tingkat_kerahasiaan: oPayload.nama_tingkat_kerahasiaan,
         tingkat_kerahasiaan: oPayload.tingkat_kerahasiaan,
+
         deskripsi: oPayload.deskripsi || null,
         updated_at: new Date(),
       });
@@ -75,7 +85,6 @@ const updateConfidentialityLevel = async (req, res) => {
       message: "Data berhasil diupdate",
       datetime: formatDateSystem(),
     });
-
   } catch (error) {
     const oResult = {
       status: status.BAD_REQUEST,
@@ -88,7 +97,7 @@ const updateConfidentialityLevel = async (req, res) => {
       func: "updateConfidentialityLevel",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

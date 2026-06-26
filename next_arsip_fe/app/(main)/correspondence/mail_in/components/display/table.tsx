@@ -72,7 +72,7 @@ const Table = ({
         closePreview();
         setState((p) => ({ ...p, detail: true, detailLoad: true, detailData: null }));
         try {
-            const res = await postData(apiEndpointDetail, { incoming_letter_id: rowData.incoming_letter_id });
+            const res = await postData(apiEndpointDetail, { surat_masuk_id: rowData.surat_masuk_id });
             setState((p) => ({ ...p, detailData: res.data?.data || null }));
         } catch (error: any) {
             const e = error?.response?.data || error;
@@ -84,15 +84,15 @@ const Table = ({
     };
 
     const getFileBlob = async (file: IncomingLetterFile) =>
-        fileDownload(apiEndpointFileDownload, { incoming_letter_file_id: file.incoming_letter_file_id });
+        fileDownload(apiEndpointFileDownload, { file_surat_masuk_id: file.file_surat_masuk_id });
 
     const previewUploadedFile = async (file: IncomingLetterFile) => {
         closePreview();
         try {
             const res = await getFileBlob(file);
-            const mimeType = file.file_mime_type || res.headers["content-type"] || "application/octet-stream";
+            const mimeType = file.tipe_mime_file || res.headers["content-type"] || "application/octet-stream";
             const blob = new Blob([res.data], { type: mimeType });
-            setPreviewFile({ url: window.URL.createObjectURL(blob), mimeType, fileName: file.file_name || "file-surat" });
+            setPreviewFile({ url: window.URL.createObjectURL(blob), mimeType, fileName: file.nama_file || "file-surat" });
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || "File surat gagal dibuka");
@@ -102,11 +102,11 @@ const Table = ({
     const downloadUploadedFile = async (file: IncomingLetterFile) => {
         try {
             const res = await getFileBlob(file);
-            const blob = new Blob([res.data], { type: file.file_mime_type || "application/octet-stream" });
+            const blob = new Blob([res.data], { type: file.tipe_mime_file || "application/octet-stream" });
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.href = url;
-            link.download = file.file_name || "file-surat";
+            link.download = file.nama_file || "file-surat";
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -122,14 +122,14 @@ const Table = ({
     const senderTemplate = (rowData: TableData) => (
         <div className="flex align-items-center gap-2">
             <Avatar
-                label={rowData.sender_name?.slice(0, 1).toUpperCase() || "S"}
+                label={rowData.nama_pengirim?.slice(0, 1).toUpperCase() || "S"}
                 shape="circle"
                 style={{ width: "2rem", height: "2rem", fontSize: "0.7rem", background: "#EEF2FF", color: "#4F46E5", fontWeight: "700", flexShrink: 0 }}
             />
             <div>
-                <div className="font-semibold text-sm text-900">{rowData.sender_name}</div>
-                {rowData.sender_institution && (
-                    <div className="text-xs text-color-secondary">{rowData.sender_institution}</div>
+                <div className="font-semibold text-sm text-900">{rowData.nama_pengirim}</div>
+                {rowData.instansi_pengirim && (
+                    <div className="text-xs text-color-secondary">{rowData.instansi_pengirim}</div>
                 )}
             </div>
         </div>
@@ -137,9 +137,9 @@ const Table = ({
 
     const letterTemplate = (rowData: TableData) => (
         <div>
-            <div className="font-semibold text-sm text-900">{rowData.subject}</div>
+            <div className="font-semibold text-sm text-900">{rowData.perihal}</div>
             <div className="text-xs text-color-secondary mt-1">
-                <span className="mr-2">No. Agenda: <strong>{rowData.agenda_number || "-"}</strong></span>
+                <span className="mr-2">No. Agenda: <strong>{rowData.nomor_agenda || "-"}</strong></span>
             </div>
         </div>
     );
@@ -163,18 +163,18 @@ const Table = ({
                 tooltip="Edit" tooltipOptions={{ position: "top" }}
                 onClick={() => {
                     formik.setValues({
-                        incoming_letter_id: rowData.incoming_letter_id,
-                        agenda_number: rowData.agenda_number,
-                        letter_number: rowData.letter_number,
-                        letter_date: rowData.letter_date?.slice(0, 10) || "",
-                        received_date: rowData.received_date?.slice(0, 10) || "",
-                        sender_name: rowData.sender_name,
-                        sender_institution: rowData.sender_institution || "",
-                        subject: rowData.subject,
-                        attachment_description: rowData.attachment_description || "",
-                        letter_file: null,
-                        letter_type_id: rowData.letter_type_id,
-                        document_type_id: rowData.document_type_id,
+                        surat_masuk_id: rowData.surat_masuk_id,
+                        nomor_agenda: rowData.nomor_agenda,
+                        nomor_surat: rowData.nomor_surat,
+                        tanggal_surat: rowData.tanggal_surat?.slice(0, 10) || "",
+                        tanggal_diterima: rowData.tanggal_diterima?.slice(0, 10) || "",
+                        nama_pengirim: rowData.nama_pengirim,
+                        instansi_pengirim: rowData.instansi_pengirim || "",
+                        perihal: rowData.perihal,
+                        keterangan_lampiran: rowData.keterangan_lampiran || "",
+                        file_surat: null,
+                        jenis_surat_id: rowData.jenis_surat_id,
+                        jenis_dokumen_id: rowData.jenis_dokumen_id,
                         archive_classification_id: rowData.archive_classification_id,
                         confidentiality_level_id: rowData.confidentiality_level_id,
                         status: rowData.status,
@@ -237,7 +237,7 @@ const Table = ({
         return () => { if (previewFile?.url) window.URL.revokeObjectURL(previewFile.url); };
     }, [previewFile?.url]);
 
-    const detailLetter = state.detailData?.letter || null;
+    const detailLetter = state.detailData?.surat || state.detailData?.letter || null;
     const detailFiles = state.detailData?.files || [];
 
     return (
@@ -289,12 +289,12 @@ const Table = ({
                     selectionMode="multiple"
                     rows={10}
                     header={headerTemplate}
-                    globalFilterFields={["agenda_number", "letter_number", "sender_name", "sender_institution", "subject", "status"]}
+                    globalFilterFields={["nomor_agenda", "nomor_surat", "nama_pengirim", "instansi_pengirim", "perihal", "status"]}
                     filters={state.filters}
                     loading={state.load}
                     selection={state.selectedLetters}
                     onSelectionChange={(e) => setState((p) => ({ ...p, selectedLetters: e.value }))}
-                    dataKey="incoming_letter_id"
+                    dataKey="surat_masuk_id"
                     emptyMessage={
                         <div className="flex flex-column align-items-center py-5 gap-3 text-color-secondary">
                             <i className="pi pi-inbox text-4xl text-300" />
@@ -307,16 +307,16 @@ const Table = ({
                     className="text-sm"
                 >
                     <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
-                    <Column field="agenda_number" header="No. Surat" body={(r) => (
+                    <Column field="nomor_agenda" header="No. Surat" body={(r) => (
                         <div>
-                            <div className="font-semibold text-sm text-900">{r.agenda_number || "-"}</div>
-                            <div className="text-xs text-color-secondary">{r.letter_number || "-"}</div>
+                            <div className="font-semibold text-sm text-900">{r.nomor_agenda || "-"}</div>
+                            <div className="text-xs text-color-secondary">{r.nomor_surat || "-"}</div>
                         </div>
                     )} sortable style={{ minWidth: "140px" }} />
                     <Column header="Perihal & Agenda" body={letterTemplate} style={{ minWidth: "200px" }} />
                     <Column header="Pengirim" body={senderTemplate} style={{ minWidth: "180px" }} />
-                    <Column field="received_date" header="Tgl. Terima" sortable body={(r) => formatDateCalendar(r.received_date)} style={{ width: "120px" }} />
-                    <Column field="letter_type_name" header="Jenis Surat" style={{ width: "120px" }} />
+                    <Column field="tanggal_diterima" header="Tgl. Terima" sortable body={(r) => formatDateCalendar(r.tanggal_diterima)} style={{ width: "120px" }} />
+                    <Column field="nama_jenis_surat" header="Jenis Surat" style={{ width: "120px" }} />
                     <Column body={statusTemplate} header="Status" style={{ width: "130px", textAlign: "center" }} />
                     <Column field="created_at" header="Dibuat" sortable body={(r) => formatDateCalendar(r.created_at)} style={{ width: "120px" }} />
                     <Column header="Aksi" body={actionTemplate} style={{ width: "130px", textAlign: "center" }} />
@@ -349,10 +349,10 @@ const Table = ({
                         {/* Header info */}
                         <div className="flex align-items-start justify-content-between gap-3 p-3 surface-50 border-round-xl border-1 surface-border">
                             <div>
-                                <h3 className="m-0 text-900 font-bold text-lg">{detailLetter?.subject || "-"}</h3>
+                                <h3 className="m-0 text-900 font-bold text-lg">{detailLetter?.perihal || "-"}</h3>
                                 <div className="flex gap-2 mt-2 flex-wrap">
-                                    <Chip label={`Agenda: ${detailLetter?.agenda_number || "-"}`} className="text-xs" style={{ height: "auto", padding: "0.2rem 0.6rem" }} />
-                                    <Chip label={`Surat: ${detailLetter?.letter_number || "-"}`} className="text-xs" style={{ height: "auto", padding: "0.2rem 0.6rem" }} />
+                                    <Chip label={`Agenda: ${detailLetter?.nomor_agenda || "-"}`} className="text-xs" style={{ height: "auto", padding: "0.2rem 0.6rem" }} />
+                                    <Chip label={`Surat: ${detailLetter?.nomor_surat || "-"}`} className="text-xs" style={{ height: "auto", padding: "0.2rem 0.6rem" }} />
                                 </div>
                             </div>
                             {detailLetter?.status && statusTemplate({ status: detailLetter.status } as TableData)}
@@ -360,12 +360,12 @@ const Table = ({
 
                         <div className="grid text-sm">
                             {[
-                                { label: "Pengirim", value: detailLetter?.sender_name },
-                                { label: "Instansi", value: detailLetter?.sender_institution },
-                                { label: "Tanggal Surat", value: formatDateCalendar(detailLetter?.letter_date) },
-                                { label: "Tanggal Diterima", value: formatDateCalendar(detailLetter?.received_date) },
-                                { label: "Jenis Surat", value: detailLetter?.letter_type_name },
-                                { label: "Lampiran", value: detailLetter?.attachment_description },
+                                { label: "Pengirim", value: detailLetter?.nama_pengirim },
+                                { label: "Instansi", value: detailLetter?.instansi_pengirim },
+                                { label: "Tanggal Surat", value: formatDateCalendar(detailLetter?.tanggal_surat) },
+                                { label: "Tanggal Diterima", value: formatDateCalendar(detailLetter?.tanggal_diterima) },
+                                { label: "Jenis Surat", value: detailLetter?.nama_jenis_surat },
+                                { label: "Lampiran", value: detailLetter?.keterangan_lampiran },
                             ].map(({ label, value }) => (
                                 <div key={label} className="col-12 md:col-4">
                                     <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: "0.08em" }}>{label}</div>
@@ -391,15 +391,15 @@ const Table = ({
                                     <div className="col-12 lg:col-5">
                                         <div className="flex flex-column gap-2">
                                             {detailFiles.map((file) => (
-                                                <div key={file.incoming_letter_file_id} className="p-3 surface-50 border-round-lg border-1 surface-border">
+                                                <div key={file.file_surat_masuk_id} className="p-3 surface-50 border-round-lg border-1 surface-border">
                                                     <div className="flex justify-content-between align-items-start gap-2">
                                                         <div className="flex align-items-center gap-2">
                                                             <div className="flex align-items-center justify-content-center border-round" style={{ width: "2rem", height: "2rem", background: "#EEF2FF", color: "#4F46E5", flexShrink: 0 }}>
                                                                 <i className="pi pi-file text-sm" />
                                                             </div>
                                                             <div>
-                                                                <div className="font-semibold text-sm text-900">{file.file_name || "File surat"}</div>
-                                                                <div className="text-xs text-color-secondary mt-1">{file.file_mime_type || "-"} · {formatFileSize(file.file_size)}</div>
+                                                                <div className="font-semibold text-sm text-900">{file.nama_file || "File surat"}</div>
+                                                                <div className="text-xs text-color-secondary mt-1">{file.tipe_mime_file || "-"} - {formatFileSize(file.ukuran_file)}</div>
                                                             </div>
                                                         </div>
                                                         <div className="flex gap-1">

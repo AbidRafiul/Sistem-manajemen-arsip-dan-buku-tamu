@@ -1,14 +1,21 @@
 import express from "express";
 import Joi from "joi";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
-import { Logging, validatePayload } from "../../../components/tools/servertool.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
+import {
+  Logging,
+  validatePayload,
+} from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
 const createConfidentialityLevel = async (req, res) => {
   const { body: oPayload } = req;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
@@ -25,6 +32,7 @@ const createConfidentialityLevel = async (req, res) => {
         nama_tingkat_kerahasiaan: Joi.string().max(255).required().label("Nama Kerahasiaan"),
         tingkat_kerahasiaan: Joi.number().required().label("Level (Angka)"),
         deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
+
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
@@ -32,7 +40,7 @@ const createConfidentialityLevel = async (req, res) => {
         "any.required": "{#label} wajib diisi",
         "number.base": "{#label} harus berupa angka",
       },
-      oPayload
+      oPayload,
     );
 
     if (cValidation) {
@@ -47,7 +55,7 @@ const createConfidentialityLevel = async (req, res) => {
         func: "createConfidentialityLevel",
         request: oPayload,
         response: oResult,
-        user: username,
+        user: nama_pengguna,
       });
 
       return res.status(422).json(oResult);
@@ -58,6 +66,7 @@ const createConfidentialityLevel = async (req, res) => {
       kode_tingkat_kerahasiaan: oPayload.kode_tingkat_kerahasiaan,
       nama_tingkat_kerahasiaan: oPayload.nama_tingkat_kerahasiaan,
       tingkat_kerahasiaan: oPayload.tingkat_kerahasiaan,
+
       deskripsi: oPayload.deskripsi || null,
       status: "active",
       created_at: dNow,
@@ -81,7 +90,7 @@ const createConfidentialityLevel = async (req, res) => {
       func: "createConfidentialityLevel",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

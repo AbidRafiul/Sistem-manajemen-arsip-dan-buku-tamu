@@ -54,7 +54,7 @@ const getRetentionSchedules = async (req, res) => {
       func: "getRetentionSchedules",
       request: req.query,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

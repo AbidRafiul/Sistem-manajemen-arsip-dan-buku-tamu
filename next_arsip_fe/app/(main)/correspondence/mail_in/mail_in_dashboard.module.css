@@ -1,0 +1,416 @@
+.page {
+    min-height: 100%;
+    padding: 2rem;
+    background: #f8f9ff;
+    color: #071528;
+}
+
+.hero {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.75rem;
+}
+
+.hero h1 {
+    margin: 0.35rem 0 0.35rem;
+    color: #3525cd;
+    font-size: 2.25rem;
+    line-height: 1.1;
+}
+
+.hero p {
+    margin: 0;
+    color: #43516c;
+    font-size: 1.05rem;
+}
+
+.eyebrow {
+    color: #3525cd;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.heroActions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.searchBox {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 28rem;
+    height: 3.75rem;
+    padding: 0 1.2rem;
+    border: 1px solid #d8ddf0;
+    border-radius: 8px;
+    background: #eef2ff;
+    color: #43516c;
+}
+
+.searchBox input {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.searchBox input:enabled:focus {
+    box-shadow: none;
+}
+
+.metricsGrid {
+    display: grid;
+    grid-template-columns: minmax(12rem, 1fr) minmax(12rem, 1fr) minmax(20rem, 2fr);
+    gap: 1.5rem;
+    margin-bottom: 1.75rem;
+}
+
+.metricCard,
+.metricWide,
+.tablePanel,
+.helpPanel {
+    border: 1px solid #eef0fa;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 16px 40px rgba(53, 37, 205, 0.08);
+}
+
+.metricCard {
+    min-height: 11rem;
+    padding: 1.75rem;
+}
+
+.metricCard small,
+.metricWide small {
+    display: block;
+    margin-top: 1.5rem;
+    color: #31425f;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+}
+
+.metricCard strong,
+.metricWide strong {
+    display: block;
+    color: #071528;
+    font-size: 2rem;
+    line-height: 1.1;
+}
+
+.metricWide {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.75rem;
+}
+
+.metricWide p,
+.helpPanel p {
+    margin: 0.6rem 0 0;
+    color: #43516c;
+}
+
+.metricIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.2rem;
+    height: 3.2rem;
+    border-radius: 8px;
+    background: #eef2ff;
+    color: #3525cd;
+    font-size: 1.35rem;
+}
+
+.metricIconWarm {
+    background: #fff3e8;
+    color: #ff6b35;
+}
+
+.progressRing {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 5.5rem;
+    height: 5.5rem;
+    border-radius: 50%;
+    border: 0.55rem solid #6ff3bd;
+    color: #3525cd;
+    font-weight: 800;
+}
+
+.tablePanel {
+    overflow: hidden;
+}
+
+.tableToolbar,
+.tableFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.35rem 1.75rem;
+}
+
+.tableToolbarTitle h2 {
+    margin: 0;
+    color: #071528;
+    font-size: 1.15rem;
+}
+
+.tableToolbarTitle span {
+    display: block;
+    margin-top: 0.35rem;
+    color: #43516c;
+}
+
+.statusSummary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.statusSummary span {
+    border: 1px solid #d8ddf0;
+    border-radius: 999px;
+    background: #f8f9ff;
+    color: #31425f;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0.55rem 0.9rem;
+}
+
+.tabGroup {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.tabGroup button {
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: #31425f;
+    cursor: pointer;
+    font-weight: 700;
+    padding: 0.7rem 1.2rem;
+}
+
+.tabGroup .activeTab {
+    background: #16007a;
+    color: #ffffff;
+}
+
+.tableWrap {
+    overflow-x: auto;
+    border-top: 1px solid #e2e7f7;
+    border-bottom: 1px solid #e2e7f7;
+}
+
+.tableWrap table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 58rem;
+}
+
+.tableWrap th {
+    padding: 1.25rem 1.75rem;
+    background: #f8f9ff;
+    color: #43516c;
+    font-size: 0.9rem;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.tableWrap td {
+    padding: 1.35rem 1.75rem;
+    border-top: 1px solid #e8ecfa;
+    vertical-align: middle;
+}
+
+.tableWrap td strong,
+.tableWrap td small {
+    display: block;
+}
+
+.tableWrap td small {
+    margin-top: 0.35rem;
+    color: #43516c;
+}
+
+.senderCell {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.senderCell > span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: 8px;
+    background: #dbe6ff;
+    color: #3525cd;
+}
+
+.statusPill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 0.45rem 0.8rem;
+    text-transform: uppercase;
+}
+
+.statusWaiting {
+    background: #dbe6ff;
+    color: #1200bf;
+}
+
+.statusProcess {
+    background: #fff3d7;
+    color: #8a5300;
+}
+
+.statusDone {
+    background: #dff8eb;
+    color: #006b3c;
+}
+
+.emptyState {
+    color: #43516c;
+    text-align: center;
+}
+
+.bottomGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(18rem, 1fr);
+    gap: 1.5rem;
+    margin-top: 1.75rem;
+}
+
+.workflowGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(18rem, 0.75fr);
+    gap: 1.5rem;
+    margin-bottom: 1.75rem;
+}
+
+.workflowSteps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.workflowSteps span {
+    border-left: 0.25rem solid #3525cd;
+    border-radius: 4px;
+    background: #f8f9ff;
+    color: #071528;
+    font-weight: 700;
+    padding: 0.8rem 1rem;
+}
+
+.actionButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.noticeBox {
+    border: 1px solid #d8ddf0;
+    border-radius: 8px;
+    background: #f8f9ff;
+    color: #31425f;
+    font-weight: 600;
+    padding: 1rem;
+}
+
+.activity h2,
+.helpPanel h2 {
+    margin: 0 0 1.25rem;
+    font-size: 1.25rem;
+}
+
+.activityItem {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.activityItem span {
+    width: 0.65rem;
+    height: 0.65rem;
+    margin-top: 0.35rem;
+    border-radius: 50%;
+    background: #3525cd;
+}
+
+.activityItem p,
+.mutedText {
+    margin: 0.25rem 0 0;
+    color: #43516c;
+}
+
+.helpPanel {
+    padding: 1.75rem;
+}
+
+.helpPanel strong {
+    display: block;
+    color: #3525cd;
+    font-size: 2.25rem;
+}
+
+@media (max-width: 1180px) {
+    .hero,
+    .heroActions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .searchBox {
+        min-width: 100%;
+    }
+
+    .metricsGrid,
+    .bottomGrid,
+    .workflowGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .page {
+        padding: 1rem;
+    }
+
+    .hero h1 {
+        font-size: 1.85rem;
+    }
+
+    .tableToolbar,
+    .tableFooter {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .statusSummary {
+        justify-content: flex-start;
+    }
+
+    .tabGroup {
+        overflow-x: auto;
+    }
+}

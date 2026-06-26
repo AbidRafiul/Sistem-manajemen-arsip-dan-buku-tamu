@@ -1,18 +1,29 @@
 import express from "express";
 import Joi from "joi";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
-import { Logging, validatePayload } from "../../../components/tools/servertool.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
+import {
+  Logging,
+  validatePayload,
+} from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
 const createArchiveClassification = async (req, res) => {
   const { body: oPayload } = req;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
-      return res.status(400).json({ status: status.BAD_REQUEST, message: "Invalid request body", datetime: formatDateSystem() });
+      return res.status(400).json({
+        status: status.BAD_REQUEST,
+        message: "Invalid request body",
+        datetime: formatDateSystem(),
+      });
     }
 
     const cValidation = await validatePayload(
@@ -21,8 +32,11 @@ const createArchiveClassification = async (req, res) => {
         nama_klasifikasi: Joi.string().max(255).required().label("Nama Klasifikasi"),
         deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
       },
-      { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
-      oPayload
+      {
+        "string.empty": "{#label} tidak boleh kosong",
+        "any.required": "{#label} wajib diisi",
+      },
+      oPayload,
     );
 
     if (cValidation) {
@@ -41,7 +55,11 @@ const createArchiveClassification = async (req, res) => {
       updated_at: dNow,
     });
 
-    return res.status(201).json({ status: status.SUKSES, message: "Berhasil ditambahkan!", datetime: formatDateSystem() });
+    return res.status(201).json({
+      status: status.SUKSES,
+      message: "Berhasil ditambahkan!",
+      datetime: formatDateSystem(),
+    });
   } catch (error) {
     const oResult = { status: status.BAD_REQUEST, message: "Gagal menyimpan. Pastikan Kode belum digunakan.", datetime: datetime() };
     Logging(error, { file: "archive_create.js", func: "createArchiveClassification", request: oPayload, response: oResult, user: username });

@@ -135,13 +135,13 @@ async function postCRUD(request: NextRequest, token: any, a2fCookie: string) {
         };
 
 
-        if (customHeader['X-Level'] && customHeader['X-Level'] == '1') {
+        // Selalu pasang x-uniqueid dari token
+        try {
             const secret = new TextEncoder().encode(process.env.USER_KEY);
-            const { payload } = await jwtVerify<A2FPayload>(a2fCookie, secret);
-            const userPayload = payload;
-
-            requestHeaders['X-UniqueId'] = userPayload.uniqueId ?? '';
-        }
+            const { payload } = await jwtVerify<any>(a2fCookie, secret);
+            const uid = payload.IdPengguna ?? payload.id_pengguna ?? payload.uid ?? payload.uniqueId ?? payload.id;
+            if (uid) requestHeaders['X-UniqueId'] = String(uid);
+        } catch { /* ignore jika cookie tidak ada */ }
 
         // Handle X-Credential
         if (customHeader['X-Credential']) {

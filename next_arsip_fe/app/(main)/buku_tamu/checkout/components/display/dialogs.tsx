@@ -142,15 +142,15 @@ export function DetailVisitorDialog({
             <div className="grid text-sm mt-1">
                 <div className="col-12 md:col-6 mb-3">
                     <span className="text-xs uppercase text-500 font-bold tracking-wider block mb-1">Nama Lengkap Tamu</span>
-                    <span className="font-semibold text-900 text-base">{record.guest_name}</span>
+                    <span className="font-semibold text-900 text-base">{record.guest_name || record.nama_tamu}</span>
                 </div>
                 <div className="col-12 md:col-6 mb-3">
                     <span className="text-xs uppercase text-500 font-bold tracking-wider block mb-1">Nomor Telepon</span>
-                    <span className="font-semibold text-900 text-base">{record.phone_number}</span>
+                    <span className="font-semibold text-900 text-base">{record.phone_number || record.nomor_telepon}</span>
                 </div>
                 <div className="col-12 md:col-6 mb-3">
                     <span className="text-xs uppercase text-500 font-bold tracking-wider block mb-1">Instansi / Perusahaan</span>
-                    <span className="font-semibold text-800">{record.guest_company || '-'}</span>
+                    <span className="font-semibold text-800">{record.guest_company || record.instansi_tamu || '-'}</span>
                 </div>
                 <div className="col-12 md:col-6 mb-3">
                     <span className="text-xs uppercase text-500 font-bold tracking-wider block mb-1">Status Kunjungan</span>
@@ -183,13 +183,13 @@ export function DetailVisitorDialog({
                 <div className="col-12 md:col-6 mb-3">
                     <span className="text-xs uppercase text-500 font-bold tracking-wider block mb-1">Waktu Masuk (Check-In)</span>
                     <span className="font-semibold text-800">
-                        {record.check_in_time ? formatDateCalendar(record.check_in_time, 'HH:mm dd MMM yyyy') + ' WIB' : '-'}
+                        {record.check_in_time || record.waktu_masuk ? formatDateCalendar(record.check_in_time || record.waktu_masuk, 'HH:mm dd MMM yyyy') + ' WIB' : '-'}
                     </span>
                 </div>
                 <div className="col-12 md:col-6 mb-3">
                     <span className="text-xs uppercase text-500 font-bold tracking-wider block mb-1">Waktu Keluar (Check-Out)</span>
                     <span className="font-semibold text-800">
-                        {record.check_out_time ? formatDateCalendar(record.check_out_time, 'HH:mm dd MMM yyyy') + ' WIB' : '-'}
+                        {record.check_out_time || record.waktu_keluar ? formatDateCalendar(record.check_out_time || record.waktu_keluar, 'HH:mm dd MMM yyyy') + ' WIB' : '-'}
                     </span>
                 </div>
 
@@ -203,7 +203,7 @@ export function DetailVisitorDialog({
                         className="p-3 border-round-lg mt-1 text-800 leading-normal"
                         style={{ backgroundColor: '#F8FAFC', border: '1px solid #EFF6FF' }}
                     >
-                        {record.visit_notes || 'Tidak ada catatan tambahan.'}
+                        {record.visit_notes || record.catatan_kunjungan || 'Tidak ada catatan tambahan.'}
                     </div>
                 </div>
             </div>

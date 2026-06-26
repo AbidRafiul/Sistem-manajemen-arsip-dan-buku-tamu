@@ -63,10 +63,10 @@ const seedRows = async (knex, tableName, keyColumn, rows) => {
   }
 };
 
-const hashPassword = (username, password) => {
+const hashkata_sandi = (nama_pengguna, kata_sandi) => {
   const userKey = process.env.USER_KEY || "random";
   const userSecret = process.env.USER_SECRET || "random";
-  return hmac(`${userKey}${username}${password}`, userSecret, "sha512");
+  return hmac(`${userKey}${nama_pengguna}${kata_sandi}`, userSecret, "sha512");
 };
 
 const menu = JSON.stringify([
@@ -136,155 +136,153 @@ const menu = JSON.stringify([
 export async function seed(knex) {
   const dNow = now();
 
-  await seedRows(knex, "mst_roles", "role_code", [
+  await seedRows(knex, "mst_perans", "kode_peran", [
     {
-      role_code: "ADM",
-      role_name: "Administrator",
-      description: "Akses penuh sistem",
+      kode_peran: "ADM",
+      nama_peran: "Administrator",
+      deskripsi: "Akses penuh sistem",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
     {
-      role_code: "PMN",
-      role_name: "Pimpinan",
-      description: "Approval dan monitoring",
+      kode_peran: "PMN",
+      nama_peran: "Pimpinan",
+      deskripsi: "Approval dan monitoring",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
     {
-      role_code: "SKR",
-      role_name: "Sekretaris",
-      description: "Kelola surat masuk",
+      kode_peran: "SKR",
+      nama_peran: "Sekretaris",
+      deskripsi: "Kelola surat masuk",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
     {
-      role_code: "STF_ARS",
-      role_name: "Staff Arsip",
-      description: "Kelola arsip digital",
+      kode_peran: "STF_ARS",
+      nama_peran: "Staff Arsip",
+      deskripsi: "Kelola arsip digital",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
     {
-      role_code: "RSP",
-      role_name: "Resepsionis",
-      description: "Kelola buku tamu",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-  ]);
-
-  await seedRows(knex, "mst_branches", "branch_code", [
-    {
-      branch_code: "BR-PST",
-      branch_name: "Kantor Pusat",
-      address: "Jl. Merdeka No. 1",
-      telp: "0215550101",
-      email: "pusat@example.local",
+      kode_peran: "RSP",
+      nama_peran: "Resepsionis",
+      deskripsi: "Kelola buku tamu",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
 
-  const branch = await knex("mst_branches")
-    .where("branch_code", "BR-PST")
-    .first();
-
-  await seedRows(knex, "mst_divisions", "division_code", [
+  await seedRows(knex, "mst_cabanges", "kode_cabang", [
     {
-      branch_id: branch?.branch_id || 1,
-      division_code: "DIV-OPS",
-      division_name: "Operasional",
-      description: "Operasional kantor",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-    {
-      branch_id: branch?.branch_id || 1,
-      division_code: "DIV-IT",
-      division_name: "Teknologi",
-      description: "Teknologi informasi",
+      kode_cabang: "BR-PST",
+      nama_cabang: "Kantor Pusat",
+      alamat: "Jl. Merdeka No. 1",
+      telepon: "0215550101",
+      surel: "pusat@example.local",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
 
-  const divOps = await knex("mst_divisions")
-    .where("division_code", "DIV-OPS")
-    .first();
-  const divIt = await knex("mst_divisions")
-    .where("division_code", "DIV-IT")
+  const branch = await knex("mst_cabanges")
+    .where("kode_cabang", "BR-PST")
     .first();
 
-  await seedRows(knex, "mst_departments", "department_code", [
+  await seedRows(knex, "mst_divisi", "kode_divisi", [
     {
-      division_id: divOps?.division_id || 1,
+      id_cabang: branch?.id_cabang || 1,
+      kode_divisi: "DIV-OPS",
+      nama_divisi: "Operasional",
+      deskripsi: "Operasional kantor",
+      status: "active",
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_cabang: branch?.id_cabang || 1,
+      kode_divisi: "DIV-IT",
+      nama_divisi: "Teknologi",
+      deskripsi: "Teknologi informasi",
+      status: "active",
+      created_at: dNow,
+      updated_at: dNow,
+    },
+  ]);
+
+  const divOps = await knex("mst_divisi")
+    .where("kode_divisi", "DIV-OPS")
+    .first();
+  const divIt = await knex("mst_divisi").where("kode_divisi", "DIV-IT").first();
+
+  await seedRows(knex, "mst_departemens", "department_code", [
+    {
+      id_divisi: divOps?.id_divisi || 1,
       department_code: "DEP-ARSIP",
       department_name: "Arsip dan Tata Usaha",
-      description: "Unit arsip dan administrasi",
+      deskripsi: "Unit arsip dan administrasi",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
     {
-      division_id: divIt?.division_id || 2,
+      id_divisi: divIt?.id_divisi || 2,
       department_code: "DEP-IT",
       department_name: "IT Support",
-      description: "Dukungan sistem",
+      deskripsi: "Dukungan sistem",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
 
-  await seedRows(knex, "mst_positions", "position_code", [
+  await seedRows(knex, "mst_jabatan", "kode_jabatan", [
     {
-      position_code: "POS-DIR",
-      position_name: "Direktur",
-      position_level: 1,
-      description: "Pimpinan",
+      kode_jabatan: "POS-DIR",
+      nama_jabatan: "Direktur",
+      tingkat_jabatan: 1,
+      deskripsi: "Pimpinan",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
     {
-      position_code: "POS-MGR",
-      position_name: "Manager",
-      position_level: 2,
-      description: "Manager unit",
+      kode_jabatan: "POS-MGR",
+      nama_jabatan: "Manager",
+      tingkat_jabatan: 2,
+      deskripsi: "Manager unit",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
     {
-      position_code: "POS-STF",
-      position_name: "Staff",
-      position_level: 3,
-      description: "Staff operasional",
+      kode_jabatan: "POS-STF",
+      nama_jabatan: "Staff",
+      tingkat_jabatan: 3,
+      deskripsi: "Staff operasional",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
 
-  const depArsip = await knex("mst_departments")
+  const depArsip = await knex("mst_departemens")
     .where("department_code", "DEP-ARSIP")
     .first();
 
-  await seedRows(knex, "mst_work_units", "work_unit_code", [
+  await seedRows(knex, "mst_unit_kerja", "kode_unit_kerja", [
     {
-      department_id: depArsip?.department_id || 1,
-      work_unit_code: "WU-ARSIP",
+      id_departemen: depArsip?.id_departemen || 1,
+      kode_unit_kerja: "WU-ARSIP",
       work_unit_name: "Unit Arsip",
-      description: "Pengelolaan arsip",
+      deskripsi: "Pengelolaan arsip",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -295,7 +293,7 @@ export async function seed(knex) {
     {
       classification_code: "ADM",
       classification_name: "Administrasi",
-      description: "Arsip administrasi",
+      deskripsi: "Arsip administrasi",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -303,7 +301,7 @@ export async function seed(knex) {
     {
       classification_code: "KEU",
       classification_name: "Keuangan",
-      description: "Arsip keuangan",
+      deskripsi: "Arsip keuangan",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -311,7 +309,7 @@ export async function seed(knex) {
     {
       classification_code: "HRD",
       classification_name: "SDM",
-      description: "Arsip SDM",
+      deskripsi: "Arsip SDM",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -322,7 +320,7 @@ export async function seed(knex) {
     {
       document_type_code: "SURAT",
       document_type_name: "Surat",
-      description: "Dokumen surat",
+      deskripsi: "Dokumen surat",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -330,7 +328,7 @@ export async function seed(knex) {
     {
       document_type_code: "KONTRAK",
       document_type_name: "Kontrak",
-      description: "Dokumen kontrak",
+      deskripsi: "Dokumen kontrak",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -338,7 +336,7 @@ export async function seed(knex) {
     {
       document_type_code: "LAPORAN",
       document_type_name: "Laporan",
-      description: "Dokumen laporan",
+      deskripsi: "Dokumen laporan",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -357,7 +355,7 @@ export async function seed(knex) {
       archive_classification_id: adm?.archive_classification_id || 1,
       document_category_code: "ADM-UMUM",
       document_category_name: "Administrasi Umum",
-      description: "Dokumen administrasi umum",
+      deskripsi: "Dokumen administrasi umum",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -366,7 +364,7 @@ export async function seed(knex) {
       archive_classification_id: keu?.archive_classification_id || 2,
       document_category_code: "KEU-LAP",
       document_category_name: "Laporan Keuangan",
-      description: "Dokumen laporan keuangan",
+      deskripsi: "Dokumen laporan keuangan",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -382,7 +380,7 @@ export async function seed(knex) {
         confidentiality_level_code: "PUB",
         confidentiality_level_name: "Publik",
         confidentiality_level: 1,
-        description: "Dapat diakses umum",
+        deskripsi: "Dapat diakses umum",
         status: "active",
         created_at: dNow,
         updated_at: dNow,
@@ -391,7 +389,7 @@ export async function seed(knex) {
         confidentiality_level_code: "INT",
         confidentiality_level_name: "Internal",
         confidentiality_level: 2,
-        description: "Internal organisasi",
+        deskripsi: "Internal organisasi",
         status: "active",
         created_at: dNow,
         updated_at: dNow,
@@ -400,7 +398,7 @@ export async function seed(knex) {
         confidentiality_level_code: "RHS",
         confidentiality_level_name: "Rahasia",
         confidentiality_level: 3,
-        description: "Terbatas",
+        deskripsi: "Terbatas",
         status: "active",
         created_at: dNow,
         updated_at: dNow,
@@ -422,7 +420,7 @@ export async function seed(knex) {
       retention_name: "Retensi 5 Tahun",
       retention_years: 5,
       retention_action: "review",
-      description: "Evaluasi setelah 5 tahun",
+      deskripsi: "Evaluasi setelah 5 tahun",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -433,7 +431,7 @@ export async function seed(knex) {
       retention_name: "Retensi 10 Tahun",
       retention_years: 10,
       retention_action: "destroy",
-      description: "Musnah setelah 10 tahun",
+      deskripsi: "Musnah setelah 10 tahun",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -445,7 +443,7 @@ export async function seed(knex) {
       letter_type_code: "SURAT_MASUK",
       letter_type_name: "Surat Masuk",
       direction: "incoming",
-      description: "Surat masuk umum",
+      deskripsi: "Surat masuk umum",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -454,7 +452,7 @@ export async function seed(knex) {
       letter_type_code: "SURAT_UNDANGAN",
       letter_type_name: "Surat Undangan",
       direction: "both",
-      description: "Surat undangan",
+      deskripsi: "Surat undangan",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -465,7 +463,7 @@ export async function seed(knex) {
     {
       instruction_code: "TINDAK_LANJUT",
       instruction_name: "Tindak Lanjut",
-      description: "Menindaklanjuti surat",
+      deskripsi: "Menindaklanjuti surat",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -473,7 +471,7 @@ export async function seed(knex) {
     {
       instruction_code: "ARSIPKAN",
       instruction_name: "Arsipkan",
-      description: "Mengarsipkan surat",
+      deskripsi: "Mengarsipkan surat",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -485,7 +483,7 @@ export async function seed(knex) {
       VisitPurposeId: 1,
       VisitPurposeCode: "MEETING",
       VisitPurposeName: "Meeting",
-      description: "Pertemuan kerja",
+      deskripsi: "Pertemuan kerja",
       status: "active",
       CreatedAt: dNow,
       UpdatedAt: dNow,
@@ -494,101 +492,106 @@ export async function seed(knex) {
       VisitPurposeId: 2,
       VisitPurposeCode: "DELIVERY",
       VisitPurposeName: "Pengiriman",
-      description: "Pengiriman dokumen/barang",
+      deskripsi: "Pengiriman dokumen/barang",
       status: "active",
       CreatedAt: dNow,
       UpdatedAt: dNow,
     },
   ]);
 
-  const position = await knex("mst_positions")
-    .where("position_code", "POS-STF")
+  const position = await knex("mst_jabatan")
+    .where("kode_jabatan", "POS-STF")
     .first();
-  const workUnit = await knex("mst_work_units")
-    .where("work_unit_code", "WU-ARSIP")
+  const workUnit = await knex("mst_unit_kerja")
+    .where("kode_unit_kerja", "WU-ARSIP")
     .first();
-  const roleAdm = await knex("mst_roles").where("role_code", "ADM").first();
-  const roleStaff = await knex("mst_roles")
-    .where("role_code", "STF_ARS")
+  const peranAdm = await knex("mst_perans").where("kode_peran", "ADM").first();
+  const peranStaff = await knex("mst_perans")
+    .where("kode_peran", "STF_ARS")
     .first();
 
-  await seedRows(knex, "mst_users", "username", [
+  await seedRows(knex, "mst_pengguna", "nama_pengguna", [
     {
-      fullname: "Superadmin SIAB",
-      username: "superadmin@admin.com",
-      email: "superadmin@admin.com",
-      telp: "08100000000",
-      password: hashPassword("superadmin@admin.com", "Superadmin321!"),
-      branch_id: branch?.branch_id || 1,
-      division_id: divOps?.division_id || 1,
-      department_id: depArsip?.department_id || 1,
-      position_id: position?.position_id || 1,
-      work_unit_id: workUnit?.work_unit_id || 1,
-      failed_login_attempts: 0,
+      nama_lengkap: "Superadmin SIAB",
+      nama_pengguna: "superadmin@admin.com",
+      surel: "superadmin@admin.com",
+      telepon: "08100000000",
+      kata_sandi: hashkata_sandi("superadmin@admin.com", "Superadmin321!"),
+      id_cabang: branch?.id_cabang || 1,
+      id_divisi: divOps?.id_divisi || 1,
+      id_departemen: depArsip?.id_departemen || 1,
+      id_jabatan: position?.id_jabatan || 1,
+      mst_unit_kerja: workUnit?.mst_unit_kerja || 1,
+      gagal_masuk: 0,
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
     {
-      fullname: "Staff Arsip Demo",
-      username: "staff.arsip@example.local",
-      email: "staff.arsip@example.local",
-      telp: "08100000001",
-      password: hashPassword("staff.arsip@example.local", "Password123!"),
-      branch_id: branch?.branch_id || 1,
-      division_id: divOps?.division_id || 1,
-      department_id: depArsip?.department_id || 1,
-      position_id: position?.position_id || 1,
-      work_unit_id: workUnit?.work_unit_id || 1,
-      failed_login_attempts: 0,
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-  ]);
-
-  const superadmin = await knex("mst_users")
-    .where("username", "superadmin@admin.com")
-    .first();
-  const staff = await knex("mst_users")
-    .where("username", "staff.arsip@example.local")
-    .first();
-
-  await seedRows(knex, "mst_user_roles", "user_role_id", [
-    {
-      user_role_id: 9001,
-      user_id: superadmin?.user_id || 1,
-      role_id: roleAdm?.role_id || 1,
-      is_primary: 1,
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-    {
-      user_role_id: 9002,
-      user_id: staff?.user_id || 2,
-      role_id: roleStaff?.role_id || roleAdm?.role_id || 1,
-      is_primary: 1,
+      nama_lengkap: "Staff Arsip Demo",
+      nama_pengguna: "staff.arsip@example.local",
+      surel: "staff.arsip@example.local",
+      telepon: "08100000001",
+      kata_sandi: hashkata_sandi("staff.arsip@example.local", "kata_sandi123!"),
+      id_cabang: branch?.id_cabang || 1,
+      id_divisi: divOps?.id_divisi || 1,
+      id_departemen: depArsip?.id_departemen || 1,
+      id_jabatan: position?.id_jabatan || 1,
+      mst_unit_kerja: workUnit?.mst_unit_kerja || 1,
+      gagal_masuk: 0,
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
 
-  await seedRows(knex, "mst_navigation", "role", [
-    { role: "master", menu, created_at: dNow },
-    { role: "Administrator", menu, created_at: dNow },
-    { role: "Staff Arsip", menu, created_at: dNow },
+  const superadmin = await knex("mst_pengguna")
+    .where("nama_pengguna", "superadmin@admin.com")
+    .first();
+  const staff = await knex("mst_pengguna")
+    .where("nama_pengguna", "staff.arsip@example.local")
+    .first();
+
+  await seedRows(knex, "mst_pengguna_perans", "id_peran_pengguna", [
+    {
+      id_peran_pengguna: 9001,
+      nama_pengguna: superadmin?.nama_pengguna || 1,
+      id_peran: peranAdm?.id_peran || 1,
+      peran_utama: 1,
+      status: "active",
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_peran_pengguna: 9002,
+      nama_pengguna: staff?.nama_pengguna || 2,
+      id_peran: peranStaff?.id_peran || peranAdm?.id_peran || 1,
+      peran_utama: 1,
+      status: "active",
+      created_at: dNow,
+      updated_at: dNow,
+    },
   ]);
 
-  await seedRows(knex, "user_navigation", "user_id", [
+  await seedRows(knex, "mst_navigasi", "peran", [
+    { peran: "master", menu, created_at: dNow },
+    { peran: "Administrator", menu, created_at: dNow },
+    { peran: "Staff Arsip", menu, created_at: dNow },
+  ]);
+
+  await seedRows(knex, "navigasi_pengguna", "nama_pengguna", [
     {
-      user_id: superadmin?.user_id || 1,
+      nama_pengguna: superadmin?.nama_pengguna || 1,
       menu,
       created_at: dNow,
       updated_at: dNow,
     },
-    { user_id: staff?.user_id || 2, menu, created_at: dNow, updated_at: dNow },
+    {
+      nama_pengguna: staff?.nama_pengguna || 2,
+      menu,
+      created_at: dNow,
+      updated_at: dNow,
+    },
   ]);
 
   const surat = await knex("mst_document_type")
@@ -663,9 +666,9 @@ export async function seed(knex) {
       version_number: 1,
       change_notes: "Versi awal dokumen",
       file_path: "demo/documents/DOC-ADM-2026-001-v1.pdf",
-      uploaded_by: staff?.username || "staff.arsip@example.local",
+      uploaded_by: staff?.nama_pengguna || "staff.arsip@example.local",
       approval_status: "approved",
-      approved_by: superadmin?.username || "superadmin@admin.com",
+      approved_by: superadmin?.nama_pengguna || "superadmin@admin.com",
       approved_at: dNow,
       approval_notes: "Data demo disetujui",
       created_at: dNow,
@@ -677,7 +680,7 @@ export async function seed(knex) {
       version_number: 1,
       change_notes: "Versi awal laporan",
       file_path: "demo/documents/DOC-KEU-2026-001-v1.pdf",
-      uploaded_by: staff?.username || "staff.arsip@example.local",
+      uploaded_by: staff?.nama_pengguna || "staff.arsip@example.local",
       approval_status: "pending",
       created_at: dNow,
       updated_at: dNow,
@@ -693,7 +696,7 @@ export async function seed(knex) {
       expected_return_date: "2026-06-25",
       return_date: null,
       purpose: "Referensi audit internal",
-      approved_by: superadmin?.username || "superadmin@admin.com",
+      approved_by: superadmin?.nama_pengguna || "superadmin@admin.com",
       approved_at: dNow,
       approval_notes: "Disetujui untuk audit",
       is_overdue: 0,
@@ -709,7 +712,7 @@ export async function seed(knex) {
       document_id: docKeu?.document_id || 2,
       retention_schedule_id: retKeu?.retention_schedule_id || 2,
       proposal_reason: "Contoh proposal pemusnahan data demo",
-      proposed_by: staff?.username || "staff.arsip@example.local",
+      proposed_by: staff?.nama_pengguna || "staff.arsip@example.local",
       proposed_at: dNow,
       status: "submitted",
       created_at: dNow,
@@ -733,14 +736,14 @@ export async function seed(knex) {
       sender_name: "PT Contoh Nusantara",
       sender_institution: "PT Contoh Nusantara",
       subject: "Permohonan kerja sama arsip digital",
-      attachment_description: "1 berkas proposal",
+      attachment_deskripsi: "1 berkas proposal",
       letter_type_id: letterType?.letter_type_id || 1,
       document_type_id: surat?.document_type_id || 1,
       archive_classification_id: adm?.archive_classification_id || 1,
       confidentiality_level_id: internal?.confidentiality_level_id || 2,
       status: "didisposisi",
-      created_by: superadmin?.user_id || 1,
-      updated_by: superadmin?.user_id || 1,
+      created_by: superadmin?.nama_pengguna || 1,
+      updated_by: superadmin?.nama_pengguna || 1,
       created_at: dNow,
       updated_at: dNow,
     },
@@ -750,19 +753,19 @@ export async function seed(knex) {
     .where("agenda_number", "AG-2026-001")
     .first();
 
-  await seedRows(knex, "trx_letter_dispositions", "disposition_id", [
+  await seedRows(knex, "trx_letter_dispositions", "disid_jabatan", [
     {
-      disposition_id: 9001,
+      disid_jabatan: 9001,
       incoming_letter_id: incoming?.incoming_letter_id || 1,
-      from_user_id: superadmin?.user_id || 1,
-      to_user_id: staff?.user_id || 2,
+      from_nama_pengguna: superadmin?.nama_pengguna || 1,
+      to_nama_pengguna: staff?.nama_pengguna || 2,
       disposition_instruction_id: tindakLanjut?.disposition_instruction_id || 1,
       instruction: "Tindak lanjuti dan arsipkan dokumen",
       disposition_note: "Data demo disposisi",
       due_date: "2026-06-24",
       status: "baru",
-      created_by: superadmin?.user_id || 1,
-      updated_by: superadmin?.user_id || 1,
+      created_by: superadmin?.nama_pengguna || 1,
+      updated_by: superadmin?.nama_pengguna || 1,
       created_at: dNow,
       updated_at: dNow,
     },
@@ -776,7 +779,7 @@ export async function seed(knex) {
       file_name: "AG-2026-001.pdf",
       file_mime_type: "application/pdf",
       file_size: 102400,
-      uploaded_by: superadmin?.user_id || 1,
+      uploaded_by: superadmin?.nama_pengguna || 1,
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -791,15 +794,15 @@ export async function seed(knex) {
       {
         incoming_letter_tracking_id: 9001,
         incoming_letter_id: incoming?.incoming_letter_id || 1,
-        disposition_id: 9001,
+        disid_jabatan: 9001,
         action_name: "Disposisi dibuat",
-        from_user_id: superadmin?.user_id || 1,
-        to_user_id: staff?.user_id || 2,
+        from_nama_pengguna: superadmin?.nama_pengguna || 1,
+        to_nama_pengguna: staff?.nama_pengguna || 2,
         previous_status: "baru",
         current_status: "didisposisi",
         notes: "Tracking demo",
         processed_at: dNow,
-        created_by: superadmin?.user_id || 1,
+        created_by: superadmin?.nama_pengguna || 1,
         created_at: dNow,
         updated_at: dNow,
       },
@@ -810,7 +813,7 @@ export async function seed(knex) {
     {
       guest_name: "Andi Wijaya",
       phone_number: "081234567890",
-      guest_email: "andi@example.local",
+      guest_surel: "andi@example.local",
       guest_company: "PT Contoh Nusantara",
       guest_position: "Manager",
       identity_type: "ktp",
@@ -818,13 +821,13 @@ export async function seed(knex) {
       check_in_time: dNow,
       check_out_time: null,
       status: "in",
-      host_user_id: String(staff?.user_id || 2),
+      host_nama_pengguna: String(staff?.nama_pengguna || 2),
       host_name: "Staff Arsip Demo",
       visit_notes: "Meeting arsip digital",
       visit_code: "VIS-2026-001",
       qr_token: "QR-VIS-2026-001",
       approval_status: "approved",
-      user_id: staff?.user_id || 2,
+      nama_pengguna: staff?.nama_pengguna || 2,
       visit_purpose_id: 1,
       created_at: dNow,
       updated_at: dNow,

@@ -1,6 +1,10 @@
 import express from "express";
 import DB from "../../../../../core/config/knex.js";
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
 import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
@@ -9,6 +13,7 @@ const deleteConfidentialityLevel = async (req, res) => {
   const cIdTingkatKerahasiaan = req.params.id_tingkat_kerahasiaan;
   const username = req?.auth?.username || "";
   const oPayload = { id: cIdTingkatKerahasiaan };
+
 
   try {
     const nUpdated = await DB("mst_tingkat_kerahasiaan")
@@ -40,7 +45,7 @@ const deleteConfidentialityLevel = async (req, res) => {
       func: "deleteConfidentialityLevel",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

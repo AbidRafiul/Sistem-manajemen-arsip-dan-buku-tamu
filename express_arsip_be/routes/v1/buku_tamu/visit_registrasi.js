@@ -2,7 +2,7 @@ import express from "express";
 import multer from "multer";
 import Joi from "joi";
 import { formatDateSystem } from "../components/tools/general.js";
-import { getLastFaktur, Logging, validatePayload } from "../components/tools/servertool.js";
+import { getLastFaktur, setLastFaktur, Logging, validatePayload } from "../components/tools/servertool.js";
 import DB from "../../../core/config/knex.js";
 import { uploadFileToMinio } from "../../../core/components/tools/minio_helper.js";
 
@@ -80,28 +80,30 @@ router.post("/", upload.fields([{ name: "SelfieFile", maxCount: 1 }, { name: "Id
     const QRToken = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
     const oData = {
-      guest_name: GuestName,
-      phone_number: PhoneNumber,
-      guest_email: GuestEmail,
-      guest_company: GuestCompany,
-      guest_position: GuestPosition,
-      identity_type: IdentityType,
-      identity_number: IdentityNumber,
-      visit_purpose_id: VisitPurposeId,
-      host_user_id: HostUserId,
-      host_name: HostName,
-      visit_notes: VisitNotes,
-      photo_face: PhotoFace,
-      photo_identity: PhotoIdentity,
-      visit_code: VisitCode,
-      qr_token: QRToken,
-      check_in_time: CheckInTime,
+      nama_tamu: GuestName,
+      nomor_telepon: PhoneNumber,
+      email_tamu: GuestEmail,
+      instansi_tamu: GuestCompany,
+      jabatan_tamu: GuestPosition,
+      jenis_identitas: IdentityType,
+      nomor_identitas: IdentityNumber,
+      id_tujuan_kunjungan: VisitPurposeId,
+      id_user_host: HostUserId,
+      nama_host: HostName,
+      catatan_kunjungan: VisitNotes,
+      foto_wajah: PhotoFace,
+      foto_identitas: PhotoIdentity,
+      kode_kunjungan: VisitCode,
+      token_qr: QRToken,
+      waktu_masuk: CheckInTime,
       status: "Rencana", 
-      approval_status: "pending",
+      status_persetujuan: "pending",
       created_at: formatDateSystem(),
     };
 
-    const [VisitationId] = await DB("trx_visitations").insert(oData);
+    const [idKunjungan] = await DB("trs_kunjungan").insert(oData);
+
+    await setLastFaktur("TAMU");
 
     try {
       if (HostUserId) {
@@ -109,7 +111,7 @@ router.post("/", upload.fields([{ name: "SelfieFile", maxCount: 1 }, { name: "Id
           user_id: HostUserId,
           title: "Booking Tamu",
           body: `Anda memiliki booking tamu dari ${GuestName}`,
-          data: JSON.stringify({ VisitationId, VisitCode }),
+          data: JSON.stringify({ id_kunjungan: idKunjungan, kode_kunjungan: VisitCode }),
           created_at: formatDateSystem(),
         });
       }
@@ -121,11 +123,11 @@ router.post("/", upload.fields([{ name: "SelfieFile", maxCount: 1 }, { name: "Id
       status: "00",
       message: "Registrasi berhasil",
       data: {
-        visit_code: VisitCode,
-        qr_token: QRToken,
-        visitation_id: VisitationId,
-        guest_name: GuestName,
-        guest_company: GuestCompany || "-",
+        kode_kunjungan: VisitCode,
+        token_qr: QRToken,
+        id_kunjungan: idKunjungan,
+        nama_tamu: GuestName,
+        instansi_tamu: GuestCompany || "-",
         qr_image_url: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${QRToken}`
       },
       datetime: formatDateSystem()

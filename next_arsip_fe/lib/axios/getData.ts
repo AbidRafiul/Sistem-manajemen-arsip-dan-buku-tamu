@@ -15,9 +15,7 @@ const Axios = axios.create({
 Axios.interceptors.response.use(
     r => r,
     async (error) => {
-        if (error.response?.status === 401) {
-            await signOut({ callbackUrl: "/auth/login" });
-        }
+        // Jangan auto-redirect — biarkan halaman yang handle error
         return Promise.reject(error);
     }
 );
@@ -34,10 +32,16 @@ async function getData(endpoint: string, params: Record<string, any> = {}, custo
 
         const apiEndpoint = query.toString() ? `${endpoint}?${query.toString()}` : endpoint;
 
-        const headers: Record<string, string> = {
-            'X-ENDPOINT': apiEndpoint,
+        // 1. Gabungkan header tambahan
+        const mergedCustomHeaders = {
             'X-Level': "1",
             ...customHeader
+        };
+
+        // 2. Bungkus ke dalam x-custom-header (Sesuai maunya Interceptor)
+        const headers: Record<string, string> = {
+            'X-ENDPOINT': apiEndpoint,
+            'x-custom-header': JSON.stringify(mergedCustomHeaders) // <-- INI KUNCINYA
         };
 
         const response = await Axios.get('', { headers });
@@ -45,9 +49,6 @@ async function getData(endpoint: string, params: Record<string, any> = {}, custo
         
     } catch (error: any) {
         console.log("Error GET Data:", error?.response?.data || error);
-        if (error?.response?.status == 401) {
-            logout(null, true);
-        }
         throw error;
     }
 }

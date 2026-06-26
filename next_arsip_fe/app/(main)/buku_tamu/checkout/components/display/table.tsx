@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import React from 'react';
 import { Card } from 'primereact/card';
@@ -18,6 +18,9 @@ interface TableProps {
     onDetail: (row: any) => void;
     onFilterStatus: (value: string) => void;
     onRefresh: () => void;
+    onApprove: (row: any) => void;
+    onReject: (row: any) => void;
+    onCheckin: (row: any) => void;
 }
 
 export default function GuestDataTable({
@@ -26,127 +29,117 @@ export default function GuestDataTable({
     onCheckout,
     onDetail,
     onFilterStatus,
-    onRefresh
+    onRefresh,
+    onApprove,
+    onReject,
+    onCheckin
 }: TableProps) {
     const statusOptions = [
         { label: 'Semua Status', value: '' },
-        { label: 'Rencana Kunjungan', value: 'Rencana' },
-        { label: 'Sedang Berkunjung', value: 'Sedang Berkunjung' },
-        { label: 'Selesai', value: 'Selesai' }
+        { label: 'Sedang Berkunjung', value: 'in' },
+        { label: 'Selesai', value: 'out' }
     ];
 
     const actionBodyTemplate = (rowData: any) => {
         return (
             <div className="flex gap-2">
-                <Button 
-                    icon="pi pi-eye" 
-                    severity="info" 
-                    text
-                    tooltip="Detail Kunjungan"
-                    tooltipOptions={{ position: 'top' }}
-                    className="p-button-sm"
-                    onClick={() => onDetail(rowData)} 
-                />
-                {rowData.status === 'Sedang Berkunjung' && (
-                    <Button 
-                        icon="pi pi-sign-out" 
-                        severity="warning" 
-                        text
-                        tooltip="Checkout Tamu"
-                        tooltipOptions={{ position: 'top' }}
-                        className="p-button-sm"
-                        onClick={() => onCheckout(rowData)} 
-                    />
+                <Button icon="pi pi-eye" severity="info" rounded outlined onClick={() => onDetail(rowData)} tooltip="Detail" />
+                {rowData.status_persetujuan === 'pending' && (
+                    <>
+                        <Button icon="pi pi-check" severity="success" rounded outlined onClick={() => onApprove(rowData)} tooltip="Setujui" />
+                        <Button icon="pi pi-times" severity="danger" rounded outlined onClick={() => onReject(rowData)} tooltip="Tolak" />
+                    </>
+                )}
+                {rowData.status === 'Rencana' && rowData.status_persetujuan === 'approved' && (
+                    <Button icon="pi pi-sign-in" severity="success" rounded outlined onClick={() => onCheckin(rowData)} tooltip="Check-In (Masuk)" />
+                )}
+                {rowData.status === 'in' && rowData.status_persetujuan === 'approved' && (
+                    <Button icon="pi pi-sign-out" severity="danger" rounded outlined onClick={() => onCheckout(rowData)} tooltip="Check-Out" />
                 )}
             </div>
         );
     };
 
     const statusBodyTemplate = (rowData: any) => {
-        const s = String(rowData.status || '').toLowerCase();
-        let severity: 'warning' | 'success' | 'info' = 'info';
-        let icon = 'pi pi-calendar';
+        let severity: "success" | "info" | "warning" | "danger" | null = null;
+        let statusLabel = rowData.status;
 
-        if (s.includes('sedang')) {
-            severity = 'warning';
-            icon = 'pi pi-id-card';
-        } else if (s.includes('selesai')) {
-            severity = 'success';
-            icon = 'pi pi-check-circle';
+        if (rowData.status === 'in') {
+            severity = "success";
+            statusLabel = "in";
+        } else if (rowData.status === 'out') {
+            severity = "danger";
+            statusLabel = "out";
+        } else {
+            severity = "warning";
         }
 
-        return (
-            <Tag 
-                value={rowData.status} 
-                severity={severity} 
-                icon={icon}
-                style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem' }}
-            />
-        );
+        return <Tag severity={severity} value={statusLabel} />;
+    };
+
+    const approvalBodyTemplate = (rowData: any) => {
+        let severity: "success" | "info" | "warning" | "danger" | null = null;
+        let statusLabel = "Pending";
+
+        if (rowData.status_persetujuan === 'approved') {
+            severity = "success";
+            statusLabel = "Disetujui";
+        } else if (rowData.status_persetujuan === 'rejected') {
+            severity = "danger";
+            statusLabel = "Ditolak";
+        } else {
+            severity = "warning";
+        }
+
+        return <Tag severity={severity} value={statusLabel} />;
     };
 
     const header = (
-        <div className="flex flex-column md:flex-row justify-content-between align-items-stretch md:align-items-center gap-3">
-            <div>
-                <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: '0.08em' }}>Log Tamu</span>
-                <h2 className="m-0 font-extrabold text-xl text-900 mt-1" style={{ letterSpacing: '-0.02em' }}>Riwayat Kunjungan Tamu</h2>
-            </div>
+        <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
+            <h5 className="m-0 font-bold">Riwayat Kunjungan Tamu</h5>
             <div className="flex flex-column sm:flex-row gap-2">
-                <Dropdown 
-                    value={state.statusFilter} 
-                    options={statusOptions} 
-                    onChange={(e) => onFilterStatus(e.value)} 
-                    placeholder="Filter Status" 
-                    className="w-full sm:w-12rem p-inputtext-sm" 
+                <Dropdown
+                    value={state.statusFilter}
+                    options={statusOptions}
+                    onChange={(e) => onFilterStatus(e.value)}
+                    placeholder="Filter Status"
+                    className="w-full sm:w-12rem p-inputtext-sm"
                 />
                 <span className="p-input-icon-left w-full sm:w-auto">
                     <i className="pi pi-search" />
-                    <InputText 
-                        type="search" 
-                        value={state.searchVal} 
-                        onChange={(e) => setState((p: State) => ({ ...p, searchVal: e.target.value }))} 
-                        placeholder="Cari Nama Tamu..." 
-                        className="w-full sm:w-auto p-inputtext-sm" 
+                    <InputText
+                        type="search"
+                        value={state.searchVal}
+                        onChange={(e) => setState((p: State) => ({ ...p, searchVal: e.target.value }))}
+                        placeholder="Cari Nama Tamu..."
+                        className="w-full sm:w-auto p-inputtext-sm"
                     />
                 </span>
-                <Button 
-                    type="button" 
-                    icon="pi pi-refresh" 
-                    severity="secondary" 
-                    outlined 
+                <Button
+                    type="button"
+                    icon="pi pi-refresh"
+                    severity="secondary"
+                    outlined
                     className="p-button-sm px-3 bg-white"
-                    onClick={onRefresh} 
+                    onClick={onRefresh}
                 />
             </div>
         </div>
     );
 
     return (
-        <Card className="border-none shadow-1 border-round-2xl overflow-hidden bg-white p-2">
-            <DataTable 
-                value={state.data} 
-                loading={state.load} 
-                paginator 
-                rows={10} 
-                header={header} 
-                responsiveLayout="scroll" 
-                emptyMessage="Data kunjungan tamu kosong"
-                className="text-sm"
-                rowHover
-                pt={{
-                    header: { className: 'bg-white border-none py-3 px-2' },
-                    thead: { className: 'bg-slate-50' }
-                }}
-            >
-                <Column field="guest_name" header="Nama Tamu" sortable className="font-semibold text-900" />
-                <Column field="phone_number" header="No. Telepon" />
-                <Column field="guest_company" header="Instansi" sortable />
+        <div className="card shadow-2 border-round p-4">
+            <DataTable value={state.data} loading={state.load} paginator rows={10} header={header} responsiveLayout="scroll" emptyMessage="Data kunjungan tamu kosong">
+                <Column field="nama_tamu" header="Nama Tamu" sortable />
+                <Column field="nomor_telepon" header="No. Telepon" />
+                <Column field="instansi_tamu" header="Instansi" sortable />
                 <Column field="VisitPurposeName" header="Tujuan" />
-                <Column field="check_in_time" header="Check In" body={(r) => formatDateCalendar(r.check_in_time, 'HH:mm dd/MM/yyyy')} sortable />
-                <Column field="check_out_time" header="Check Out" body={(r) => r.check_out_time ? formatDateCalendar(r.check_out_time, 'HH:mm dd/MM/yyyy') : '-'} />
-                <Column field="status" header="Status" body={statusBodyTemplate} sortable style={{ width: '150px' }} />
-                <Column header="Aksi" body={actionBodyTemplate} style={{ width: '100px' }} />
+                <Column field="waktu_masuk" header="Check In" body={(r) => r.waktu_masuk && r.waktu_masuk !== '0000-00-00 00:00:00' ? formatDateCalendar(r.waktu_masuk, 'HH:mm dd/MM/yyyy') : '-'} sortable />
+                <Column field="waktu_keluar" header="Check Out" body={(r) => r.waktu_keluar && r.waktu_keluar !== '0000-00-00 00:00:00' ? formatDateCalendar(r.waktu_keluar, 'HH:mm dd/MM/yyyy') : '-'} />
+                <Column field="status_persetujuan" header="Persetujuan" body={approvalBodyTemplate} sortable />
+                <Column field="status" header="Status" body={statusBodyTemplate} sortable />
+                <Column header="Aksi" body={actionBodyTemplate} style={{ minWidth: '10rem' }} />
             </DataTable>
-        </Card>
+        </div>
     );
 }

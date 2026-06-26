@@ -1,49 +1,57 @@
-import { jwtVerify } from "jose";
 import {
   getClientKey,
   getClientPassKey,
   getClientSecret,
 } from "../core/config/secret.js";
 import {
-  datetime,
-  datetimeIso,
   formatDateSystem,
-  hash,
   hashEquals,
   hmac,
-  isoDateNow,
-  isoDateNowYmd,
   status,
 } from "../routes/v1/components/tools/general.js";
 import DB from "../core/config/knex.js";
 import { Logging } from "../routes/v1/components/tools/servertool.js";
-import { AsyncLocalStorage } from "async_hooks"
+import { AsyncLocalStorage } from "async_hooks";
 
 const als = new AsyncLocalStorage();
 
+const isBypassed = (url) => {
+  if (!url) return false;
+  const lower = url.toLowerCase();
+  return lower.includes("/purposes") || lower.includes("/visit_checkin") || lower.includes("/visit_booking");
+};
+
 export const validateTimestamp = async (req, res, next) => {
+  if (isBypassed(req.originalUrl)) {
+    return next();
+  }
+
   try {
-    const timestamp = req.headers["x-timestamp"];
-    if (process.env.APP_DEBUG && process.env.APP_DEBUG == 'true' && req.headers["x-uniqueid"]) {
-      return next()
+    const cTimestamp = req.headers["x-timestamp"];
+    if (
+      process.env.APP_DEBUG &&
+      process.env.APP_DEBUG == "true" &&
+      req.headers["x-uniqueid"]
+    ) {
+      return next();
     }
 
-    if (!timestamp) {
+    if (!cTimestamp) {
       return res.status(400).json({
         status: status.BAD_REQUEST,
         message: "Missing timetstamp header",
         datetime: formatDateSystem(),
       });
     }
-    const inputDate = new Date(timestamp).toLocaleDateString("en-US", {
+    const dInputDate = new Date(cTimestamp).toLocaleDateString("en-US", {
       timeZone: "Asia/Jakarta",
     });
 
-    const now = new Date();
-    const diffMs = Math.abs(now - inputDate);
-    const diffMinutes = diffMs / 1000 / 60;
+    const dNow = new Date();
+    const nDiffMs = Math.abs(dNow - dInputDate);
+    const nDiffMinutes = nDiffMs / 1000 / 60;
 
-    if (diffMinutes > 5) {
+    if (nDiffMinutes > 5) {
       return res.status(400).json({
         status: status.BAD_REQUEST,
         message: "Request timestamp expired",
@@ -53,7 +61,7 @@ export const validateTimestamp = async (req, res, next) => {
 
     next();
   } catch (error) {
-    Logging(error)
+    Logging(error);
     return res.status(401).json({
       status: status.BAD_REQUEST,
       message: "Unauthorized",
@@ -65,20 +73,24 @@ export const validateTimestamp = async (req, res, next) => {
 export const getRequestContext = () => als.getStore();
 
 export const contextMiddleware = (req, res, next) => {
-  const store = {
+  const oStore = {
     requestId: Date.now(),
     method: req.method,
     url: req.url,
     body: req.body,
-    auth: req?.auth || null
+    auth: req?.auth || null,
   };
 
-  als.run(store, () => {
+  als.run(oStore, () => {
     next();
   });
 };
 
 export const validateSignature = async (req, res, next) => {
+  if (isBypassed(req.originalUrl)) {
+    return next();
+  }
+
   try {
     if (!req.headers["x-uniqueid"]) {
       return res.status(400).json({
@@ -90,20 +102,62 @@ export const validateSignature = async (req, res, next) => {
 
     const cUserUnique = req.headers["x-uniqueid"];
 
-    //  PERBAIKAN: Ganti "user_credential" jadi "mst_users"
-    const oUser = await DB("mst_users")
-      // 1. Join user_roles pake user_id (bukan username)
-      .leftJoin("mst_user_roles", "mst_users.user_id", "mst_user_roles.user_id")
-      // 2. Join mst_roles buat dapetin nama jabatannya
-      .leftJoin("mst_roles", "mst_user_roles.role_id", "mst_roles.role_id")
-      .select(
-        "mst_users.username",
-        "mst_users.fullname",
-        "mst_roles.role_name as Role",
-        "mst_users.telp",
-        "mst_users.user_id as UniqueId"
-      )
-      .where("mst_users.user_id", cUserUnique)
+    // Cek nama tabel yang aktif (support nama lama & baru)
+    const userRoleTable = (await DB.schema.hasTable("mst_pengguna_perans"))
+      ? "mst_pengguna_perans"
+      : (await DB.schema.hasTable("mst_pengguna_peran"))
+      ? "mst_pengguna_peran"
+      : null;
+
+    const roleTable = (await DB.schema.hasTable("mst_perans"))
+      ? "mst_perans"
+      : (await DB.schema.hasTable("mst_peran"))
+      ? "mst_peran"
+      : null;
+
+    // Query user dengan kolom nama baru (hasil migration)
+    let query = DB("mst_pengguna").select(
+      "mst_pengguna.id_pengguna as IdPengguna",
+      "mst_pengguna.NamaPengguna as nama_pengguna",
+      "mst_pengguna.nama_lengkap as nama_lengkap",
+      "mst_pengguna.telepon as telepon",
+      "mst_pengguna.NamaPengguna as UniqueId",
+    );
+
+    if (userRoleTable && roleTable) {
+      // Kolom FK di tabel user-role (support nama lama & baru)
+      const [urCols] = await DB.raw("SHOW COLUMNS FROM ??", [userRoleTable]);
+      const urColNames = urCols.map((c) => c.Field);
+      const userFkCol = urColNames.includes("id_pengguna") ? "id_pengguna"
+        : urColNames.includes("nama_pengguna") ? "nama_pengguna"
+        : "user_id";
+      const roleFkCol = urColNames.includes("id_peran") ? "id_peran" : "role_id";
+
+      const [rCols] = await DB.raw("SHOW COLUMNS FROM ??", [roleTable]);
+      const rColNames = rCols.map((c) => c.Field);
+      const rolePkCol = rColNames.includes("id_peran") ? "id_peran" : "role_id";
+      const roleCodeCol = rColNames.includes("kode_peran") ? "kode_peran" : "role_code";
+      const roleNameCol = rColNames.includes("nama_peran") ? "nama_peran" : "role_name";
+
+      query = query
+        .leftJoin(userRoleTable, `mst_pengguna.id_pengguna`, `${userRoleTable}.${userFkCol}`)
+        .leftJoin(roleTable, `${userRoleTable}.${roleFkCol}`, `${roleTable}.${rolePkCol}`)
+        .select(
+          `${roleTable}.${rolePkCol} as peranId`,
+          `${roleTable}.${roleCodeCol} as kode_peran`,
+          `${roleTable}.${roleNameCol} as peran`,
+        );
+    }
+
+    // Cari user berdasarkan id_pengguna atau NamaPengguna (username)
+    const numericId = Number(cUserUnique);
+    const oUser = await query
+      .where((builder) => {
+        builder.where("mst_pengguna.id_pengguna", numericId || 0);
+        if (cUserUnique) {
+          builder.orWhere("mst_pengguna.NamaPengguna", cUserUnique);
+        }
+      })
       .first();
 
     if (!oUser) {
@@ -116,16 +170,20 @@ export const validateSignature = async (req, res, next) => {
 
     req.auth = {
       uniqueId: oUser.UniqueId,
-      username: oUser.username,
-      telp: oUser.telp,
-      fullname: oUser.fullname,
-      role: oUser.Role,
+      IdPengguna: oUser.IdPengguna,
+      id_pengguna: oUser.IdPengguna,
+      nama_pengguna: oUser.nama_pengguna,
+      telepon: oUser.telepon,
+      nama_lengkap: oUser.nama_lengkap,
+      peranId: oUser.peranId,
+      peranCode: oUser.kode_peran,
+      peran: oUser.peran,
     };
 
     req.context = oUser;
     next();
   } catch (error) {
-    Logging(error)
+    Logging(error);
     return res.status(401).json({
       status: status.BAD_REQUEST,
       message: "Unauthorized",
@@ -134,15 +192,24 @@ export const validateSignature = async (req, res, next) => {
   }
 };
 
-export const validateBaseToken = async (req, res, next) => {
-  const header = req.headers["authorization"];
-  const token = header && header.split(" ")[1];
 
-  if (process.env.APP_DEBUG && process.env.APP_DEBUG == 'true' && req.headers["x-uniqueid"]) {
-    return next()
+export const validateBaseToken = async (req, res, next) => {
+  if (isBypassed(req.originalUrl)) {
+    return next();
   }
 
-  if (!token || !header.startsWith("Basic ")) {
+  const cHeader = req.headers["authorization"];
+  const cToken = cHeader && cHeader.split(" ")[1];
+
+  if (
+    process.env.APP_DEBUG &&
+    process.env.APP_DEBUG == "true" &&
+    req.headers["x-uniqueid"]
+  ) {
+    return next();
+  }
+
+  if (!cToken || !cHeader.startsWith("Basic ")) {
     return res.status(400).json({
       status: status.BAD_REQUEST,
       message: "No token provided",
@@ -151,12 +218,12 @@ export const validateBaseToken = async (req, res, next) => {
   }
 
   try {
-    const credentials = Buffer.from(token, "base64").toString("utf-8");
-    const [username, password] = credentials.split(":");
+    const cCredentials = Buffer.from(cToken, "base64").toString("utf-8");
+    const [cnama_pengguna, ckata_sandi] = cCredentials.split(":");
 
     if (
-      !hashEquals(username, hmac(getClientKey(), getClientSecret())) &&
-      !hashEquals(password, hmac(getClientPassKey(), getClientSecret()))
+      !hashEquals(cnama_pengguna, hmac(getClientKey(), getClientSecret())) &&
+      !hashEquals(ckata_sandi, hmac(getClientPassKey(), getClientSecret()))
     ) {
       return res.status(400).json({
         status: status.BAD_REQUEST,
@@ -167,7 +234,7 @@ export const validateBaseToken = async (req, res, next) => {
 
     return next();
   } catch (error) {
-    Logging(error)
+    Logging(error);
     return res.status(401).json({
       status: status.BAD_REQUEST,
       message: "Unauthorized",
@@ -177,14 +244,22 @@ export const validateBaseToken = async (req, res, next) => {
 };
 
 export const validateAccessToken = async (req, res, next) => {
-  const header = req.headers["authorization"];
-  const token = header && header.split(" ")[1];
-
-  if (process.env.APP_DEBUG && process.env.APP_DEBUG == 'true' && req.headers["x-uniqueid"]) {
-    return next()
+  if (isBypassed(req.originalUrl)) {
+    return next();
   }
 
-  if (!token || !header.startsWith("Bearer ")) {
+  const cHeader = req.headers["authorization"];
+  const cToken = cHeader && cHeader.split(" ")[1];
+
+  if (
+    process.env.APP_DEBUG &&
+    process.env.APP_DEBUG == "true" &&
+    req.headers["x-uniqueid"]
+  ) {
+    return next();
+  }
+
+  if (!cToken || !cHeader.startsWith("Bearer ")) {
     return res.status(400).json({
       status: status.BAD_REQUEST,
       message: "No token provided",
@@ -193,11 +268,11 @@ export const validateAccessToken = async (req, res, next) => {
   }
 
   try {
-    // ⚠️ KODE ASLI LO (TETAP DIPAKAI KARENA TIDAK BIKIN TENDANGAN 401)
+    // KODE ASLI LO (TETAP DIPAKAI KARENA TIDAK BIKIN TENDANGAN 401)
     const oToken = await DB("access_token")
       .select("id")
       .where({
-        token: token,
+        token: cToken,
         expired: "0",
       })
       .first();
@@ -210,13 +285,13 @@ export const validateAccessToken = async (req, res, next) => {
       });
     }
 
-    // 💡 SEMENTARA GUE MATIKAN FITUR "TOKEN SEKALI PAKAI" INI BIAR DROPDOWN LO NGGAK ERROR
+    // SEMENTARA GUE MATIKAN FITUR "TOKEN SEKALI PAKAI" INI BIAR DROPDOWN LO NGGAK ERROR
     // Karena kalau nyala, request ke-2 (positions) akan dibilang expired.
-    // await DB("access_token").where({ id: oToken.id }).update({ expired: "1" }); 
+    // await DB("access_token").where({ id: oToken.id }).update({ expired: "1" });
 
     return next();
   } catch (error) {
-    Logging(error)
+    Logging(error);
     res.status(401).json({
       status: status.BAD_REQUEST,
       message: "Unauthorized",

@@ -1,31 +1,138 @@
 import "dotenv/config";
 
 import express from "express";
+import Joi from "joi";
+import { SignJWT } from "jose";
+import DB from "../../../core/config/knex.js";
 import {
-  datetime,
   formatDateSystem,
   hashEquals,
   hmac,
   status,
 } from "../components/tools/general.js";
 import { Logging, validatePayload } from "../components/tools/servertool.js";
-import Joi from "joi";
-import DB from "../../../core/config/knex.js";
-import { jwtVerify, SignJWT } from "jose";
 import { recordAuditTrail } from "../components/tools/audit_tool.js";
-import { getNavigationMenu } from "../setup/navigation/navigation_helper.js";
 
 const router = express.Router();
 
+const getColumns = async (tableName) => {
+  const [columns] = await DB.raw("SHOW COLUMNS FROM ??", [tableName]);
+  return columns.map((column) => column.Field);
+};
+
+const pickColumn = (columns, candidates) => {
+  return candidates.find((candidate) => columns.includes(candidate));
+};
+
+const getUserByUsername = async (namaPengguna) => {
+  const columns = await getColumns("mst_pengguna");
+  const idColumn = pickColumn(columns, ["id_pengguna", "user_id", "UserId"]);
+  const usernameColumn = pickColumn(columns, [
+    "nama_pengguna",
+    "username",
+    "Username",
+  ]);
+  const passwordColumn = pickColumn(columns, [
+    "kata_sandi",
+    "password",
+    "Password",
+  ]);
+  const fullnameColumn = pickColumn(columns, [
+    "nama_lengkap",
+    "fullname",
+    "Fullname",
+  ]);
+  const statusColumn = pickColumn(columns, ["status", "Status"]);
+
+  if (!idColumn || !usernameColumn || !passwordColumn) return null;
+
+  return await DB("mst_pengguna")
+    .where(usernameColumn, namaPengguna)
+    .select(
+      `${idColumn} as id_pengguna`,
+      `${usernameColumn} as nama_pengguna`,
+      `${passwordColumn} as kata_sandi`,
+      fullnameColumn ? `${fullnameColumn} as nama_lengkap` : DB.raw("NULL as nama_lengkap"),
+      statusColumn ? `${statusColumn} as status` : DB.raw("'active' as status"),
+    )
+    .first();
+};
+
+const getUserRole = async (user) => {
+  const oldTables = {
+    userRole: "mst_pengguna_peran",
+    role: "mst_peran",
+    userId: "user_id",
+    roleId: "role_id",
+    primary: "is_primary",
+    roleCode: "role_code",
+    roleName: "role_name",
+  };
+  const newTables = {
+    userRole: "mst_pengguna_perans",
+    role: "mst_perans",
+    userId: "nama_pengguna",
+    roleId: "id_peran",
+    primary: "peran_utama",
+    roleCode: "kode_peran",
+    roleName: "nama_peran",
+  };
+
+  const hasOld = await DB.schema.hasTable(oldTables.userRole);
+  const cfg = hasOld ? oldTables : newTables;
+  if (!(await DB.schema.hasTable(cfg.userRole)) || !(await DB.schema.hasTable(cfg.role))) {
+    return null;
+  }
+
+  const userRoleColumns = await getColumns(cfg.userRole);
+  const roleColumns = await getColumns(cfg.role);
+  const userJoinColumn = pickColumn(userRoleColumns, [
+    cfg.userId,
+    "id_pengguna",
+    "nama_pengguna",
+    "user_id",
+  ]);
+  const roleJoinColumn = pickColumn(userRoleColumns, [cfg.roleId, "id_peran", "role_id"]);
+  const roleIdColumn = pickColumn(roleColumns, [cfg.roleId, "id_peran", "role_id"]);
+  const roleCodeColumn = pickColumn(roleColumns, [cfg.roleCode, "kode_peran", "role_code"]);
+  const roleNameColumn = pickColumn(roleColumns, [cfg.roleName, "nama_peran", "role_name"]);
+  const primaryColumn = pickColumn(userRoleColumns, [cfg.primary, "peran_utama", "is_primary"]);
+  const statusColumn = pickColumn(userRoleColumns, ["status", "Status"]);
+
+  if (!userJoinColumn || !roleJoinColumn || !roleIdColumn) return null;
+
+  const userValue = ["nama_pengguna", "username"].includes(userJoinColumn)
+    ? user.nama_pengguna
+    : user.id_pengguna;
+
+  const query = DB(`${cfg.userRole} as user_role`)
+    .leftJoin(`${cfg.role} as role`, `user_role.${roleJoinColumn}`, `role.${roleIdColumn}`)
+    .select(
+      `user_role.${roleJoinColumn} as id_peran`,
+      roleCodeColumn ? `role.${roleCodeColumn} as kode_peran` : DB.raw("NULL as kode_peran"),
+      roleNameColumn ? `role.${roleNameColumn} as nama_peran` : DB.raw("NULL as nama_peran"),
+    )
+    .where(`user_role.${userJoinColumn}`, userValue);
+
+  if (statusColumn) {
+    query.where((builder) => {
+      builder
+        .where(`user_role.${statusColumn}`, "active")
+        .orWhereNull(`user_role.${statusColumn}`);
+    });
+  }
+
+  if (primaryColumn) {
+    query.orderBy(`user_role.${primaryColumn}`, "desc");
+  }
+
+  return await query.first();
+};
+
 router.post("/", async (req, res) => {
   const { body } = req;
-
-  const cCredential = req.headers["x-credential"];
-  const cAuth = req.headers["authorization"];
   const cForwardedFor = req.headers["x-forwarded-for"];
   const cIp = cForwardedFor ? cForwardedFor.split(",")[0].trim() : "";
-  const cEndpoint = req.originalUrl;
-
   let oPayload = body;
 
   try {
@@ -39,8 +146,8 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        username: Joi.string().required().label("Username"),
-        password: Joi.string().required().label("Password"),
+        nama_pengguna: Joi.string().required().label("nama_pengguna"),
+        kata_sandi: Joi.string().required().label("kata_sandi"),
       },
       {
         "string.base": "{#label} harus berupa string",
@@ -62,115 +169,74 @@ router.post("/", async (req, res) => {
         func: "login",
         request: oPayload,
         response: oResult,
-        user: oPayload?.username || "",
+        user: oPayload?.nama_pengguna || "",
       });
 
       return res.status(422).json(oResult);
     }
 
-    // 1. CARI USER DI TABEL BARU (mst_users)
-    const oUser = await DB("mst_users")
-      .where("username", oPayload.username)
-      .select(
-        "user_id", // Pengganti UniqueId
-        "password",
-        "username",
-        "fullname",
-        "status",
-        "telp",
-        "created_at",
-      )
-      .first();
+    const oUser = await getUserByUsername(oPayload.nama_pengguna);
 
-    if (oUser) {
-      const dDatetime = formatDateSystem(
-        oUser.created_at,
-        "yyyy-MM-dd HH:mm:ss",
-      );
-      const secret = process.env.USER_SECRET;
-
-      // 2. LOGIKA HASHING BARU (UniqueId diganti Username)
-      const cPassword =
-        process.env.USER_KEY + oUser.username + oPayload.password;
-
-      if (!hashEquals(hmac(cPassword, secret, "sha512"), oUser.password)) {
-        return res.status(400).json({
-          status: status.GAGAL,
-          message: "Password salah",
-          datetime: formatDateSystem(),
-        });
-      }
-
-      // 3. CEK STATUS BARU (Sekarang pakai ENUM 'active')
-      if (oUser.status !== "active") {
-        return res.status(400).json({
-          status: status.GAGAL,
-          message: "User belum aktif",
-          datetime: formatDateSystem(),
-        });
-      }
-
-      // 4. AMBIL MENU DARI TABEL BARU (Pakai UserId)
-      const oNavigation = await DB("user_navigation")
-        .select("menu")
-        .where("user_id", oUser.user_id)
-        .first();
-
-      if (!oNavigation || !oNavigation.menu) {
-        return res.status(400).json({
-          status: status.GAGAL,
-          message: "User tidak memiliki hak akses menu terdaftar di database",
-          datetime: formatDateSystem(),
-        });
-      }
-
-      // 5. AMBIL JABATAN DARI TABEL ROLE (Pakai UserId)
-      const oUserRole = await DB("mst_user_roles")
-        .leftJoin("mst_roles", "mst_user_roles.role_id", "mst_roles.role_id")
-        .select(
-          "mst_user_roles.role_id",
-          "mst_roles.role_code",
-          "mst_roles.role_name",
-        )
-        .where("mst_user_roles.user_id", oUser.user_id)
-        .first();
-
-      const roleId = oUserRole ? oUserRole.role_id : null;
-
-      // 6. BUNGKUS PAYLOAD JWT BARU
-      const credential = {
-        UserId: oUser.user_id, // HURUF BESAR: Biar NextAuth & AppMenu.tsx lo mulus baca UserId
-        username: oUser.username,
-        fullname: oUser.fullname,
-        name: oUser.fullname, // UBAH fullname JADI name: NextAuth butuh 'name' buat profile
-        roleId: roleId,
-        role: oUserRole?.role_name || null,
-        roleCode: oUserRole?.role_code || null,
-      };
-
-      const secretKey = new TextEncoder().encode(process.env.USER_KEY);
-
-      const jwtCredential = await new SignJWT(credential)
-        .setProtectedHeader({ alg: "HS512" })
-        .sign(secretKey);
-
-      recordAuditTrail(oUser.Username, String(roleId), "LOGIN", req);
-
-      // 7. UBAHAN CUMA DI RETURN INI 
-      // Ditambahin key `data` isinya objek `credential`, biar Frontend & NextAuth gampang bacanya
-      return res.status(200).json({
-        status: status.SUKSES,
-        message: "Login Berhasil",
+    if (!oUser) {
+      return res.status(400).json({
+        status: status.GAGAL,
+        message: "nama_pengguna tidak ditemukan",
         datetime: formatDateSystem(),
-        credential: jwtCredential,
-        data: credential // <--- INI KUNCI UTAMANYA!
       });
     }
 
-    return res.status(400).json({
-      status: status.GAGAL,
-      message: "Username tidak ditemukan",
+    const secret = process.env.USER_SECRET;
+    const cKataSandi =
+      process.env.USER_KEY + oUser.nama_pengguna + oPayload.kata_sandi;
+
+    if (!hashEquals(hmac(cKataSandi, secret, "sha512"), oUser.kata_sandi)) {
+      return res.status(400).json({
+        status: status.GAGAL,
+        message: "kata_sandi salah",
+        datetime: formatDateSystem(),
+      });
+    }
+
+    if (oUser.status !== "active") {
+      return res.status(400).json({
+        status: status.GAGAL,
+        message: "User belum aktif",
+        datetime: formatDateSystem(),
+      });
+    }
+
+    const oUserPeran = await getUserRole(oUser);
+    const peranId = oUserPeran?.id_peran || null;
+    const peran = oUserPeran?.nama_peran || null;
+    const peranCode = oUserPeran?.kode_peran || null;
+
+    const credential = {
+      IdPengguna: oUser.id_pengguna,
+      nama_pengguna: oUser.nama_pengguna,
+      nama_lengkap: oUser.nama_lengkap,
+      name: oUser.nama_lengkap,
+      peranId,
+      peran,
+      peranCode,
+      roleId: peranId,
+      role: peran,
+      roleCode: peranCode,
+      ip_address: cIp,
+    };
+
+    const secretKey = new TextEncoder().encode(process.env.USER_KEY);
+    const jwtCredential = await new SignJWT(credential)
+      .setProtectedHeader({ alg: "HS512" })
+      .sign(secretKey);
+
+    await recordAuditTrail(oUser.nama_pengguna, String(peranId || ""), "LOGIN", req);
+
+    return res.status(200).json({
+      status: status.SUKSES,
+      message: "Login Berhasil",
       datetime: formatDateSystem(),
+      credential: jwtCredential,
+      data: credential,
     });
   } catch (error) {
     const oResult = {
@@ -184,7 +250,7 @@ router.post("/", async (req, res) => {
       func: "login",
       request: oPayload,
       response: oResult,
-      user: oPayload?.username || "",
+      user: oPayload?.nama_pengguna || "",
     });
 
     return res.status(500).json(oResult);

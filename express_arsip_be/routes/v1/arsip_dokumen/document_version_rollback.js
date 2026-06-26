@@ -51,7 +51,8 @@ const rollbackDocumentVersion = async (req, res) => {
     if (!oTargetVersion) {
       const oResult = {
         status: "error",
-        message: "Target version not found, not approved, or not belonging to this document",
+        message:
+          "Target version not found, not approved, or not belonging to this document",
       };
       return res.status(404).json(oResult);
     }
@@ -63,7 +64,9 @@ const rollbackDocumentVersion = async (req, res) => {
       .orderBy("nomor_versi", "desc")
       .first();
 
-    const nNewVersionNumber = oLastVersion ? oLastVersion.nomor_versi + 1 : 1;
+    const nNewVersionNumber = oLastVersion
+      ? oLastVersion.version_number + 1
+      : 1;
 
     // Buat versi baru dengan FilePath dari versi target (rollback)
     const oNewVersion = {
@@ -109,7 +112,7 @@ const rollbackDocumentVersion = async (req, res) => {
       func: "rollbackDocumentVersion",
       request: oPayload,
       response: oResult,
-      user: req?.context?.Username || "system",
+      user: req?.context?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

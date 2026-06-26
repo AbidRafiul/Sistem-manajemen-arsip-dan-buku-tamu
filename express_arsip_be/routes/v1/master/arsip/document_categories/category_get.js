@@ -1,13 +1,17 @@
 import express from "express";
 import DB from "../../../../../core/config/knex.js"; // Sesuaikan path titiknya
-import { datetime, formatDateSystem, status } from "../../../components/tools/general.js";
+import {
+  datetime,
+  formatDateSystem,
+  status,
+} from "../../../components/tools/general.js";
 import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
 const getDocumentCategory = async (req, res) => {
   const oPayload = req.body;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     const vaData = await DB("mst_kategori_dokumen")
@@ -18,6 +22,7 @@ const getDocumentCategory = async (req, res) => {
         "nama_kategori_dokumen",
         "deskripsi",
         "status"
+
       )
       .where("status", "active")
       .orderBy("created_at", "desc");
@@ -41,7 +46,7 @@ const getDocumentCategory = async (req, res) => {
       func: "getDocumentCategory",
       request: oPayload,
       response: oResult,
-      user: username,
+      user: nama_pengguna,
     });
 
     return res.status(500).json(oResult);

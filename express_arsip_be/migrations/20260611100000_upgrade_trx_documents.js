@@ -1,7 +1,7 @@
 /**
  * Upgrade trx_documents:
- * - Tambah FK ke master: DocumentTypeId, DocumentCategoryId, ConfidentialityLevelId, RetentionScheduleId
- * - Tambah PhysicalLocation, QRCode, Tags
+ * - Tambah FK ke master: document_type_id, document_category_id, confidentiality_level_id, retention_schedule_id
+ * - Tambah physical_location, qr_code, tags
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
@@ -9,59 +9,59 @@ export async function up(knex) {
   await knex.schema.alterTable("trx_documents", (table) => {
     // FK ke mst_document_type
     table
-      .integer("DocumentTypeId")
+      .integer("document_type_id")
       .unsigned()
       .nullable()
-      .references("DocumentTypeId")
+      .references("document_type_id")
       .inTable("mst_document_type")
       .onDelete("NO ACTION")
       .onUpdate("NO ACTION")
-      .after("ArchiveClassificationId");
+      .after("archive_classification_id");
 
     // FK ke mst_document_categories
     table
-      .integer("DocumentCategoryId")
+      .integer("document_category_id")
       .unsigned()
       .nullable()
-      .references("DocumentCategoryId")
+      .references("document_category_id")
       .inTable("mst_document_categories")
       .onDelete("NO ACTION")
       .onUpdate("NO ACTION")
-      .after("DocumentTypeId");
+      .after("document_type_id");
 
     // FK ke mst_confidentiality_levels
     table
-      .integer("ConfidentialityLevelId")
+      .integer("confidentiality_level_id")
       .unsigned()
       .nullable()
-      .references("ConfidentialityLevelId")
+      .references("confidentiality_level_id")
       .inTable("mst_confidentiality_levels")
       .onDelete("NO ACTION")
       .onUpdate("NO ACTION")
-      .after("DocumentCategoryId");
+      .after("document_category_id");
 
     // FK ke mst_retention_schedule
     table
-      .integer("RetentionScheduleId")
+      .integer("retention_schedule_id")
       .unsigned()
       .nullable()
-      .references("RetentionScheduleId")
+      .references("retention_schedule_id")
       .inTable("mst_retention_schedule")
       .onDelete("NO ACTION")
       .onUpdate("NO ACTION")
-      .after("ConfidentialityLevelId");
+      .after("confidentiality_level_id");
 
     // Lokasi fisik dokumen/arsip
     table
-      .string("PhysicalLocation", 200)
+      .string("physical_location", 200)
       .nullable()
-      .after("RetentionScheduleId");
+      .after("retention_schedule_id");
 
     // QR Code string unik per dokumen
-    table.text("QRCode").nullable().after("PhysicalLocation");
+    table.text("qr_code").nullable().after("physical_location");
 
     // Tag/keyword pencarian tambahan
-    table.text("Tags").nullable().after("QRCode");
+    table.text("tags").nullable().after("qr_code");
   });
 }
 
@@ -71,16 +71,19 @@ export async function up(knex) {
  */
 export async function down(knex) {
   await knex.schema.alterTable("trx_documents", (table) => {
-    table.dropForeign(["DocumentTypeId"]);
-    table.dropForeign(["DocumentCategoryId"]);
-    table.dropForeign(["ConfidentialityLevelId"]);
-    table.dropForeign(["RetentionScheduleId"]);
-    table.dropColumn("DocumentTypeId");
-    table.dropColumn("DocumentCategoryId");
-    table.dropColumn("ConfidentialityLevelId");
-    table.dropColumn("RetentionScheduleId");
-    table.dropColumn("PhysicalLocation");
-    table.dropColumn("QRCode");
-    table.dropColumn("Tags");
+    // Drop Foreign Keys
+    table.dropForeign(["document_type_id"]);
+    table.dropForeign(["document_category_id"]);
+    table.dropForeign(["confidentiality_level_id"]);
+    table.dropForeign(["retention_schedule_id"]);
+
+    // Drop Columns
+    table.dropColumn("document_type_id");
+    table.dropColumn("document_category_id");
+    table.dropColumn("confidentiality_level_id");
+    table.dropColumn("retention_schedule_id");
+    table.dropColumn("physical_location");
+    table.dropColumn("qr_code");
+    table.dropColumn("tags");
   });
 }
