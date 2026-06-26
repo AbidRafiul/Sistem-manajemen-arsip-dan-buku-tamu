@@ -25,7 +25,7 @@ const LoginPage = () => {
             remember_me: false
         },
         validate: (data: LoginFormik) => {
-            const errors = {} as LoginFormik;
+            const errors = {} as any;
 
             if (!data.nama_pengguna) {
                 errors.nama_pengguna = 'Username tidak boleh kosong';

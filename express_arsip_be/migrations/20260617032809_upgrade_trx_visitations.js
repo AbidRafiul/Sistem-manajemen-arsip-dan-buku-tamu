@@ -1,6 +1,4 @@
-// ==========================================
-// 🛠️ HELPER FUNCTIONS (MENIRU POLA TIM)
-// ==========================================
+
 const hasTable = (knex, tableName) => knex.schema.hasTable(tableName);
 
 const hasColumn = async (knex, tableName, columnName) => {
@@ -40,9 +38,6 @@ const renameDateTimeIfExists = async (
   }
 };
 
-// ==========================================
-// 🚀 MAIN MIGRATION
-// ==========================================
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }

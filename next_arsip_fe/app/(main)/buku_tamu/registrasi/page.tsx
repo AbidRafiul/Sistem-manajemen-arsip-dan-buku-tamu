@@ -1,5 +1,6 @@
 'use client';
 
+import axios from 'axios';
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from 'primereact/button';
@@ -8,19 +9,19 @@ import postData from '@/lib/axios/postData';
 import { showError, showSuccess } from '@/lib/tools/generalTools';
 import RegistrasiForm from './components/display/form';
 import VisitorCardModal from './components/display/table';
-import { apiEndpointGetPurpose, apiEndpointGetUser, apiEndpointRegistrasi } from './components/endpoints';
+import { apiEndpointGetPurpose, apiEndpointGetUser } from './components/endpoints';
 import { RegistrasiFormData, GeneratedCardData } from './components/interfaces';
 
 const initialFormState: RegistrasiFormData = {
     guest_name: '',
     phone_number: '',
-    guest_surel: '',
+    guest_email: '',
     guest_company: '',
     guest_position: '',
     identity_type: null,
     identity_number: '',
     visit_purpose_id: null,
-    host_id_pengguna: null,
+    host_user_id: null,
     host_name: '',
     visit_notes: '',
     check_in_time: null
@@ -76,33 +77,37 @@ export default function RegistrasiKunjunganPage() {
         try {
             const submitData = new FormData();
 
-            Object.entries(formData).forEach(([key, val]: [string, any]) => {
-                if (val !== null && val !== undefined && val !== '') {
-                    if (key === 'check_in_time' && val instanceof Date) {
-                        submitData.append('CheckInTime', val.toISOString());
-                    } else {
-                        const backendKeys: Record<string, string> = {
-                            guest_name: 'GuestName',
-                            phone_number: 'PhoneNumber',
-                            guest_surel: 'Guestsurel',
-                            guest_company: 'GuestCompany',
-                            guest_position: 'GuestPosition',
-                            identity_type: 'IdentityType',
-                            identity_number: 'IdentityNumber',
-                            visit_purpose_id: 'VisitPurposeId',
-                            host_id_pengguna: 'HostIdPengguna',
-                            host_name: 'HostName',
-                            visit_notes: 'VisitNotes'
-                        };
-                        submitData.append(backendKeys[key] || key, String(val));
-                    }
-                }
-            });
+            submitData.append('GuestName', formData.guest_name);
+            submitData.append('PhoneNumber', formData.phone_number);
+            submitData.append('GuestEmail', formData.guest_email || '');
+            submitData.append('GuestCompany', formData.guest_company || '-');
+            submitData.append('GuestPosition', formData.guest_position || '');
+            submitData.append('IdentityType', formData.identity_type || '');
+            submitData.append('IdentityNumber', formData.identity_number || '');
+            submitData.append('VisitPurposeId', String(formData.visit_purpose_id));
+            submitData.append('HostUserId', formData.host_user_id ? String(formData.host_user_id) : '');
+            submitData.append('HostName', formData.host_name || '');
+            submitData.append('VisitNotes', formData.visit_notes || '');
+            if (formData.check_in_time instanceof Date) {
+                submitData.append('CheckInTime', formData.check_in_time.toISOString());
+            }
 
             if (identityFile) submitData.append('IdentityFile', identityFile);
             if (selfieFile) submitData.append('SelfieFile', selfieFile);
 
-            const response = await postData(apiEndpointRegistrasi, submitData, { 'Content-Type': 'multipart/form-data' });
+            const tokenSIAB = typeof window !== 'undefined' ? (localStorage.getItem('token') || sessionStorage.getItem('token') || '') : '';
+
+            const response = await axios.post(
+                "http://localhost:8000/api/v1/buku_tamu/visit_checkin", 
+                submitData, 
+                {
+                    headers: { 
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': tokenSIAB ? `Bearer ${tokenSIAB}` : '',
+                        'x-access-token': tokenSIAB
+                    }
+                }
+            );
 
             if (response?.data?.status === '00') {
                 showSuccess(toast, 'Check-In Berhasil!');
@@ -119,7 +124,7 @@ export default function RegistrasiKunjunganPage() {
                 throw new Error(response?.data?.message || 'Gagal meregistrasi kunjungan');
             }
         } catch (error: any) {
-            showError(toast, error?.message || 'Terjadi kesalahan sistem');
+            showError(toast, error?.response?.data?.message || error?.message || 'Terjadi kesalahan sistem');
         } finally {
             setLoading(false);
         }

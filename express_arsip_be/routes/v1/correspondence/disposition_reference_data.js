@@ -8,14 +8,14 @@ const dispositionReferenceData = async (req, res) => {
     const [vaUsers, vaInstructions] = await Promise.all([
       DB("mst_pengguna")
         .select(
-          "user_id as id_pengguna",
-          "username as nama_pengguna",
-          "fullname as nama_lengkap",
-          "position_id as id_jabatan",
+          "id_pengguna",
+          "nama_lengkap",
+          "nama_pengguna",
+          "id_jabatan",
           "status",
         )
         .where("status", "active")
-        .orderBy("fullname", "asc"),
+        .orderBy("nama_lengkap", "asc"),
       DB("mst_instruksi_disposisi")
         .select(
           "instruksi_disposisi_id",

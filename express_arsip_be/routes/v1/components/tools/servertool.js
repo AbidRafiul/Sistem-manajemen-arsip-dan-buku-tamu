@@ -8,17 +8,17 @@ import Joi from "joi";
 
 export const getLastKodeRegister = async (key, len) => {
   const kode = key.replace(/\s/g, "");
-  let record = await DB("nomor_faktur").where({ Kode: kode }).first();
+  let record = await DB("nomor_faktur").where({ kode: kode }).first();
 
   let id = 1;
 
   if (record) {
-    id = record.Id + 1;
+    id = record.id + 1;
   } else {
-    await DB("nomor_faktur").insert({ Kode: kode, Id: 0 });
-    record = await DB("nomor_faktur").where({ Kode: kode }).first();
+    await DB("nomor_faktur").insert({ kode: kode, id: 0 });
+    record = await DB("nomor_faktur").where({ kode: kode }).first();
     if (record) {
-      id = record.Id + 1;
+      id = record.id + 1;
     }
   }
 
@@ -35,32 +35,33 @@ export const getLastFaktur = async (key, len) => {
 };
 
 export const setLastFaktur = async (kode) => {
-  const tahunBulan = new Date().toISOString().slice(0, 7).replace(/-/g, "");
+  const tgl = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const tahunBulan = tgl.slice(0, 6);
   const fullKode = kode + tahunBulan;
 
-  const record = await DB("nomor_faktur").where({ Kode: fullKode }).first();
+  const record = await DB("nomor_faktur").where({ kode: fullKode }).first();
 
   if (record) {
     await DB("nomor_faktur")
-      .where({ Kode: fullKode })
-      .update({ Id: record.Id + 1 });
+      .where({ kode: fullKode })
+      .update({ id: record.id + 1 });
   } else {
-    await DB("nomor_faktur").insert({ Kode: fullKode, Id: 1 });
+    await DB("nomor_faktur").insert({ kode: fullKode, id: 1 });
   }
 };
 
 export const setLastKodeRegister = async (kode) => {
   const vaData = await DB("nomor_faktur")
-    .select("Kode", "Id")
-    .where("Kode", kode)
+    .select("kode", "id")
+    .where("kode", kode)
     .first();
 
   if (vaData) {
-    const nId = vaData.Id + 1;
-    await DB("nomor_faktur").where("Kode", kode).update({ Id: nId });
+    const nId = vaData.id + 1;
+    await DB("nomor_faktur").where("kode", kode).update({ id: nId });
   } else {
     const nId = 1;
-    await DB("nomor_faktur").insert({ Kode: kode, Id: nId });
+    await DB("nomor_faktur").insert({ kode: kode, id: nId });
   }
 };
 

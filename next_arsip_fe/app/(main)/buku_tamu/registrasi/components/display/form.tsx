@@ -45,30 +45,30 @@ export default function RegistrasiForm({ formData, handleChange, setIdentityFile
                             <label htmlFor="guest_name" className="font-semibold block mb-2 text-sm text-800">
                                 Nama Lengkap Tamu <span className="p-error">*</span>
                             </label>
-                            <InputText id="guest_name" value={formData.guest_name} onChange={(e) => handleChange('guest_name', e.target.value)} placeholder="Masukkan nama lengkap tamu" className="p-inputtext-sm" />
+                            <InputText id="guest_name" value={formData.guest_name || ''} onChange={(e) => handleChange('guest_name', e.target.value)} placeholder="Masukkan nama lengkap tamu" className="p-inputtext-sm" />
                         </div>
                         <div className="field">
                             <label htmlFor="phone_number" className="font-semibold block mb-2 text-sm text-800">
                                 Nomor Telepon / WhatsApp <span className="p-error">*</span>
                             </label>
-                            <InputText id="phone_number" value={formData.phone_number} onChange={(e) => handleChange('phone_number', e.target.value)} placeholder="Contoh: 0812345678" className="p-inputtext-sm" />
+                            <InputText id="phone_number" value={formData.phone_number || ''} onChange={(e) => handleChange('phone_number', e.target.value)} placeholder="Contoh: 0812345678" className="p-inputtext-sm" />
                         </div>
                         <div className="field">
-                            <label htmlFor="guest_surel" className="font-semibold block mb-2 text-sm text-800">Email Tamu</label>
-                            <InputText id="guest_surel" value={formData.guest_surel} onChange={(e) => handleChange('guest_surel', e.target.value)} placeholder="Contoh: tamu@email.com" className="p-inputtext-sm" />
+                            <label htmlFor="guest_email" className="font-semibold block mb-2 text-sm text-800">Email Tamu</label>
+                            <InputText id="guest_email" value={formData.guest_email || ''} onChange={(e) => handleChange('guest_email', e.target.value)} placeholder="Contoh: tamu@email.com" className="p-inputtext-sm" />
                         </div>
                         <div className="field">
                             <label htmlFor="guest_company" className="font-semibold block mb-2 text-sm text-800">Instansi / Perusahaan</label>
-                            <InputText id="guest_company" value={formData.guest_company} onChange={(e) => handleChange('guest_company', e.target.value)} placeholder="Nama instansi/perusahaan asal" className="p-inputtext-sm" />
+                            <InputText id="guest_company" value={formData.guest_company || ''} onChange={(e) => handleChange('guest_company', e.target.value)} placeholder="Nama instansi/perusahaan asal" className="p-inputtext-sm" />
                         </div>
                         <div className="grid">
                             <div className="field col-4">
                                 <label htmlFor="identity_type" className="font-semibold block mb-2 text-sm text-800">Jenis ID</label>
-                                <Dropdown id="identity_type" value={formData.identity_type} options={identityTypes} onChange={(e) => handleChange('identity_type', e.value)} placeholder="Pilih" className="p-inputtext-sm" />
+                                <Dropdown id="identity_type" value={formData.identity_type} options={identityTypes} onChange={(e) => handleChange('identity_type', e.value)} placeholder="Pilih" showClear className="p-inputtext-sm" />
                             </div>
                             <div className="field col-8">
                                 <label htmlFor="identity_number" className="font-semibold block mb-2 text-sm text-800">Nomor ID</label>
-                                <InputText id="identity_number" value={formData.identity_number} onChange={(e) => handleChange('identity_number', e.target.value)} placeholder="Masukkan nomor identitas" disabled={!formData.identity_type} className="p-inputtext-sm" />
+                                <InputText id="identity_number" value={formData.identity_number || ''} onChange={(e) => handleChange('identity_number', e.target.value)} placeholder="Masukkan nomor identitas" disabled={!formData.identity_type} className="p-inputtext-sm" />
                             </div>
                         </div>
                         <div className="field">
@@ -98,15 +98,15 @@ export default function RegistrasiForm({ formData, handleChange, setIdentityFile
                             <label htmlFor="visit_purpose_id" className="font-semibold block mb-2 text-sm text-800">
                                 Tujuan Kunjungan <span className="p-error">*</span>
                             </label>
-                            <Dropdown id="visit_purpose_id" value={formData.visit_purpose_id} options={visitPurposeOptions} optionLabel="VisitPurposeName" optionValue="VisitPurposeId" onChange={(e) => handleChange('visit_purpose_id', e.value)} placeholder="Pilih Tujuan Kunjungan" className="p-inputtext-sm" />
+                            <Dropdown id="visit_purpose_id" value={formData.visit_purpose_id} options={visitPurposeOptions} optionLabel="name" optionValue="id" onChange={(e) => handleChange('visit_purpose_id', e.value)} placeholder="Pilih Tujuan Kunjungan" className="p-inputtext-sm" />
                         </div>
                         <div className="field">
-                            <label htmlFor="host_id_pengguna" className="font-semibold block mb-2 text-sm text-800">Pegawai yang Ditemui</label>
-                            <Dropdown id="host_id_pengguna" value={formData.host_id_pengguna} options={hostUserOptions} optionLabel="nama_lengkap" optionValue="id_pengguna" onChange={(e) => handleChange('host_id_pengguna', e.value)} placeholder="Cari & pilih pegawai internal" filter showClear className="p-inputtext-sm" />
+                            <label htmlFor="host_user_id" className="font-semibold block mb-2 text-sm text-800">Pegawai yang Ditemui</label>
+                            <Dropdown id="host_user_id" value={formData.host_user_id} options={hostUserOptions} optionLabel="nama_lengkap" optionValue="UniqueId" onChange={(e) => handleChange('host_user_id', e.value)} placeholder="Cari & pilih pegawai internal" filter showClear className="p-inputtext-sm" />
                         </div>
                         <div className="field">
                             <label htmlFor="host_name" className="font-semibold block mb-2 text-sm text-800">Nama Pegawai Manual</label>
-                            <InputText id="host_name" value={formData.host_name} onChange={(e) => handleChange('host_name', e.target.value)} placeholder="Isi manual jika tidak terdaftar di sistem" className="p-inputtext-sm" />
+                            <InputText id="host_name" value={formData.host_name || ''} onChange={(e) => handleChange('host_name', e.target.value)} placeholder="Isi manual jika tidak terdaftar di sistem" className="p-inputtext-sm" />
                         </div>
                         <div className="field">
                             <label htmlFor="check_in_time" className="font-semibold block mb-2 text-sm text-800">
@@ -116,7 +116,7 @@ export default function RegistrasiForm({ formData, handleChange, setIdentityFile
                         </div>
                         <div className="field">
                             <label htmlFor="visit_notes" className="font-semibold block mb-2 text-sm text-800">Catatan Tambahan</label>
-                            <InputTextarea id="visit_notes" value={formData.visit_notes} onChange={(e) => handleChange('visit_notes', e.target.value)} rows={4} placeholder="Tuliskan poin pembahasan..." autoResize className="p-inputtext-sm" />
+                            <InputTextarea id="visit_notes" value={formData.visit_notes || ''} onChange={(e) => handleChange('visit_notes', e.target.value)} rows={4} placeholder="Tuliskan poin pembahasan..." autoResize className="p-inputtext-sm" />
                         </div>
                     </div>
                 </Card>

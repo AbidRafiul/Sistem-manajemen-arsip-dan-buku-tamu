@@ -12,17 +12,26 @@ router.post("/", async (req, res) => {
   const userperan = req?.auth?.peran || "";
 
   try {
-    const { VisitationId, action, ApprovalNotes } = oPayload;
+    const { idKunjungan, action, catatanPersetujuan } = oPayload;
 
-    if (!VisitationId || !action) {
+    if (!idKunjungan || !action) {
       return res.status(400).json({
         status: "99",
-        message: "VisitationId dan action wajib",
+        message: "idKunjungan dan action wajib diisi",
         datetime: formatDateSystem(),
       });
     }
 
-    if (!["master", "admin", "pimpinan"].includes(userperan?.toLowerCase())) {
+    if (
+      ![
+        "master",
+        "admin",
+        "pimpinan",
+        "superadmin",
+        "administrator",
+        "resepsionis",
+      ].includes(userperan?.toLowerCase())
+    ) {
       return res.status(403).json({
         status: "99",
         message: "Akses ditolak",
@@ -38,15 +47,19 @@ router.post("/", async (req, res) => {
       });
     }
 
-    await DB("trx_visitations").where("visitation_id", VisitationId).update({
-      approval_status: action,
-      approval_notes: ApprovalNotes,
-      updated_at: formatDateSystem(),
-    });
+    await DB("trs_kunjungan")
+      .where("id_kunjungan", idKunjungan)
+      .update({
+        status_persetujuan: action,
+        catatan_persetujuan: catatanPersetujuan,
+        updated_at: formatDateSystem(),
+      });
 
-    return res
-      .status(200)
-      .json({ status: "00", message: "OK", datetime: formatDateSystem() });
+    return res.status(200).json({
+      status: "00",
+      message: "Proses persetujuan berhasil",
+      datetime: formatDateSystem(),
+    });
   } catch (error) {
     Logging(error, {
       file: "visit_approval.js",
