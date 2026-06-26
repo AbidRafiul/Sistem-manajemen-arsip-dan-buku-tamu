@@ -23,8 +23,8 @@ const Form = ({
     };
 
     const documentOptions = state.documents.map(doc => ({
-        label: `${doc.document_number} — ${doc.document_name}`,
-        value: doc.document_id
+        label: `${doc.nomor_dokumen} — ${doc.nama_dokumen}`,
+        value: doc.kode_dokumen
     }));
 
     return (
@@ -44,66 +44,66 @@ const Form = ({
             <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-1 pt-3">
 
                 <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="document_id" className="font-semibold text-sm text-900">
+                    <label htmlFor="kode_dokumen" className="font-semibold text-sm text-900">
                         Dokumen <span className="text-red-500">*</span>
                     </label>
                     <Dropdown
-                        id="document_id"
-                        value={formik.values.document_id}
+                        id="kode_dokumen"
+                        value={formik.values.kode_dokumen}
                         options={documentOptions}
                         filter
                         filterPlaceholder="Cari dokumen..."
-                        onChange={(e) => formik.setFieldValue('document_id', e.value)}
+                        onChange={(e) => formik.setFieldValue('kode_dokumen', e.value)}
                         placeholder="Pilih dokumen yang akan dipinjam"
-                        className={`w-full ${isFormFieldInvalid('document_id') ? 'p-invalid' : ''}`}
+                        className={`w-full ${isFormFieldInvalid('kode_dokumen') ? 'p-invalid' : ''}`}
                         emptyMessage="Tidak ada dokumen tersedia"
                         emptyFilterMessage="Dokumen tidak ditemukan"
                     />
-                    {getFormErrorMessage('document_id')}
+                    {getFormErrorMessage('kode_dokumen')}
                 </div>
 
                 <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="borrower_name" className="font-semibold text-sm text-900">
+                    <label htmlFor="nama_peminjam" className="font-semibold text-sm text-900">
                         Nama Peminjam <span className="text-red-500">*</span>
                     </label>
                     <InputText
-                        id="borrower_name"
-                        value={formik.values.borrower_name}
-                        onChange={(e) => formik.setFieldValue('borrower_name', e.target.value)}
-                        className={`w-full ${isFormFieldInvalid('borrower_name') ? 'p-invalid' : ''}`}
+                        id="nama_peminjam"
+                        value={formik.values.nama_peminjam}
+                        onChange={(e) => formik.setFieldValue('nama_peminjam', e.target.value)}
+                        className={`w-full ${isFormFieldInvalid('nama_peminjam') ? 'p-invalid' : ''}`}
                         placeholder="Masukkan nama lengkap peminjam"
                     />
-                    {getFormErrorMessage('borrower_name')}
+                    {getFormErrorMessage('nama_peminjam')}
                 </div>
 
                 <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="expected_return_date" className="font-semibold text-sm text-900">
+                    <label htmlFor="tanggal_pengembalian" className="font-semibold text-sm text-900">
                         Rencana Tanggal Pengembalian <span className="text-red-500">*</span>
                     </label>
                     <InputText
-                        id="expected_return_date"
+                        id="tanggal_pengembalian"
                         type="date"
-                        value={formik.values.expected_return_date}
-                        onChange={(e) => formik.setFieldValue('expected_return_date', e.target.value)}
-                        className={`w-full ${isFormFieldInvalid('expected_return_date') ? 'p-invalid' : ''}`}
+                        value={formik.values.tanggal_pengembalian}
+                        onChange={(e) => formik.setFieldValue('tanggal_pengembalian', e.target.value)}
+                        className={`w-full ${isFormFieldInvalid('tanggal_pengembalian') ? 'p-invalid' : ''}`}
                     />
-                    {getFormErrorMessage('expected_return_date')}
+                    {getFormErrorMessage('tanggal_pengembalian')}
                 </div>
 
                 <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="purpose" className="font-semibold text-sm text-900">
+                    <label htmlFor="keperluan" className="font-semibold text-sm text-900">
                         Keperluan <span className="text-red-500">*</span>
                     </label>
                     <InputTextarea
-                        id="purpose"
+                        id="keperluan"
                         rows={4}
-                        value={formik.values.purpose}
-                        onChange={(e) => formik.setFieldValue('purpose', e.target.value)}
-                        className={`w-full ${isFormFieldInvalid('purpose') ? 'p-invalid' : ''}`}
+                        value={formik.values.keperluan}
+                        onChange={(e) => formik.setFieldValue('keperluan', e.target.value)}
+                        className={`w-full ${isFormFieldInvalid('keperluan') ? 'p-invalid' : ''}`}
                         placeholder="Contoh: Audit, tinjauan hukum, verifikasi data..."
                         style={{ resize: 'none' }}
                     />
-                    {getFormErrorMessage('purpose')}
+                    {getFormErrorMessage('keperluan')}
                 </div>
 
                 <Divider className="my-2" />

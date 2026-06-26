@@ -43,7 +43,7 @@ const Page = () => {
     const canApproveVersion = ['superadmin', 'administrator', 'admin', 'adm', 'pimpinan', 'pmn'].includes(roleKey) || [1, 2].includes(roleId);
 
     const highestVersionNumber = useMemo(() => {
-        return Math.max(...(detailData?.versions || []).map((version) => version.version_number), 0);
+        return Math.max(...(detailData?.versions || []).map((version) => version.nomor_versi), 0);
     }, [detailData?.versions]);
 
     const fetchDocumentDetail = async () => {
@@ -51,7 +51,7 @@ const Page = () => {
 
         setLoad(true);
         try {
-            const res = await getData(apiEndpointDocumentDetail, { document_id: documentId });
+            const res = await getData(apiEndpointDocumentDetail, { id_dokumen: documentId });
             setDetailData(res.data.data || null);
         } catch (error: any) {
             const e = error?.response?.data || error;
@@ -67,8 +67,8 @@ const Page = () => {
         setLoad(true);
         try {
             const formData = new FormData();
-            formData.append("document_id", String(documentId));
-            formData.append("change_notes", changeNotes.trim());
+            formData.append("id_dokumen", String(documentId));
+            formData.append("catatan_perubahan", changeNotes.trim());
             formData.append("file", newVersionFile);
 
             const res = await formUpload(apiEndpointVersionUpload, formData, {});
@@ -87,10 +87,10 @@ const Page = () => {
     const downloadVersion = async (version: VersionData) => {
         setLoad(true);
         try {
-            const res = await fileDownload(apiEndpointVersionDownload, { version_id: version.version_id });
+            const res = await fileDownload(apiEndpointVersionDownload, { id_versi: version.id_versi });
             const parts = version.file_path.split('.');
             const ext = parts.length > 1 ? parts.pop() : 'pdf';
-            const fileName = `${detailData?.document?.document_number || 'doc'}_V${version.version_number}.${ext}`;
+            const fileName = `${detailData?.document?.nomor_dokumen || 'doc'}_V${version.nomor_versi}.${ext}`;
             const blob = new Blob([res.data]);
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -110,13 +110,13 @@ const Page = () => {
     };
 
     const rollbackVersion = async (version: VersionData) => {
-        if (!confirm(`Apakah Anda yakin ingin melakukan rollback ke V${version.version_number}?`)) return;
+        if (!confirm(`Apakah Anda yakin ingin melakukan rollback ke V${version.nomor_versi}?`)) return;
 
         setLoad(true);
         try {
             const res = await postData(apiEndpointVersionRollback, {
-                document_id: documentId,
-                version_id: version.version_id,
+                id_dokumen: documentId,
+                id_versi: version.id_versi,
             });
             showSuccess(toast, res.data?.message || 'Rollback versi berhasil');
             await fetchDocumentDetail();
@@ -135,9 +135,9 @@ const Page = () => {
         setLoad(true);
         try {
             const res = await postData(apiEndpointVersionApprove, {
-                version_id: versionId,
-                status,
-                approval_notes: notes || '',
+                id_versi: versionId,
+                status_persetujuan: status,
+                catatan_persetujuan: notes || '',
             });
             showSuccess(toast, res.data?.message || `Versi berhasil ${status}`);
             await fetchDocumentDetail();
@@ -150,16 +150,16 @@ const Page = () => {
     };
 
     const versionStatusTemplate = (rowData: VersionData) => {
-        const status = rowData.approval_status || 'pending';
+        const status = rowData.status_persetujuan || 'pending';
         let severity: 'success' | 'danger' | 'warning' | 'info' = 'warning';
         if (status === 'approved') severity = 'success';
         if (status === 'rejected') severity = 'danger';
-        return <Tag value={status} severity={severity} />;
+        return <Tag value={status === 'approved' ? 'Disetujui' : status === 'rejected' ? 'Ditolak' : 'Pending'} severity={severity} />;
     };
 
     const versionActionTemplate = (rowData: VersionData) => {
-        const isLatest = rowData.version_number === highestVersionNumber;
-        const status = rowData.approval_status || 'pending';
+        const isLatest = rowData.nomor_versi === highestVersionNumber;
+        const status = rowData.status_persetujuan || 'pending';
 
         return (
             <div className="flex gap-2 justify-content-center">
@@ -192,7 +192,7 @@ const Page = () => {
                             severity="success"
                             className="p-button-sm"
                             tooltip="Setujui Versi"
-                            onClick={() => approveVersion(rowData.version_id, 'approved')}
+                            onClick={() => approveVersion(rowData.id_versi, 'approved')}
                         />
                         <Button
                             icon="pi pi-times"
@@ -201,7 +201,7 @@ const Page = () => {
                             severity="danger"
                             className="p-button-sm"
                             tooltip="Tolak Versi"
-                            onClick={() => approveVersion(rowData.version_id, 'rejected')}
+                            onClick={() => approveVersion(rowData.id_versi, 'rejected')}
                         />
                     </>
                 )}
@@ -229,7 +229,7 @@ const Page = () => {
                         />
                         <h3 className="text-2xl font-bold text-color mb-1">Versi Dokumen</h3>
                         <span className="text-color-secondary text-sm">
-                            {detailData?.document?.document_number || '-'} - {detailData?.document?.document_name || '-'}
+                            {detailData?.document?.nomor_dokumen || '-'} - {detailData?.document?.nama_dokumen || '-'}
                         </span>
                     </div>
                     <Button
@@ -245,19 +245,19 @@ const Page = () => {
                 <div className="grid text-sm mb-3">
                     <div className="col-12 md:col-3">
                         <div className="text-color-secondary mb-1 font-semibold">Nomor Dokumen</div>
-                        <div className="font-semibold text-color">{detailData?.document?.document_number || '-'}</div>
+                        <div className="font-semibold text-color">{detailData?.document?.nomor_dokumen || '-'}</div>
                     </div>
                     <div className="col-12 md:col-3">
                         <div className="text-color-secondary mb-1 font-semibold">PIC</div>
-                        <div className="text-color">{detailData?.document?.pic_name || '-'}</div>
+                        <div className="text-color">{detailData?.document?.nama_pic || '-'}</div>
                     </div>
                     <div className="col-12 md:col-3">
                         <div className="text-color-secondary mb-1 font-semibold">Tanggal Dokumen</div>
-                        <div className="text-color">{detailData?.document?.document_date ? formatDateCalendar(detailData.document.document_date, 'yyyy-MM-dd') : '-'}</div>
+                        <div className="text-color">{detailData?.document?.tanggal ? formatDateCalendar(detailData.document.tanggal, 'yyyy-MM-dd') : '-'}</div>
                     </div>
                     <div className="col-12 md:col-3">
                         <div className="text-color-secondary mb-1 font-semibold">Tanggal Kedaluwarsa</div>
-                        <div className="text-color">{detailData?.document?.expired_date ? formatDateCalendar(detailData.document.expired_date, 'yyyy-MM-dd') : '-'}</div>
+                        <div className="text-color">{detailData?.document?.tanggal_kedaluwarsa ? formatDateCalendar(detailData.document.tanggal_kedaluwarsa, 'yyyy-MM-dd') : '-'}</div>
                     </div>
                 </div>
 
@@ -301,13 +301,13 @@ const Page = () => {
                     paginator
                     emptyMessage="Belum ada versi dokumen"
                     className="text-sm"
-                    dataKey="version_id"
+                    dataKey="id_versi"
                 >
-                    <Column field="version_number" header="Versi" sortable />
-                    <Column field="change_notes" header="Catatan Perubahan" />
-                    <Column field="uploaded_by" header="Diunggah Oleh" body={(rowData: VersionData) => rowData.uploaded_by || '-'} />
-                    <Column field="approval_status" header="Status" body={versionStatusTemplate} />
-                    <Column field="approved_by" header="Disetujui/Ditolak Oleh" body={(rowData: VersionData) => rowData.approved_by || '-'} />
+                    <Column field="nomor_versi" header="Versi" sortable />
+                    <Column field="catatan_perubahan" header="Catatan Perubahan" />
+                    <Column field="diunggah_oleh" header="Diunggah Oleh" body={(rowData: VersionData) => rowData.diunggah_oleh || '-'} />
+                    <Column field="status_persetujuan" header="Status" body={versionStatusTemplate} />
+                    <Column field="disetujui_oleh" header="Disetujui/Ditolak Oleh" body={(rowData: VersionData) => rowData.disetujui_oleh || '-'} />
                     <Column field="created_at" header="Tanggal Dibuat" body={(rowData: VersionData) => formatDateCalendar(rowData.created_at)} />
                     <Column headerStyle={{ textAlign: 'center' }} header="Aksi" body={versionActionTemplate} style={{ width: '14rem' }} />
                 </DataTable>

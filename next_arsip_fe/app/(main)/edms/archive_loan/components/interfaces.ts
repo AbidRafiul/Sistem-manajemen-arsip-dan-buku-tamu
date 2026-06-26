@@ -4,35 +4,38 @@ import { Toast } from "primereact/toast";
 import { RefObject } from "react";
 
 export interface initValue {
-    document_id: number | null;
-    borrower_name: string;
-    expected_return_date: string;
-    purpose: string;
+    kode_dokumen: string;
+    nama_peminjam: string;
+    tanggal_pinjam: string;
+    tanggal_pengembalian: string;
+    keperluan: string;
 }
 
 export interface LoanData {
-    loan_id: number;
-    document_id: number;
-    document_name?: string;
-    document_number?: string;
-    borrower_name: string;
-    loan_date: string;
-    expected_return_date?: string | null;
-    return_date?: string | null;
-    purpose: string;
+    id_peminjaman: number;
+    kode_dokumen: string;
+    id_dokumen?: number;
+    nama_dokumen?: string;
+    nomor_dokumen?: string;
+    nama_peminjam: string;
+    tanggal_pinjam: string;
+    tanggal_pengembalian?: string | null;
+    tanggal_kembali?: string | null;
+    keperluan: string;
     status: string;
-    approved_by?: string | null;
-    approved_at?: string | null;
-    approval_notes?: string | null;
-    is_overdue?: number;
+    disetujui_oleh?: string | null;
+    disetujui_pada?: string | null;
+    catatan_persetujuan?: string | null;
+    terlambat?: number;
     created_at: string;
     updated_at: string;
 }
 
 export interface DocumentSelectData {
-    document_id: number;
-    document_name: string;
-    document_number: string;
+    id_dokumen: number;
+    kode_dokumen: string;
+    nama_dokumen: string;
+    nomor_dokumen: string;
 }
 
 export interface State {

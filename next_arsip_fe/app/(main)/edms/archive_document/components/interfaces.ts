@@ -5,61 +5,69 @@ import { Toast } from "primereact/toast";
 import { RefObject } from "react";
 
 export interface initValue {
-    document_id: number | null
-    document_name: string
-    document_number: string
-    document_date: string
-    expired_date: string
-    pic_name: string
+    id_dokumen: number | null
+    nama_dokumen: string
+    nomor_dokumen: string
+    tanggal: string
+    tanggal_kedaluwarsa: string
+    nama_pic: string
 }
 
 export interface DocumentData {
-    document_id: number
-    archive_classification_id?: number | null
-    document_name: string
-    document_number: string
-    document_date: string
-    expired_date: string
-    pic_name: string
+    id_dokumen: number
+    kode_dokumen: string
+    nama_dokumen: string
+    nomor_dokumen: string
+    tanggal: string
+    tanggal_kedaluwarsa: string
+    nama_pic: string
+    lokasi_fisik?: string | null
+    tags?: string | null
     status: string
     created_at: string
     updated_at: string
-    document_type_id?: number | null
-    document_type_name?: string | null
-    document_category_id?: number | null
-    document_category_name?: string | null
-    classification_name?: string | null
-    confidentiality_level_id?: number | null
-    confidentiality_level_name?: string | null
-    confidentiality_level?: number | null
-    retention_schedule_id?: number | null
-    retention_name?: string | null
-    retention_years?: number | null
+    kode_klasifikasi?: string | null
+    nama_klasifikasi?: string | null
+    kode_jenis_dokumen?: string | null
+    nama_jenis_dokumen?: string | null
+    kode_kategori_dokumen?: string | null
+    nama_kategori_dokumen?: string | null
+    kode_tingkat_kerahasiaan?: string | null
+    nama_tingkat_kerahasiaan?: string | null
+    tingkat_kerahasiaan?: number | null
+    kode_retensi?: string | null
+    nama_retensi?: string | null
+    tahun_retensi?: number | null
 }
 
 export interface VersionData {
-    version_id: number
-    document_id: number
-    version_number: number
-    change_notes: string
+    id_versi: number
+    kode_dokumen: string
+    nomor_versi: number
+    catatan_perubahan: string
     file_path: string
-    uploaded_by?: string | null
-    approval_status?: string
-    approved_by?: string | null
-    approved_at?: string | null
-    approval_notes?: string | null
+    diunggah_oleh?: string | null
+    status_persetujuan?: string
+    disetujui_oleh?: string | null
+    disetujui_pada?: string | null
+    catatan_persetujuan?: string | null
     created_at: string
     updated_at: string
 }
 
 export interface LoanData {
-    loan_id: number
-    document_id: number
-    borrower_name: string
-    loan_date: string
-    return_date: string
-    purpose: string
+    id_peminjaman: number
+    kode_dokumen: string
+    nama_peminjam: string
+    tanggal_pinjam: string
+    tanggal_pengembalian: string
+    tanggal_kembali: string
+    keperluan: string
     status: string
+    terlambat: number
+    disetujui_oleh?: string | null
+    disetujui_pada?: string | null
+    catatan_persetujuan?: string | null
     created_at: string
     updated_at: string
 }
@@ -96,12 +104,12 @@ export interface TableProps {
     setState: React.Dispatch<React.SetStateAction<State>>;
     formik: FormikProps<initValue>
     getDocuments: () => Promise<void>;
-    getDocumentDetail: (documentId: number) => Promise<void>;
+    getDocumentDetail: (idDokumen: number) => Promise<void>;
     deleteDocuments: () => Promise<void>;
-    uploadVersion: (documentId: number, changeNotes: string, file: File) => Promise<void>;
-    downloadVersion: (versionId: number, fileName: string) => Promise<void>;
-    rollbackVersion: (documentId: number, versionId: number) => Promise<void>;
-    approveVersion: (versionId: number, status: 'approved' | 'rejected', notes?: string) => Promise<void>;
+    uploadVersion: (idDokumen: number, changeNotes: string, file: File) => Promise<void>;
+    downloadVersion: (idVersi: number, fileName: string) => Promise<void>;
+    rollbackVersion: (idDokumen: number, idVersi: number) => Promise<void>;
+    approveVersion: (idVersi: number, status: 'approved' | 'rejected', notes?: string) => Promise<void>;
     toast: RefObject<Toast>
 }
 
