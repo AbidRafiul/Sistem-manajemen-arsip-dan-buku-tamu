@@ -5,17 +5,17 @@ import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+const getDocumentType = async (req, res) => {
   const oPayload = req.body;
   const username = req?.auth?.username || "";
 
   try {
-    const vaData = await DB("mst_document_type")
+    const vaData = await DB("mst_jenis_dokumen")
       .select(
-        "document_type_id",
-        "document_type_code",
-        "document_type_name",
-        "description",
+        "id_jenis_dokumen",
+        "kode_jenis_dokumen",
+        "nama_jenis_dokumen",
+        "deskripsi",
         "status"
       )
       .where("status", "active")
@@ -37,7 +37,7 @@ router.get("/", async (req, res) => {
 
     Logging(error, {
       file: "type_get.js",
-      func: "get",
+      func: "getDocumentType",
       request: oPayload,
       response: oResult,
       user: username,
@@ -45,6 +45,8 @@ router.get("/", async (req, res) => {
 
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.get("/", getDocumentType);
 
 export default router;

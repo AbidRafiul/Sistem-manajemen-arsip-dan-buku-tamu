@@ -6,9 +6,9 @@ import { Logging, validatePayload } from "../../../components/tools/servertool.j
 
 const router = express.Router();
 
-router.put("/:ArchiveClassificationId", async (req, res) => {
+const updateArchiveClassification = async (req, res) => {
   const { body: oPayload } = req;
-  const cArchiveClassificationId = req.params.ArchiveClassificationId;
+  const cIdKlasifikasi = req.params.id_klasifikasi;
   const username = req?.auth?.username || "";
 
   try {
@@ -18,9 +18,9 @@ router.put("/:ArchiveClassificationId", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        classification_code: Joi.string().max(45).required().label("Kode Klasifikasi"),
-        classification_name: Joi.string().max(45).required().label("Nama Klasifikasi"),
-        description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
+        kode_klasifikasi: Joi.string().max(255).required().label("Kode Klasifikasi"),
+        nama_klasifikasi: Joi.string().max(255).required().label("Nama Klasifikasi"),
+        deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
       },
       { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
       oPayload
@@ -28,16 +28,16 @@ router.put("/:ArchiveClassificationId", async (req, res) => {
 
     if (cValidation) {
       const oResult = { status: status.BAD_REQUEST, message: cValidation, datetime: datetime() };
-      Logging(null, { file: "archive_update.js", func: "update", request: oPayload, response: oResult, user: username });
+      Logging(null, { file: "archive_update.js", func: "updateArchiveClassification", request: oPayload, response: oResult, user: username });
       return res.status(422).json(oResult);
     }
 
-    const nUpdated = await DB("mst_archive_classifications")
-      .where("archive_classification_id", cArchiveClassificationId)
+    const nUpdated = await DB("mst_klasifikasi_arsip")
+      .where("id_klasifikasi", cIdKlasifikasi)
       .update({
-        classification_code: oPayload.classification_code,
-        classification_name: oPayload.classification_name,
-        description: oPayload.description || null,
+        kode_klasifikasi: oPayload.kode_klasifikasi,
+        nama_klasifikasi: oPayload.nama_klasifikasi,
+        deskripsi: oPayload.deskripsi || null,
         updated_at: new Date(),
       });
 
@@ -46,9 +46,11 @@ router.put("/:ArchiveClassificationId", async (req, res) => {
 
   } catch (error) {
     const oResult = { status: status.BAD_REQUEST, message: "Sistem sedang maintenance", datetime: datetime() };
-    Logging(error, { file: "archive_update.js", func: "update", request: oPayload, response: oResult, user: username });
+    Logging(error, { file: "archive_update.js", func: "updateArchiveClassification", request: oPayload, response: oResult, user: username });
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.put("/:id_klasifikasi", updateArchiveClassification);
 
 export default router;

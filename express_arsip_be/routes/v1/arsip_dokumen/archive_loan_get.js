@@ -5,8 +5,9 @@ const getArchiveLoans = async (req, res) => {
   const oQuery = req.query;
 
   try {
-    const nLoanId = oQuery.loan_id;
-    const nDocumentId = oQuery.document_id;
+    const nLoanId = oQuery.id_peminjaman || oQuery.loan_id;
+    const cKodeDokumen = oQuery.kode_dokumen || oQuery.document_code;
+    const nIdDokumen = oQuery.id_dokumen || oQuery.document_id;
     const cStatus = oQuery.status;
     const vaAllowedStatus = [
       "pending",
@@ -25,34 +26,39 @@ const getArchiveLoans = async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    const oData = DB("trx_archive_loans as l")
-      .leftJoin("trx_documents as d", "l.document_id", "d.document_id")
+    const oData = DB("trs_peminjaman_arsip as l")
+      .leftJoin("trs_dokumen as d", "l.kode_dokumen", "d.kode_dokumen")
       .select(
-        "l.loan_id",
-        "l.document_id",
-        "d.document_name",
-        "d.document_number",
-        "l.borrower_name",
-        "l.loan_date",
-        "l.expected_return_date",
-        "l.return_date",
-        "l.purpose",
+        "l.id_peminjaman",
+        "l.kode_dokumen",
+        "d.id_dokumen",
+        "d.nama_dokumen",
+        "d.nomor_dokumen",
+        "l.nama_peminjam",
+        "l.tanggal_pinjam",
+        "l.tanggal_pengembalian",
+        "l.tanggal_kembali",
+        "l.keperluan",
         "l.status",
-        "l.approved_by",
-        "l.approved_at",
-        "l.approval_notes",
-        "l.is_overdue",
+        "l.disetujui_oleh",
+        "l.disetujui_pada",
+        "l.catatan_persetujuan",
+        "l.terlambat",
         "l.created_at",
         "l.updated_at"
       )
-      .orderBy("l.loan_id", "desc");
+      .orderBy("l.id_peminjaman", "desc");
 
     if (nLoanId) {
-      oData.where("l.loan_id", nLoanId);
+      oData.where("l.id_peminjaman", nLoanId);
     }
 
-    if (nDocumentId) {
-      oData.where("l.document_id", nDocumentId);
+    if (cKodeDokumen) {
+      oData.where("l.kode_dokumen", cKodeDokumen);
+    }
+
+    if (nIdDokumen) {
+      oData.where("d.id_dokumen", nIdDokumen);
     }
 
     if (cStatus) {

@@ -5,53 +5,58 @@ const getDocumentDetail = async (req, res) => {
   const oQuery = req.query;
 
   try {
-    const nDocumentId = oQuery.document_id;
+    const nDocumentId = oQuery.id_dokumen || oQuery.document_id;
 
     if (!nDocumentId) {
       const oResult = {
         status: "error",
-        message: "document_id wajib diisi",
+        message: "id_dokumen wajib diisi",
       };
       return res.status(422).json(oResult);
     }
 
     // Ambil data dokumen + join ke semua master
-    const oDocument = await DB("trx_documents as d")
+    const oDocument = await DB("trs_dokumen as d")
       .select(
-        "d.document_id",
-        "d.document_name",
-        "d.document_number",
-        "d.document_date",
-        "d.expired_date",
-        "d.pic_name",
-        "d.physical_location",
+        "d.id_dokumen",
+        "d.kode_dokumen",
+        "d.nama_dokumen",
+        "d.nomor_dokumen",
+        "d.tanggal",
+        "d.tanggal_kedaluwarsa",
+        "d.nama_pic",
+        "d.lokasi_fisik",
         "d.qr_code",
         "d.tags",
         "d.status",
         "d.created_at",
         "d.updated_at",
         // Master data
-        "dt.document_type_id",
-        "dt.document_type_name",
-        "dc.document_category_id",
-        "dc.document_category_name",
-        "ac.archive_classification_id",
-        "ac.classification_code",
-        "ac.classification_name",
-        "cl.confidentiality_level_id",
-        "cl.confidentiality_level_name",
-        "cl.confidentiality_level",
-        "rs.retention_schedule_id",
-        "rs.retention_name",
-        "rs.retention_years",
-        "rs.retention_action"
+        "dt.id_jenis_dokumen",
+        "dt.kode_jenis_dokumen",
+        "dt.nama_jenis_dokumen",
+        "dc.id_kategori_dokumen",
+        "dc.kode_kategori_dokumen",
+        "dc.nama_kategori_dokumen",
+        "ac.id_klasifikasi",
+        "ac.kode_klasifikasi",
+        "ac.nama_klasifikasi",
+        "cl.id_tingkat_kerahasiaan",
+        "cl.kode_tingkat_kerahasiaan",
+        "cl.nama_tingkat_kerahasiaan",
+        "cl.tingkat_kerahasiaan",
+        "rs.id_jadwal_retensi",
+        "rs.kode_retensi",
+        "rs.nama_retensi",
+        "rs.tahun_retensi",
+        "rs.tindakan_retensi"
       )
-      .leftJoin("mst_document_type as dt", "d.document_type_id", "dt.document_type_id")
-      .leftJoin("mst_document_categories as dc", "d.document_category_id", "dc.document_category_id")
-      .leftJoin("mst_archive_classifications as ac", "d.archive_classification_id", "ac.archive_classification_id")
-      .leftJoin("mst_confidentiality_levels as cl", "d.confidentiality_level_id", "cl.confidentiality_level_id")
-      .leftJoin("mst_retention_schedule as rs", "d.retention_schedule_id", "rs.retention_schedule_id")
-      .where("d.document_id", nDocumentId)
+      .leftJoin("mst_jenis_dokumen as dt", "d.kode_jenis_dokumen", "dt.kode_jenis_dokumen")
+      .leftJoin("mst_kategori_dokumen as dc", "d.kode_kategori_dokumen", "dc.kode_kategori_dokumen")
+      .leftJoin("mst_klasifikasi_arsip as ac", "d.kode_klasifikasi", "ac.kode_klasifikasi")
+      .leftJoin("mst_tingkat_kerahasiaan as cl", "d.kode_tingkat_kerahasiaan", "cl.kode_tingkat_kerahasiaan")
+      .leftJoin("mst_jadwal_retensi as rs", "d.kode_retensi", "rs.kode_retensi")
+      .where("d.id_dokumen", nDocumentId)
       .first();
 
     if (!oDocument) {
@@ -62,60 +67,61 @@ const getDocumentDetail = async (req, res) => {
       return res.status(404).json(oResult);
     }
 
-    // Ambil semua versi dokumen (terbaru dulu), beserta info approval
-    const vaVersions = await DB("trx_document_versions")
+    // Ambil semua versi dokumen (terbaru dulu), beserta info approval (relasi: kode_dokumen)
+    const vaVersions = await DB("trs_versi_dokumen")
       .select(
-        "version_id",
-        "document_id",
-        "version_number",
-        "change_notes",
+        "id_versi",
+        "kode_dokumen",
+        "nomor_versi",
+        "catatan_perubahan",
         "file_path",
-        "uploaded_by",
-        "approval_status",
-        "approved_by",
-        "approved_at",
-        "approval_notes",
+        "diunggah_oleh",
+        "status_persetujuan",
+        "disetujui_oleh",
+        "disetujui_pada",
+        "catatan_persetujuan",
         "created_at",
         "updated_at"
       )
-      .where("document_id", nDocumentId)
-      .orderBy("version_number", "desc");
+      .where("kode_dokumen", oDocument.kode_dokumen)
+      .orderBy("nomor_versi", "desc");
 
-    // Ambil riwayat peminjaman (terbaru dulu)
-    const vaLoans = await DB("trx_archive_loans")
+    // Ambil riwayat peminjaman (terbaru dulu) (relasi: kode_dokumen)
+    const vaLoans = await DB("trs_peminjaman_arsip")
       .select(
-        "loan_id",
-        "document_id",
-        "borrower_name",
-        "loan_date",
-        "expected_return_date",
-        "return_date",
-        "purpose",
+        "id_peminjaman",
+        "kode_dokumen",
+        "nama_peminjam",
+        "tanggal_pinjam",
+        "tanggal_pengembalian",
+        "tanggal_kembali",
+        "keperluan",
         "status",
-        "approved_by",
-        "approved_at",
-        "approval_notes",
-        "is_overdue",
+        "disetujui_oleh",
+        "disetujui_pada",
+        "catatan_persetujuan",
+        "terlambat",
         "created_at",
         "updated_at"
       )
-      .where("document_id", nDocumentId)
-      .orderBy("loan_id", "desc");
+      .where("kode_dokumen", oDocument.kode_dokumen)
+      .orderBy("id_peminjaman", "desc");
 
-    // Cek apakah ada proposal pemusnahan aktif
-    const oDestructionProposal = await DB("trx_destruction_proposals")
+    // Cek apakah ada proposal pemusnahan aktif (relasi: kode_dokumen)
+    const oDestructionProposal = await DB("trs_usulan_pemusnahan")
       .select(
-        "proposal_id",
+        "id_usulan",
+        "kode_dokumen",
         "status",
-        "proposed_by",
-        "proposed_at",
-        "reviewed_by",
-        "reviewed_at",
-        "review_notes"
+        "diusulkan_oleh",
+        "diusulkan_pada",
+        "ditinjau_oleh",
+        "ditinjau_pada",
+        "catatan_tinjauan"
       )
-      .where("document_id", nDocumentId)
+      .where("kode_dokumen", oDocument.kode_dokumen)
       .whereNotIn("status", ["rejected", "executed"])
-      .orderBy("proposal_id", "desc")
+      .orderBy("id_usulan", "desc")
       .first();
 
     const oResult = {

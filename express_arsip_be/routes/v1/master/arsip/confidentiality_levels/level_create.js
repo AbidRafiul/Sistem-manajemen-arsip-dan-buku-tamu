@@ -6,7 +6,7 @@ import { Logging, validatePayload } from "../../../components/tools/servertool.j
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+const createConfidentialityLevel = async (req, res) => {
   const { body: oPayload } = req;
   const username = req?.auth?.username || "";
 
@@ -21,10 +21,10 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        confidentiality_level_code: Joi.string().max(45).required().label("Kode Kerahasiaan"),
-        confidentiality_level_name: Joi.string().max(100).required().label("Nama Kerahasiaan"),
-        confidentiality_level: Joi.number().required().label("Level (Angka)"),
-        description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
+        kode_tingkat_kerahasiaan: Joi.string().max(255).required().label("Kode Kerahasiaan"),
+        nama_tingkat_kerahasiaan: Joi.string().max(255).required().label("Nama Kerahasiaan"),
+        tingkat_kerahasiaan: Joi.number().required().label("Level (Angka)"),
+        deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
@@ -44,7 +44,7 @@ router.post("/", async (req, res) => {
 
       Logging(null, {
         file: "level_create.js",
-        func: "create",
+        func: "createConfidentialityLevel",
         request: oPayload,
         response: oResult,
         user: username,
@@ -54,11 +54,11 @@ router.post("/", async (req, res) => {
     }
 
     const dNow = new Date();
-    await DB("mst_confidentiality_levels").insert({
-      confidentiality_level_code: oPayload.confidentiality_level_code,
-      confidentiality_level_name: oPayload.confidentiality_level_name,
-      confidentiality_level: oPayload.confidentiality_level,
-      description: oPayload.description || null,
+    await DB("mst_tingkat_kerahasiaan").insert({
+      kode_tingkat_kerahasiaan: oPayload.kode_tingkat_kerahasiaan,
+      nama_tingkat_kerahasiaan: oPayload.nama_tingkat_kerahasiaan,
+      tingkat_kerahasiaan: oPayload.tingkat_kerahasiaan,
+      deskripsi: oPayload.deskripsi || null,
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -78,7 +78,7 @@ router.post("/", async (req, res) => {
 
     Logging(error, {
       file: "level_create.js",
-      func: "create",
+      func: "createConfidentialityLevel",
       request: oPayload,
       response: oResult,
       user: username,
@@ -86,6 +86,8 @@ router.post("/", async (req, res) => {
 
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.post("/", createConfidentialityLevel);
 
 export default router;

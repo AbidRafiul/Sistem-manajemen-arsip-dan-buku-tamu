@@ -5,14 +5,14 @@ import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
-router.delete("/:RetentionScheduleId", async (req, res) => {
-  const cRetentionScheduleId = req.params.RetentionScheduleId;
+const deleteRetentionSchedule = async (req, res) => {
+  const cIdJadwalRetensi = req.params.id_jadwal_retensi;
   const username = req?.auth?.username || "";
-  const oPayload = { id: cRetentionScheduleId };
+  const oPayload = { id: cIdJadwalRetensi };
 
   try {
-    const nUpdated = await DB("mst_retention_schedule")
-      .where("retention_schedule_id", cRetentionScheduleId)
+    const nUpdated = await DB("mst_jadwal_retensi")
+      .where("id_jadwal_retensi", cIdJadwalRetensi)
       .update({ status: "nonactive", updated_at: new Date() });
 
     if (!nUpdated) {
@@ -37,7 +37,7 @@ router.delete("/:RetentionScheduleId", async (req, res) => {
 
     Logging(error, {
       file: "retention_delete.js",
-      func: "delete",
+      func: "deleteRetentionSchedule",
       request: oPayload,
       response: oResult,
       user: username,
@@ -45,6 +45,8 @@ router.delete("/:RetentionScheduleId", async (req, res) => {
 
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.delete("/:id_jadwal_retensi", deleteRetentionSchedule);
 
 export default router;

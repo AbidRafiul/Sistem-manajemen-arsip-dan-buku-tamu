@@ -16,31 +16,32 @@ const scanDocumentQR = async (req, res) => {
     }
 
     // Cari dokumen berdasarkan QR Code string
-    const oDocument = await DB("trx_documents as d")
+    const oDocument = await DB("trs_dokumen as d")
       .select(
-        "d.document_id",
-        "d.document_name",
-        "d.document_number",
-        "d.document_date",
-        "d.expired_date",
-        "d.pic_name",
-        "d.physical_location",
+        "d.id_dokumen",
+        "d.kode_dokumen",
+        "d.nama_dokumen",
+        "d.nomor_dokumen",
+        "d.tanggal",
+        "d.tanggal_kedaluwarsa",
+        "d.nama_pic",
+        "d.lokasi_fisik",
         "d.qr_code",
         "d.tags",
         "d.status",
         // Master data
-        "dt.document_type_name",
-        "dc.document_category_name",
-        "ac.classification_name",
-        "cl.confidentiality_level_name",
-        "rs.retention_name",
-        "rs.retention_years"
+        "dt.nama_jenis_dokumen",
+        "dc.nama_kategori_dokumen",
+        "ac.nama_klasifikasi",
+        "cl.nama_tingkat_kerahasiaan",
+        "rs.nama_retensi",
+        "rs.tahun_retensi"
       )
-      .leftJoin("mst_document_type as dt", "d.document_type_id", "dt.document_type_id")
-      .leftJoin("mst_document_categories as dc", "d.document_category_id", "dc.document_category_id")
-      .leftJoin("mst_archive_classifications as ac", "d.archive_classification_id", "ac.archive_classification_id")
-      .leftJoin("mst_confidentiality_levels as cl", "d.confidentiality_level_id", "cl.confidentiality_level_id")
-      .leftJoin("mst_retention_schedule as rs", "d.retention_schedule_id", "rs.retention_schedule_id")
+      .leftJoin("mst_jenis_dokumen as dt", "d.kode_jenis_dokumen", "dt.kode_jenis_dokumen")
+      .leftJoin("mst_kategori_dokumen as dc", "d.kode_kategori_dokumen", "dc.kode_kategori_dokumen")
+      .leftJoin("mst_klasifikasi_arsip as ac", "d.kode_klasifikasi", "ac.kode_klasifikasi")
+      .leftJoin("mst_tingkat_kerahasiaan as cl", "d.kode_tingkat_kerahasiaan", "cl.kode_tingkat_kerahasiaan")
+      .leftJoin("mst_jadwal_retensi as rs", "d.kode_retensi", "rs.kode_retensi")
       .where("d.qr_code", cQRCode)
       .first();
 
@@ -53,17 +54,17 @@ const scanDocumentQR = async (req, res) => {
     }
 
     // Ambil versi terbaru yang approved
-    const oLatestVersion = await DB("trx_document_versions")
-      .select("version_id", "version_number", "file_path", "created_at")
-      .where("document_id", oDocument.document_id)
-      .where("approval_status", "approved")
-      .orderBy("version_number", "desc")
+    const oLatestVersion = await DB("trs_versi_dokumen")
+      .select("id_versi", "nomor_versi", "file_path", "created_at")
+      .where("kode_dokumen", oDocument.kode_dokumen)
+      .where("status_persetujuan", "approved")
+      .orderBy("nomor_versi", "desc")
       .first();
 
     // Status peminjaman aktif
-    const oActiveLoan = await DB("trx_archive_loans")
-      .select("loan_id", "borrower_name", "loan_date", "expected_return_date", "status")
-      .where("document_id", oDocument.document_id)
+    const oActiveLoan = await DB("trs_peminjaman_arsip")
+      .select("id_peminjaman", "nama_peminjam", "tanggal_pinjam", "tanggal_pengembalian", "status")
+      .where("kode_dokumen", oDocument.kode_dokumen)
       .where("status", "borrowed")
       .first();
 

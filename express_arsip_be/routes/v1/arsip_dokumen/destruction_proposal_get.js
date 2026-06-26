@@ -4,57 +4,61 @@ import { Logging } from "../components/tools/servertool.js";
 const getDestructionProposals = async (req, res) => {
   try {
     const cStatus = req.query.status;
-    const nDocumentId = req.query.document_id;
-    const cProposedBy = req.query.proposed_by;
+    const cKodeDokumen = req.query.kode_dokumen || req.query.document_code;
+    const nIdDokumen = req.query.id_dokumen || req.query.document_id;
+    const cProposedBy = req.query.diusulkan_oleh || req.query.proposed_by;
 
-    const oQuery = DB("trx_destruction_proposals as dp")
+    const oQuery = DB("trs_usulan_pemusnahan as dp")
       .select(
-        "dp.proposal_id",
-        "dp.document_id",
-        "dp.retention_schedule_id",
-        "dp.proposal_reason",
-        "dp.proposed_by",
-        "dp.proposed_at",
+        "dp.id_usulan",
+        "dp.kode_dokumen",
+        "dp.kode_retensi",
+        "dp.alasan_usulan",
+        "dp.diusulkan_oleh",
+        "dp.diusulkan_pada",
         "dp.status",
-        "dp.reviewed_by",
-        "dp.reviewed_at",
-        "dp.review_notes",
-        "dp.executed_by",
-        "dp.executed_at",
-        "dp.berita_acara_path",
+        "dp.ditinjau_oleh",
+        "dp.ditinjau_pada",
+        "dp.catatan_tinjauan",
+        "dp.dieksekusi_oleh",
+        "dp.dieksekusi_pada",
+        "dp.file_berita_acara",
         "dp.created_at",
         "dp.updated_at",
         // Data dokumen
-        "d.document_name",
-        "d.document_number",
-        "d.document_date",
-        "d.expired_date",
-        "d.pic_name",
+        "d.id_dokumen",
+        "d.nama_dokumen",
+        "d.nomor_dokumen",
+        "d.tanggal",
+        "d.tanggal_kedaluwarsa",
+        "d.nama_pic",
         // Data retensi
-        "rs.retention_name",
-        "rs.retention_years",
-        "rs.retention_action"
+        "rs.nama_retensi",
+        "rs.tahun_retensi",
+        "rs.tindakan_retensi"
       )
-      .leftJoin("trx_documents as d", "dp.document_id", "d.document_id")
+      .leftJoin("trs_dokumen as d", "dp.kode_dokumen", "d.kode_dokumen")
       .leftJoin(
-        "mst_retention_schedule as rs",
-        "dp.retention_schedule_id",
-        "rs.retention_schedule_id"
+        "mst_jadwal_retensi as rs",
+        "dp.kode_retensi",
+        "rs.kode_retensi"
       );
 
     if (cStatus) {
       oQuery.where("dp.status", cStatus);
     }
 
-    if (nDocumentId) {
-      oQuery.andWhere("dp.document_id", nDocumentId);
+    if (cKodeDokumen) {
+      oQuery.andWhere("dp.kode_dokumen", cKodeDokumen);
+    } else if (nIdDokumen) {
+      oQuery.andWhere("d.id_dokumen", nIdDokumen);
     }
 
     if (cProposedBy) {
-      oQuery.andWhere("dp.proposed_by", "like", `%${cProposedBy}%`);
+      oQuery.andWhere("dp.diusulkan_oleh", "like", `%${cProposedBy}%`);
     }
 
-    const vaData = await oQuery.orderBy("dp.proposed_at", "desc");
+    const vaData = await oQuery.orderBy("dp.diusulkan_pada", "desc");
 
     const oResult = {
       status: "success",

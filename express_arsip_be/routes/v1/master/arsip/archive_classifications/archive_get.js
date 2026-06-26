@@ -5,17 +5,17 @@ import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+const getArchiveClassification = async (req, res) => {
   const oPayload = req.body;
   const username = req?.auth?.username || "";
 
   try {
-    const vaData = await DB("mst_archive_classifications")
+    const vaData = await DB("mst_klasifikasi_arsip")
       .select(
-        "archive_classification_id",
-        "classification_code",
-        "classification_name",
-        "description",
+        "id_klasifikasi",
+        "kode_klasifikasi",
+        "nama_klasifikasi",
+        "deskripsi",
         "status"
       )
       .where("status", "active")
@@ -35,9 +35,11 @@ router.get("/", async (req, res) => {
       datetime: datetime(),
     };
 
-    Logging(error, { file: "archive_get.js", func: "get", request: oPayload, response: oResult, user: username });
+    Logging(error, { file: "archive_get.js", func: "getArchiveClassification", request: oPayload, response: oResult, user: username });
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.get("/", getArchiveClassification);
 
 export default router;

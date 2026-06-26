@@ -5,18 +5,18 @@ import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+const getDocumentCategory = async (req, res) => {
   const oPayload = req.body;
   const username = req?.auth?.username || "";
 
   try {
-    const vaData = await DB("mst_document_categories")
+    const vaData = await DB("mst_kategori_dokumen")
       .select(
-        "document_category_id",
-        "archive_classification_id",
-        "document_category_code",
-        "document_category_name",
-        "description",
+        "id_kategori_dokumen",
+        "kode_klasifikasi",
+        "kode_kategori_dokumen",
+        "nama_kategori_dokumen",
+        "deskripsi",
         "status"
       )
       .where("status", "active")
@@ -38,7 +38,7 @@ router.get("/", async (req, res) => {
 
     Logging(error, {
       file: "category_get.js",
-      func: "get",
+      func: "getDocumentCategory",
       request: oPayload,
       response: oResult,
       user: username,
@@ -46,6 +46,8 @@ router.get("/", async (req, res) => {
 
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.get("/", getDocumentCategory);
 
 export default router;

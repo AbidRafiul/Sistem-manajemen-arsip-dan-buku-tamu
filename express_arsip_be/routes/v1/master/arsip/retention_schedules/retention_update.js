@@ -6,9 +6,9 @@ import { Logging, validatePayload } from "../../../components/tools/servertool.j
 
 const router = express.Router();
 
-router.put("/:RetentionScheduleId", async (req, res) => {
+const updateRetentionSchedule = async (req, res) => {
   const { body: oPayload } = req;
-  const cRetentionScheduleId = req.params.RetentionScheduleId;
+  const cIdJadwalRetensi = req.params.id_jadwal_retensi;
   const username = req?.auth?.username || "";
 
   try {
@@ -22,12 +22,12 @@ router.put("/:RetentionScheduleId", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        document_category_id: Joi.number().required().label("ID Kategori Dokumen"),
-        retention_code: Joi.string().max(45).required().label("Kode Retensi"),
-        retention_name: Joi.string().max(45).required().label("Nama Retensi"),
-        retention_years: Joi.number().required().label("Tahun Retensi"),
-        retention_action: Joi.string().max(45).required().label("Tindakan Retensi"),
-        description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
+        kode_kategori_dokumen: Joi.string().required().label("Kode Kategori Dokumen"),
+        kode_retensi: Joi.string().max(255).required().label("Kode Retensi"),
+        nama_retensi: Joi.string().max(255).required().label("Nama Retensi"),
+        tahun_retensi: Joi.number().required().label("Tahun Retensi"),
+        tindakan_retensi: Joi.string().max(255).required().label("Tindakan Retensi"),
+        deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
@@ -45,7 +45,7 @@ router.put("/:RetentionScheduleId", async (req, res) => {
 
       Logging(null, {
         file: "retention_update.js",
-        func: "update",
+        func: "updateRetentionSchedule",
         request: oPayload,
         response: oResult,
         user: username,
@@ -54,15 +54,15 @@ router.put("/:RetentionScheduleId", async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    const nUpdated = await DB("mst_retention_schedule")
-      .where("retention_schedule_id", cRetentionScheduleId)
+    const nUpdated = await DB("mst_jadwal_retensi")
+      .where("id_jadwal_retensi", cIdJadwalRetensi)
       .update({
-        document_category_id: oPayload.document_category_id,
-        retention_code: oPayload.retention_code,
-        retention_name: oPayload.retention_name,
-        retention_years: oPayload.retention_years,
-        retention_action: oPayload.retention_action,
-        description: oPayload.description || null,
+        kode_kategori_dokumen: oPayload.kode_kategori_dokumen,
+        kode_retensi: oPayload.kode_retensi,
+        nama_retensi: oPayload.nama_retensi,
+        tahun_retensi: oPayload.tahun_retensi,
+        tindakan_retensi: oPayload.tindakan_retensi,
+        deskripsi: oPayload.deskripsi || null,
         updated_at: new Date(),
       });
 
@@ -89,7 +89,7 @@ router.put("/:RetentionScheduleId", async (req, res) => {
 
     Logging(error, {
       file: "retention_update.js",
-      func: "update",
+      func: "updateRetentionSchedule",
       request: oPayload,
       response: oResult,
       user: username,
@@ -97,6 +97,8 @@ router.put("/:RetentionScheduleId", async (req, res) => {
 
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.put("/:id_jadwal_retensi", updateRetentionSchedule);
 
 export default router;

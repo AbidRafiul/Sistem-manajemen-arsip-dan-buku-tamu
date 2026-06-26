@@ -5,22 +5,22 @@ import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+const getConfidentialityLevel = async (req, res) => {
   const oPayload = req.body;
   const username = req?.auth?.username || "";
 
   try {
-    const vaData = await DB("mst_confidentiality_levels")
+    const vaData = await DB("mst_tingkat_kerahasiaan")
       .select(
-        "confidentiality_level_id",
-        "confidentiality_level_code",
-        "confidentiality_level_name",
-        "confidentiality_level", // <--- Angka levelnya
-        "description",
+        "id_tingkat_kerahasiaan",
+        "kode_tingkat_kerahasiaan",
+        "nama_tingkat_kerahasiaan",
+        "tingkat_kerahasiaan",
+        "deskripsi",
         "status"
       )
       .where("status", "active")
-      .orderBy("confidentiality_level", "asc"); // Urutkan berdasarkan levelnya
+      .orderBy("tingkat_kerahasiaan", "asc");
 
     return res.status(200).json({
       status: status.SUKSES,
@@ -38,7 +38,7 @@ router.get("/", async (req, res) => {
 
     Logging(error, {
       file: "level_get.js",
-      func: "get",
+      func: "getConfidentialityLevel",
       request: oPayload,
       response: oResult,
       user: username,
@@ -46,6 +46,8 @@ router.get("/", async (req, res) => {
 
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.get("/", getConfidentialityLevel);
 
 export default router;

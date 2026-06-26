@@ -6,7 +6,7 @@ import { Logging, validatePayload } from "../../../components/tools/servertool.j
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+const createDocumentType = async (req, res) => {
   const { body: oPayload } = req;
   const username = req?.auth?.username || "";
 
@@ -21,9 +21,9 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        document_type_code: Joi.string().max(45).required().label("Kode Jenis Dokumen"),
-        document_type_name: Joi.string().max(45).required().label("Nama Jenis Dokumen"),
-        description: Joi.string().max(45).optional().allow(null, "").label("Deskripsi"),
+        kode_jenis_dokumen: Joi.string().max(255).required().label("Kode Jenis Dokumen"),
+        nama_jenis_dokumen: Joi.string().max(255).required().label("Nama Jenis Dokumen"),
+        deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
@@ -42,7 +42,7 @@ router.post("/", async (req, res) => {
 
       Logging(null, {
         file: "type_create.js",
-        func: "create",
+        func: "createDocumentType",
         request: oPayload,
         response: oResult,
         user: username,
@@ -52,10 +52,10 @@ router.post("/", async (req, res) => {
     }
 
     const dNow = new Date();
-    await DB("mst_document_type").insert({
-      document_type_code: oPayload.document_type_code,
-      document_type_name: oPayload.document_type_name,
-      description: oPayload.description || null,
+    await DB("mst_jenis_dokumen").insert({
+      kode_jenis_dokumen: oPayload.kode_jenis_dokumen,
+      nama_jenis_dokumen: oPayload.nama_jenis_dokumen,
+      deskripsi: oPayload.deskripsi || null,
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -75,7 +75,7 @@ router.post("/", async (req, res) => {
 
     Logging(error, {
       file: "type_create.js",
-      func: "create",
+      func: "createDocumentType",
       request: oPayload,
       response: oResult,
       user: username,
@@ -83,6 +83,8 @@ router.post("/", async (req, res) => {
 
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.post("/", createDocumentType);
 
 export default router;

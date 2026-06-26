@@ -5,20 +5,20 @@ import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+const getRetentionSchedule = async (req, res) => {
   const oPayload = req.body;
   const username = req?.auth?.username || "";
 
   try {
-    const vaData = await DB("mst_retention_schedule")
+    const vaData = await DB("mst_jadwal_retensi")
       .select(
-        "retention_schedule_id",
-        "document_category_id",
-        "retention_code",
-        "retention_name",
-        "retention_years",
-        "retention_action",
-        "description",
+        "id_jadwal_retensi",
+        "kode_kategori_dokumen",
+        "kode_retensi",
+        "nama_retensi",
+        "tahun_retensi",
+        "tindakan_retensi",
+        "deskripsi",
         "status"
       )
       .where("status", "active")
@@ -40,7 +40,7 @@ router.get("/", async (req, res) => {
 
     Logging(error, {
       file: "retention_get.js",
-      func: "get",
+      func: "getRetentionSchedule",
       request: oPayload,
       response: oResult,
       user: username,
@@ -48,6 +48,8 @@ router.get("/", async (req, res) => {
 
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.get("/", getRetentionSchedule);
 
 export default router;

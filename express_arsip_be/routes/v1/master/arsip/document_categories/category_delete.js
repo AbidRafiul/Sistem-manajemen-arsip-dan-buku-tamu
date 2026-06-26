@@ -5,14 +5,14 @@ import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
-router.delete("/:DocumentCategoryId", async (req, res) => {
-  const cDocumentCategoryId = req.params.DocumentCategoryId;
+const deleteDocumentCategory = async (req, res) => {
+  const cIdKategoriDokumen = req.params.id_kategori_dokumen;
   const username = req?.auth?.username || "";
-  const oPayload = { id: cDocumentCategoryId }; // Buat keperluan logging
+  const oPayload = { id: cIdKategoriDokumen }; // Buat keperluan logging
 
   try {
-    const nUpdated = await DB("mst_document_categories")
-      .where("document_category_id", cDocumentCategoryId)
+    const nUpdated = await DB("mst_kategori_dokumen")
+      .where("id_kategori_dokumen", cIdKategoriDokumen)
       .update({ status: "nonactive", updated_at: new Date() });
 
     if (!nUpdated) {
@@ -37,7 +37,7 @@ router.delete("/:DocumentCategoryId", async (req, res) => {
 
     Logging(error, {
       file: "category_delete.js",
-      func: "delete",
+      func: "deleteDocumentCategory",
       request: oPayload,
       response: oResult,
       user: username,
@@ -45,6 +45,8 @@ router.delete("/:DocumentCategoryId", async (req, res) => {
 
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.delete("/:id_kategori_dokumen", deleteDocumentCategory);
 
 export default router;

@@ -7,20 +7,20 @@ const generateDocumentQR = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const nDocumentId = oPayload.document_id;
+    const nIdDokumen = oPayload.id_dokumen;
 
-    if (!nDocumentId) {
+    if (!nIdDokumen) {
       const oResult = {
         status: "error",
-        message: "document_id wajib diisi",
+        message: "id_dokumen wajib diisi",
       };
       return res.status(422).json(oResult);
     }
 
     // Ambil data dokumen
-    const oDocument = await DB("trx_documents")
-      .select("document_id", "document_name", "document_number", "qr_code", "status")
-      .where("document_id", nDocumentId)
+    const oDocument = await DB("trs_dokumen")
+      .select("id_dokumen", "nama_dokumen", "nomor_dokumen", "qr_code", "status")
+      .where("id_dokumen", nIdDokumen)
       .where("status", "active")
       .first();
 
@@ -38,8 +38,8 @@ const generateDocumentQR = async (req, res) => {
       cQRCodeString = `DOC-${uuidv4()}`;
 
       // Simpan QR Code string ke database
-      await DB("trx_documents")
-        .where("document_id", nDocumentId)
+      await DB("trs_dokumen")
+        .where("id_dokumen", nIdDokumen)
         .update({
           qr_code: cQRCodeString,
           updated_at: new Date(),
@@ -48,9 +48,9 @@ const generateDocumentQR = async (req, res) => {
 
     // Data yang akan diencode ke dalam QR Code
     const oQRData = {
-      document_id: oDocument.document_id,
-      document_number: oDocument.document_number,
-      document_name: oDocument.document_name,
+      id_dokumen: oDocument.id_dokumen,
+      nomor_dokumen: oDocument.nomor_dokumen,
+      nama_dokumen: oDocument.nama_dokumen,
       qr_code: cQRCodeString,
     };
 
@@ -69,9 +69,9 @@ const generateDocumentQR = async (req, res) => {
       status: "success",
       message: "QR Code berhasil di-generate",
       data: {
-        document_id: oDocument.document_id,
-        document_number: oDocument.document_number,
-        document_name: oDocument.document_name,
+        id_dokumen: oDocument.id_dokumen,
+        nomor_dokumen: oDocument.nomor_dokumen,
+        nama_dokumen: oDocument.nama_dokumen,
         qr_code: cQRCodeString,
         qr_base64: cQRBase64,
       },

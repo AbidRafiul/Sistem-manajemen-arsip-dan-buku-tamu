@@ -5,25 +5,25 @@ const updateDocument = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const nDocumentId = oPayload.document_id;
-    const cDocumentName = oPayload.document_name;
-    const cDocumentNumber = oPayload.document_number;
-    const dDocumentDate = oPayload.document_date;
-    const dExpiredDate = oPayload.expired_date || null;
-    const cPicName = oPayload.pic_name;
-    const nDocumentTypeId = oPayload.document_type_id || null;
-    const nDocumentCategoryId = oPayload.document_category_id || null;
-    const nArchiveClassificationId = oPayload.archive_classification_id || null;
-    const nConfidentialityLevelId = oPayload.confidentiality_level_id || null;
-    const nRetentionScheduleId = oPayload.retention_schedule_id || null;
-    const cPhysicalLocation = oPayload.physical_location || null;
+    const nDocumentId = oPayload.id_dokumen;
+    const cDocumentName = oPayload.nama_dokumen;
+    const cDocumentNumber = oPayload.nomor_dokumen;
+    const dDocumentDate = oPayload.tanggal;
+    const dExpiredDate = oPayload.tanggal_kedaluwarsa || null;
+    const cPicName = oPayload.nama_pic;
+    const cDocumentTypeCode = oPayload.kode_jenis_dokumen || null;
+    const cDocumentCategoryCode = oPayload.kode_kategori_dokumen || null;
+    const cClassificationCode = oPayload.kode_klasifikasi || null;
+    const cConfidentialityLevelCode = oPayload.kode_tingkat_kerahasiaan || null;
+    const cRetentionCode = oPayload.kode_retensi || null;
+    const cPhysicalLocation = oPayload.lokasi_fisik || null;
     const cTags = oPayload.tags || null;
     const dNow = new Date();
 
     if (!nDocumentId) {
       const oResult = {
         status: "error",
-        message: "document_id wajib diisi",
+        message: "id_dokumen wajib diisi",
       };
       return res.status(422).json(oResult);
     }
@@ -31,16 +31,16 @@ const updateDocument = async (req, res) => {
     if (!cDocumentName || !cDocumentNumber || !dDocumentDate || !cPicName) {
       const oResult = {
         status: "error",
-        message: "document_name, document_number, document_date, dan pic_name wajib diisi",
+        message: "nama_dokumen, nomor_dokumen, tanggal, dan nama_pic wajib diisi",
       };
       return res.status(422).json(oResult);
     }
 
     // Cek duplikat nomor dokumen (exclude dokumen yang sedang diedit)
-    const oExisting = await DB("trx_documents")
-      .where("document_number", cDocumentNumber)
+    const oExisting = await DB("trs_dokumen")
+      .where("nomor_dokumen", cDocumentNumber)
       .where("status", "active")
-      .whereNot("document_id", nDocumentId)
+      .whereNot("id_dokumen", nDocumentId)
       .first();
 
     if (oExisting) {
@@ -51,24 +51,27 @@ const updateDocument = async (req, res) => {
       return res.status(422).json(oResult);
     }
 
+    const cKodeDokumen = `${cDocumentNumber}-${nDocumentId}`;
+
     const oData = {
-      archive_classification_id: nArchiveClassificationId,
-      document_type_id: nDocumentTypeId,
-      document_category_id: nDocumentCategoryId,
-      confidentiality_level_id: nConfidentialityLevelId,
-      retention_schedule_id: nRetentionScheduleId,
-      document_name: cDocumentName,
-      document_number: cDocumentNumber,
-      document_date: dDocumentDate,
-      expired_date: dExpiredDate,
-      pic_name: cPicName,
-      physical_location: cPhysicalLocation,
+      kode_dokumen: cKodeDokumen,
+      kode_klasifikasi: cClassificationCode,
+      kode_jenis_dokumen: cDocumentTypeCode,
+      kode_kategori_dokumen: cDocumentCategoryCode,
+      kode_tingkat_kerahasiaan: cConfidentialityLevelCode,
+      kode_retensi: cRetentionCode,
+      nama_dokumen: cDocumentName,
+      nomor_dokumen: cDocumentNumber,
+      tanggal: dDocumentDate,
+      tanggal_kedaluwarsa: dExpiredDate,
+      nama_pic: cPicName,
+      lokasi_fisik: cPhysicalLocation,
       tags: cTags,
       updated_at: dNow,
     };
 
-    const nUpdated = await DB("trx_documents")
-      .where("document_id", nDocumentId)
+    const nUpdated = await DB("trs_dokumen")
+      .where("id_dokumen", nDocumentId)
       .where("status", "active")
       .update(oData);
 
@@ -83,7 +86,7 @@ const updateDocument = async (req, res) => {
     const oResult = {
       status: "success",
       message: "Document metadata updated successfully",
-      data: { document_id: nDocumentId, ...oData },
+      data: { id_dokumen: nDocumentId, ...oData },
     };
 
     return res.status(200).json(oResult);
