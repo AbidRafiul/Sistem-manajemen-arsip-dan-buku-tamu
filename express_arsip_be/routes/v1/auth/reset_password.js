@@ -46,22 +46,22 @@ router.post("/", async (req, res) => {
     // 2. Cari Data User di Database
     const oUser = await DB("mst_pengguna")
       .leftJoin(
-        "mst_pengguna_perans",
-        "mst_pengguna.nama_pengguna",
-        "mst_pengguna_perans.nama_pengguna",
+        "mst_pengguna_peran",
+        "mst_pengguna.user_id",
+        "mst_pengguna_peran.user_id",
       )
       .leftJoin(
-        "mst_perans",
-        "mst_pengguna_perans.id_peran",
-        "mst_perans.id_peran",
+        "mst_peran",
+        "mst_pengguna_peran.role_id",
+        "mst_peran.role_id",
       )
       .select(
-        "mst_pengguna.nama_pengguna",
-        "mst_pengguna.nama_pengguna",
-        "mst_pengguna.kata_sandi",
-        "mst_perans.nama_peran as peran",
+        "mst_pengguna.user_id",
+        "mst_pengguna.username as nama_pengguna",
+        "mst_pengguna.password as kata_sandi",
+        "mst_peran.role_name as peran",
       )
-      .where("mst_pengguna.nama_pengguna", oPayload.nama_pengguna)
+      .where("mst_pengguna.username", oPayload.nama_pengguna)
       .first();
 
     if (!oUser) {
@@ -94,9 +94,10 @@ router.post("/", async (req, res) => {
 
     // 5. Update Database dengan kata_sandi Baru
     await DB("mst_pengguna")
-      .where("nama_pengguna", oUser.nama_pengguna)
+      .where("user_id", oUser.user_id)
       .update({
-        kata_sandi: cHashedNewkata_sandi,
+        password: cHashedNewkata_sandi,
+        updated_at: formatDateSystem(),
       });
 
     // 6. Catat Aktivitas ke CCTV

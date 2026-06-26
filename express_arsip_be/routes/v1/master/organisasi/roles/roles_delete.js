@@ -9,14 +9,14 @@ import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
-router.delete("/:id_jabatan", async (req, res) => {
+router.delete("/:id_peran", async (req, res) => {
   const cIdPeran = req.params.id_peran;
   const cnama_pengguna = req?.auth?.nama_pengguna || "";
   const oPayload = { id: cIdPeran };
 
   try {
     const nUpdated = await DB("mst_peran")
-      .where("id_peran", cIdPeran)
+      .where("role_id", cIdPeran)
       .update({ status: "nonactive", updated_at: new Date() });
 
     if (!nUpdated)

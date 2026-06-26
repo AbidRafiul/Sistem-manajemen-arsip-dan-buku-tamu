@@ -12,12 +12,12 @@ const incomingLetterFileDownload = async (req, res) => {
     if (!nFileId) {
       return res.status(400).json({
         status: false,
-        message: "incoming_letter_file_id wajib diisi",
+        message: "fle_surat_masuk_id wajib diisi",
       });
     }
 
-    const oFile = await DB("trx_incoming_letter_files")
-      .where("incoming_letter_file_id", nFileId)
+    const oFile = await DB("trs_file_surat_masuk")
+      .where("file_surat_masuk_id", nFileId)
       .where("status", "active")
       .first();
 
@@ -28,7 +28,7 @@ const incomingLetterFileDownload = async (req, res) => {
       });
     }
 
-    const cUploadRoot = path.resolve(process.cwd(), "uploads", "incoming_letters");
+    const cUploadRoot = path.resolve(process.cwd(), "uploads", "surat_masuk");
     const cAbsolutePath = path.resolve(process.cwd(), oFile.file_path);
 
     if (!cAbsolutePath.startsWith(cUploadRoot)) {

@@ -2,10 +2,7 @@ import "dotenv/config";
 
 import express from "express";
 import {
-  datetime,
   formatDateSystem,
-  hashEquals,
-  hmac,
   status,
 } from "../../components/tools/general.js";
 import { Logging, validatePayload } from "../../components/tools/servertool.js";
@@ -62,14 +59,14 @@ router.post("/", async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    await DB("navigasi_pengguna")
+    await DB("user_navigation")
       .insert({
-        nama_pengguna: oPayload.NamaPengguna,
+        user_id: oPayload.NamaPengguna,
         menu: oPayload.Menu,
         created_at: formatDateSystem(),
         updated_at: formatDateSystem(),
       })
-      .onConflict("nama_pengguna")
+      .onConflict("user_id")
       .merge({
         menu: oPayload.Menu,
         updated_at: formatDateSystem(),
@@ -88,7 +85,7 @@ router.post("/", async (req, res) => {
     };
 
     Logging(error, {
-      file: "navigasi_pengguna_insert.js",
+      file: "user_navigation_insert.js",
       func: "insert",
       request: oPayload,
       response: oResult,

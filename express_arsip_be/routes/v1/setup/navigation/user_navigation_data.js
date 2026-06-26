@@ -2,10 +2,7 @@ import "dotenv/config";
 
 import express from "express";
 import {
-  datetime,
   formatDateSystem,
-  hashEquals,
-  hmac,
   status,
 } from "../../components/tools/general.js";
 import { Logging, validatePayload } from "../../components/tools/servertool.js";
@@ -30,10 +27,22 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        IdPengguna: Joi.alternatives() // <--- UBAH JADI IdPengguna
-          .try(Joi.number(), Joi.string())
-          .required()
-          .label("IdPengguna"), // <--- UBAH JADI IdPengguna
+        nama_pengguna: Joi.alternatives()
+          .try(Joi.string(), Joi.number())
+          .optional()
+          .label("nama_pengguna"),
+        user_id: Joi.alternatives()
+          .try(Joi.string(), Joi.number())
+          .optional()
+          .label("user_id"),
+        id_pengguna: Joi.alternatives()
+          .try(Joi.string(), Joi.number())
+          .optional()
+          .label("id_pengguna"),
+        IdPengguna: Joi.alternatives()
+          .try(Joi.string(), Joi.number())
+          .optional()
+          .label("IdPengguna"),
       },
       {
         "string.base": "{#label} harus berupa string",
@@ -43,16 +52,27 @@ router.post("/", async (req, res) => {
       oPayload,
     );
 
-    if (cValidation) {
+    const cUserLookup = String(
+      oPayload.user_id ||
+        oPayload.id_pengguna ||
+        oPayload.IdPengguna ||
+        oPayload.nama_pengguna ||
+        req?.auth?.IdPengguna ||
+        req?.auth?.id_pengguna ||
+        req?.auth?.nama_pengguna ||
+        "",
+    ).trim();
+
+    if (cValidation || !cUserLookup) {
       const oResult = {
         status: status.BAD_REQUEST,
-        message: cValidation || "Terdapat kesalahan pada data anda",
+        message: cValidation || "nama_pengguna atau user_id wajib diisi",
         datetime: formatDateSystem(),
       };
 
       Logging(null, {
-        file: "user_navigation_data_edit.js",
-        func: "post", // UBAH: disesuaikan dengan router.post
+        file: "user_navigation_data.js",
+        func: "post",
         request: oPayload,
         response: oResult,
         user: req?.auth?.nama_pengguna || "",
@@ -61,37 +81,16 @@ router.post("/", async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    // 1. Ambil Menu Kustom User (Kustomisasi) dari navigasi_pengguna
-    const oNavigation = await DB("navigasi_pengguna")
-      .select("menu")
-      .where("id_pengguna", oPayload.IdPengguna)
-      .first();
+    const { menu: vaData, source, user } = await getNavigationMenu(DB, cUserLookup);
 
-    let vaData = oNavigation ? oNavigation.menu : [];
-    if (typeof vaData === "string") {
-      try {
-        vaData = JSON.parse(vaData);
-      } catch (e) {}
-    }
-
-    // 2. Ambil Peta Induk (Master Navigation) buat nampilin pilihan checkbox di UI
-    const oMasterNav = await DB("mst_navigasi").select("menu").first();
-    let masterMenu = oMasterNav ? oMasterNav.menu : [];
-    if (typeof masterMenu === "string") {
-      try {
-        masterMenu = JSON.parse(masterMenu);
-      } catch (e) {}
-    }
-
-    // (Validasi block array dihapus agar user baru yang belum punya menu tidak kena error 400)
-
-    // 3. Kirim respon LENGKAP ke Frontend
     return res.status(200).json({
       status: status.SUKSES,
       message: "Data ditemukan",
       datetime: formatDateSystem(),
-      data: masterMenu, // Peta Induk (Semua opsi menu) -> Dibaca res.data di Frontend
-      menu: vaData, // Kustomisasi User -> Dibaca res.menu di Frontend
+      data: vaData,
+      menu: vaData,
+      source,
+      user,
     });
   } catch (error) {
     const oResult = {
@@ -101,8 +100,8 @@ router.post("/", async (req, res) => {
     };
 
     Logging(error, {
-      file: "user_navigation_data_edit.js",
-      func: "post", // UBAH: disesuaikan dengan router.post
+      file: "user_navigation_data.js",
+      func: "post",
       request: oPayload,
       response: oResult,
       user: req?.auth?.nama_pengguna || "",

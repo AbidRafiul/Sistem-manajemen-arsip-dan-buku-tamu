@@ -1,18 +1,12 @@
-import { jwtVerify } from "jose";
 import {
   getClientKey,
   getClientPassKey,
   getClientSecret,
 } from "../core/config/secret.js";
 import {
-  datetime,
-  datetimeIso,
   formatDateSystem,
-  hash,
   hashEquals,
   hmac,
-  isoDateNow,
-  isoDateNowYmd,
   status,
 } from "../routes/v1/components/tools/general.js";
 import DB from "../core/config/knex.js";
@@ -94,29 +88,28 @@ export const validateSignature = async (req, res, next) => {
 
     const cUserUnique = req.headers["x-uniqueid"];
 
-    //  PERBAIKAN: Ganti "user_credential" jadi "mst_pengguna"
     const oUser = await DB("mst_pengguna")
-      // 1. Join mst_pengguna_peran pake id_pengguna (Sesuai database murni)
       .leftJoin(
         "mst_pengguna_peran",
-        "mst_pengguna.id_pengguna",
-        "mst_pengguna_peran.id_pengguna",
+        "mst_pengguna.user_id",
+        "mst_pengguna_peran.user_id",
       )
-      // 2. Join mst_peran buat dapetin nama jabatannya
       .leftJoin(
         "mst_peran",
-        "mst_pengguna_peran.id_peran",
-        "mst_peran.id_peran",
+        "mst_pengguna_peran.role_id",
+        "mst_peran.role_id",
       )
       .select(
-        "mst_pengguna.nama_pengguna",
-        "mst_pengguna.nama_lengkap",
-        "mst_peran.nama_peran as peran", // <-- UBAH KE mst_peran
-        "mst_pengguna.telepon",
-        "mst_pengguna.nama_pengguna as UniqueId",
+        "mst_pengguna.user_id as IdPengguna",
+        "mst_pengguna.username as nama_pengguna",
+        "mst_pengguna.fullname as nama_lengkap",
+        "mst_peran.role_id as peranId",
+        "mst_peran.role_code as kode_peran",
+        "mst_peran.role_name as peran",
+        "mst_pengguna.telp as telepon",
+        "mst_pengguna.username as UniqueId",
       )
-      // 3. Pencarian wajib pake id_pengguna karena cUserUnique isinya angka ID
-      .where("mst_pengguna.id_pengguna", cUserUnique)
+      .where("mst_pengguna.user_id", cUserUnique)
       .first();
 
     if (!oUser) {
@@ -129,9 +122,13 @@ export const validateSignature = async (req, res, next) => {
 
     req.auth = {
       uniqueId: oUser.UniqueId,
+      IdPengguna: oUser.IdPengguna,
+      id_pengguna: oUser.IdPengguna,
       nama_pengguna: oUser.nama_pengguna,
       telepon: oUser.telepon,
       nama_lengkap: oUser.nama_lengkap,
+      peranId: oUser.peranId,
+      peranCode: oUser.kode_peran,
       peran: oUser.peran,
     };
 

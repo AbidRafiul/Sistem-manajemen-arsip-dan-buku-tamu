@@ -2,10 +2,7 @@ import "dotenv/config";
 
 import express from "express";
 import {
-  datetime,
   formatDateSystem,
-  hashEquals,
-  hmac,
   status,
 } from "../../components/tools/general.js";
 import { Logging, validatePayload } from "../../components/tools/servertool.js";
@@ -13,6 +10,17 @@ import Joi from "joi";
 import DB from "../../../../core/config/knex.js";
 
 const router = express.Router();
+
+const parseMenu = (rawMenu) => {
+  if (!rawMenu) return [];
+  if (Array.isArray(rawMenu)) return rawMenu;
+
+  try {
+    return JSON.parse(rawMenu);
+  } catch {
+    return [];
+  }
+};
 
 router.post("/", async (req, res) => {
   const { body } = req;
@@ -61,16 +69,16 @@ router.post("/", async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    let oNavigation = await DB("navigasi_pengguna")
+    let oNavigation = await DB("user_navigation")
       .select("menu")
-      .where("nama_pengguna", oPayload.NamaPengguna)
+      .where("user_id", oPayload.NamaPengguna)
       .first();
 
     // fallback ke mst_navigasi kalau tidak ada
     if (!oNavigation?.menu) {
       oNavigation = await DB("mst_navigasi")
         .select("menu")
-        .where("peran", "master")
+        .where("role", "master")
         .first();
     }
 
@@ -82,23 +90,21 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const oUser = await DB("mst_pengguna_perans")
-      .leftJoin(
-        "mst_perans",
-        "mst_pengguna_perans.id_peran",
-        "mst_perans.id_peran",
-      )
-      .select("mst_perans.nama_peran as peran")
-      .where("mst_pengguna_perans.nama_pengguna", oPayload.NamaPengguna)
+    const oUser = await DB("mst_pengguna_peran")
+      .leftJoin("mst_peran", "mst_pengguna_peran.role_id", "mst_peran.role_id")
+      .select("mst_peran.role_name as peran", "mst_peran.role_code as kode_peran")
+      .where("mst_pengguna_peran.user_id", oPayload.NamaPengguna)
+      .where("mst_pengguna_peran.status", "active")
+      .orderBy("mst_pengguna_peran.is_primary", "desc")
       .first();
-
-    if (!oUser?.peran || oUser?.peran == "superadmin") {
-      oUser.peran = "master";
-    }
 
     const oMst = await DB("mst_navigasi")
       .select("menu")
-      .where("peran", oUser?.peran)
+      .where((builder) => {
+        builder
+          .where("role", oUser?.peran || "master")
+          .orWhere("role", oUser?.kode_peran || "master");
+      })
       .first();
 
     if (!oMst?.menu) {
@@ -113,8 +119,8 @@ router.post("/", async (req, res) => {
       status: status.SUKSES,
       message: "Data ditemukan",
       datetime: formatDateSystem(),
-      data: JSON.parse(oMst.menu),
-      menu: JSON.parse(oNavigation.menu),
+      data: parseMenu(oMst.menu),
+      menu: parseMenu(oNavigation.menu),
     });
   } catch (error) {
     const oResult = {

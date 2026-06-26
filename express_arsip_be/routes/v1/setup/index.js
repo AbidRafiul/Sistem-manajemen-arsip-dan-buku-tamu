@@ -5,6 +5,7 @@ import user from "./user_login/user_data.js";
 import userCreate from "./user_login/user_create.js";
 import userUpdate from "./user_login/user_update.js";
 import userDelete from "./user_login/user_delete.js";
+import userDropdown from "./user_login/user_dropdown.js";
 
 import navBase from "./navigation//mst_navigation_data.js"; 
 import navUser from "./navigation/user_navigation_data.js";
@@ -20,6 +21,7 @@ router.use("/user-login/user-data", user);
 router.use("/user-login/user-create", userCreate);
 router.use("/user-login/user-update", userUpdate);
 router.use("/user-login/user-delete", userDelete);
+router.use("/user-login/user-dropdown", userDropdown);
 // user
 router.use("/config-data", configData);
 router.use("/config-create", configCreate);

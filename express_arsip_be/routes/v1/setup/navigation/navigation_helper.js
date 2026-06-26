@@ -74,12 +74,19 @@ const peran_ALIASES = {
   admin: ["admin", "master", "ADM", "Administrator"],
   master: ["master", "ADM", "Administrator"],
   administrator: ["Administrator", "ADM", "admin", "master"],
+  adm: ["ADM", "Administrator", "admin", "master"],
   pimpinan: ["Pimpinan", "PMN"],
+  pmn: ["PMN", "Pimpinan"],
   sekretaris: ["Sekretaris", "SKR"],
+  skr: ["SKR", "Sekretaris"],
   "staff arsip": ["Staff Arsip", "STF_ARS"],
+  stf_ars: ["STF_ARS", "Staff Arsip"],
   "staff umum": ["Staff Umum", "STF_UMM"],
+  stf_umm: ["STF_UMM", "Staff Umum"],
   resepsionis: ["Resepsionis", "RSP"],
+  rsp: ["RSP", "Resepsionis"],
   auditor: ["Auditor", "AUD"],
+  aud: ["AUD", "Auditor"],
 };
 
 const cloneMenu = (item) => JSON.parse(JSON.stringify(item));
@@ -142,6 +149,8 @@ const peranAliases = (peran) => {
     new Set([normalized, ...(peran_ALIASES[key] || [])].filter(Boolean)),
   );
 };
+
+const roleAliases = peranAliases;
 
 const normalizeLegacyMenu = (rawMenu) => {
   if (!rawMenu) return [];
@@ -231,10 +240,17 @@ const buildTree = (rows) => {
   const clean = (items) =>
     items
       .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map(({ id, parentId, sortOrder, items, ...item }) => ({
-        ...item,
-        ...(items.length ? { items: clean(items) } : {}),
-      }));
+      .map((node) => {
+        const { items: childItems, ...item } = node;
+        delete item.id;
+        delete item.parentId;
+        delete item.sortOrder;
+
+        return {
+          ...item,
+          ...(childItems.length ? { items: clean(childItems) } : {}),
+        };
+      });
 
   return clean(roots);
 };
@@ -247,47 +263,225 @@ const querySafely = async (queryBuilder) => {
   }
 };
 
-const getUser = async (DB, uniqueId) => {
-  return await querySafely(() =>
-    DB("mst_pengguna")
-      .leftJoin(
-        "mst_pengguna_perans",
-        "mst_pengguna.nama_pengguna",
-        "mst_pengguna_perans.nama_pengguna",
-      )
-      .leftJoin(
-        "mst_perans",
-        "mst_pengguna_perans.id_peran",
-        "mst_perans.id_peran",
-      )
-      .select(
-        "mst_pengguna.nama_pengguna as nama_pengguna",
-        "mst_pengguna.nama_pengguna as nama_pengguna",
-        "mst_perans.nama_peran as peran",
-      )
-      .where("mst_pengguna.nama_pengguna", uniqueId)
-      .first(),
-  );
+const getExistingTable = async (DB, tableNames) => {
+  for (const tableName of tableNames) {
+    const exists = await querySafely(() => DB.schema.hasTable(tableName));
+    if (exists) return tableName;
+  }
+
+  return null;
 };
 
-const getLegacyUserMenu = async (DB, uniqueId) => {
-  const navigation = await querySafely(() =>
-    DB("navigasi_pengguna")
-      .select("menu")
-      .where("nama_pengguna", uniqueId)
-      .first(),
+const getColumns = async (DB, tableName) => {
+  const columns = await querySafely(async () => {
+    const [rows] = await DB.raw("SHOW COLUMNS FROM ??", [tableName]);
+    return rows.map((column) => column.Field);
+  });
+
+  return columns || [];
+};
+
+const pickColumn = (columns, candidates) => {
+  return candidates.find((candidate) => columns.includes(candidate));
+};
+
+const uniqueValues = (values) => {
+  return Array.from(new Set(values.filter((value) => value !== undefined && value !== null)));
+};
+
+const getPrimaryRole = async (DB, user) => {
+  if (!user?.id_pengguna && !user?.nama_pengguna) return null;
+
+  const userRoleTable = await getExistingTable(DB, [
+    "mst_pengguna_peran",
+    "mst_pengguna_perans",
+    "mst_user_roles",
+  ]);
+  const roleTable = await getExistingTable(DB, [
+    "mst_peran",
+    "mst_perans",
+    "mst_roles",
+  ]);
+
+  if (!userRoleTable || !roleTable) return null;
+
+  const userRoleColumns = await getColumns(DB, userRoleTable);
+  const roleColumns = await getColumns(DB, roleTable);
+  const userColumn = pickColumn(userRoleColumns, [
+    "id_pengguna",
+    "user_id",
+    "nama_pengguna",
+    "UserId",
+  ]);
+  const userRoleRoleColumn = pickColumn(userRoleColumns, [
+    "id_peran",
+    "role_id",
+    "RoleId",
+  ]);
+  const roleRoleColumn = pickColumn(roleColumns, [
+    "id_peran",
+    "role_id",
+    "RoleId",
+  ]);
+  const roleCodeColumn = pickColumn(roleColumns, [
+    "kode_peran",
+    "role_code",
+    "RoleCode",
+  ]);
+  const roleNameColumn = pickColumn(roleColumns, [
+    "nama_peran",
+    "role_name",
+    "RoleName",
+  ]);
+  const primaryColumn = pickColumn(userRoleColumns, [
+    "peran_utama",
+    "is_primary",
+    "IsPrimary",
+  ]);
+  const statusColumn = pickColumn(userRoleColumns, ["status", "Status"]);
+
+  if (!userColumn || !userRoleRoleColumn || !roleRoleColumn) return null;
+
+  const userValue = ["nama_pengguna", "username", "Username"].includes(userColumn)
+    ? user.nama_pengguna
+    : user.id_pengguna;
+
+  const query = DB(`${userRoleTable} as ur`)
+    .leftJoin(`${roleTable} as r`, `ur.${userRoleRoleColumn}`, `r.${roleRoleColumn}`)
+    .select(
+      roleCodeColumn ? `r.${roleCodeColumn} as kode_peran` : DB.raw("NULL as kode_peran"),
+      roleNameColumn ? `r.${roleNameColumn} as nama_peran` : DB.raw("NULL as nama_peran"),
+    )
+    .where(`ur.${userColumn}`, userValue);
+
+  if (statusColumn) {
+    query.where((builder) => {
+      builder.where(`ur.${statusColumn}`, "active").orWhereNull(`ur.${statusColumn}`);
+    });
+  }
+
+  if (primaryColumn) {
+    query.orderBy(`ur.${primaryColumn}`, "desc");
+  }
+
+  return await querySafely(() => query.first());
+};
+
+const getUser = async (DB, uniqueId) => {
+  const userTable = await getExistingTable(DB, ["mst_pengguna", "mst_users"]);
+  if (!userTable) return null;
+
+  const columns = await getColumns(DB, userTable);
+  const idColumn = pickColumn(columns, [
+    "id_pengguna",
+    "user_id",
+    "UserId",
+    "nama_pengguna",
+  ]);
+  const usernameColumn = pickColumn(columns, [
+    "nama_pengguna",
+    "username",
+    "Username",
+  ]);
+  const fullnameColumn = pickColumn(columns, [
+    "nama_lengkap",
+    "fullname",
+    "Fullname",
+  ]);
+  const statusColumn = pickColumn(columns, ["status", "Status"]);
+
+  if (!idColumn && !usernameColumn) return null;
+
+  const query = DB(userTable).select(
+    idColumn ? `${idColumn} as id_pengguna` : DB.raw("NULL as id_pengguna"),
+    usernameColumn ? `${usernameColumn} as nama_pengguna` : DB.raw("NULL as nama_pengguna"),
+    fullnameColumn ? `${fullnameColumn} as nama_lengkap` : DB.raw("NULL as nama_lengkap"),
+    statusColumn ? `${statusColumn} as status` : DB.raw("'active' as status"),
   );
 
-  return normalizeLegacyMenu(navigation?.menu);
+  query.where((builder) => {
+    if (usernameColumn) builder.where(usernameColumn, uniqueId);
+
+    if (idColumn && uniqueId !== undefined && uniqueId !== null && uniqueId !== "") {
+      const numericId = Number(uniqueId);
+      if (Number.isFinite(numericId)) {
+        builder.orWhere(idColumn, numericId);
+      }
+    }
+  });
+
+  const user = await querySafely(() => query.first());
+  if (!user) return null;
+
+  const role = await getPrimaryRole(DB, user);
+
+  return {
+    ...user,
+    peran: role?.nama_peran || role?.kode_peran || null,
+    kode_peran: role?.kode_peran || null,
+  };
+};
+
+const getLegacyUserMenu = async (DB, user, uniqueId) => {
+  const navigationTable = await getExistingTable(DB, [
+    "user_navigation",
+    "navigasi_pengguna",
+  ]);
+
+  if (!navigationTable) return [];
+
+  const columns = await getColumns(DB, navigationTable);
+  const menuColumn = pickColumn(columns, ["menu", "Menu"]);
+  const userColumn = pickColumn(columns, [
+    "id_pengguna",
+    "user_id",
+    "nama_pengguna",
+    "UserId",
+    "UniqueId",
+    "unique_id",
+  ]);
+
+  if (!menuColumn || !userColumn) return [];
+
+  const lookupValues = userColumn === "nama_pengguna"
+    ? uniqueValues([user?.id_pengguna, user?.nama_pengguna, uniqueId])
+    : uniqueValues([user?.id_pengguna, uniqueId]);
+
+  for (const lookupValue of lookupValues) {
+    const navigation = await querySafely(() =>
+      DB(navigationTable)
+        .select(`${menuColumn} as menu`)
+        .where(userColumn, lookupValue)
+        .first(),
+    );
+
+    const menu = normalizeLegacyMenu(navigation?.menu);
+    if (menu.length) return menu;
+  }
+
+  return [];
 };
 
 const getLegacyperanMenu = async (DB, peran) => {
   const aliases = peranAliases(peran);
+  const navigationTable = await getExistingTable(DB, [
+    "mst_navigasi",
+    "mst_navigation",
+  ]);
+
+  if (!navigationTable || !aliases.length) return [];
+
+  const columns = await getColumns(DB, navigationTable);
+  const menuColumn = pickColumn(columns, ["menu", "Menu"]);
+  const roleColumn = pickColumn(columns, ["peran", "role", "Role"]);
+
+  if (!menuColumn || !roleColumn) return [];
+
   const navigation = await querySafely(() =>
-    DB("mst_navigasi")
-      .select("menu")
-      .whereIn("peran", aliases)
-      .orderByRaw(`CASE WHEN peran = ? THEN 0 ELSE 1 END`, [peran || ""])
+    DB(navigationTable)
+      .select(`${menuColumn} as menu`)
+      .whereIn(roleColumn, aliases)
+      .orderByRaw(`CASE WHEN ?? = ? THEN 0 ELSE 1 END`, [roleColumn, peran || ""])
       .first(),
   );
 
@@ -295,58 +489,119 @@ const getLegacyperanMenu = async (DB, peran) => {
 };
 
 const getRbacMenu = async (DB, user) => {
-  if (!user?.nama_pengguna && !user?.peran) return [];
+  if (!user?.id_pengguna && !user?.nama_pengguna && !user?.peran) return [];
+
+  const menuTable = await getExistingTable(DB, ["mst_menu", "mst_menus"]);
+  const roleMenuTable = await getExistingTable(DB, [
+    "mst_peran_menu",
+    "mst_peran_menus",
+    "mst_role_menus",
+  ]);
+  const roleTable = await getExistingTable(DB, [
+    "mst_peran",
+    "mst_perans",
+    "mst_roles",
+  ]);
+  const userRoleTable = await getExistingTable(DB, [
+    "mst_pengguna_peran",
+    "mst_pengguna_perans",
+    "mst_user_roles",
+  ]);
+
+  if (!menuTable || !roleMenuTable || !roleTable) return [];
+
+  const menuColumns = await getColumns(DB, menuTable);
+  const roleMenuColumns = await getColumns(DB, roleMenuTable);
+  const roleColumns = await getColumns(DB, roleTable);
+  const userRoleColumns = userRoleTable ? await getColumns(DB, userRoleTable) : [];
+  const menuIdColumn = pickColumn(menuColumns, ["id_menu", "menu_id", "MenuId"]);
+  const parentMenuColumn = pickColumn(menuColumns, [
+    "id_menu_induk",
+    "parent_menu_id",
+    "ParentMenuId",
+  ]);
+  const menuNameColumn = pickColumn(menuColumns, ["nama_menu", "menu_name", "MenuName"]);
+  const menuPathColumn = pickColumn(menuColumns, ["jalur_menu", "menu_path", "MenuPath"]);
+  const menuIconColumn = pickColumn(menuColumns, ["ikon_menu", "menu_icon", "MenuIcon"]);
+  const sortColumn = pickColumn(menuColumns, ["urutan", "sort_order", "SortOrder"]);
+  const activeColumn = pickColumn(menuColumns, ["status_aktif", "is_active", "IsActive"]);
+  const roleMenuRoleColumn = pickColumn(roleMenuColumns, ["id_peran", "role_id", "RoleId"]);
+  const roleMenuMenuColumn = pickColumn(roleMenuColumns, ["id_menu", "menu_id", "MenuId"]);
+  const viewColumn = pickColumn(roleMenuColumns, ["hak_lihat", "can_view", "CanView"]);
+  const roleIdColumn = pickColumn(roleColumns, ["id_peran", "role_id", "RoleId"]);
+  const roleCodeColumn = pickColumn(roleColumns, ["kode_peran", "role_code", "RoleCode"]);
+  const roleNameColumn = pickColumn(roleColumns, ["nama_peran", "role_name", "RoleName"]);
+  const roleStatusColumn = pickColumn(roleColumns, ["status", "Status"]);
+
+  if (!menuIdColumn || !menuNameColumn || !roleMenuRoleColumn || !roleMenuMenuColumn || !roleIdColumn) {
+    return [];
+  }
 
   let rows = [];
 
-  if (user?.nama_pengguna) {
+  if (userRoleTable && user?.id_pengguna) {
+    const userColumn = pickColumn(userRoleColumns, [
+      "id_pengguna",
+      "user_id",
+      "nama_pengguna",
+      "UserId",
+    ]);
+    const userRoleRoleColumn = pickColumn(userRoleColumns, [
+      "id_peran",
+      "role_id",
+      "RoleId",
+    ]);
+    const userRoleStatusColumn = pickColumn(userRoleColumns, ["status", "Status"]);
+
     rows =
       (await querySafely(() =>
-        DB("mst_menus as m")
+        DB(`${menuTable} as m`)
           .distinct(
-            "m.menu_id as MenuId",
-            "m.parent_menu_id as ParentMenuId",
-            "m.menu_name as MenuName",
-            "m.menu_path as MenuPath",
-            "m.menu_icon as MenuIcon",
-            "m.sort_order as SortOrder",
+            `m.${menuIdColumn} as MenuId`,
+            parentMenuColumn ? `m.${parentMenuColumn} as ParentMenuId` : DB.raw("NULL as ParentMenuId"),
+            `m.${menuNameColumn} as MenuName`,
+            menuPathColumn ? `m.${menuPathColumn} as MenuPath` : DB.raw("NULL as MenuPath"),
+            menuIconColumn ? `m.${menuIconColumn} as MenuIcon` : DB.raw("NULL as MenuIcon"),
+            sortColumn ? `m.${sortColumn} as SortOrder` : DB.raw("0 as SortOrder"),
           )
-          .join("mst_peran_menus as rm", "rm.menu_id", "m.menu_id")
-          .join("mst_perans as r", "r.id_peran", "rm.id_peran")
-          .join("mst_pengguna_perans as ur", "ur.id_peran", "r.id_peran")
-          .join("mst_pengguna as u", "u.nama_pengguna", "ur.nama_pengguna")
-          .where("u.nama_pengguna", user.nama_pengguna)
-          .where("m.is_active", 1)
-          .where("rm.can_view", 1)
-          .where("r.status", "active")
-          .where("ur.status", "active")
-          .orderBy("m.sort_order", "asc"),
+          .join(`${roleMenuTable} as rm`, `rm.${roleMenuMenuColumn}`, `m.${menuIdColumn}`)
+          .join(`${roleTable} as r`, `r.${roleIdColumn}`, `rm.${roleMenuRoleColumn}`)
+          .join(`${userRoleTable} as ur`, `ur.${userRoleRoleColumn}`, `r.${roleIdColumn}`)
+          .where(`ur.${userColumn}`, ["nama_pengguna", "username", "Username"].includes(userColumn) ? user.nama_pengguna : user.id_pengguna)
+          .modify((query) => {
+            if (activeColumn) query.where(`m.${activeColumn}`, 1);
+            if (viewColumn) query.where(`rm.${viewColumn}`, 1);
+            if (roleStatusColumn) query.where(`r.${roleStatusColumn}`, "active");
+            if (userRoleStatusColumn) query.where(`ur.${userRoleStatusColumn}`, "active");
+          })
+          .orderBy(sortColumn ? `m.${sortColumn}` : `m.${menuIdColumn}`, "asc"),
       )) || [];
   }
 
   if (rows.length < 1 && user?.peran) {
     rows =
       (await querySafely(() =>
-        DB("mst_menus as m")
+        DB(`${menuTable} as m`)
           .distinct(
-            "m.menu_id as MenuId",
-            "m.parent_menu_id as ParentMenuId",
-            "m.menu_name as MenuName",
-            "m.menu_path as MenuPath",
-            "m.menu_icon as MenuIcon",
-            "m.sort_order as SortOrder",
+            `m.${menuIdColumn} as MenuId`,
+            parentMenuColumn ? `m.${parentMenuColumn} as ParentMenuId` : DB.raw("NULL as ParentMenuId"),
+            `m.${menuNameColumn} as MenuName`,
+            menuPathColumn ? `m.${menuPathColumn} as MenuPath` : DB.raw("NULL as MenuPath"),
+            menuIconColumn ? `m.${menuIconColumn} as MenuIcon` : DB.raw("NULL as MenuIcon"),
+            sortColumn ? `m.${sortColumn} as SortOrder` : DB.raw("0 as SortOrder"),
           )
-          .join("mst_peran_menus as rm", "rm.menu_id", "m.menu_id")
-          .join("mst_perans as r", "r.id_peran", "rm.id_peran")
+          .join(`${roleMenuTable} as rm`, `rm.${roleMenuMenuColumn}`, `m.${menuIdColumn}`)
+          .join(`${roleTable} as r`, `r.${roleIdColumn}`, `rm.${roleMenuRoleColumn}`)
           .where((builder) => {
-            builder
-              .whereIn("r.kode_peran", peranAliases(user.peran))
-              .orWhereIn("r.nama_peran", peranAliases(user.peran));
+            if (roleCodeColumn) builder.whereIn(`r.${roleCodeColumn}`, peranAliases(user.peran));
+            if (roleNameColumn) builder.orWhereIn(`r.${roleNameColumn}`, peranAliases(user.peran));
           })
-          .where("m.is_active", 1)
-          .where("rm.can_view", 1)
-          .where("r.status", "active")
-          .orderBy("m.sort_order", "asc"),
+          .modify((query) => {
+            if (activeColumn) query.where(`m.${activeColumn}`, 1);
+            if (viewColumn) query.where(`rm.${viewColumn}`, 1);
+            if (roleStatusColumn) query.where(`r.${roleStatusColumn}`, "active");
+          })
+          .orderBy(sortColumn ? `m.${sortColumn}` : `m.${menuIdColumn}`, "asc"),
       )) || [];
   }
 
@@ -356,11 +611,11 @@ const getRbacMenu = async (DB, user) => {
 const getNavigationMenu = async (DB, uniqueId) => {
   const user = await getUser(DB, uniqueId);
 
-  const legacyUserMenu = await getLegacyUserMenu(DB, uniqueId);
+  const legacyUserMenu = await getLegacyUserMenu(DB, user, uniqueId);
   if (legacyUserMenu.length) {
     return {
       menu: ensureArchiveDocumentMenu(legacyUserMenu),
-      source: "navigasi_pengguna",
+      source: "user_navigation",
       user,
     };
   }
@@ -386,4 +641,4 @@ const getNavigationMenu = async (DB, uniqueId) => {
   return { menu: [], source: null, user };
 };
 
-export { getNavigationMenu, normalizeLegacyMenu };
+export { getNavigationMenu, normalizeLegacyMenu, roleAliases };

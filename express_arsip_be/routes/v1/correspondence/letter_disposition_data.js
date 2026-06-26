@@ -10,9 +10,9 @@ const letterDispositionData = async (req, res) => {
     const oPayload = req.body || {};
 
     const oValidation = {
-      incoming_letter_id: Joi.number().allow(null).optional(),
-      to_nama_pengguna: Joi.number().allow(null).optional(),
-      from_nama_pengguna: Joi.number().allow(null).optional(),
+      surat_masuk_id: Joi.number().allow(null).optional(),
+      kepada_pengguna_id: Joi.number().allow(null).optional(),
+      dari_pengguna_id: Joi.number().allow(null).optional(),
       status: Joi.string()
         .valid("baru", "dibaca", "diproses", "selesai")
         .allow(null, "")
@@ -21,9 +21,9 @@ const letterDispositionData = async (req, res) => {
     };
 
     const oMessage = {
-      "incoming_letter_id.number": "incoming_letter_id harus berupa angka",
-      "to_nama_pengguna.number": "to_nama_pengguna harus berupa angka",
-      "from_nama_pengguna.number": "from_nama_pengguna harus berupa angka",
+      "surat_masuk_id.number": "id surat masuk harus berupa angka",
+      "kepada_pengguna_id.number": "kepada pengguna id harus berupa angka",
+      "dari_pengguna_id.number": "dari pengguna id harus berupa angka",
       "status.valid": "status disposisi tidak valid",
     };
 
@@ -38,53 +38,53 @@ const letterDispositionData = async (req, res) => {
       });
     }
 
-    const oQuery = DB("trx_letter_dispositions as tld")
+    const oQuery = DB("trs_disposisi_surat as tld")
       .leftJoin(
-        "trx_incoming_letters as til",
-        "tld.incoming_letter_id",
-        "til.incoming_letter_id",
+        "trs_surat_masuk as til",
+        "tld.surat_masuk_id",
+        "til.surat_masuk_id"
       )
       .leftJoin(
-        "mst_disposition_instructions as mdi",
-        "tld.disposition_instruction_id",
-        "mdi.disposition_instruction_id",
+        "mst_instruksi_disposisi as mdi",
+        "tld.instruksi_disposisi_id",
+        "mdi.instruksi_disposisi_id"
       )
       .leftJoin(
-        "mst_pengguna as from_user",
-        "tld.from_nama_pengguna",
-        "from_user.nama_pengguna",
+        "mst_pengguna as dari_pengguna",
+        "tld.dari_pengguna_id",
+        "dari_pengguna.user_id"
       )
       .leftJoin(
-        "mst_pengguna as to_user",
-        "tld.to_nama_pengguna",
-        "to_user.nama_pengguna",
+        "mst_pengguna as kepada_pengguna",
+        "tld.kepada_pengguna_id",
+        "kepada_pengguna.user_id"
       )
       .leftJoin(
         "mst_pengguna as processed_user",
         "tld.updated_by",
-        "processed_user.nama_pengguna",
+        "processed_user.user_id"
       )
       .select(
-        "tld.disid_jabatan",
-        "tld.incoming_letter_id",
-        "til.agenda_number",
-        "til.letter_number",
-        "til.subject",
-        "til.sender_name",
+        "tld.disposisi_surat_id",
+        "tld.surat_masuk_id",
+        "til.nomor_agenda",
+        "til.nomor_surat",
+        "til.perihal",
+        "til.nama_pengirim",
         "til.status as letter_status",
 
-        "tld.parent_disid_jabatan",
-        "tld.from_nama_pengguna",
-        "from_user.nama_lengkap as from_nama_pengguna",
-        "tld.to_nama_pengguna",
-        "to_user.nama_lengkap as to_nama_pengguna",
-        "processed_user.nama_lengkap as processed_by_name",
-        "tld.disposition_instruction_id",
-        "mdi.instruction_name",
+        "tld.disposisi_induk_id",
+        "tld.dari_pengguna_id",
+        "dari_pengguna.fullname as from_user_name",
+        "tld.kepada_pengguna_id",
+        "kepada_pengguna.fullname as to_user_name",
+        "processed_user.fullname as processed_by_name",
+        "tld.instruksi_disposisi_id",
+        "mdi.nama_instruksi",
 
-        "tld.instruction",
-        "tld.disposition_note",
-        "tld.due_date",
+        "tld.instruksi",
+        "tld.catatan_disposisi",
+        "tld.batas_waktu",
         "tld.status",
         "tld.received_at",
         "tld.processed_at",
@@ -97,16 +97,16 @@ const letterDispositionData = async (req, res) => {
       )
       .orderBy("tld.created_at", "desc");
 
-    if (oPayload.incoming_letter_id) {
-      oQuery.where("tld.incoming_letter_id", oPayload.incoming_letter_id);
+    if (oPayload.surat_masuk_id) {
+      oQuery.where("tld.surat_masuk_id", oPayload.surat_masuk_id);
     }
 
-    if (oPayload.to_nama_pengguna) {
-      oQuery.where("tld.to_nama_pengguna", oPayload.to_nama_pengguna);
+    if (oPayload.kepada_pengguna_id) {
+      oQuery.where("tld.kepada_pengguna_id", oPayload.kepada_pengguna_id);
     }
 
-    if (oPayload.from_nama_pengguna) {
-      oQuery.where("tld.from_nama_pengguna", oPayload.from_nama_pengguna);
+    if (oPayload.dari_pengguna_id) {
+      oQuery.where("tld.dari_pengguna_id", oPayload.dari_pengguna_id);
     }
 
     if (oPayload.status) {
@@ -116,12 +116,12 @@ const letterDispositionData = async (req, res) => {
     if (oPayload.keyword) {
       oQuery.where((oBuilder) => {
         oBuilder
-          .where("til.agenda_number", "like", `%${oPayload.keyword}%`)
-          .orWhere("til.letter_number", "like", `%${oPayload.keyword}%`)
-          .orWhere("til.subject", "like", `%${oPayload.keyword}%`)
-          .orWhere("til.sender_name", "like", `%${oPayload.keyword}%`)
-          .orWhere("tld.instruction", "like", `%${oPayload.keyword}%`)
-          .orWhere("tld.disposition_note", "like", `%${oPayload.keyword}%`);
+          .where("til.nomor_agenda", "like", `%${oPayload.keyword}%`)
+          .orWhere("til.nomor_surat", "like", `%${oPayload.keyword}%`)
+          .orWhere("til.perihal", "like", `%${oPayload.keyword}%`)
+          .orWhere("til.nama_pengirim", "like", `%${oPayload.keyword}%`)
+          .orWhere("tld.instruksi", "like", `%${oPayload.keyword}%`)
+          .orWhere("tld.catatan_disposisi", "like", `%${oPayload.keyword}%`);
       });
     }
 

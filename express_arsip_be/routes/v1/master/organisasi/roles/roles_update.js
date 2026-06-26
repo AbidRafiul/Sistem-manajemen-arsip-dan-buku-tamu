@@ -57,11 +57,11 @@ router.put("/:id_peran", async (req, res) => {
     }
 
     const nUpdated = await DB("mst_peran")
-      .where("id_jabatan", cIdJabatan)
+      .where("role_id", cIdPeran)
       .update({
-        kode_peran: oPayload.kode_peran,
-        nama_peran: oPayload.nama_peran,
-        deskripsi: oPayload.deskripsi || null,
+        role_code: oPayload.kode_peran,
+        role_name: oPayload.nama_peran,
+        description: oPayload.deskripsi || null,
         updated_at: new Date(),
       });
 
