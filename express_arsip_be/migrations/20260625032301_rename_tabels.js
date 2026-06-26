@@ -34,22 +34,29 @@ export async function up(knex) {
   // ==================================================
   const tableMap = {
     mst_user_roles: "mst_pengguna_peran",
+    mst_pengguna_perans: "mst_pengguna_peran",
     mst_users: "mst_pengguna",
     mst_role_menus: "mst_peran_menu",
+    mst_peran_menus: "mst_peran_menu",
     mst_roles: "mst_peran",
+    mst_perans: "mst_peran",
     mst_jabatan: "mst_jabatan",
     mst_navigation: "mst_navigasi",
     mst_menus: "mst_menu",
     mst_divisions: "mst_divisi",
     mst_departments: "mst_departemen",
+    mst_departemens: "mst_departemen",
     mst_branches: "mst_cabang",
+    mst_cabanges: "mst_cabang",
     mst_audit_trails: "mst_riwayat_audit",
     mst_work_units: "mst_unit_kerja",
   };
 
   for (const [oldName, newName] of Object.entries(tableMap)) {
+    if (oldName === newName) continue;
     const exists = await knex.schema.hasTable(oldName);
-    if (exists) {
+    const destExists = await knex.schema.hasTable(newName);
+    if (exists && !destExists) {
       await knex.raw(`RENAME TABLE \`${oldName}\` TO \`${newName}\``);
       console.log(`Tabel ${oldName} berhasil diubah ke ${newName}`);
     }
@@ -62,35 +69,51 @@ export async function down(knex) {
   await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
 
   // 1. Rollback Rename Tabel
-  await knex.raw("RENAME TABLE `mst_pengguna_peran` TO `mst_user_roles`");
-  await knex.raw("RENAME TABLE `mst_pengguna` TO `mst_users`");
-  await knex.raw("RENAME TABLE `mst_peran_menu` TO `mst_role_menus`");
-  await knex.raw("RENAME TABLE `mst_peran` TO `mst_roles`");
-  await knex.raw("RENAME TABLE `mst_jabatan` TO `mst_jabatan`");
-  await knex.raw("RENAME TABLE `mst_navigasi` TO `mst_navigation`");
-  await knex.raw("RENAME TABLE `mst_menu` TO `mst_menus`");
-  await knex.raw("RENAME TABLE `mst_divisi` TO `mst_divisions`");
-  await knex.raw("RENAME TABLE `mst_departemen` TO `mst_departments`");
-  await knex.raw("RENAME TABLE `mst_cabang` TO `mst_branches`");
-  await knex.raw("RENAME TABLE `mst_riwayat_audit` TO `mst_audit_trails`");
-  await knex.raw("RENAME TABLE `mst_unit_kerja` TO `mst_work_units`");
+  const rollbackMap = {
+    mst_pengguna_peran: "mst_user_roles",
+    mst_pengguna: "mst_users",
+    mst_peran_menu: "mst_role_menus",
+    mst_peran: "mst_roles",
+    mst_jabatan: "mst_jabatan",
+    mst_navigasi: "mst_navigation",
+    mst_menu: "mst_menus",
+    mst_divisi: "mst_divisions",
+    mst_departemen: "mst_departments",
+    mst_cabang: "mst_branches",
+    mst_riwayat_audit: "mst_audit_trails",
+    mst_unit_kerja: "mst_work_units",
+  };
+
+  for (const [oldName, newName] of Object.entries(rollbackMap)) {
+    if (oldName === newName) continue;
+    const exists = await knex.schema.hasTable(oldName);
+    const destExists = await knex.schema.hasTable(newName);
+    if (exists && !destExists) {
+      await knex.raw(`RENAME TABLE \`${oldName}\` TO \`${newName}\``);
+      console.log(`Rollback Tabel ${oldName} ke ${newName}`);
+    }
+  }
 
   // 2. Rollback Field mst_work_units
-  await knex.raw(
-    "ALTER TABLE `mst_work_units` CHANGE `id_unit_kerja` `work_unit_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT",
-  );
-  await knex.raw(
-    "ALTER TABLE `mst_work_units` CHANGE `id_departemen` `department_id` INT(10) UNSIGNED NOT NULL",
-  );
-  await knex.raw(
-    "ALTER TABLE `mst_work_units` CHANGE `kode_unit_kerja` `work_unit_code` VARCHAR(45) COLLATE utf8mb4_unicode_ci NOT NULL",
-  );
-  await knex.raw(
-    "ALTER TABLE `mst_work_units` CHANGE `nama_unit_kerja` `work_unit_name` VARCHAR(45) COLLATE utf8mb4_unicode_ci NOT NULL",
-  );
-  await knex.raw(
-    "ALTER TABLE `mst_work_units` CHANGE `deskripsi` `description` VARCHAR(45) COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL",
-  );
+  const hasWorkUnits = await knex.schema.hasTable("mst_work_units");
+  if (hasWorkUnits) {
+    await knex.raw(
+      "ALTER TABLE `mst_work_units` CHANGE `id_unit_kerja` `work_unit_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT",
+    );
+    await knex.raw(
+      "ALTER TABLE `mst_work_units` CHANGE `id_departemen` `department_id` INT(10) UNSIGNED NOT NULL",
+    );
+    await knex.raw(
+      "ALTER TABLE `mst_work_units` CHANGE `kode_unit_kerja` `work_unit_code` VARCHAR(45) COLLATE utf8mb4_unicode_ci NOT NULL",
+    );
+    await knex.raw(
+      "ALTER TABLE `mst_work_units` CHANGE `nama_unit_kerja` `work_unit_name` VARCHAR(45) COLLATE utf8mb4_unicode_ci NOT NULL",
+    );
+    await knex.raw(
+      "ALTER TABLE `mst_work_units` CHANGE `deskripsi` `description` VARCHAR(45) COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL",
+    );
+  }
 
   await knex.raw("SET FOREIGN_KEY_CHECKS = 1;");
 }
+

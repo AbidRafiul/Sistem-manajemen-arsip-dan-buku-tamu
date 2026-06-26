@@ -75,7 +75,7 @@ export async function up(knex) {
     "ALTER TABLE `mst_pengguna` CHANGE `nama_lengkap` `nama_lengkap` VARCHAR(45) COLLATE utf8mb4_unicode_ci NOT NULL",
   );
   await knex.raw(
-    "ALTER TABLE `mst_pengguna` CHANGE `nama_pengguna` `nama_pengguna` VARCHAR(45) COLLATE utf8mb4_unicode_ci NOT NULL",
+    "ALTER TABLE `mst_pengguna` CHANGE `NamaPengguna` `nama_pengguna` VARCHAR(45) COLLATE utf8mb4_unicode_ci NOT NULL",
   );
   await knex.raw(
     "ALTER TABLE `mst_pengguna` CHANGE `surel` `surel` VARCHAR(45) COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL",
@@ -305,7 +305,7 @@ export async function down(knex) {
     "ALTER TABLE `mst_pengguna` CHANGE `nama_lengkap` `nama_lengkap` VARCHAR(45) COLLATE utf8mb4_unicode_ci NOT NULL",
   );
   await knex.raw(
-    "ALTER TABLE `mst_pengguna` CHANGE `nama_pengguna` `nama_pengguna` VARCHAR(45) COLLATE utf8mb4_unicode_ci NOT NULL",
+    "ALTER TABLE `mst_pengguna` CHANGE `nama_pengguna` `NamaPengguna` VARCHAR(45) COLLATE utf8mb4_unicode_ci NOT NULL",
   );
   await knex.raw(
     "ALTER TABLE `mst_pengguna` CHANGE `surel` `surel` VARCHAR(45) COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL",

@@ -15,7 +15,17 @@ import { AsyncLocalStorage } from "async_hooks";
 
 const als = new AsyncLocalStorage();
 
+const isBypassed = (url) => {
+  if (!url) return false;
+  const lower = url.toLowerCase();
+  return lower.includes("/purposes") || lower.includes("/visit_checkin") || lower.includes("/visit_booking");
+};
+
 export const validateTimestamp = async (req, res, next) => {
+  if (isBypassed(req.originalUrl)) {
+    return next();
+  }
+
   try {
     const cTimestamp = req.headers["x-timestamp"];
     if (
@@ -77,6 +87,10 @@ export const contextMiddleware = (req, res, next) => {
 };
 
 export const validateSignature = async (req, res, next) => {
+  if (isBypassed(req.originalUrl)) {
+    return next();
+  }
+
   try {
     if (!req.headers["x-uniqueid"]) {
       return res.status(400).json({
@@ -145,6 +159,10 @@ export const validateSignature = async (req, res, next) => {
 };
 
 export const validateBaseToken = async (req, res, next) => {
+  if (isBypassed(req.originalUrl)) {
+    return next();
+  }
+
   const cHeader = req.headers["authorization"];
   const cToken = cHeader && cHeader.split(" ")[1];
 
@@ -191,6 +209,10 @@ export const validateBaseToken = async (req, res, next) => {
 };
 
 export const validateAccessToken = async (req, res, next) => {
+  if (isBypassed(req.originalUrl)) {
+    return next();
+  }
+
   const cHeader = req.headers["authorization"];
   const cToken = cHeader && cHeader.split(" ")[1];
 
