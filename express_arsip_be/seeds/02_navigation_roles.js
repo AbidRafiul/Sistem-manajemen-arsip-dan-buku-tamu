@@ -256,37 +256,37 @@ export const seed = async function (knex) {
       updated_at: dNow,
     });
 
-  await knex("mst_visit_purpose")
+  await knex("mst_tujuan_kunjungan")
     .insert([
       {
-        visit_purpose_id: 1,
-        visit_purpose_code: "MEETING",
-        visit_purpose_name: "Meeting",
-        description: "Pertemuan atau rapat",
+        id_tujuan_kunjungan: 1,
+        kode_tujuan_kunjungan: "MEETING",
+        nama_tujuan_kunjungan: "Meeting",
+        deskripsi: "Pertemuan atau rapat",
         status: "active",
         created_at: dNow,
         updated_at: dNow,
       },
       {
-        visit_purpose_id: 2,
-        visit_purpose_code: "DELIVERY",
-        visit_purpose_name: "Pengiriman",
-        description: "Pengiriman barang atau dokumen",
+        id_tujuan_kunjungan: 2,
+        kode_tujuan_kunjungan: "DELIVERY",
+        nama_tujuan_kunjungan: "Pengiriman",
+        deskripsi: "Pengiriman barang atau dokumen",
         status: "active",
         created_at: dNow,
         updated_at: dNow,
       },
       {
-        visit_purpose_id: 3,
-        visit_purpose_code: "CONSULTATION",
-        visit_purpose_name: "Konsultasi",
-        description: "Konsultasi atau koordinasi",
+        id_tujuan_kunjungan: 3,
+        kode_tujuan_kunjungan: "CONSULTATION",
+        nama_tujuan_kunjungan: "Konsultasi",
+        deskripsi: "Konsultasi atau koordinasi",
         status: "active",
         created_at: dNow,
         updated_at: dNow,
       },
     ])
-    .onConflict("visit_purpose_id")
+    .onConflict("id_tujuan_kunjungan")
     .merge();
 
   await knex("config")
