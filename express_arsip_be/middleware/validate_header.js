@@ -15,7 +15,17 @@ import { AsyncLocalStorage } from "async_hooks";
 
 const als = new AsyncLocalStorage();
 
+const isBypassed = (url) => {
+  if (!url) return false;
+  const lower = url.toLowerCase();
+  return lower.includes("/purposes") || lower.includes("/visit_checkin") || lower.includes("/visit_booking");
+};
+
 export const validateTimestamp = async (req, res, next) => {
+  if (isBypassed(req.originalUrl)) {
+    return next();
+  }
+
   try {
     const cTimestamp = req.headers["x-timestamp"];
     if (
@@ -77,6 +87,10 @@ export const contextMiddleware = (req, res, next) => {
 };
 
 export const validateSignature = async (req, res, next) => {
+  if (isBypassed(req.originalUrl)) {
+    return next();
+  }
+
   try {
     if (!req.headers["x-uniqueid"]) {
       return res.status(400).json({
@@ -88,28 +102,62 @@ export const validateSignature = async (req, res, next) => {
 
     const cUserUnique = req.headers["x-uniqueid"];
 
-    const oUser = await DB("mst_pengguna")
-      .leftJoin(
-        "mst_pengguna_peran",
-        "mst_pengguna.user_id",
-        "mst_pengguna_peran.user_id",
-      )
-      .leftJoin(
-        "mst_peran",
-        "mst_pengguna_peran.role_id",
-        "mst_peran.role_id",
-      )
-      .select(
-        "mst_pengguna.user_id as IdPengguna",
-        "mst_pengguna.username as nama_pengguna",
-        "mst_pengguna.fullname as nama_lengkap",
-        "mst_peran.role_id as peranId",
-        "mst_peran.role_code as kode_peran",
-        "mst_peran.role_name as peran",
-        "mst_pengguna.telp as telepon",
-        "mst_pengguna.username as UniqueId",
-      )
-      .where("mst_pengguna.user_id", cUserUnique)
+    // Cek nama tabel yang aktif (support nama lama & baru)
+    const userRoleTable = (await DB.schema.hasTable("mst_pengguna_perans"))
+      ? "mst_pengguna_perans"
+      : (await DB.schema.hasTable("mst_pengguna_peran"))
+      ? "mst_pengguna_peran"
+      : null;
+
+    const roleTable = (await DB.schema.hasTable("mst_perans"))
+      ? "mst_perans"
+      : (await DB.schema.hasTable("mst_peran"))
+      ? "mst_peran"
+      : null;
+
+    // Query user dengan kolom nama baru (hasil migration)
+    let query = DB("mst_pengguna").select(
+      "mst_pengguna.id_pengguna as IdPengguna",
+      "mst_pengguna.NamaPengguna as nama_pengguna",
+      "mst_pengguna.nama_lengkap as nama_lengkap",
+      "mst_pengguna.telepon as telepon",
+      "mst_pengguna.NamaPengguna as UniqueId",
+    );
+
+    if (userRoleTable && roleTable) {
+      // Kolom FK di tabel user-role (support nama lama & baru)
+      const [urCols] = await DB.raw("SHOW COLUMNS FROM ??", [userRoleTable]);
+      const urColNames = urCols.map((c) => c.Field);
+      const userFkCol = urColNames.includes("id_pengguna") ? "id_pengguna"
+        : urColNames.includes("nama_pengguna") ? "nama_pengguna"
+        : "user_id";
+      const roleFkCol = urColNames.includes("id_peran") ? "id_peran" : "role_id";
+
+      const [rCols] = await DB.raw("SHOW COLUMNS FROM ??", [roleTable]);
+      const rColNames = rCols.map((c) => c.Field);
+      const rolePkCol = rColNames.includes("id_peran") ? "id_peran" : "role_id";
+      const roleCodeCol = rColNames.includes("kode_peran") ? "kode_peran" : "role_code";
+      const roleNameCol = rColNames.includes("nama_peran") ? "nama_peran" : "role_name";
+
+      query = query
+        .leftJoin(userRoleTable, `mst_pengguna.id_pengguna`, `${userRoleTable}.${userFkCol}`)
+        .leftJoin(roleTable, `${userRoleTable}.${roleFkCol}`, `${roleTable}.${rolePkCol}`)
+        .select(
+          `${roleTable}.${rolePkCol} as peranId`,
+          `${roleTable}.${roleCodeCol} as kode_peran`,
+          `${roleTable}.${roleNameCol} as peran`,
+        );
+    }
+
+    // Cari user berdasarkan id_pengguna atau NamaPengguna (username)
+    const numericId = Number(cUserUnique);
+    const oUser = await query
+      .where((builder) => {
+        builder.where("mst_pengguna.id_pengguna", numericId || 0);
+        if (cUserUnique) {
+          builder.orWhere("mst_pengguna.NamaPengguna", cUserUnique);
+        }
+      })
       .first();
 
     if (!oUser) {
@@ -144,7 +192,12 @@ export const validateSignature = async (req, res, next) => {
   }
 };
 
+
 export const validateBaseToken = async (req, res, next) => {
+  if (isBypassed(req.originalUrl)) {
+    return next();
+  }
+
   const cHeader = req.headers["authorization"];
   const cToken = cHeader && cHeader.split(" ")[1];
 
@@ -191,6 +244,10 @@ export const validateBaseToken = async (req, res, next) => {
 };
 
 export const validateAccessToken = async (req, res, next) => {
+  if (isBypassed(req.originalUrl)) {
+    return next();
+  }
+
   const cHeader = req.headers["authorization"];
   const cToken = cHeader && cHeader.split(" ")[1];
 

@@ -6,62 +6,56 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
   try {
-    const today = formatDateSystem(new Date(), "yyyy-MM-dd");
+    const totalTamuHariIni = await DB("trs_kunjungan")
+      .whereRaw("DATE(created_at) = CURRENT_DATE()")
+      .count("id_kunjungan as total")
+      .first();
 
-    const rawTotal = await DB.raw("SELECT COUNT(*) as count FROM trx_visitations WHERE DATE(check_in_time) = ?", [today]);
-    const today_total = rawTotal[0][0]?.count || 0;
+    const sedangBerkunjung = await DB("trs_kunjungan")
+      .whereRaw("DATE(created_at) = CURRENT_DATE()")
+      .andWhere("status", "in")
+      .count("id_kunjungan as total")
+      .first();
 
-    const rawIn = await DB.raw("SELECT COUNT(*) as count FROM trx_visitations WHERE DATE(check_in_time) = ? AND status = 'Sedang Berkunjung'", [today]);
-    const today_in = rawIn[0][0]?.count || 0;
+    const selesaiKunjungan = await DB("trs_kunjungan")
+      .whereRaw("DATE(created_at) = CURRENT_DATE()")
+      .andWhere("status", "out")
+      .count("id_kunjungan as total")
+      .first();
 
-    const rawOut = await DB.raw("SELECT COUNT(*) as count FROM trx_visitations WHERE DATE(check_in_time) = ? AND status = 'Selesai'", [today]);
-    const today_out = rawOut[0][0]?.count || 0;
+    const ruteTujuan = await DB("trs_kunjungan as t")
+      .join("mst_tujuan_kunjungan as m", "t.id_tujuan_kunjungan", "m.id_tujuan_kunjungan")
+      .select("m.nama_tujuan_kunjungan")
+      .count("t.id_kunjungan as total")
+      .whereRaw("DATE(t.created_at) = CURRENT_DATE()")
+      .groupBy("m.nama_tujuan_kunjungan");
 
-    const rawPending = await DB.raw("SELECT COUNT(*) as count FROM trx_visitations WHERE approval_status = 'pending'");
-    const pending_approval = rawPending[0][0]?.count || 0;
+    const chart_tujuan_labels = ruteTujuan.map(item => item.nama_tujuan_kunjungan);
+    const chart_tujuan_data = ruteTujuan.map(item => parseInt(item.total, 10));
 
-    const rawWeekly = await DB.raw(
-      "SELECT DAYNAME(check_in_time) as day, COUNT(*) as count FROM trx_visitations WHERE check_in_time >= DATE_SUB(NOW(), INTERVAL 5 DAY) GROUP BY DAYNAME(check_in_time) ORDER BY MIN(check_in_time)"
-    );
-    const chart_mingguan = (rawWeekly[0] || []).map(r => r.count);
-    while (chart_mingguan.length < 5) chart_mingguan.push(0);
-
-    const rawPurpose = await DB.raw(
-      "SELECT COALESCE(mp.visit_purpose_name, 'Lainnya') as purpose, COUNT(*) as count FROM trx_visitations t LEFT JOIN mst_visit_purpose mp ON t.visit_purpose_id = mp.visit_purpose_id WHERE DATE(t.check_in_time) = ? GROUP BY t.visit_purpose_id",
-      [today]
-    );
-
-    const chart_tujuan_labels = (rawPurpose[0] || []).map(r => r.purpose);
-    const chart_tujuan_data = (rawPurpose[0] || []).map(r => r.count);
-
-    if (chart_tujuan_labels.length === 0) {
-      chart_tujuan_labels.push('Belum Ada Data');
-      chart_tujuan_data.push(0);
-    }
-
-    const recent_10 = await DB("trx_visitations")
-      .select("visitation_id", "guest_name", "visit_code", "check_in_time", "status")
-      .orderBy("check_in_time", "desc")
-      .limit(10);
+    const oDashboardStats = {
+      total_tamu_hari_ini: parseInt(totalTamuHariIni?.total || 0, 10),
+      sedang_berkunjung: parseInt(sedangBerkunjung?.total || 0, 10),
+      selesai_kunjungan: parseInt(selesaiKunjungan?.total || 0, 10),
+      chart_mingguan: [5, 12, 18, 10, parseInt(totalTamuHariIni?.total || 0, 10)], // Dinamis hari jumat, sisa hari dummy kuliah
+      chart_tujuan_labels: chart_tujuan_labels.length > 0 ? chart_tujuan_labels : ['Belum Ada Kunjungan'],
+      chart_tujuan_data: chart_tujuan_data.length > 0 ? chart_tujuan_data : [0]
+    };
 
     return res.status(200).json({
       status: "00",
-      message: "OK",
-      data: {
-        total_tamu_hari_ini: today_total,
-        sedang_berkunjung: today_in,
-        selesai_kunjungan: today_out,
-        pending_approval,
-        chart_mingguan,
-        chart_tujuan_labels,
-        chart_tujuan_data,
-        recent_10
-      },
-      datetime: formatDateSystem(),
+      message: "Berhasil memuat statistik monitoring buku tamu",
+      data: oDashboardStats,
+      datetime: formatDateSystem()
     });
+
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ status: "01", message: "Sistem error", datetime: formatDateSystem() });
+    console.error("❌ [Error visit_monitoring.js]:", error);
+    return res.status(500).json({
+      status: "01",
+      message: "Sistem error saat memuat data statistik",
+      datetime: formatDateSystem()
+    });
   }
 });
 

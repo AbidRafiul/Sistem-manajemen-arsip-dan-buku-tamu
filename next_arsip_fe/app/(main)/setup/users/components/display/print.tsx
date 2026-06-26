@@ -14,7 +14,7 @@ const Print = ({ state, setState, formik, getData, toast, dataRekap, setDataReka
         const left = marginLeftInMm;
         const lineHeight = 6;
 
-        const nama_pengguna = state.session?.user.nama_pengguna || '';
+        const nama_pengguna = (state.session?.user as any)?.nama_pengguna || '';
         if (!Array.isArray(dataRekap.data) || dataRekap.data.length === 0) return;
 
         const vaData1 = dataRekap.data;

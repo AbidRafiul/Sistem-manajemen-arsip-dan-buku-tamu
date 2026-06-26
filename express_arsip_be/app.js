@@ -11,7 +11,6 @@ import Logger from "./middleware/logger.js";
 
 const app = express();
 
-// 1. BEBASKAN ASAL PORT (Izinkan port 3000 Frontend Next.js masuk langsung)
 app.use(
   cors({
     origin: process.env.ORIGIN1 || "http://localhost:3000",
@@ -29,6 +28,7 @@ app.use(
       "X-ENDPOINT",
       "x-endpoint",
       "x-level",
+      "x-access-token", 
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     optionSuccessStatus: 200,

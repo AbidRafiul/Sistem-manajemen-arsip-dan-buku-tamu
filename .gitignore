@@ -38,3 +38,8 @@ Thumbs.db
 !**/.env.example
 
 run_dev.sh
+
+# ========================
+# Temporary / Debug Scripts
+# ========================
+**/temp/

@@ -48,16 +48,16 @@ const authOptions = {
             // Initial sign in
             if (user) {
                 const anyUser = user as any;
-                token.id = anyUser.IdPengguna || user.id;
-                token.id = user.id;
-                token.role = user.role;
-                (token as any).roleCode = (user as any).roleCode;
-                (token as any).roleId = (user as any).roleId;
-                token.uniqueId = user.uniqueId;
-                token.name = user.name;
-                token.nama_pengguna = user.nama_pengguna;
-                token.remember_me = user.remember_me;
-                token.userCredential = user.credential;
+                token.id = anyUser.IdPengguna || anyUser.id;
+                token.id = anyUser.id;
+                token.role = anyUser.role;
+                (token as any).roleCode = anyUser.roleCode;
+                (token as any).roleId = anyUser.roleId;
+                token.uniqueId = anyUser.uniqueId;
+                token.name = anyUser.name;
+                token.nama_pengguna = anyUser.nama_pengguna;
+                token.remember_me = anyUser.remember_me;
+                token.userCredential = anyUser.credential;
 
                 const now = Math.floor(Date.now() / 1000);
                 const expireDuration = user.remember_me ? 24 * 60 * 60 : 7 * 60 * 60;
@@ -86,7 +86,7 @@ const authOptions = {
                 (session.user as any).roleCode = (token as any).roleCode;
                 (session.user as any).roleId = (token as any).roleId;
                 session.user.name = token.name as string;
-                session.user.nama_pengguna = token.nama_pengguna as string;
+                (session.user as any).nama_pengguna = token.nama_pengguna as string;
             }
 
             if (token.expiry) {
@@ -98,37 +98,40 @@ const authOptions = {
         },
         async signIn({ user: user }: { user: User }) {
             try {
-                if (user.credential) {
-                    const cookieStore = cookies();
-                    const maxAge = user.remember_me ? 60 * 60 * 24 : 60 * 60 * 7;
+                const anyUser = user as any;
+                const cookieStore = cookies();
+                const maxAge = anyUser.remember_me ? 60 * 60 * 24 : 60 * 60 * 7;
 
-                    const secret = new TextEncoder().encode(process.env.USER_KEY);
-                    const payload = {
-                        IdPengguna: (user as any).IdPengguna || user.id,
-                        name: user.name,
-                        nama_pengguna: (user as any).nama_pengguna
-                    };
-                    const token = await new SignJWT(payload)
-                        .setProtectedHeader({ alg: 'HS512' })
-                        .setExpirationTime(user.remember_me ? '1d' : '7h')
-                        .sign(secret);
+                const secret = new TextEncoder().encode(process.env.USER_KEY);
+                const jwtPayload = {
+                    IdPengguna: anyUser.IdPengguna || user.id,
+                    id_pengguna: anyUser.IdPengguna || user.id,
+                    name: user.name,
+                    nama_pengguna: anyUser.nama_pengguna
+                };
 
+                // _A2R selalu dibuat — ini yang dipakai middleware untuk auth
+                const token = await new SignJWT(jwtPayload)
+                    .setProtectedHeader({ alg: 'HS512' })
+                    .setExpirationTime(anyUser.remember_me ? '1d' : '7h')
+                    .sign(secret);
+
+                cookieStore.set({
+                    name: '_A2R',
+                    value: token,
+                    httpOnly: false,
+                    secure: false,
+                    sameSite: 'lax',
+                    path: '/',
+                    maxAge
+                });
+
+                // _A2F hanya dibuat jika backend mengirim credential
+                if (anyUser.credential) {
                     cookieStore.set({
                         name: '_A2F',
-                        value: user.credential,
+                        value: anyUser.credential,
                         httpOnly: false,
-                        // secure: process.env.NODE_ENV === 'production',
-                        secure: false,
-                        sameSite: 'lax',
-                        path: '/',
-                        maxAge
-                    });
-
-                    cookieStore.set({
-                        name: '_A2R',
-                        value: token,
-                        httpOnly: false,
-                        // secure: process.env.NODE_ENV === 'production',
                         secure: false,
                         sameSite: 'lax',
                         path: '/',
