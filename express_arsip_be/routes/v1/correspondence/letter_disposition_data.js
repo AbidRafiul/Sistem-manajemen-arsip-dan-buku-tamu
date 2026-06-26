@@ -52,17 +52,17 @@ const letterDispositionData = async (req, res) => {
       .leftJoin(
         "mst_pengguna as dari_pengguna",
         "tld.dari_pengguna_id",
-        "dari_pengguna.id_pengguna"
+        "dari_pengguna.user_id"
       )
       .leftJoin(
         "mst_pengguna as kepada_pengguna",
         "tld.kepada_pengguna_id",
-        "kepada_pengguna.id_pengguna"
+        "kepada_pengguna.user_id"
       )
       .leftJoin(
         "mst_pengguna as processed_user",
         "tld.updated_by",
-        "processed_user.id_pengguna"
+        "processed_user.user_id"
       )
       .select(
         "tld.disposisi_surat_id",
@@ -75,10 +75,10 @@ const letterDispositionData = async (req, res) => {
 
         "tld.disposisi_induk_id",
         "tld.dari_pengguna_id",
-        "dari_pengguna.nama_lengkap as from_user_name",
+        "dari_pengguna.fullname as from_user_name",
         "tld.kepada_pengguna_id",
-        "kepada_pengguna.nama_lengkap as to_user_name",
-        "processed_user.nama_lengkap as processed_by_name",
+        "kepada_pengguna.fullname as to_user_name",
+        "processed_user.fullname as processed_by_name",
         "tld.instruksi_disposisi_id",
         "mdi.nama_instruksi",
 

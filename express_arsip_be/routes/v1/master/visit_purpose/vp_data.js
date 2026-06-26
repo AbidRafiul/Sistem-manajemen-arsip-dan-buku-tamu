@@ -7,16 +7,16 @@ const router = express.Router();
 
 router.post("/vp-data", async (req, res) => {
   try {
-    const vaData = await DB("mst_visit_purpose")
+    const vaData = await DB("mst_tujuan_kunjungan")
       .select(
-        "visit_purpose_id as VisitPurposeId",
-        "visit_purpose_code as VisitPurposeCode",
-        "visit_purpose_name as VisitPurposeName",
-        "description as Description",
+        "id_tujuan_kunjungan as VisitPurposeId",
+        "kode_tujuan_kunjungan as VisitPurposeCode",
+        "nama_tujuan_kunjungan as VisitPurposeName",
+        "deskripsi as Description",
         "status",
       )
       .where("status", "active")
-      .orderBy("visit_purpose_id", "asc");
+      .orderBy("id_tujuan_kunjungan", "asc");
 
     return res.status(200).json({
       status: status.SUKSES,
