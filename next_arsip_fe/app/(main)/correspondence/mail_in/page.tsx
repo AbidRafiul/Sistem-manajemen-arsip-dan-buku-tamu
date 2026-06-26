@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { apiEndpointGet } from "./components/endpoints";
 import { TableData } from "./components/interfaces";
 import { mapIncomingLetterRow } from "./components/mappers";
-import DashboardView  from "./components/display/dashboardView";
+import DashboardView, { FilterKey } from "./components/display/dashboardView";
 
 const dispositionEndpoint = "/correspondence/letter-disposition-data";
 

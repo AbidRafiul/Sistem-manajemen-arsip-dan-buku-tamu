@@ -98,7 +98,7 @@ const incomingLetterUpload = async (req, res) => {
 
     await DB("trs_tracking_surat_masuk").insert({
       surat_masuk_id: oPayload.surat_masuk_id,
-      diposisi_id: null,
+      disposisi_surat_id: null,
       nama_aksi: "file_surat_diupload",
       dari_pengguna_id: null,
       kepada_pengguna_id: null,

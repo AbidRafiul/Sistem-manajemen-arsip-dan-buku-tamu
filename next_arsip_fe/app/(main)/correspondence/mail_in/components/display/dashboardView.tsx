@@ -7,12 +7,14 @@ import { DataTable } from "primereact/datatable";
 import { Tag } from "primereact/tag";
 import { TableData } from "../interfaces";
 
+export type FilterKey = "all" | "needs_action" | "archived";
+
 export interface DashboardViewProps {
     letters: TableData[];
     dispositions: Record<string, any>[];
-    activeFilter: "all" | "needs_action" | "archived";
+    activeFilter: FilterKey;
     loading: boolean;
-    onFilterChange: (val: "all" | "needs_action" | "archived") => void;
+    onFilterChange: (val: FilterKey) => void;
     onRefresh: () => void;
 }
 
@@ -94,23 +96,23 @@ const DashboardView = ({
                 <i className="pi pi-file text-primary text-sm" />
             </div>
             <div>
-                <div className="font-semibold text-sm text-900">{rowData.agenda_number || rowData.letter_number}</div>
-                <div className="text-xs text-color-secondary">{rowData.sender_institution || rowData.sender_name || "-"}</div>
+                <div className="font-semibold text-sm text-900">{rowData.nomor_agenda || rowData.nomor_surat}</div>
+                <div className="text-xs text-color-secondary">{rowData.instansi_pengirim || rowData.nama_pengirim || "-"}</div>
             </div>
         </div>
     );
 
     const letterSubjectTemplate = (rowData: TableData) => (
         <div>
-            <div className="font-semibold text-sm text-900">{rowData.subject || "-"}</div>
-            <div className="text-xs text-color-secondary mt-1">{rowData.letter_number || "-"}</div>
+            <div className="font-semibold text-sm text-900">{rowData.perihal || "-"}</div>
+            <div className="text-xs text-color-secondary mt-1">{rowData.nomor_surat || "-"}</div>
         </div>
     );
 
     const letterDateTemplate = (rowData: TableData) => (
         <div>
-            <div className="font-semibold text-sm text-900">{formatDate(rowData.received_date)}</div>
-            <div className="text-xs text-color-secondary mt-1">{formatTime(rowData.received_date)} WIB</div>
+            <div className="font-semibold text-sm text-900">{formatDate(rowData.tanggal_diterima)}</div>
+            <div className="text-xs text-color-secondary mt-1">{formatTime(rowData.tanggal_diterima)} WIB</div>
         </div>
     );
 
@@ -120,7 +122,7 @@ const DashboardView = ({
             <Card className="border-none shadow-1 border-round-2xl overflow-hidden relative">
                 <div className="flex flex-column md:flex-row align-items-center justify-content-between gap-3 z-1 relative">
                     <div>
-                        <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: "0.1em" }}>Protected Workspace</span>
+                        <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: "0.1em" }}>Halaman Kerja Terlindungi</span>
                         <h1 className="m-0 text-900 font-extrabold text-3xl mt-1 mb-2" style={{ letterSpacing: "-0.03em" }}>Surat Masuk</h1>
                         <p className="m-0 text-color-secondary text-sm font-medium">Monitoring alur disposisi surat masuk dalam satu dashboard arsip.</p>
                     </div>
@@ -279,13 +281,13 @@ const DashboardView = ({
                         </div>
                         <div className="flex flex-column gap-3">
                             {recentLetters.map((letter) => (
-                                <div className="flex align-items-start gap-3 p-2 border-round hover:surface-50 transition-colors" key={letter.incoming_letter_id}>
+                                <div className="flex align-items-start gap-3 p-2 border-round hover:surface-50 transition-colors" key={letter.surat_masuk_id}>
                                     <div className="flex align-items-center justify-content-center border-circle bg-blue-50 border-1 border-blue-100 flex-shrink-0" style={{ width: "2rem", height: "2rem" }}>
                                         <i className="pi pi-envelope text-blue-500 text-xs" />
                                     </div>
                                     <div className="overflow-hidden">
-                                        <div className="font-semibold text-sm text-900 truncate">{letter.sender_name || letter.sender_institution || "Surat Masuk"}</div>
-                                        <p className="m-0 text-xs text-color-secondary mt-1 text-ellipsis">{letter.subject || letter.letter_number}</p>
+                                        <div className="font-semibold text-sm text-900 truncate">{letter.nama_pengirim || letter.instansi_pengirim || "Surat Masuk"}</div>
+                                        <p className="m-0 text-xs text-color-secondary mt-1 text-ellipsis">{letter.perihal || letter.nomor_surat}</p>
                                     </div>
                                 </div>
                             ))}

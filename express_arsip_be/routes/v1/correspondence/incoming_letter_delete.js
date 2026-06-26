@@ -8,9 +8,13 @@ const router = express.Router();
 const incomingLetterDelete = async (req, res) => {
   try {
     const oPayload = req.body || {};
+    if (!oPayload.surat_masuk_id && oPayload.incoming_letter_id) {
+      oPayload.surat_masuk_id = oPayload.incoming_letter_id;
+      delete oPayload.incoming_letter_id;
+    }
 
     const oValidation = {
-      incoming_letter_id: Joi.number().required(),
+      surat_masuk_id: Joi.number().required(),
     };
 
     const oMessage = {
@@ -30,7 +34,7 @@ const incomingLetterDelete = async (req, res) => {
     }
 
     const oLetter = await DB("trs_surat_masuk")
-      .where("surat_masuk_id", oPayload.incoming_letter_id)
+      .where("surat_masuk_id", oPayload.surat_masuk_id)
       .first();
 
     if (!oLetter) {
@@ -42,7 +46,7 @@ const incomingLetterDelete = async (req, res) => {
 
     await DB.transaction(async (trx) => {
       await trx("trs_surat_masuk")
-        .where("surat_masuk_id", oPayload.incoming_letter_id)
+        .where("surat_masuk_id", oPayload.surat_masuk_id)
         .del();
     });
 

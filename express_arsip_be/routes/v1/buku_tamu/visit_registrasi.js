@@ -34,7 +34,7 @@ router.post(
           GuestName: Joi.string().max(100).required().label("GuestName"),
           PhoneNumber: Joi.string().max(45).required().label("PhoneNumber"),
           Guestsurel: Joi.string()
-            .surel()
+            .email()
             .max(150)
             .optional()
             .allow(null, "")
@@ -57,6 +57,11 @@ router.post(
             .optional()
             .allow(null, "")
             .label("HostNamaPengguna"),
+          HostIdPengguna: Joi.alternatives()
+            .try(Joi.string(), Joi.number())
+            .optional()
+            .allow(null, "")
+            .label("HostIdPengguna"),
           HostName: Joi.string()
             .max(100)
             .optional()
@@ -114,6 +119,7 @@ router.post(
         GuestPosition,
         VisitPurposeId,
         HostNamaPengguna,
+        HostIdPengguna,
         HostName,
         IdentityType,
         IdentityNumber,
@@ -152,13 +158,13 @@ router.post(
       const oData = {
         guest_name: GuestName,
         phone_number: PhoneNumber,
-        guest_surel: Guestsurel,
+        guest_email: Guestsurel,
         guest_company: GuestCompany,
         guest_position: GuestPosition,
         identity_type: IdentityType,
         identity_number: IdentityNumber,
         visit_purpose_id: VisitPurposeId,
-        host_nama_pengguna: HostNamaPengguna,
+        host_user_id: Number(HostIdPengguna || HostNamaPengguna) || null,
         host_name: HostName,
         visit_notes: VisitNotes,
         photo_face: PhotoFace,

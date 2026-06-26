@@ -62,7 +62,7 @@ export interface IncomingLetterFile {
 }
 
 export interface IncomingLetterDisposition {
-    disposisi_id: number;
+    disposisi_surat_id: number;
     surat_masuk_id: number;
     disposisi_induk_id: number | null;
     dari_pengguna_id: number | null;
@@ -78,7 +78,7 @@ export interface IncomingLetterDisposition {
 export interface IncomingLetterTracking {
     tracking_surat_masuk_id: number;
     surat_masuk_id: number;
-    disposisi_id: number | null;
+    disposisi_surat_id: number | null;
     nama_aksi: string;
     status_sebelumnya: string | null;
     status_saat_ini: string | null;
@@ -88,8 +88,10 @@ export interface IncomingLetterTracking {
 
 export interface IncomingLetterDetailData {
     surat: Record<string, any> | null;
+    letter?: Record<string, any> | null;
     files: IncomingLetterFile[];
     disposisi: IncomingLetterDisposition[];
+    dispositions?: IncomingLetterDisposition[];
     trackings: IncomingLetterTracking[];
 }
 

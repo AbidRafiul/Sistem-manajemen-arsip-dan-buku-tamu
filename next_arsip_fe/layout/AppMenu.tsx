@@ -1,17 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import AppMenuitem from './AppMenuitem';
-import { LayoutContext } from './context/layoutcontext';
-import { MenuProvider } from './context/menucontext';
-
-//HIDUPKAN LAGI IMPORT NEXT-AUTH
-import { useSession } from 'next-auth/react';
 
 import postData from '@/lib/axios/postData';
-import { InputText } from 'primereact/inputtext';
 import { AppMenuItem } from '@/types';
+import { useSession } from 'next-auth/react';
+import { InputText } from 'primereact/inputtext';
 import { Skeleton } from 'primereact/skeleton';
+import React, { useEffect, useRef, useState } from 'react';
+import AppMenuitem from './AppMenuitem';
+import { MenuProvider } from './context/menucontext';
 
 interface MenuState {
     searchVal: string;
@@ -21,14 +18,10 @@ interface MenuState {
 }
 
 const parseMenuPayload = (payload: any): AppMenuItem[] => {
-    let menuPayload = payload?.data ?? payload?.menu ?? payload;
+    let menuPayload = payload?.menu ?? payload?.data ?? payload?.menus ?? payload;
 
     if (Array.isArray(menuPayload) && menuPayload.length === 1 && menuPayload[0]?.menu) {
         menuPayload = menuPayload[0].menu;
-    }
-
-    if (menuPayload?.menu) {
-        menuPayload = menuPayload.menu;
     }
 
     if (typeof menuPayload === 'string') {
@@ -40,6 +33,10 @@ const parseMenuPayload = (payload: any): AppMenuItem[] => {
         }
     }
 
+    if (Array.isArray(menuPayload?.menu)) {
+        menuPayload = menuPayload.menu;
+    }
+
     if (Array.isArray(menuPayload?.data)) {
         menuPayload = menuPayload.data;
     }
@@ -49,6 +46,119 @@ const parseMenuPayload = (payload: any): AppMenuItem[] => {
     }
 
     return Array.isArray(menuPayload) ? menuPayload : [];
+};
+
+const cloneMenu = (menu: AppMenuItem[]) => JSON.parse(JSON.stringify(menu)) as AppMenuItem[];
+
+const mailInSubMenuItems: AppMenuItem[] = [
+    {
+        label: 'Dashboard',
+        icon: 'pi pi-fw pi-chart-line',
+        to: '/correspondence/mail_in',
+        class: 'mail-in-child'
+    },
+    {
+        label: 'Data Surat Masuk',
+        icon: 'pi pi-fw pi-table',
+        to: '/correspondence/mail_in/data',
+        class: 'mail-in-child'
+    },
+    {
+        label: 'Disposisi Surat',
+        icon: 'pi pi-fw pi-send',
+        to: '/correspondence/mail_in/disposition',
+        class: 'mail-in-child'
+    }
+];
+
+const normalizeMailInMenu = (menu: AppMenuItem[]): AppMenuItem[] => {
+    const mailInPaths = new Set(mailInSubMenuItems.map((item) => item.to));
+
+    return menu.map((group) => {
+        if (group.label?.toUpperCase() !== 'PERSURATAN' || !Array.isArray(group.items)) {
+            return group;
+        }
+
+        const existingMailInParent = group.items.find((item) => item.label?.toLowerCase() === 'surat masuk' && Array.isArray(item.items));
+        const otherItems = group.items.filter((item) => !mailInPaths.has(item.to) && item !== existingMailInParent);
+
+        const mailInParent: AppMenuItem = {
+            label: 'Surat Masuk',
+            icon: 'pi pi-fw pi-inbox',
+            class: 'mail-in-menu',
+            items: mailInSubMenuItems.map((defaultItem) => {
+                const savedItem = existingMailInParent?.items?.find((item) => item.to === defaultItem.to) || group.items?.find((item) => item.to === defaultItem.to);
+
+                return {
+                    ...defaultItem,
+                    ...savedItem,
+                    label: defaultItem.label,
+                    class: 'mail-in-child'
+                };
+            })
+        };
+
+        return {
+            ...group,
+            items: [mailInParent, ...otherItems]
+        };
+    });
+};
+
+const searchMenuByLabel = (menu: AppMenuItem[] | undefined, keyword: string, parentIndexes: number[] = []): AppMenuItem[] => {
+    if (!Array.isArray(menu) || menu.length === 0) return [];
+
+    const lowerKeyword = keyword?.toLowerCase() || '';
+
+    if (!lowerKeyword.trim()) {
+        return menu.map((item, idx) => {
+            const newItem: AppMenuItem = {
+                ...item,
+                indexPath: [...parentIndexes, idx]
+            };
+
+            if (item.items && item.items.length > 0) {
+                newItem.items = searchMenuByLabel(item.items, '', [...parentIndexes, idx]);
+            }
+
+            return newItem;
+        });
+    }
+
+    return menu
+        .map((item, idx): AppMenuItem | null => {
+            const isMatch = item.label?.toLowerCase().includes(lowerKeyword);
+            const childMatches = searchMenuByLabel(item.items || [], keyword, [...parentIndexes, idx]);
+
+            if (isMatch) {
+                const newItem: AppMenuItem = {
+                    ...item,
+                    indexPath: [...parentIndexes, idx]
+                };
+
+                if (item.items && item.items.length > 0) {
+                    newItem.items = childMatches;
+                }
+
+                return newItem;
+            }
+
+            if (childMatches.length > 0) {
+                const newItem: AppMenuItem = {
+                    ...item,
+                    indexPath: [...parentIndexes, idx]
+                };
+
+                if (item.items && item.items.length > 0) {
+                    newItem.items = childMatches;
+                }
+
+                return newItem;
+            }
+
+            return null;
+        })
+        .filter((item): item is AppMenuItem => item !== null);
 };
 
 const AppMenu = () => {
@@ -63,180 +173,49 @@ const AppMenu = () => {
         menu: []
     });
 
+    const getMenu = async (nama_pengguna: string) => {
+        setState((prev) => ({ ...prev, load: true }));
+
+        try {
+            const { data: vaData } = await postData('setup/nav/user-data', { nama_pengguna });
+            const dbMenu = parseMenuPayload(vaData);
+            const menu = normalizeMailInMenu(cloneMenu(dbMenu));
+
+            setState((prev) => ({
+                ...prev,
+                filteredMenu: cloneMenu(menu),
+                menu
+            }));
+        } catch (error) {
+            console.error('Error loading menu:', error);
+            setState((prev) => ({
+                ...prev,
+                filteredMenu: [],
+                menu: []
+            }));
+        } finally {
+            setState((prev) => ({ ...prev, load: false }));
+        }
+    };
+
     useEffect(() => {
         const user = session?.user as any;
 
-<<<<<<< Updated upstream
-    return [
-        ...menu,
-        {
-            label: 'ARSIP DOKUMEN',
-            icon: 'pi pi-folder',
-            items: archiveDocumentItems
-        }
-    ];
-};
-
-const ensureCorrespondenceMenu = (menu: AppMenuItem[]) => {
-    const cleanMailInItems = (items: AppMenuItem[] = []): AppMenuItem[] => {
-        return items
-            .filter((item) => {
-                const label = item.label?.toLowerCase();
-                const path = item.to || '';
-                return label !== 'mail in' && !path.startsWith('/correspondence/mail_in');
-            })
-            .map((item) => {
-                const childItems = cleanMailInItems(item.items || []);
-                const nextItem = { ...item };
-
-                if (childItems.length > 0) {
-                    nextItem.items = childItems;
-                } else {
-                    delete nextItem.items;
-                }
-
-                return nextItem;
-            });
-    };
-
-    const correspondence = menu.find((item) => {
-        const label = item.label?.toLowerCase();
-        return label === 'correspondence' || label === 'korespondensi';
-    });
-
-    if (correspondence) {
-        correspondence.items = [...cleanMailInItems(correspondence.items || []), mailInMenu];
-        return menu;
-    }
-
-    return [
-        ...menu,
-        {
-            label: 'Korespondensi',
-            icon: 'pi pi-envelope',
-            items: [mailInMenu]
-        }
-    ];
-};
-
-const ensureGuestBookMenu = (menu: AppMenuItem[]) => {
-    const hasItem = (items: AppMenuItem[] = [], toPath: string): boolean => {
-        return items.some((item) => item.to === toPath || hasItem(item.items || [], toPath));
-    };
-
-    const hasAll = guestBookItems.every((reqItem) => hasItem(menu, reqItem.to || ''));
-    if (hasAll) return menu;
-
-    const guestBookGroup = menu.find((item) => {
-        const label = item.label?.toLowerCase();
-        return label === 'buku tamu' || label === 'guest book';
-    });
-
-    if (guestBookGroup) {
-        const existingTos = (guestBookGroup.items || []).map((item) => item.to);
-        const missingItems = guestBookItems.filter((item) => !existingTos.includes(item.to));
-        guestBookGroup.items = [...(guestBookGroup.items || []), ...missingItems];
-        return menu;
-    }
-
-    return [
-        ...menu,
-        {
-            label: 'BUKU TAMU',
-            icon: 'pi pi-id-card',
-            items: guestBookItems
-        }
-    ];
-};
-
-const removeLegacyCorrespondenceMenu = (menu: AppMenuItem[]) => {
-    return menu.filter((item) => item.label?.toLowerCase() !== 'korespondensi');
-};
-
-const AppMenu = () => {
-    const { data: session } = useSession();
-
-    const { layoutConfig } = useContext(LayoutContext);
-    const searchRef = useRef<HTMLInputElement>(null);
-    const lastPressTime = useRef<number>(0);
-
-    const [state, setState] = useState<MenuState>({
-        searchVal: '',
-        filteredMenu: [],
-        load: true,
-        menu: []
-    });
-
-    //  AMBIL IdPengguna DARI SESSION UNTUK DIKIRIM KE BACKEND
-    useEffect(() => {
-        const user = session?.user as any;
-
-        if (user) {
-            // Kita log untuk memastikan IdPengguna sudah ada
-            console.log('ISI SESSION USER:', user);
-
-            // Gunakan IdPengguna (sesuai yang kita pasang di session tadi)
-            const activeId = user.IdPengguna || user.id;
-
-            if (activeId) {
-                getMenu(activeId);
-            }
-        }
-    }, [session]);
-
-<<<<<<< HEAD
-       const getMenu = async (userId: string | number) => {
-=======
         if (status === 'loading') {
->>>>>>> Stashed changes
             setState((prev) => ({ ...prev, load: true }));
             return;
         }
 
-        if (!user) {
+        const nama_pengguna = String(user?.nama_pengguna || user?.kode_pengguna || '').trim();
+
+        if (!nama_pengguna) {
             setState((prev) => ({ ...prev, filteredMenu: [], menu: [], load: false }));
             return;
         }
 
-        const activeRole = user.role || user.roleCode || user.roleId;
-
-        if (activeRole) {
-            getMenu({
-                Role: user.role,
-                RoleCode: user.roleCode,
-                RoleId: user.roleId,
-                UserId: user.UserId || user.id
-            });
-        } else {
-            setState((prev) => ({ ...prev, filteredMenu: [], menu: [], load: false }));
-        }
+        getMenu(nama_pengguna);
     }, [session, status]);
 
-    const getMenu = async (payload: Record<string, string | number | undefined>) => {
-        setState((prev) => ({ ...prev, load: true }));
-        try {
-            const { data: vaData } = await postData('setup/nav/base-data', payload);
-            const dbMenu = parseMenuPayload(vaData);
-            const menu: AppMenuItem[] = JSON.parse(JSON.stringify(dbMenu));
-            const menu2: AppMenuItem[] = JSON.parse(JSON.stringify(dbMenu));
-
-            setState((prev) => ({
-                ...prev,
-                filteredMenu: menu2,
-                menu: menu
-            }));
-        } catch (error) {
-            console.error('Error loading menu:', error);
-            setState((prev) => ({
-                ...prev,
-                filteredMenu: [],
-                menu: []
-            }));
-        } finally {
-            setState((prev) => ({ ...prev, load: false }));
-        }
-    };
-
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.ctrlKey && e.key.toLowerCase() === 'f') {
@@ -247,71 +226,6 @@ const AppMenu = () => {
                     return;
                 }
 
-=======
-    const getMenu = async (IdPengguna: string | number) => {
-        setState((prev) => ({ ...prev, load: true }));
-        try {
-            const { data: vaData } = await postData('setup/nav/user-data', { IdPengguna: IdPengguna });
-
-            // 1. Log data mentah untuk debugging di Console Browser
-            console.log('MENTAHAN DARI BACKEND:', vaData);
-
-            if (!vaData?.data) {
-                throw new Error('Data menu tidak ditemukan dari backend');
-            }
-
-            // 2. Filter Anti-Crash: Pastikan menu adalah Array
-            let menuArray = vaData.data;
-
-            // Kalau MySQL ngirim string, kita bongkar dulu jadi Array
-            if (typeof menuArray === 'string') {
-                try {
-                    menuArray = JSON.parse(menuArray);
-                } catch (e) {
-                    console.error('Gagal memecah string menu dari database:', e);
-                    menuArray = [];
-                }
-            }
-
-            // Pengaman ekstra: Kalau ternyata tetap bukan array, paksa jadi array kosong
-            if (!Array.isArray(menuArray)) {
-                console.error('Format menu tidak valid (bukan array):', menuArray);
-                menuArray = [];
-            }
-
-            // 3. Olah data yang sudah dipastikan aman
-            const normalizedMenu = ensureGuestBookMenu(ensureArchiveDocumentMenu(ensureCorrespondenceMenu(removeLegacyCorrespondenceMenu(menuArray))));
-            const menu: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
-            const menu2: AppMenuItem[] = JSON.parse(JSON.stringify(normalizedMenu));
-
-            setState((prev) => ({
-                ...prev,
-                filteredMenu: menu2,
-                menu: menu
-            }));
-        } catch (error) {
-            console.error('Error loading menu:', error);
-            setState((prev) => ({
-                ...prev,
-                filteredMenu: [],
-                menu: []
-            }));
-        } finally {
-            setState((prev) => ({ ...prev, load: false }));
-        }
-    };
-
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.ctrlKey && e.key.toLowerCase() === 'f') {
-                const now = Date.now();
-
-                if (now - lastPressTime.current < 1000) {
-                    lastPressTime.current = 0;
-                    return;
-                }
-
->>>>>>> main
                 e.preventDefault();
                 lastPressTime.current = now;
                 searchRef.current?.focus();
@@ -322,56 +236,6 @@ const AppMenu = () => {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
-
-    const searchMenuByLabel = (menu: AppMenuItem[] | undefined, keyword: string, parentIndexes: number[] = []): AppMenuItem[] => {
-        if (!Array.isArray(menu) || menu.length === 0) return [];
-
-        const lowerKeyword = keyword?.toLowerCase() || '';
-
-        if (!lowerKeyword.trim()) {
-            return menu.map((item, idx) => {
-                const newItem: AppMenuItem = {
-                    ...item,
-                    indexPath: [...parentIndexes, idx]
-                };
-
-                if (item.items && item.items.length > 0) {
-                    newItem.items = searchMenuByLabel(item.items, '', [...parentIndexes, idx]);
-                }
-
-                return newItem;
-            });
-        }
-
-        return menu
-            .map((item, idx): AppMenuItem | null => {
-                const isMatch = item.label?.toLowerCase().includes(lowerKeyword);
-                const childMatches = searchMenuByLabel(item.items || [], keyword, [...parentIndexes, idx]);
-
-                if (isMatch) {
-                    const newItem: AppMenuItem = {
-                        ...item,
-                        indexPath: [...parentIndexes, idx]
-                    };
-                    if (item.items && item.items.length > 0) {
-                        newItem.items = childMatches;
-                    }
-                    return newItem;
-                } else if (childMatches.length > 0) {
-                    const newItem: AppMenuItem = {
-                        ...item,
-                        indexPath: [...parentIndexes, idx]
-                    };
-                    if (item.items && item.items.length > 0) {
-                        newItem.items = childMatches;
-                    }
-                    return newItem;
-                }
-
-                return null;
-            })
-            .filter((item): item is AppMenuItem => item !== null);
-    };
 
     useEffect(() => {
         const filtered = searchMenuByLabel(state.menu, state.searchVal);
@@ -400,12 +264,9 @@ const AppMenu = () => {
                         className="w-full"
                         value={state.searchVal}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                            const keyword = e.target.value;
-                            const filtered = searchMenuByLabel(state.menu, keyword);
                             setState((prev) => ({
                                 ...prev,
-                                searchVal: keyword,
-                                filteredMenu: filtered
+                                searchVal: e.target.value
                             }));
                         }}
                         placeholder="Cari..."
@@ -413,23 +274,23 @@ const AppMenu = () => {
                 </span>
             </div>
             <ul className="layout-menu">
-                {state.load
-                    ? [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((item, i) => (
-                          <li className="my-3" key={`menu-skeleton-${i}`}>
-                              <Skeleton className="py-4" />
-                          </li>
-                      ))
-<<<<<<< HEAD
-                    : state.filteredMenu?.map((item, i) =>
-                          !item.separator ? (
-                              <AppMenuitem load={state.load} item={item} root={true} index={i} key={item.label || `menu-item-${i}`} />
-                          ) : (
-                              <li className="menu-separator" key={`separator-${i}`}></li>
-                          )
-                      )}
-=======
-                    : state.filteredMenu?.map((item, i) => (!item.separator ? <AppMenuitem load={state.load} item={item} root={true} index={i} key={item.label || `menu-item-${i}`} /> : <li className="menu-separator" key={`separator-${i}`}></li>))}
->>>>>>> main
+                {state.load ? (
+                    [1, 1, 1, 1, 1, 1, 1, 1].map((item, i) => (
+                        <li className="my-3" key={`menu-skeleton-${i}`}>
+                            <Skeleton className="py-4" />
+                        </li>
+                    ))
+                ) : state.filteredMenu.length > 0 ? (
+                    state.filteredMenu.map((item, i) =>
+                        !item.separator ? (
+                            <AppMenuitem load={state.load} item={item} root={true} index={i} key={item.label || `menu-item-${i}`} />
+                        ) : (
+                            <li className="menu-separator" key={`separator-${i}`}></li>
+                        )
+                    )
+                ) : (
+                    <li className="px-3 py-2 text-sm text-color-secondary">Menu belum tersedia</li>
+                )}
             </ul>
         </MenuProvider>
     );

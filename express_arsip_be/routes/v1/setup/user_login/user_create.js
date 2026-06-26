@@ -55,8 +55,6 @@ router.post("/", async (req, res) => {
       },
       oPayload,
       {
-        uniqueField: ["nama_pengguna", "telepon"],
-        table: "mst_pengguna", // Validasi langsung cek ke mst_pengguna
         allowUnknown: true,
       },
     );
@@ -77,6 +75,22 @@ router.post("/", async (req, res) => {
       return res.status(422).json(oResult);
     }
 
+    const existingUser = await DB("mst_pengguna")
+      .where("username", oPayload.nama_pengguna)
+      .orWhere("telp", oPayload.telepon)
+      .first();
+
+    if (existingUser) {
+      return res.status(422).json({
+        status: status.BAD_REQUEST,
+        message:
+          existingUser.username === oPayload.nama_pengguna
+            ? "Data dengan nama_pengguna tersebut sudah digunakan"
+            : "Data dengan telepon tersebut sudah digunakan",
+        datetime: formatDateSystem(),
+      });
+    }
+
     // HASH kata_sandi PAKAI nama_pengguna SEBAGAI SALT
     let hashedkata_sandi = "";
     if (oPayload.kata_sandi) {
@@ -95,8 +109,9 @@ router.post("/", async (req, res) => {
     // 2. CARI peran DATA TERLEBIH DAHULU SEBELUM TRANSAKSI
     // Mencari berdasarkan ID (angka) atau peranName (string)
     const peranData = await DB("mst_peran")
-      .where("id_peran", inputperan)
-      .orWhere("nama_peran", inputperan)
+      .where("role_id", inputperan)
+      .orWhere("role_name", inputperan)
+      .orWhere("role_code", inputperan)
       .first();
 
     if (!peranData) {
@@ -111,7 +126,8 @@ router.post("/", async (req, res) => {
     // Karena peranData sudah ketemu, kita pasti bisa mengambil peranName-nya
     const oNavigation = await DB("mst_navigasi")
       .select("menu")
-      .where("peran", peranData.nama_peran)
+      .where("role", peranData.role_name)
+      .orWhere("role", peranData.role_code)
       .first();
 
     // 4. VALIDASI NAVIGASI
@@ -127,42 +143,48 @@ router.post("/", async (req, res) => {
     await DB.transaction(async (trx) => {
       // 1. Masuk ke mst_pengguna (Buku Induk)
       const [newUserId] = await trx("mst_pengguna").insert({
-        nama_lengkap: oPayload.nama_lengkap,
-        nama_pengguna: oPayload.nama_pengguna,
-        telepon: oPayload.telepon,
-        kata_sandi: hashedkata_sandi,
+        fullname: oPayload.nama_lengkap,
+        username: oPayload.nama_pengguna,
+        email: oPayload.surel || oPayload.email || oPayload.nama_pengguna,
+        telp: oPayload.telepon,
+        password: hashedkata_sandi,
         status:
           oPayload.status == "1" || oPayload.status == "active"
             ? "active"
             : "nonactive",
-        id_cabang: oPayload.id_cabang || null,
-        id_jabatan: oPayload.id_jabatan || null,
-        id_divisi: oPayload.id_divisi || null,
-        id_departemen: oPayload.id_departemen || null,
-        id_unit_kerja: oPayload.id_unit_kerja || null,
+        branch_id: Number(oPayload.id_cabang) || 1,
+        position_id: Number(oPayload.id_jabatan) || 1,
+        division_id: Number(oPayload.id_divisi) || 1,
+        department_id: Number(oPayload.id_departemen) || 1,
+        work_unit_id: Number(oPayload.id_unit_kerja) || 1,
         created_at: formatDateSystem(),
         updated_at: formatDateSystem(),
       });
 
-      // Masuk ke mst_pengguna_perans (Relasi Jabatan)
-      // Pakai peranData.id_peran dari pencarian di atas
+      // Masuk ke mst_pengguna_peran (Relasi Jabatan)
       await trx("mst_pengguna_peran").insert({
-        id_pengguna: newUserId, // Cocok dengan screenshot
-        id_peran: peranData.id_peran, // Cocok dengan screenshot
-        peran_utama: 1, // Nilai default agar tidak error
-        status: "active", // Nilai default agar tidak error
+        user_id: newUserId,
+        role_id: peranData.role_id,
+        is_primary: 1,
+        status: "active",
         created_at: formatDateSystem(),
         updated_at: formatDateSystem(),
       });
 
-      // Masuk ke navigasi_pengguna (Nampan Menu Spesifik)
+      // Masuk ke user_navigation (Nampan Menu Spesifik)
       // Pakai oNavigation.menu dari pencarian di atas
-      await trx("navigasi_pengguna").insert({
-        id_pengguna: newUserId,
-        menu: oNavigation.menu,
-        created_at: formatDateSystem(),
-        updated_at: formatDateSystem(),
-      });
+      await trx("user_navigation")
+        .insert({
+          user_id: newUserId,
+          menu: oNavigation.menu,
+          created_at: formatDateSystem(),
+          updated_at: formatDateSystem(),
+        })
+        .onConflict("user_id")
+        .merge({
+          menu: oNavigation.menu,
+          updated_at: formatDateSystem(),
+        });
     });
 
     return res.status(200).json({

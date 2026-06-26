@@ -8,9 +8,13 @@ const router = express.Router();
 const incomingLetterDetail = async (req, res) => {
   try {
     const oPayload = req.body || {};
+    if (!oPayload.surat_masuk_id && oPayload.incoming_letter_id) {
+      oPayload.surat_masuk_id = oPayload.incoming_letter_id;
+      delete oPayload.incoming_letter_id;
+    }
 
     const oValidation = {
-      incoming_letter_id: Joi.number().required(),
+      surat_masuk_id: Joi.number().required(),
     };
 
     const oMessage = {
@@ -29,7 +33,7 @@ const incomingLetterDetail = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trx_incoming_letters as til")
+    const oLetter = await DB("trs_surat_masuk as til")
       .leftJoin("mst_jenis_surat as mlt", "til.jenis_surat_id", "mlt.jenis_surat_id")
       .select(
        "til.surat_masuk_id",
@@ -52,7 +56,7 @@ const incomingLetterDetail = async (req, res) => {
         "til.created_at",
         "til.updated_at",
       )
-      .where("til.surat_masuk_id", oPayload.incoming_letter_id)
+      .where("til.surat_masuk_id", oPayload.surat_masuk_id)
       .first();
 
     if (!oLetter) {
@@ -75,26 +79,26 @@ const incomingLetterDetail = async (req, res) => {
         "created_at",
         "updated_at",
       )
-      .where("surat_masuk_id", oPayload.incoming_letter_id)
+      .where("surat_masuk_id", oPayload.surat_masuk_id)
       .where("status", "active")
       .orderBy("created_at", "desc");
 
     const vaDispositions = await DB("trs_disposisi_surat as tld")
       .leftJoin(
-        "mst_instruksi_diposisi as mdi",
-        "tld.instruksi_diposisi_id",
-        "mdi.instruksi_diposisi_id"
+        "mst_instruksi_disposisi as mdi",
+        "tld.instruksi_disposisi_id",
+        "mdi.instruksi_disposisi_id"
       )
       .select(
-        "tld.diposisi_id",
+        "tld.disposisi_surat_id",
         "tld.surat_masuk_id",
-        "tld.diposisi_induk_id",
+        "tld.disposisi_induk_id",
         "tld.dari_pengguna_id",
         "tld.kepada_pengguna_id",
-        "tld.instruksi_diposisi_id",
+        "tld.instruksi_disposisi_id",
         "mdi.nama_instruksi",
         "tld.instruksi",
-        "tld.catatan_diposisi",
+        "tld.catatan_disposisi",
         "tld.batas_waktu",
         "tld.status",
         "tld.received_at",
@@ -105,14 +109,14 @@ const incomingLetterDetail = async (req, res) => {
         "tld.created_at",
         "tld.updated_at",
       )
-      .where("tld.surat_masukid", oPayload.incoming_letter_id)
+      .where("tld.surat_masuk_id", oPayload.surat_masuk_id)
       .orderBy("tld.created_at", "desc");
 
     const vaTrackings = await DB("trs_tracking_surat_masuk")
       .select(
         "tracking_surat_masuk_id",
         "surat_masuk_id",
-        "disposisi_id",
+        "disposisi_surat_id",
         "nama_aksi",
         "dari_pengguna_id",
         "kepada_pengguna_id",
@@ -124,13 +128,14 @@ const incomingLetterDetail = async (req, res) => {
         "created_at",
         "updated_at",
       )
-      .where("surat_masuk_id", oPayload.incoming_letter_id)
+      .where("surat_masuk_id", oPayload.surat_masuk_id)
       .orderBy("processed_at", "desc");
 
     return res.status(200).json({
       status: true,
       message: "Detail surat masuk berhasil diambil",
       data: {
+        surat: oLetter,
         letter: oLetter,
         files: vaFiles,
         dispositions: vaDispositions,

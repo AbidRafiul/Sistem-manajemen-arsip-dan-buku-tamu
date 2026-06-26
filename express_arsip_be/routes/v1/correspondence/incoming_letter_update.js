@@ -8,6 +8,10 @@ const router = express.Router();
 const incomingLetterUpdate = async (req, res) => {
   try {
     const oPayload = req.body || {};
+    if (!oPayload.surat_masuk_id && oPayload.incoming_letter_id) {
+      oPayload.surat_masuk_id = oPayload.incoming_letter_id;
+      delete oPayload.incoming_letter_id;
+    }
 
     const oValidation = {
       surat_masuk_id: Joi.number().required(),
@@ -23,8 +27,8 @@ const incomingLetterUpdate = async (req, res) => {
 
       jenis_surat_id: Joi.number().allow(null).optional(),
       jenis_dokumen_id: Joi.number().allow(null).optional(),
-      klasifikasi_arsip_id: Joi.number().allow(null).optional(),
-      tingkat_kerahasiaan_id: Joi.number().allow(null).optional(),
+      archive_classification_id: Joi.number().allow(null).optional(),
+      confidentiality_level_id: Joi.number().allow(null).optional(),
 
       status: Joi.string()
         .valid("baru", "diproses", "didisposisi", "selesai")
@@ -61,7 +65,7 @@ const incomingLetterUpdate = async (req, res) => {
     }
 
     const oLetter = await DB("trs_surat_masuk")
-      .where("surat_masuk_id", oPayload.incoming_letter_id)
+      .where("surat_masuk_id", oPayload.surat_masuk_id)
       .first();
 
     if (!oLetter) {
@@ -99,7 +103,7 @@ const incomingLetterUpdate = async (req, res) => {
       {
         field: "updated_by",
         table: "mst_pengguna",
-        key: "NamaPengguna",
+        key: "user_id",
         label: "User pengubah",
       },
     ];
@@ -126,18 +130,18 @@ const incomingLetterUpdate = async (req, res) => {
     const dNow = new Date();
 
     const oUpdate = {
-      nomor_agenda: oPayload.agenda_number,
-      nomor_surat: oPayload.letter_number,
-      tanggal_surat: oPayload.letter_date,
-      tanggal_diterima: oPayload.received_date,
-      nama_pengirim: oPayload.sender_name,
-      instansi_pengirim: oPayload.sender_institution,
-      perihal: oPayload.subject,
-      keterangan_lampiran: oPayload.attachment_description,
-      surat_masuk_id: oPayload.letter_type_id,
-      jenis_dokumen_id: oPayload.document_type_id,
-      archive_classification_id: oPayload.archive_classification_id,
-      confidentiality_level_id: oPayload.confidentiality_level_id,
+      nomor_agenda: oPayload.nomor_agenda,
+      nomor_surat: oPayload.nomor_surat,
+      tanggal_surat: oPayload.tanggal_surat,
+      tanggal_diterima: oPayload.tanggal_diterima,
+      nama_pengirim: oPayload.nama_pengirim,
+      instansi_pengirim: oPayload.instansi_pengirim,
+      perihal: oPayload.perihal,
+      keterangan_lampiran: oPayload.keterangan_lampiran,
+      jenis_surat_id: oPayload.jenis_surat_id,
+      jenis_dokumen_id: oPayload.jenis_dokumen_id,
+      klasifikasi_arsip_id: oPayload.archive_classification_id,
+      tingkat_kerahasiaan_id: oPayload.confidentiality_level_id,
       status: oPayload.status,
       updated_by: oPayload.updated_by || null,
       updated_at: dNow,
@@ -151,18 +155,18 @@ const incomingLetterUpdate = async (req, res) => {
 
     await DB.transaction(async (trx) => {
       await trx("trs_surat_masuk")
-        .where("surat_masuk_id", oPayload.incoming_letter_id)
+        .where("surat_masuk_id", oPayload.surat_masuk_id)
         .update(oUpdate);
 
       await trx("trs_tracking_surat_masuk").insert({
-        incoming_letter_id: oPayload.incoming_letter_id,
-        disid_jabatan: null,
-        action_name: "surat_diupdate",
-        from_nama_pengguna: null,
-        to_nama_pengguna: null,
-        previous_status: oLetter.status,
-        current_status: oUpdate.status || oLetter.status,
-        notes: "Data surat masuk diperbarui",
+        surat_masuk_id: oPayload.surat_masuk_id,
+        disposisi_surat_id: null,
+        nama_aksi: "surat_diupdate",
+        dari_pengguna_id: null,
+        kepada_pengguna_id: null,
+        status_sebelumnya: oLetter.status,
+        status_saat_ini: oUpdate.status || oLetter.status,
+        catatan: "Data surat masuk diperbarui",
         processed_at: dNow,
         created_by: oPayload.updated_by || null,
         created_at: dNow,

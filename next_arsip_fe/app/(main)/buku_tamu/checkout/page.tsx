@@ -1,30 +1,14 @@
 'use client';
 
-<<<<<<< HEAD
-import { Toast } from 'primereact/toast';
-import { useEffect, useRef, useState } from 'react';
 import postData from '@/lib/axios/postData';
 import { showError, showSuccess } from '@/lib/tools/generalTools';
-import { formatDateCalendar } from '@/lib/tools/dateTools';
-import { State } from './components/interfaces';
-import { apiEndpointGet, apiEndpointCheckout } from './components/endpoints';
-import GuestDataTable from './components/display/table';
-import { Dialog } from 'primereact/dialog';
-import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { Button } from 'primereact/button';
 import { FilterMatchMode } from 'primereact/api';
-=======
-import { Toast } from "primereact/toast";
-import { useEffect, useRef, useState } from "react";
-import postData from "@/lib/axios/postData";
-import { showError, showSuccess } from "@/lib/tools/generalTools";
-import { State } from "./components/interfaces";
-import { apiEndpointGet, apiEndpointCheckout } from "./components/endpoints";
-import GuestDataTable from "./components/display/table";
-import { CheckoutDialog, DetailVisitorDialog } from "./components/display/dialogs";
-import { FilterMatchMode } from "primereact/api";
->>>>>>> main
+import { Toast } from 'primereact/toast';
+import { useEffect, useRef, useState } from 'react';
+import { apiEndpointCheckout, apiEndpointGet } from './components/endpoints';
+import GuestDataTable from './components/display/table';
+import { CheckoutDialog, DetailVisitorDialog } from './components/display/dialogs';
+import { State } from './components/interfaces';
 
 const CheckoutPage = () => {
     const toast = useRef<Toast>(null);
@@ -120,56 +104,11 @@ const CheckoutPage = () => {
                 onConfirm={handleCheckout}
             />
 
-<<<<<<< HEAD
-            <Dialog header="Detail Riwayat Kunjungan" visible={!!state.detailRecord} modal style={{ width: '600px' }} onHide={() => setState((p: State) => ({ ...p, detailRecord: null }))}>
-                {state.detailRecord && (
-                    <div className="grid grid-nogutter gap-3">
-                        <div className="col-12 md:col-6">
-                            <strong>Nama Tamu</strong>
-                            <div>{state.detailRecord.guest_name}</div>
-                        </div>
-                        <div className="col-12 md:col-6">
-                            <strong>No. Telepon</strong>
-                            <div>{state.detailRecord.phone_number}</div>
-                        </div>
-                        <div className="col-12 md:col-6">
-                            <strong>Instansi/Perusahaan</strong>
-                            <div>{state.detailRecord.guest_company}</div>
-                        </div>
-                        <div className="col-12 md:col-6">
-                            <strong>Tujuan Alasan</strong>
-                            <div>{state.detailRecord.VisitPurposeName}</div>
-                        </div>
-                        <div className="col-12 md:col-6">
-                            <strong>Pegawai yang Ditemui</strong>
-                            <div>{state.detailRecord.Hostnama_lengkap || state.detailRecord.host_name || '-'}</div>
-                        </div>
-                        <div className="col-12 md:col-6">
-                            <strong>Status Saat Ini</strong>
-                            <div>{state.detailRecord.status}</div>
-                        </div>
-                        <div className="col-12">
-                            <strong>Waktu Check-In</strong>
-                            <div>{formatDateCalendar(state.detailRecord.check_in_time, 'HH:mm dd/MM/yyyy')}</div>
-                        </div>
-                        <div className="col-12">
-                            <strong>Waktu Check-Out</strong>
-                            <div>{state.detailRecord.check_out_time ? formatDateCalendar(state.detailRecord.check_out_time, 'HH:mm dd/MM/yyyy') : '-'}</div>
-                        </div>
-                        <div className="col-12">
-                            <strong>Catatan Tambahan</strong>
-                            <div>{state.detailRecord.visit_notes}</div>
-                        </div>
-                    </div>
-                )}
-            </Dialog>
-=======
             <DetailVisitorDialog
                 visible={!!state.detailRecord}
                 record={state.detailRecord}
                 onHide={() => setState((p: State) => ({ ...p, detailRecord: null }))}
             />
->>>>>>> main
         </div>
     );
 };

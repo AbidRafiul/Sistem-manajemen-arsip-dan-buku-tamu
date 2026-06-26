@@ -4,17 +4,17 @@ export const mapIncomingLetterRow = (row: Record<string, any>): TableData => ({
     surat_masuk_id: row.surat_masuk_id || 0,
     nomor_agenda: row.nomor_agenda || "",
     nomor_surat: row.nomor_surat || "",
-   tanggal_surat: row.tanggal_surat || "",
+    tanggal_surat: row.tanggal_surat || "",
     tanggal_diterima: row.tanggal_diterima || "",
-    nama_pengirim: row.nama_pengirim|| "",
+    nama_pengirim: row.nama_pengirim || "",
     instansi_pengirim: row.instansi_pengirim || null,
     perihal: row.perihal || "",
     keterangan_lampiran: row.keterangan_lampiran || null,
     jenis_surat_id: row.jenis_surat_id || null,
     nama_jenis_surat: row.nama_jenis_surat || null,
     jenis_dokumen_id: row.jenis_dokumen_id || null,
-    archive_classification_id: row.archive_classification_id || null,
-    confidentiality_level_id: row.confidentiality_level_id || null,
+    archive_classification_id: row.archive_classification_id || row.klasifikasi_arsip_id || null,
+    confidentiality_level_id: row.confidentiality_level_id || row.tingkat_kerahasiaan_id || null,
     status: row.status || "baru",
     created_by: row.created_by || null,
     updated_by: row.updated_by || null,
@@ -42,7 +42,7 @@ export const mapIncomingLetterPayload = (input: initValue, isEdit: boolean) => {
     };
 
     if (isEdit) {
-        payload.incoming_letter_id = input.jenis_surat_id;
+        payload.surat_masuk_id = input.surat_masuk_id;
         payload.status = input.status;
     } else {
         payload.created_by = nullableNumber(input.created_by);

@@ -5,6 +5,68 @@ import { validatePayload } from "../components/tools/servertool.js";
 
 const router = express.Router();
 
+const rowsFromRaw = (result) =>
+  Array.isArray(result?.[0]) ? result[0] : result?.rows || result || [];
+
+const getExistingTable = async (candidates) => {
+  for (const tableName of candidates) {
+    if (await DB.schema.hasTable(tableName)) return tableName;
+  }
+
+  return null;
+};
+
+const getColumns = async (tableName) => {
+  if (!tableName) return [];
+  const result = await DB.raw("SHOW COLUMNS FROM ??", [tableName]);
+  return rowsFromRaw(result).map((column) => column.Field);
+};
+
+const pickColumn = (columns, candidates) =>
+  candidates.find((columnName) => columns.includes(columnName)) || null;
+
+const assignIfColumnExists = (target, columns, columnName, value) => {
+  if (columnName && columns.includes(columnName)) target[columnName] = value;
+};
+
+const findUserReference = async (value) => {
+  if (value === undefined || value === null || value === "") return true;
+
+  const tableName = await getExistingTable(["mst_pengguna", "mst_users"]);
+  const columns = await getColumns(tableName);
+  const idColumn = pickColumn(columns, [
+    "id_pengguna",
+    "nama_pengguna",
+    "user_id",
+    "UserId",
+  ]);
+
+  if (!tableName || !idColumn) return true;
+
+  const user = await DB(tableName).where(idColumn, value).first();
+  return Boolean(user);
+};
+
+const findInstructionReference = async (value) => {
+  if (value === undefined || value === null || value === "") return true;
+
+  const tableName = await getExistingTable([
+    "mst_instruksi_disposisi",
+    "mst_disposition_instructions",
+  ]);
+  const columns = await getColumns(tableName);
+  const idColumn = pickColumn(columns, [
+    "instruksi_disposisi_id",
+    "instruksi_diposisi_id",
+    "disposition_instruction_id",
+  ]);
+
+  if (!tableName || !idColumn) return true;
+
+  const instruction = await DB(tableName).where(idColumn, value).first();
+  return Boolean(instruction);
+};
+
 const letterDispositionCreate = async (req, res) => {
   try {
     const oPayload = req.body || {};
@@ -29,9 +91,8 @@ const letterDispositionCreate = async (req, res) => {
     const oMessage = {
       "surat_masuk_id.required": "id surat masuk wajib diisi",
       "surat_masuk_id.number": "id surat masuk harus berupa angka",
-
       "kepada_pengguna_id.required": "User tujuan disposisi wajib diisi",
-      "kepada_pengguna_id.number": "pada pengguna id harus berupa angka",
+      "kepada_pengguna_id.number": "kepada pengguna id harus berupa angka",
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
@@ -45,8 +106,38 @@ const letterDispositionCreate = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trs_surat_masuk")
-      .where("surat_masuk_id", oPayload.surat_masuk_id)
+    const letterTable = await getExistingTable([
+      "trs_surat_masuk",
+      "trx_incoming_letters",
+    ]);
+    const dispositionTable = await getExistingTable([
+      "trs_disposisi_surat",
+      "trx_letter_dispositions",
+    ]);
+    const trackingTable = await getExistingTable([
+      "trs_tracking_surat_masuk",
+      "trx_incoming_letter_trackings",
+    ]);
+
+    if (!letterTable || !dispositionTable) {
+      return res.status(500).json({
+        status: false,
+        message: "Tabel surat masuk atau disposisi belum tersedia",
+      });
+    }
+
+    const letterColumns = await getColumns(letterTable);
+    const dispositionColumns = await getColumns(dispositionTable);
+    const trackingColumns = await getColumns(trackingTable);
+
+    const letterIdColumn = pickColumn(letterColumns, [
+      "surat_masuk_id",
+      "incoming_letter_id",
+    ]);
+    const letterStatusColumn = pickColumn(letterColumns, ["status", "Status"]);
+
+    const oLetter = await DB(letterTable)
+      .where(letterIdColumn, oPayload.surat_masuk_id)
       .first();
 
     if (!oLetter) {
@@ -56,69 +147,83 @@ const letterDispositionCreate = async (req, res) => {
       });
     }
 
-    if (oLetter.status === "selesai") {
+    if (oLetter[letterStatusColumn] === "selesai") {
       return res.status(400).json({
         status: false,
         message: "Surat masuk sudah selesai dan tidak dapat didisposisikan",
       });
     }
 
-    const vaReferenceChecks = [
+    const references = [
       {
-        field: "from_nama_pengguna",
-        table: "mst_pengguna",
-        key: "nama_pengguna",
+        valid: await findUserReference(oPayload.dari_pengguna_id),
         label: "User asal disposisi",
       },
       {
-        field: "to_nama_pengguna",
-        table: "mst_pengguna",
-        key: "nama_pengguna",
+        valid: await findUserReference(oPayload.kepada_pengguna_id),
         label: "User tujuan disposisi",
       },
       {
-        field: "disposition_instruction_id",
-        table: "mst_disposition_instructions",
-        key: "disposition_instruction_id",
+        valid: await findInstructionReference(oPayload.instruksi_disposisi_id),
         label: "Instruksi disposisi",
-      },
-      {
-        field: "created_by",
-        table: "mst_pengguna",
-        key: "nama_pengguna",
-        label: "User pembuat",
-      },
-      {
-        field: "updated_by",
-        table: "mst_pengguna",
-        key: "nama_pengguna",
-        label: "User pengubah",
       },
     ];
 
-    for (const oReference of vaReferenceChecks) {
-      const value = oPayload[oReference.field];
-
-      if (value === undefined || value === null || value === "") {
-        continue;
-      }
-
-      const oData = await DB(oReference.table)
-        .where(oReference.key, value)
-        .first();
-
-      if (!oData) {
-        return res.status(400).json({
-          status: false,
-          message: `${oReference.label} tidak ditemukan`,
-        });
-      }
+    const invalidReference = references.find((reference) => !reference.valid);
+    if (invalidReference) {
+      return res.status(400).json({
+        status: false,
+        message: `${invalidReference.label} tidak ditemukan`,
+      });
     }
 
-    if (oPayload.parent_disposition_id) {
-      const oParentDisposition = await DB("trs_disposisi_surat")
-        .where("disposisi_id", oPayload.disposisi_induk_id)
-        .where("surat_masuk_id", oPayload.surat_masuk_id)
+    const dispositionIdColumn = pickColumn(dispositionColumns, [
+      "disposisi_surat_id",
+      "disposisi_id",
+      "disid_jabatan",
+    ]);
+    const dispositionLetterIdColumn = pickColumn(dispositionColumns, [
+      "surat_masuk_id",
+      "incoming_letter_id",
+    ]);
+    const parentColumn = pickColumn(dispositionColumns, [
+      "disposisi_induk_id",
+      "parent_disposition_id",
+      "parent_disid_jabatan",
+    ]);
+    const fromUserColumn = pickColumn(dispositionColumns, [
+      "dari_pengguna_id",
+      "from_user_id",
+      "from_nama_pengguna",
+    ]);
+    const toUserColumn = pickColumn(dispositionColumns, [
+      "kepada_pengguna_id",
+      "to_user_id",
+      "to_nama_pengguna",
+    ]);
+    const instructionIdColumn = pickColumn(dispositionColumns, [
+      "instruksi_disposisi_id",
+      "instruksi_diposisi_id",
+      "disposition_instruction_id",
+    ]);
+    const instructionColumn = pickColumn(dispositionColumns, [
+      "instruksi",
+      "instruction",
+    ]);
+    const noteColumn = pickColumn(dispositionColumns, [
+      "catatan_disposisi",
+      "catatan_diposisi",
+      "disposition_note",
+    ]);
+    const dueDateColumn = pickColumn(dispositionColumns, [
+      "batas_waktu",
+      "due_date",
+    ]);
+
+    if (oPayload.disposisi_induk_id && parentColumn && dispositionIdColumn) {
+      const oParentDisposition = await DB(dispositionTable)
+        .where(dispositionIdColumn, oPayload.disposisi_induk_id)
+        .where(dispositionLetterIdColumn, oPayload.surat_masuk_id)
         .first();
 
       if (!oParentDisposition) {
@@ -131,58 +236,250 @@ const letterDispositionCreate = async (req, res) => {
 
     const dNow = new Date();
 
-    const nDispositionId = await DB.transaction(async (trs) => {
-      const vaInserted = await trs("trs_disposisi_surat").insert({
-        surat_masuk_id: oPayload.surat_masuk_id,
-        disposisi_induk_id: oPayload.disposisi_induk_id || null,
+    const nDispositionId = await DB.transaction(async (trx) => {
+      const dispositionPayload = {};
 
-        dari_pengguna_id: oPayload.dari_pengguna_id || null,
-        kepada_pengguna_id: oPayload.kepada_pengguna_id,
+      assignIfColumnExists(
+        dispositionPayload,
+        dispositionColumns,
+        dispositionLetterIdColumn,
+        oPayload.surat_masuk_id,
+      );
+      assignIfColumnExists(
+        dispositionPayload,
+        dispositionColumns,
+        parentColumn,
+        oPayload.disposisi_induk_id || null,
+      );
+      assignIfColumnExists(
+        dispositionPayload,
+        dispositionColumns,
+        fromUserColumn,
+        oPayload.dari_pengguna_id || null,
+      );
+      assignIfColumnExists(
+        dispositionPayload,
+        dispositionColumns,
+        toUserColumn,
+        oPayload.kepada_pengguna_id,
+      );
+      assignIfColumnExists(
+        dispositionPayload,
+        dispositionColumns,
+        instructionIdColumn,
+        oPayload.instruksi_disposisi_id || null,
+      );
+      assignIfColumnExists(
+        dispositionPayload,
+        dispositionColumns,
+        instructionColumn,
+        oPayload.instruksi || null,
+      );
+      assignIfColumnExists(
+        dispositionPayload,
+        dispositionColumns,
+        noteColumn,
+        oPayload.catatan_disposisi || null,
+      );
+      assignIfColumnExists(
+        dispositionPayload,
+        dispositionColumns,
+        dueDateColumn,
+        oPayload.batas_waktu || null,
+      );
+      assignIfColumnExists(
+        dispositionPayload,
+        dispositionColumns,
+        "status",
+        "baru",
+      );
+      assignIfColumnExists(
+        dispositionPayload,
+        dispositionColumns,
+        "received_at",
+        null,
+      );
+      assignIfColumnExists(
+        dispositionPayload,
+        dispositionColumns,
+        "processed_at",
+        null,
+      );
+      assignIfColumnExists(
+        dispositionPayload,
+        dispositionColumns,
+        "completed_at",
+        null,
+      );
+      assignIfColumnExists(
+        dispositionPayload,
+        dispositionColumns,
+        "created_by",
+        oPayload.created_by || null,
+      );
+      assignIfColumnExists(
+        dispositionPayload,
+        dispositionColumns,
+        "updated_by",
+        oPayload.updated_by || null,
+      );
+      assignIfColumnExists(
+        dispositionPayload,
+        dispositionColumns,
+        "created_at",
+        dNow,
+      );
+      assignIfColumnExists(
+        dispositionPayload,
+        dispositionColumns,
+        "updated_at",
+        dNow,
+      );
 
-        instruksi_disposisi_id: oPayload.instruksi_disposisi_id || null,
-
-        instruksi: oPayload.instruksi || null,
-        catatan_disposisi: oPayload.catatan_disposisi || null,
-        batas_waktu: oPayload.batas_waktu || null,
-
-        status: "baru",
-        received_at: null,
-        processed_at: null,
-        completed_at: null,
-
-        created_by: oPayload.created_by || null,
-        updated_by: oPayload.updated_by || null,
-        created_at: dNow,
-        updated_at: dNow,
-      });
-
+      const vaInserted = await trx(dispositionTable).insert(dispositionPayload);
       const nId = vaInserted[0];
 
-      await trs("trs_surat_masuk")
-        .where("surat_masukload.incoming_letter_id")
-        .update({
-          status: "didisposisi",
-          updated_by: oPayload.updated_by || oPayload.created_by || null,
-          updated_at: dNow,
-        });
+      const letterUpdatePayload = {};
+      assignIfColumnExists(
+        letterUpdatePayload,
+        letterColumns,
+        letterStatusColumn,
+        "didisposisi",
+      );
+      assignIfColumnExists(
+        letterUpdatePayload,
+        letterColumns,
+        "updated_by",
+        oPayload.updated_by || oPayload.created_by || null,
+      );
+      assignIfColumnExists(
+        letterUpdatePayload,
+        letterColumns,
+        "updated_at",
+        dNow,
+      );
 
-      await trs("trx_incoming_letter_trackings").insert({
-        incoming_letter_id: oPayload.incoming_letter_id,
-        disid_jabatan: nId,
-        action_name: "surat_didisposisi",
-        from_nama_pengguna: oPayload.from_nama_pengguna || null,
-        to_nama_pengguna: oPayload.to_nama_pengguna,
-        previous_status: oLetter.status,
-        current_status: "didisposisi",
-        notes:
-          oPayload.disposition_note ||
-          oPayload.instruction ||
-          "Surat didisposisikan",
-        processed_at: dNow,
-        created_by: oPayload.created_by || null,
-        created_at: dNow,
-        updated_at: dNow,
-      });
+      if (Object.keys(letterUpdatePayload).length) {
+        await trx(letterTable)
+          .where(letterIdColumn, oPayload.surat_masuk_id)
+          .update(letterUpdatePayload);
+      }
+
+      if (trackingTable) {
+        const trackingPayload = {};
+        const trackingLetterIdColumn = pickColumn(trackingColumns, [
+          "surat_masuk_id",
+          "incoming_letter_id",
+        ]);
+        const trackingDispositionIdColumn = pickColumn(trackingColumns, [
+          "disposisi_surat_id",
+          "disposisi_id",
+          "disid_jabatan",
+        ]);
+        const trackingActionColumn = pickColumn(trackingColumns, [
+          "nama_aksi",
+          "action_name",
+        ]);
+        const trackingFromColumn = pickColumn(trackingColumns, [
+          "dari_pengguna_id",
+          "from_user_id",
+          "from_nama_pengguna",
+        ]);
+        const trackingToColumn = pickColumn(trackingColumns, [
+          "kepada_pengguna_id",
+          "to_user_id",
+          "to_nama_pengguna",
+        ]);
+        const previousStatusColumn = pickColumn(trackingColumns, [
+          "status_sebelumnya",
+          "previous_status",
+        ]);
+        const currentStatusColumn = pickColumn(trackingColumns, [
+          "status_saat_ini",
+          "current_status",
+        ]);
+        const trackingNoteColumn = pickColumn(trackingColumns, [
+          "catatan",
+          "notes",
+        ]);
+
+        assignIfColumnExists(
+          trackingPayload,
+          trackingColumns,
+          trackingLetterIdColumn,
+          oPayload.surat_masuk_id,
+        );
+        assignIfColumnExists(
+          trackingPayload,
+          trackingColumns,
+          trackingDispositionIdColumn,
+          nId,
+        );
+        assignIfColumnExists(
+          trackingPayload,
+          trackingColumns,
+          trackingActionColumn,
+          "surat_didisposisi",
+        );
+        assignIfColumnExists(
+          trackingPayload,
+          trackingColumns,
+          trackingFromColumn,
+          oPayload.dari_pengguna_id || null,
+        );
+        assignIfColumnExists(
+          trackingPayload,
+          trackingColumns,
+          trackingToColumn,
+          oPayload.kepada_pengguna_id,
+        );
+        assignIfColumnExists(
+          trackingPayload,
+          trackingColumns,
+          previousStatusColumn,
+          oLetter[letterStatusColumn],
+        );
+        assignIfColumnExists(
+          trackingPayload,
+          trackingColumns,
+          currentStatusColumn,
+          "didisposisi",
+        );
+        assignIfColumnExists(
+          trackingPayload,
+          trackingColumns,
+          trackingNoteColumn,
+          oPayload.catatan_disposisi ||
+            oPayload.instruksi ||
+            "Surat didisposisikan",
+        );
+        assignIfColumnExists(
+          trackingPayload,
+          trackingColumns,
+          "processed_at",
+          dNow,
+        );
+        assignIfColumnExists(
+          trackingPayload,
+          trackingColumns,
+          "created_by",
+          oPayload.created_by || null,
+        );
+        assignIfColumnExists(
+          trackingPayload,
+          trackingColumns,
+          "created_at",
+          dNow,
+        );
+        assignIfColumnExists(
+          trackingPayload,
+          trackingColumns,
+          "updated_at",
+          dNow,
+        );
+
+        await trx(trackingTable).insert(trackingPayload);
+      }
 
       return nId;
     });
@@ -191,7 +488,9 @@ const letterDispositionCreate = async (req, res) => {
       status: true,
       message: "Disposisi surat berhasil dibuat",
       data: {
-        disid_jabatan: nDisIdJabatan,
+        disposisi_surat_id: nDispositionId,
+        disposisi_id: nDispositionId,
+        disid_jabatan: nDispositionId,
       },
     });
   } catch (error) {

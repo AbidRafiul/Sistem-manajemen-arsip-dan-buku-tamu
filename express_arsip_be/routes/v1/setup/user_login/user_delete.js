@@ -50,7 +50,7 @@ router.post("/", async (req, res) => {
     await DB.transaction(async (trx) => {
       // 1. Nonaktifkan di mst_pengguna
       await trx("mst_pengguna")
-        .whereIn("nama_pengguna", oPayload.NamaPengguna)
+        .whereIn("user_id", oPayload.NamaPengguna)
         .update({
           status: "nonactive",
           updated_at: formatDateSystem(),
@@ -58,7 +58,7 @@ router.post("/", async (req, res) => {
 
       // 2. Nonaktifkan juga di mst_pengguna_perans
       await trx("mst_pengguna_peran")
-        .whereIn("nama_pengguna", oPayload.NamaPengguna)
+        .whereIn("user_id", oPayload.NamaPengguna)
         .update({
           status: "nonactive",
           updated_at: formatDateSystem(),

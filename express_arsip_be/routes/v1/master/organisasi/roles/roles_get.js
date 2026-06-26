@@ -3,7 +3,6 @@ import DB from "../../../../../core/config/knex.js";
 import {
   status,
   formatDateSystem,
-  datetime,
 } from "../../../components/tools/general.js";
 import { Logging } from "../../../components/tools/servertool.js";
 
@@ -15,7 +14,15 @@ router.get("/", async (req, res) => {
 
   try {
     const vaData = await DB("mst_peran")
-      .select("id_peran as id", "nama_peran as name", "status")
+      .select(
+        "role_id as id",
+        "role_id as id_peran",
+        "role_code as kode_peran",
+        "role_name as name",
+        "role_name as nama_peran",
+        "description as deskripsi",
+        "status",
+      )
       .where("status", "active");
 
     return res.status(200).json({

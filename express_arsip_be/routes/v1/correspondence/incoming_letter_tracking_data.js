@@ -8,9 +8,13 @@ const router = express.Router();
 const incomingLetterTrackingData = async (req, res) => {
   try {
     const oPayload = req.body || {};
+    if (!oPayload.surat_masuk_id && oPayload.incoming_letter_id) {
+      oPayload.surat_masuk_id = oPayload.incoming_letter_id;
+      delete oPayload.incoming_letter_id;
+    }
 
     const oValidation = {
-      incoming_letter_id: Joi.number().required(),
+      surat_masuk_id: Joi.number().required(),
     };
 
     const oMessage = {
@@ -38,7 +42,7 @@ const incomingLetterTrackingData = async (req, res) => {
         "nama_pengirim",
         "status"
       )
-      .where("surat_masuk_id", oPayload.incoming_letter_id)
+      .where("surat_masuk_id", oPayload.surat_masuk_id)
       .first();
 
     if (!oLetter) {
@@ -50,14 +54,14 @@ const incomingLetterTrackingData = async (req, res) => {
 
     const vaData = await DB("trs_tracking_surat_masuk as tilt")
       .leftJoin(
-        "trs_diposisi_surat as tld",
-        "tilt.disposisi_id",
-        "tld.disposisi_id"
+        "trs_disposisi_surat as tld",
+        "tilt.disposisi_surat_id",
+        "tld.disposisi_surat_id"
       )
       .select(
         "tilt.tracking_surat_masuk_id",
         "tilt.surat_masuk_id",
-        "tilt.disposisi_id",
+        "tilt.disposisi_surat_id",
         "tilt.nama_aksi",
         "tilt.dari_pengguna_id",
         "tilt.kepada_pengguna_id",
@@ -69,13 +73,13 @@ const incomingLetterTrackingData = async (req, res) => {
         "tilt.created_at",
         "tilt.updated_at",
 
-        "tld.diposisi_induk_id",
+        "tld.disposisi_induk_id",
         "tld.instruksi",
-        "tld.catatan_diposisi",
+        "tld.catatan_disposisi",
         "tld.batas_waktu",
-        "tld.status as status_diposisi"
+        "tld.status as status_disposisi"
       )
-      .where("tilt.surat_masuk_id", oPayload.incoming_letter_id)
+      .where("tilt.surat_masuk_id", oPayload.surat_masuk_id)
       .orderBy("tilt.processed_at", "asc");
 
     return res.status(200).json({

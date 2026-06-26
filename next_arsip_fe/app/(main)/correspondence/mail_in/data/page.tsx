@@ -15,15 +15,15 @@ const initialValues: initValue = {
     surat_masuk_id: null,
     nomor_agenda: "",
     nomor_surat: "",
-   tanggal_surat: "",
+    tanggal_surat: "",
     tanggal_diterima: "",
     nama_pengirim: "",
-   instansi_pengirim: "",
-   perihal: "",
+    instansi_pengirim: "",
+    perihal: "",
     keterangan_lampiran: "",
     file_surat: null,
     jenis_surat_id: null,
-   jenis_dokumen_id: null,
+    jenis_dokumen_id: null,
     archive_classification_id: null,
     confidentiality_level_id: null,
     status: "baru",
@@ -63,7 +63,8 @@ const Page = () => {
             if (!data.tanggal_diterima) errors.tanggal_diterima = "Tanggal diterima wajib diisi";
             if (!data.nama_pengirim) errors.nama_pengirim = "Pengirim wajib diisi";
             if (!data.perihal) errors.perihal = "Perihal wajib diisi";
-            if (state.edit && !data.surat_masuk_id) errors.surat_masuk_id = "incoming_letter_id wajib diisi";
+            if (!data.jenis_surat_id) errors.jenis_surat_id = "Jenis surat wajib dipilih";
+            if (state.edit && !data.surat_masuk_id) errors.surat_masuk_id = "surat_masuk_id wajib diisi";
 
             return errors;
         },

@@ -1,8 +1,50 @@
+const withSafeRawAlter = (knex) => {
+  const originalRaw = knex.raw.bind(knex);
+
+  const safeRaw = async (...args) => {
+    const sql = typeof args[0] === "string" ? args[0] : "";
+
+    try {
+      return await originalRaw(...args);
+    } catch (error) {
+      const isAlterChange = /^\s*ALTER\s+TABLE\s+`?[\w]+`?\s+CHANGE\s+/i.test(
+        sql,
+      );
+      const skippableCodes = new Set([
+        "ER_NO_SUCH_TABLE",
+        "ER_BAD_FIELD_ERROR",
+        "ER_DUP_FIELDNAME",
+        "ER_CANT_DROP_FIELD_OR_KEY",
+      ]);
+
+      if (isAlterChange && skippableCodes.has(error?.code)) {
+        return [];
+      }
+
+      throw error;
+    }
+  };
+
+  return new Proxy(knex, {
+    get(target, prop, receiver) {
+      if (prop === "raw") return safeRaw;
+
+      const value = Reflect.get(target, prop, receiver);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+    apply(target, thisArg, argArray) {
+      return Reflect.apply(target, thisArg, argArray);
+    },
+  });
+};
+
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
 export async function up(knex) {
+  knex = withSafeRawAlter(knex);
+
   // Nonaktifkan foreign key checks sementara agar proses modifikasi lancar
   await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
 
@@ -234,6 +276,8 @@ export async function up(knex) {
  * @returns { Promise<void> }
  */
 export async function down(knex) {
+  knex = withSafeRawAlter(knex);
+
   await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
 
   // MENGEMBALIKAN KE NAMA INGGRIS (snake_case) DENGAN TIPE & COLLATION YANG SAMA PERSIS
