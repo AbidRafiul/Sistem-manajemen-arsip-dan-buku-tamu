@@ -98,37 +98,40 @@ const authOptions = {
         },
         async signIn({ user: user }: { user: User }) {
             try {
-                if (user.credential) {
-                    const cookieStore = cookies();
-                    const maxAge = user.remember_me ? 60 * 60 * 24 : 60 * 60 * 7;
+                const anyUser = user as any;
+                const cookieStore = cookies();
+                const maxAge = anyUser.remember_me ? 60 * 60 * 24 : 60 * 60 * 7;
 
-                    const secret = new TextEncoder().encode(process.env.USER_KEY);
-                    const payload = {
-                        IdPengguna: (user as any).IdPengguna || user.id,
-                        name: user.name,
-                        nama_pengguna: (user as any).nama_pengguna
-                    };
-                    const token = await new SignJWT(payload)
-                        .setProtectedHeader({ alg: 'HS512' })
-                        .setExpirationTime(user.remember_me ? '1d' : '7h')
-                        .sign(secret);
+                const secret = new TextEncoder().encode(process.env.USER_KEY);
+                const jwtPayload = {
+                    IdPengguna: anyUser.IdPengguna || user.id,
+                    id_pengguna: anyUser.IdPengguna || user.id,
+                    name: user.name,
+                    nama_pengguna: anyUser.nama_pengguna
+                };
 
+                // _A2R selalu dibuat — ini yang dipakai middleware untuk auth
+                const token = await new SignJWT(jwtPayload)
+                    .setProtectedHeader({ alg: 'HS512' })
+                    .setExpirationTime(anyUser.remember_me ? '1d' : '7h')
+                    .sign(secret);
+
+                cookieStore.set({
+                    name: '_A2R',
+                    value: token,
+                    httpOnly: false,
+                    secure: false,
+                    sameSite: 'lax',
+                    path: '/',
+                    maxAge
+                });
+
+                // _A2F hanya dibuat jika backend mengirim credential
+                if (anyUser.credential) {
                     cookieStore.set({
                         name: '_A2F',
-                        value: user.credential,
+                        value: anyUser.credential,
                         httpOnly: false,
-                        // secure: process.env.NODE_ENV === 'production',
-                        secure: false,
-                        sameSite: 'lax',
-                        path: '/',
-                        maxAge
-                    });
-
-                    cookieStore.set({
-                        name: '_A2R',
-                        value: token,
-                        httpOnly: false,
-                        // secure: process.env.NODE_ENV === 'production',
                         secure: false,
                         sameSite: 'lax',
                         path: '/',

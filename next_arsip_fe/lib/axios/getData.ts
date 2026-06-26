@@ -15,9 +15,7 @@ const Axios = axios.create({
 Axios.interceptors.response.use(
     r => r,
     async (error) => {
-        if (error.response?.status === 401) {
-            await signOut({ callbackUrl: "/auth/login" });
-        }
+        // Jangan auto-redirect — biarkan halaman yang handle error
         return Promise.reject(error);
     }
 );
@@ -51,9 +49,6 @@ async function getData(endpoint: string, params: Record<string, any> = {}, custo
         
     } catch (error: any) {
         console.log("Error GET Data:", error?.response?.data || error);
-        if (error?.response?.status == 401) {
-            logout(null, true);
-        }
         throw error;
     }
 }

@@ -16,29 +16,20 @@ export async function middleware(req: NextRequest) {
     }
 
     try {
-        const a2fCookie = req.cookies.get('_A2F')?.value || '';
         const a2rCookie = req.cookies.get('_A2R')?.value || '';
 
-        if (!a2fCookie) {
-            throw new Error('No A2F cookie');
-        }
         if (!a2rCookie) {
-            throw new Error('No A2R cookie');
+            throw new Error('No A2R cookie - not authenticated');
         }
 
-        // PASTIKAN process.env.USER_KEY DI NEXT.JS SAMA PERSIS DENGAN DI EXPRESS
         const secret = new TextEncoder().encode(process.env.USER_KEY);
-
         const { payload: userDecrypted } = await jwtVerify(a2rCookie, secret);
 
-        //  CCTV PASANG DI SINI
-        console.log('CCTV MIDDLEWARE - PAYLOAD DARI EXPRESS:', userDecrypted);
-
-        //  UBAHAN DI SINI: TERIMA IdPengguna (Besar) ATAU IdPengguna (Kecil)
-        const activeId = userDecrypted.IdPengguna || userDecrypted.IdPengguna;
+        // Terima IdPengguna dalam berbagai bentuk (uid dari route.ts login, IdPengguna dari authTools signIn)
+        const activeId = userDecrypted.IdPengguna ?? userDecrypted.id_pengguna ?? userDecrypted.uid ?? userDecrypted.sub;
 
         if (!activeId) {
-            throw new Error('Invalid user: IdPengguna tidak ditemukan');
+            throw new Error('Invalid token: IdPengguna tidak ditemukan');
         }
 
         if (pathname === '/') {
@@ -49,8 +40,7 @@ export async function middleware(req: NextRequest) {
         response.headers.set('x-pathname', pathname);
         return response;
     } catch (error) {
-        // CCTV ERROR PASANG DI SINI
-        console.error('CCTV MIDDLEWARE - ERROR DITENDANG:', error);
+        console.error('MIDDLEWARE - Auth failed:', (error as Error).message);
         return NextResponse.redirect(new URL('/auth/login', req.url));
     }
 }

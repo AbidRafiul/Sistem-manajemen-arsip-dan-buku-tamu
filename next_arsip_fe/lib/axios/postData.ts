@@ -13,11 +13,7 @@ const Axios = axios.create({
 Axios.interceptors.response.use(
     (response) => response,
     async (error) => {
-        if (error.response?.status === 401) {
-            document.cookie = "_A2R=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            document.cookie = "_A2F=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            window.location.href = "/auth/login";
-        }
+        // Jangan auto-redirect atau hapus cookie — biarkan halaman yang handle error
         return Promise.reject(error);
     }
 );

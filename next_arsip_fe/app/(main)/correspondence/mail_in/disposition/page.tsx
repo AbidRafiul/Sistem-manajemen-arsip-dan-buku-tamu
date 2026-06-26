@@ -18,9 +18,9 @@ const dispositionReferenceEndpoint = '/correspondence/disposition-reference-data
 type DialogMode = 'create' | 'forward' | 'process' | 'complete';
 
 type UserOption = {
-    user_id: number;
-    fullname: string;
-    username: string;
+    id_pengguna: number;
+    nama_lengkap: string;
+    nama_pengguna: string;
 };
 
 type InstructionOption = {
@@ -50,11 +50,11 @@ const toNumber = (value: unknown) => {
 const normalizeUsers = (rows: Record<string, any>[]): UserOption[] => {
     return rows
         .map((row) => ({
-            user_id: toNumber(row.id_pengguna ?? row.user_id ?? row.UserId ?? row.nama_pengguna),
-            fullname: row.nama_lengkap || row.fullname || row.full_name || row.nama_pengguna || row.username || '',
-            username: row.nama_pengguna || row.username || ''
+            id_pengguna: toNumber(row.id_pengguna ?? row.user_id ?? row.UserId),
+            nama_lengkap: row.nama_lengkap || row.fullname || row.full_name || '',
+            nama_pengguna: row.nama_pengguna || row.username || ''
         }))
-        .filter((row) => row.user_id > 0);
+        .filter((row) => row.id_pengguna > 0);
 };
 
 const normalizeInstructions = (rows: Record<string, any>[]): InstructionOption[] => {
@@ -141,6 +141,7 @@ const Page = () => {
         setSelectedLetter(letters.find((letter) => letter.surat_masuk_id === disposition.surat_masuk_id) || null);
         setActionNote('');
         setForm({
+            ...emptyForm,
             surat_masuk_id: disposition.surat_masuk_id || null,
             disposisi_induk_id: getDispositionId(disposition),
             dari_pengguna_id: disposition.kepada_pengguna_id || null
@@ -216,7 +217,8 @@ const Page = () => {
                     ? { disid_jabatan: disposisiSuratId, complete_note: actionNote || null }
                     : { disposisi_id: disposisiSuratId, process_note: actionNote || null };
 
-            const res = await postData(endpoint, payload);
+            const endpointUrl = dialogMode === 'complete' ? dispositionCompleteEndpoint : dispositionProcessEndpoint;
+            const res = await postData(endpointUrl, payload);
             showSuccess(toast, res.data?.message || 'Status disposisi berhasil diperbarui');
             closeDialog();
             await fetchData();
