@@ -6,6 +6,7 @@ import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Tag } from "primereact/tag";
 import { TableData } from "../interfaces";
+import TrackingPanel from "./trackingPanel";
 
 export type FilterKey = "all" | "needs_action" | "archived";
 
@@ -310,6 +311,8 @@ const DashboardView = ({
                     </Card>
                 </div>
             </div>
+
+            <TrackingPanel dispositions={dispositions} loading={loading} />
         </div>
     );
 };
