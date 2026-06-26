@@ -11,65 +11,54 @@ router.post("/", async (req, res) => {
     const limit = parseInt(oPayload.limit || 20, 10) || 20;
     const offset = (page - 1) * limit;
 
-    const q = DB("trx_visitations as t")
+    const q = DB("trs_kunjungan as t")
       .select(
         "t.*",
-        "mp.visit_purpose_name as VisitPurposeName",
-        "u.fullname as Hostnama_lengkap",
+        "mp.nama_tujuan_kunjungan as VisitPurposeName", 
+        "u.nama_lengkap as HostFullname"
       )
-      .leftJoin(
-        "mst_visit_purpose as mp",
-        "t.visit_purpose_id",
-        "mp.visit_purpose_id",
-      )
-      .leftJoin("mst_pengguna as u", "t.host_user_id", "u.user_id");
+      .leftJoin("mst_tujuan_kunjungan as mp", "t.id_tujuan_kunjungan", "mp.id_tujuan_kunjungan")
+      .leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna");
 
-    const qCount = DB("trx_visitations as t").count({ total: "*" });
+    const qCount = DB("trs_kunjungan as t").count({ total: '*' });
 
     if (oPayload.Status) {
       q.where("t.status", oPayload.Status);
       qCount.where("t.status", oPayload.Status);
     }
     if (oPayload.ApprovalStatus) {
-      q.where("t.approval_status", oPayload.ApprovalStatus);
-      qCount.where("t.approval_status", oPayload.ApprovalStatus);
+      q.where("t.status_persetujuan", oPayload.ApprovalStatus);
+      qCount.where("t.status_persetujuan", oPayload.ApprovalStatus);
     }
     if (oPayload.GuestName) {
-      q.where("t.guest_name", "like", `%${oPayload.GuestName}%`);
-      qCount.where("t.guest_name", "like", `%${oPayload.GuestName}%`);
+      q.where("t.nama_tamu", "like", `%${oPayload.GuestName}%`);
+      qCount.where("t.nama_tamu", "like", `%${oPayload.GuestName}%`);
     }
     if (oPayload.VisitPurposeId) {
-      q.where("t.visit_purpose_id", oPayload.VisitPurposeId);
-      qCount.where("t.visit_purpose_id", oPayload.VisitPurposeId);
+      q.where("t.id_tujuan_kunjungan", oPayload.VisitPurposeId);
+      qCount.where("t.id_tujuan_kunjungan", oPayload.VisitPurposeId);
     }
 
     if (oPayload.TanggalMulai && oPayload.TanggalSelesai) {
       const start = oPayload.TanggalMulai + " 00:00:00";
       const end = oPayload.TanggalSelesai + " 23:59:59";
-      q.whereBetween("t.check_in_time", [start, end]);
-      qCount.whereBetween("t.check_in_time", [start, end]);
+      q.whereBetween("t.created_at", [start, end]);
+      qCount.whereBetween("t.created_at", [start, end]);
     }
 
     const totalObj = await qCount.first();
-    const rows = await q
-      .orderBy("t.check_in_time", "desc")
-      .limit(limit)
-      .offset(offset);
+    const rows = await q.orderBy("t.created_at", "desc").limit(limit).offset(offset);
 
     const cBaseUrl = `${process.env.APP_SERVER || "http://localhost"}:${process.env.APP_PORT || "8000"}`;
     for (const r of rows) {
-      if (r.photo_face) {
-        r.PhotoFaceUrl = r.photo_face.startsWith("http")
-          ? r.photo_face
-          : `${cBaseUrl}/uploads/${r.photo_face}`;
+      if (r.foto_wajah) {
+        r.PhotoFaceUrl = r.foto_wajah.startsWith('http') ? r.foto_wajah : `${cBaseUrl}/uploads/${r.foto_wajah}`;
       } else {
         r.PhotoFaceUrl = null;
       }
-
-      if (r.photo_identity) {
-        r.PhotoIdentityUrl = r.photo_identity.startsWith("http")
-          ? r.photo_identity
-          : `${cBaseUrl}/uploads/${r.photo_identity}`;
+      
+      if (r.foto_identitas) {
+        r.PhotoIdentityUrl = r.foto_identitas.startsWith('http') ? r.foto_identitas : `${cBaseUrl}/uploads/${r.foto_identitas}`;
       } else {
         r.PhotoIdentityUrl = null;
       }
@@ -88,6 +77,23 @@ router.post("/", async (req, res) => {
       message: "Sistem error",
       datetime: formatDateSystem(),
     });
+  }
+});
+
+router.post("/purposes", async (req, res) => {
+  try {
+    const listTujuan = await DB("mst_tujuan_kunjungan")
+      .select("id_tujuan_kunjungan as id", "nama_tujuan_kunjungan as name");
+
+    return res.status(200).json({
+      status: "00",
+      message: "OK",
+      data: listTujuan,
+      datetime: formatDateSystem()
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ status: "01", message: "Gagal memuat list tujuan", datetime: formatDateSystem() });
   }
 });
 

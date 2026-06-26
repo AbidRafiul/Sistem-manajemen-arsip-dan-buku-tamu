@@ -28,12 +28,12 @@ router.post(
         {
           GuestName: Joi.string().max(100).required().label("GuestName"),
           PhoneNumber: Joi.string().max(45).required().label("PhoneNumber"),
-          Guestsurel: Joi.string()
-            .surel()
+          GuestEmail: Joi.string()
+            .email()
             .max(150)
             .optional()
             .allow(null, "")
-            .label("Guestsurel"),
+            .label("GuestEmail"),
           GuestCompany: Joi.string()
             .max(255)
             .optional()
@@ -48,11 +48,11 @@ router.post(
             .try(Joi.string(), Joi.number())
             .required()
             .label("VisitPurposeId"),
-          HostNamaPengguna: Joi.string()
+          HostUserId: Joi.string()
             .max(36)
             .optional()
             .allow(null, "")
-            .label("HostNamaPengguna"),
+            .label("HostUserId"),
           HostName: Joi.string()
             .max(100)
             .optional()
@@ -75,7 +75,7 @@ router.post(
         },
         {
           "string.base": "{#label} harus berupa string",
-          "string.surel": "{#label} harus berupa surel yang valid",
+          "string.email": "{#label} harus berupa email yang valid",
           "string.empty": "{#label} tidak boleh kosong",
           "string.max": "{#label} tidak boleh lebih dari {#limit} karakter",
           "any.required": "{#label} wajib diisi",
@@ -97,11 +97,11 @@ router.post(
       const {
         GuestName,
         PhoneNumber,
-        Guestsurel,
+        GuestEmail,
         GuestCompany,
         GuestPosition,
         VisitPurposeId,
-        HostNamaPengguna,
+        HostUserId,
         HostName,
         IdentityType,
         IdentityNumber,
@@ -142,40 +142,47 @@ router.post(
           ? crypto.randomUUID()
           : Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
+      const now = new Date();
+      const currentDateTime = now.toISOString().slice(0, 19).replace('T', ' '); 
+
+      const cleanHostUserId = HostUserId && HostUserId !== "" && HostUserId !== "null" && HostUserId !== "undefined" ? HostUserId : null;
+      const cleanVisitPurposeId = VisitPurposeId && VisitPurposeId !== "" ? Number(VisitPurposeId) : null;
+
       const oData = {
-        guest_name: GuestName,
-        phone_number: PhoneNumber,
-        guest_surel: Guestsurel,
-        guest_company: GuestCompany,
-        guest_position: GuestPosition,
-        identity_type: IdentityType,
-        identity_number: IdentityNumber,
-        visit_purpose_id: VisitPurposeId,
-        host_nama_pengguna: HostNamaPengguna,
-        host_name: HostName,
-        visit_notes: VisitNotes,
-        photo_face: PhotoFace,
-        photo_identity: PhotoIdentity,
-        visit_code: VisitCode,
-        qr_token: QRToken,
-        check_in_time: formatDateSystem(),
-        status: "Sedang Berkunjung",
-        approval_status: "approved",
-        created_at: formatDateSystem(),
+        nama_tamu: GuestName || null,
+        nomor_telepon: PhoneNumber || null,
+        email_tamu: GuestEmail && GuestEmail !== "" ? GuestEmail : null,
+        instansi_tamu: GuestCompany && GuestCompany !== "" ? GuestCompany : "-", 
+        jabatan_tamu: GuestPosition && GuestPosition !== "" ? GuestPosition : null,
+        jenis_identitas: IdentityType && IdentityType !== "" ? IdentityType : null,
+        nomor_identitas: IdentityNumber && IdentityNumber !== "" ? IdentityNumber : null,
+        id_tujuan_kunjungan: cleanVisitPurposeId, 
+        id_user_host: cleanHostUserId,
+        nama_host: HostName && HostName !== "" ? HostName : null,
+        catatan_kunjungan: VisitNotes && VisitNotes !== "" ? VisitNotes : null,
+        foto_wajah: PhotoFace,
+        foto_identitas: PhotoIdentity,
+        kode_kunjungan: VisitCode,
+        token_qr: QRToken,
+        waktu_masuk: currentDateTime, 
+        status: "in",
+        status_persetujuan: "approved",
+        created_at: currentDateTime,
+        updated_at: currentDateTime
       };
 
-      const [VisitationId] = await DB("trx_visitations").insert(oData);
+      const [idKunjungan] = await DB("trs_kunjungan").insert(oData);
 
       return res.status(200).json({
         status: "00",
         message: "Check-in berhasil",
         data: {
-          visit_code: VisitCode,
-          qr_token: QRToken,
-          visitation_id: VisitationId,
-          guest_name: GuestName,
-          guest_company: GuestCompany || "-",
-          qr_image_url: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${QRToken}`,
+          kode_kunjungan: VisitCode,
+          token_qr: QRToken,
+          id_kunjungan: idKunjungan,
+          nama_tamu: GuestName,
+          instansi_tamu: GuestCompany || "-",
+          qr_image_url: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${QRToken}`
         },
         datetime: formatDateSystem(),
       });
@@ -200,5 +207,53 @@ router.post(
     }
   },
 );
+
+router.put("/:id", async (req, res) => {
+  const { id } = req.params;
+  const username = req?.auth?.username || "";
+
+  try {
+    const { error } = Joi.number().integer().required().validate(id);
+    if (error) {
+      return res.status(400).json({ status: "99", message: "ID Kunjungan tidak valid", datetime: formatDateSystem() });
+    }
+
+    const checkKunjungan = await DB("trs_kunjungan").where("id_kunjungan", id).first();
+    if (!checkKunjungan) {
+      return res.status(404).json({ status: "01", message: "Data kunjungan tidak ditemukan", datetime: formatDateSystem() });
+    }
+
+    if (checkKunjungan.status_persetujuan !== "approved") {
+      return res.status(400).json({ status: "01", message: "Kunjungan belum disetujui", datetime: formatDateSystem() });
+    }
+
+    if (checkKunjungan.status === "in") {
+      return res.status(400).json({ status: "01", message: "Tamu sudah berstatus check-in", datetime: formatDateSystem() });
+    }
+
+    const now = new Date();
+    const currentDateTime = now.toISOString().slice(0, 19).replace('T', ' '); 
+
+    await DB("trs_kunjungan")
+      .where("id_kunjungan", id)
+      .update({
+        status: "in",
+        waktu_masuk: currentDateTime,
+        updated_at: currentDateTime
+      });
+
+    return res.status(200).json({
+      status: "00",
+      message: `Tamu ${checkKunjungan.nama_tamu} berhasil Check-in`,
+      datetime: formatDateSystem()
+    });
+
+  } catch (error) {
+    console.error("❌ [Database Error Log visit_checkin.js PUT]:", error); 
+    const oResult = { status: "01", message: "Sistem error saat check-in tamu", datetime: formatDateSystem() };
+    Logging(error, { file: "visit_checkin.js", func: "check-in-put", request: req.params, response: oResult, user: username });
+    return res.status(500).json(oResult);
+  }
+});
 
 export default router;

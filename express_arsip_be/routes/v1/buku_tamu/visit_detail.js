@@ -13,19 +13,15 @@ router.post("/", async (req, res) => {
         .json({ status: "01", message: "VisitationId wajib diisi" });
     }
 
-    const row = await DB("trx_visitations as t")
+    const row = await DB("trs_kunjungan as t")
       .select(
         "t.*",
-        "mp.visit_purpose_name as VisitPurposeName",
-        "u.nama_lengkap as Hostnama_lengkap",
+        "mp.nama_tujuan_kunjungan as VisitPurposeName",
+        "u.nama_lengkap as HostFullname"
       )
-      .leftJoin(
-        "mst_visit_purpose as mp",
-        "t.visit_purpose_id",
-        "mp.visit_purpose_id",
-      )
-      .leftJoin("mst_pengguna as u", "t.host_nama_pengguna", "u.nama_pengguna")
-      .where("t.visitation_id", oPayload.VisitationId)
+      .leftJoin("mst_tujuan_kunjungan as mp", "t.id_tujuan_kunjungan", "mp.id_tujuan_kunjungan")
+      .leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna")
+      .where("t.id_kunjungan", oPayload.VisitationId)
       .first();
 
     if (!row) {
@@ -36,18 +32,18 @@ router.post("/", async (req, res) => {
 
     const cBaseUrl = `${process.env.APP_SERVER || "http://localhost"}:${process.env.APP_PORT || "8000"}`;
 
-    if (row.photo_face) {
-      row.PhotoFaceUrl = row.photo_face.startsWith("http")
-        ? row.photo_face
-        : `${cBaseUrl}/uploads/${row.photo_face}`;
+    if (row.foto_wajah) {
+      row.PhotoFaceUrl = row.foto_wajah.startsWith("http")
+        ? row.foto_wajah
+        : `${cBaseUrl}/uploads/${row.foto_wajah}`;
     } else {
       row.PhotoFaceUrl = null;
     }
 
-    if (row.photo_identity) {
-      row.PhotoIdentityUrl = row.photo_identity.startsWith("http")
-        ? row.photo_identity
-        : `${cBaseUrl}/uploads/${row.photo_identity}`;
+    if (row.foto_identitas) {
+      row.PhotoIdentityUrl = row.foto_identitas.startsWith("http")
+        ? row.foto_identitas
+        : `${cBaseUrl}/uploads/${row.foto_identitas}`;
     } else {
       row.PhotoIdentityUrl = null;
     }
