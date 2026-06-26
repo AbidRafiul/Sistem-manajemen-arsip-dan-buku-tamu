@@ -8,7 +8,7 @@ export async function middleware(req: NextRequest) {
         return NextResponse.next();
     }
 
-    const publicPaths = ['/auth/login', '/auth/register'];
+    const publicPaths = ['/auth/login', '/auth/register', '/visitor'];
     const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
 
     if (isPublicPath) {

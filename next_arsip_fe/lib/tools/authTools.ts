@@ -48,16 +48,16 @@ const authOptions = {
             // Initial sign in
             if (user) {
                 const anyUser = user as any;
-                token.id = anyUser.IdPengguna || user.id;
-                token.id = user.id;
-                token.role = user.role;
-                (token as any).roleCode = (user as any).roleCode;
-                (token as any).roleId = (user as any).roleId;
-                token.uniqueId = user.uniqueId;
-                token.name = user.name;
-                token.nama_pengguna = user.nama_pengguna;
-                token.remember_me = user.remember_me;
-                token.userCredential = user.credential;
+                token.id = anyUser.IdPengguna || anyUser.id;
+                token.id = anyUser.id;
+                token.role = anyUser.role;
+                (token as any).roleCode = anyUser.roleCode;
+                (token as any).roleId = anyUser.roleId;
+                token.uniqueId = anyUser.uniqueId;
+                token.name = anyUser.name;
+                token.nama_pengguna = anyUser.nama_pengguna;
+                token.remember_me = anyUser.remember_me;
+                token.userCredential = anyUser.credential;
 
                 const now = Math.floor(Date.now() / 1000);
                 const expireDuration = user.remember_me ? 24 * 60 * 60 : 7 * 60 * 60;
@@ -86,7 +86,7 @@ const authOptions = {
                 (session.user as any).roleCode = (token as any).roleCode;
                 (session.user as any).roleId = (token as any).roleId;
                 session.user.name = token.name as string;
-                session.user.nama_pengguna = token.nama_pengguna as string;
+                (session.user as any).nama_pengguna = token.nama_pengguna as string;
             }
 
             if (token.expiry) {
