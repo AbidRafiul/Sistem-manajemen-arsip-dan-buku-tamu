@@ -17,9 +17,12 @@ const authOptions = {
                     const userData = JSON.parse(credentials.userData as string);
 
                     // PASTIIN DATA DARI EXPRESS DIPETAKAN KE SINI
+                    const activeId = userData.IdPengguna || userData.id_pengguna || userData.uniqueId || userData.uid || userData.id || userData.nama_pengguna;
                     return {
-                        id: userData.IdPengguna, // KUNCI: Pake IdPengguna dari Express
-                        IdPengguna: userData.IdPengguna, // Tambahkan eksplisit
+                        id: activeId,
+                        IdPengguna: activeId,
+                        id_pengguna: activeId,
+                        uniqueId: activeId,
                         name: userData.nama_lengkap || userData.name,
                         nama_pengguna: userData.nama_pengguna,
                         role: userData.role || userData.roleCode,
