@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { encryptChunkRSA } from '@/lib/tools/serverTools';
 import axios from 'axios';
 import { formatDateCalendar } from '@/lib/tools/dateTools';
-import { jwtVerify, SignJWT } from 'jose';
-import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
 import { auth } from '@/lib/tools/authTools';
-import { A2FPayload } from '@/types/next-auth';
 
 interface CustomHeaders {
     'x-endpoint'?: string;
@@ -14,25 +11,57 @@ interface CustomHeaders {
     'x-credential'?: string;
 }
 
+const getBridgeCookie = (request: NextRequest) => {
+    return request.cookies.get('_A2F')?.value || request.cookies.get('_A2R')?.value || '';
+};
+
+const getBridgeCookieCandidates = (request: NextRequest, bridgeCookie = '') => {
+    return [
+        bridgeCookie,
+        request.cookies.get('_A2F')?.value || '',
+        request.cookies.get('_A2R')?.value || ''
+    ].filter(Boolean);
+};
+
+const hasBridgeAuth = async (request: NextRequest, session: any) => {
+    if (session) return true;
+
+    try {
+        const secret = new TextEncoder().encode(process.env.USER_KEY);
+        for (const token of getBridgeCookieCandidates(request)) {
+            try {
+                await jwtVerify<any>(token, secret);
+                return true;
+            } catch {
+                // Try the next cookie candidate.
+            }
+        }
+        return false;
+    } catch {
+        return false;
+    }
+};
+
+const resolveUniqueId = async (request: NextRequest, bridgeCookie: string) => {
+    const secret = new TextEncoder().encode(process.env.USER_KEY);
+    for (const token of getBridgeCookieCandidates(request, bridgeCookie)) {
+        try {
+            const { payload } = await jwtVerify<any>(token, secret);
+            const uid = payload.IdPengguna ?? payload.id_pengguna ?? payload.nama_pengguna ?? payload.uid ?? payload.uniqueId ?? payload.id;
+            if (uid) return String(uid);
+        } catch {
+            // Try the next cookie candidate.
+        }
+    }
+    return '';
+};
+
 export const POST = async (request: NextRequest) => {
     try {
-        // Check cookies
-        const cookieStore = request.cookies;
-        const session = await auth()
-        const a2fCookie = cookieStore.get('_A2F');
-        console.log('cookie', request.cookies.getAll())
+        const session = await auth();
+        const bridgeCookie = getBridgeCookie(request);
 
-        if (!session) {
-            return NextResponse.json(
-                {
-                    status: 99,
-                    message: 'Unauthenticated',
-                    datetime: formatDateCalendar(new Date()),
-                },
-                { status: 401 }
-            );
-        }
-        if (!a2fCookie) {
+        if (!(await hasBridgeAuth(request, session))) {
             return NextResponse.json(
                 {
                     status: 99,
@@ -66,7 +95,7 @@ export const POST = async (request: NextRequest) => {
         }
 
         // Process POST request
-        return await postCRUD(request, token, a2fCookie.value);
+        return await postCRUD(request, token, bridgeCookie);
 
     } catch (error: any) {
         console.error("Bridge error:", error);
@@ -98,7 +127,7 @@ export const POST = async (request: NextRequest) => {
     }
 }
 
-async function postCRUD(request: NextRequest, token: any, a2fCookie: string) {
+async function postCRUD(request: NextRequest, token: any, bridgeCookie: string) {
     try {
         const headers: CustomHeaders = {};
 
@@ -137,14 +166,8 @@ async function postCRUD(request: NextRequest, token: any, a2fCookie: string) {
         };
 
 
-        // Handle X-Level = 1
-        if (customHeader['X-Level'] && customHeader['X-Level'] == '1') {
-            const secret = new TextEncoder().encode(process.env.USER_KEY);
-            const { payload } = await jwtVerify<A2FPayload>(a2fCookie, secret);
-            const userPayload = payload;
-
-            requestHeaders['X-UniqueId'] = userPayload.uniqueId ?? '';
-        }
+        const uniqueId = await resolveUniqueId(request, bridgeCookie);
+        if (uniqueId) requestHeaders['X-UniqueId'] = uniqueId;
 
         // Handle X-Credential
         if (customHeader['X-Credential']) {
@@ -198,11 +221,6 @@ async function postCRUD(request: NextRequest, token: any, a2fCookie: string) {
         }
 
         if (err?.response?.status === 401) {
-            // Clear cookies on unauthorized
-            const cookieStore = cookies();
-            cookieStore.delete('_A2R');
-            cookieStore.delete('_A2F');
-
             return NextResponse.json(
                 err?.response?.data,
                 { status: 401 }

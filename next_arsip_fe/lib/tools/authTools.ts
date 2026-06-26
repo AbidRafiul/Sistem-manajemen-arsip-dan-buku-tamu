@@ -48,12 +48,14 @@ const authOptions = {
             // Initial sign in
             if (user) {
                 const anyUser = user as any;
-                token.id = anyUser.IdPengguna || anyUser.id;
-                token.id = anyUser.id;
+                const activeId = anyUser.IdPengguna || anyUser.id_pengguna || anyUser.uniqueId || anyUser.id || anyUser.nama_pengguna;
+
+                token.id = activeId;
+                (token as any).IdPengguna = activeId;
                 token.role = anyUser.role;
                 (token as any).roleCode = anyUser.roleCode;
                 (token as any).roleId = anyUser.roleId;
-                token.uniqueId = anyUser.uniqueId;
+                token.uniqueId = activeId;
                 token.name = anyUser.name;
                 token.nama_pengguna = anyUser.nama_pengguna;
                 token.remember_me = anyUser.remember_me;
@@ -81,6 +83,7 @@ const authOptions = {
                 // TAMBAHKAN INI BIAR IdPengguna NYAMPE KE FRONTEND
                 (session.user as any).id = token.id;
                 (session.user as any).IdPengguna = token.id;
+                (session.user as any).uniqueId = token.uniqueId || token.id;
                 session.user.id = token.id as string;
                 session.user.role = token.role as string;
                 (session.user as any).roleCode = (token as any).roleCode;
@@ -103,9 +106,12 @@ const authOptions = {
                 const maxAge = anyUser.remember_me ? 60 * 60 * 24 : 60 * 60 * 7;
 
                 const secret = new TextEncoder().encode(process.env.USER_KEY);
+                const activeId = anyUser.IdPengguna || anyUser.id_pengguna || anyUser.uniqueId || user.id || anyUser.nama_pengguna;
                 const jwtPayload = {
-                    IdPengguna: anyUser.IdPengguna || user.id,
-                    id_pengguna: anyUser.IdPengguna || user.id,
+                    IdPengguna: activeId,
+                    id_pengguna: activeId,
+                    uid: activeId,
+                    uniqueId: activeId,
                     name: user.name,
                     nama_pengguna: anyUser.nama_pengguna
                 };
@@ -151,6 +157,7 @@ const authOptions = {
             try {
                 const cookieStore = cookies();
                 cookieStore.delete('_A2F');
+                cookieStore.delete('_A2R');
             } catch (error) {
                 console.error('Error deleting cookie:', error);
             }

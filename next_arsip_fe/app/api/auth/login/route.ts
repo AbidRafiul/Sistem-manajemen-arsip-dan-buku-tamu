@@ -72,10 +72,13 @@ export const POST = async (req: NextRequest) => {
                 remember_me: credentials?.remember_me === '1',
                 credential: dataResponse.credential
             };
+            const activeId = userData.IdPengguna || userData.id;
 
             const jwtPayload = {
-                uid: userData.IdPengguna || userData.id,
-                IdPengguna: userData.IdPengguna || userData.id,
+                uid: activeId,
+                IdPengguna: activeId,
+                id_pengguna: activeId,
+                uniqueId: activeId,
                 name: userData.name,
                 nama_pengguna: userData.nama_pengguna
             };
@@ -107,7 +110,14 @@ export const POST = async (req: NextRequest) => {
                 remember_me: credentials?.remember_me === '1'
             };
 
-            const jwtPayload = { uid: fallbackId, IdPengguna: fallbackId, name: userData.name, nama_pengguna: userData.nama_pengguna };
+            const jwtPayload = {
+                uid: fallbackId,
+                IdPengguna: fallbackId,
+                id_pengguna: fallbackId,
+                uniqueId: fallbackId,
+                name: userData.name,
+                nama_pengguna: userData.nama_pengguna
+            };
             const token = await new SignJWT(jwtPayload)
                 .setProtectedHeader({ alg: 'HS512' })
                 .setExpirationTime(credentials?.remember_me === '1' ? '1d' : '7h')

@@ -15,6 +15,21 @@ import { AsyncLocalStorage } from "async_hooks";
 
 const als = new AsyncLocalStorage();
 
+const getColumns = async (tableName) => {
+  const [columns] = await DB.raw("SHOW COLUMNS FROM ??", [tableName]);
+  return columns.map((column) => column.Field);
+};
+
+const pickColumn = (columns, candidates) =>
+  candidates.find((candidate) => columns.includes(candidate));
+
+const pickTable = async (candidates) => {
+  for (const tableName of candidates) {
+    if (await DB.schema.hasTable(tableName)) return tableName;
+  }
+  return null;
+};
+
 const isBypassed = (url) => {
   if (!url) return false;
   const lower = url.toLowerCase();
@@ -102,60 +117,99 @@ export const validateSignature = async (req, res, next) => {
 
     const cUserUnique = req.headers["x-uniqueid"];
 
-    // Cek nama tabel yang aktif (support nama lama & baru)
-    const userRoleTable = (await DB.schema.hasTable("mst_pengguna_perans"))
-      ? "mst_pengguna_perans"
-      : (await DB.schema.hasTable("mst_pengguna_peran"))
-      ? "mst_pengguna_peran"
-      : null;
+    const userColumns = await getColumns("mst_pengguna");
+    const idColumn = pickColumn(userColumns, [
+      "id_pengguna",
+      "user_id",
+      "UserId",
+      "nama_pengguna",
+    ]);
+    const usernameColumn = userColumns.includes("NamaPengguna")
+      ? "NamaPengguna"
+      : pickColumn(userColumns, ["nama_pengguna", "username", "Username"]);
+    const fullnameColumn = pickColumn(userColumns, [
+      "nama_lengkap",
+      "fullname",
+      "Fullname",
+    ]);
+    const phoneColumn = pickColumn(userColumns, ["telepon", "phone", "Phone"]);
 
-    const roleTable = (await DB.schema.hasTable("mst_perans"))
-      ? "mst_perans"
-      : (await DB.schema.hasTable("mst_peran"))
-      ? "mst_peran"
-      : null;
+    if (!idColumn && !usernameColumn) {
+      return res.status(400).json({
+        status: status.BAD_REQUEST,
+        message: "Credential column not found",
+        datetime: formatDateSystem(),
+      });
+    }
 
-    // Query user dengan kolom nama baru (hasil migration)
+    const userRoleTable = await pickTable([
+      "mst_pengguna_peran",
+      "mst_pengguna_perans",
+      "mst_user_roles",
+    ]);
+    const roleTable = await pickTable(["mst_peran", "mst_perans", "mst_roles"]);
+
     let query = DB("mst_pengguna").select(
-      "mst_pengguna.id_pengguna as IdPengguna",
-      "mst_pengguna.NamaPengguna as nama_pengguna",
-      "mst_pengguna.nama_lengkap as nama_lengkap",
-      "mst_pengguna.telepon as telepon",
-      "mst_pengguna.NamaPengguna as UniqueId",
+      idColumn ? `mst_pengguna.${idColumn} as IdPengguna` : DB.raw("NULL as IdPengguna"),
+      usernameColumn
+        ? `mst_pengguna.${usernameColumn} as nama_pengguna`
+        : DB.raw("NULL as nama_pengguna"),
+      fullnameColumn
+        ? `mst_pengguna.${fullnameColumn} as nama_lengkap`
+        : DB.raw("NULL as nama_lengkap"),
+      phoneColumn
+        ? `mst_pengguna.${phoneColumn} as telepon`
+        : DB.raw("NULL as telepon"),
+      usernameColumn
+        ? `mst_pengguna.${usernameColumn} as UniqueId`
+        : DB.raw("NULL as UniqueId"),
     );
 
     if (userRoleTable && roleTable) {
-      // Kolom FK di tabel user-role (support nama lama & baru)
-      const [urCols] = await DB.raw("SHOW COLUMNS FROM ??", [userRoleTable]);
-      const urColNames = urCols.map((c) => c.Field);
-      const userFkCol = urColNames.includes("id_pengguna") ? "id_pengguna"
-        : urColNames.includes("nama_pengguna") ? "nama_pengguna"
-        : "user_id";
-      const roleFkCol = urColNames.includes("id_peran") ? "id_peran" : "role_id";
+      const userRoleColumns = await getColumns(userRoleTable);
+      const roleColumns = await getColumns(roleTable);
+      const userFkCol = pickColumn(userRoleColumns, [
+        "id_pengguna",
+        "user_id",
+        "UserId",
+        "nama_pengguna",
+      ]);
+      const roleFkCol = pickColumn(userRoleColumns, ["id_peran", "role_id"]);
+      const rolePkCol = pickColumn(roleColumns, ["id_peran", "role_id"]);
+      const roleCodeCol = pickColumn(roleColumns, ["kode_peran", "role_code"]);
+      const roleNameCol = pickColumn(roleColumns, ["nama_peran", "role_name"]);
 
-      const [rCols] = await DB.raw("SHOW COLUMNS FROM ??", [roleTable]);
-      const rColNames = rCols.map((c) => c.Field);
-      const rolePkCol = rColNames.includes("id_peran") ? "id_peran" : "role_id";
-      const roleCodeCol = rColNames.includes("kode_peran") ? "kode_peran" : "role_code";
-      const roleNameCol = rColNames.includes("nama_peran") ? "nama_peran" : "role_name";
+      const joinUserColumn =
+        userFkCol === "nama_pengguna" && !userColumns.includes("NamaPengguna")
+          ? usernameColumn
+          : idColumn;
 
-      query = query
-        .leftJoin(userRoleTable, `mst_pengguna.id_pengguna`, `${userRoleTable}.${userFkCol}`)
+      if (userFkCol && joinUserColumn && roleFkCol && rolePkCol) {
+        query = query
+        .leftJoin(userRoleTable, `mst_pengguna.${joinUserColumn}`, `${userRoleTable}.${userFkCol}`)
         .leftJoin(roleTable, `${userRoleTable}.${roleFkCol}`, `${roleTable}.${rolePkCol}`)
         .select(
           `${roleTable}.${rolePkCol} as peranId`,
-          `${roleTable}.${roleCodeCol} as kode_peran`,
-          `${roleTable}.${roleNameCol} as peran`,
+          roleCodeCol ? `${roleTable}.${roleCodeCol} as kode_peran` : DB.raw("NULL as kode_peran"),
+          roleNameCol ? `${roleTable}.${roleNameCol} as peran` : DB.raw("NULL as peran"),
         );
+      }
     }
 
-    // Cari user berdasarkan id_pengguna atau NamaPengguna (username)
     const numericId = Number(cUserUnique);
     const oUser = await query
       .where((builder) => {
-        builder.where("mst_pengguna.id_pengguna", numericId || 0);
-        if (cUserUnique) {
-          builder.orWhere("mst_pengguna.NamaPengguna", cUserUnique);
+        let hasLookup = false;
+        if (idColumn && Number.isFinite(numericId)) {
+          builder.where(`mst_pengguna.${idColumn}`, numericId);
+          hasLookup = true;
+        }
+        if (usernameColumn && cUserUnique) {
+          builder.orWhere(`mst_pengguna.${usernameColumn}`, cUserUnique);
+          hasLookup = true;
+        }
+        if (!hasLookup) {
+          builder.whereRaw("1 = 0");
         }
       })
       .first();
