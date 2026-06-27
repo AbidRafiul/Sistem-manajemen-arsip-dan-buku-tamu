@@ -76,7 +76,7 @@ export async function down(knex) {
     table.dropForeign(["document_category_id"]);
     table.dropForeign(["confidentiality_level_id"]);
     table.dropForeign(["retention_schedule_id"]);
-    
+
     // Drop Columns
     table.dropColumn("document_type_id");
     table.dropColumn("document_category_id");

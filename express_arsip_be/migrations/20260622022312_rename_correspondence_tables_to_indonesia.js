@@ -108,8 +108,9 @@ const FOREIGN_KEYS = [
     "trs_disposisi_surat",
     "disposisi_surat_id",
   ],
-  ["trs_disposisi_surat", "dari_pengguna_id", "mst_users", "UserId"],
-  ["trs_disposisi_surat", "kepada_pengguna_id", "mst_users", "UserId"],
+  // SUDAH DIPERBAIKI (sebelumnya mst_users dan UserId)
+  ["trs_disposisi_surat", "dari_pengguna_id", "mst_pengguna", "id_pengguna"],
+  ["trs_disposisi_surat", "kepada_pengguna_id", "mst_pengguna", "id_pengguna"],
   [
     "trs_disposisi_surat",
     "instruksi_disposisi_id",
@@ -129,8 +130,9 @@ const FOREIGN_KEYS = [
     "trs_disposisi_surat",
     "disposisi_surat_id",
   ],
-  ["trs_tracking_surat_masuk", "dari_pengguna_id", "mst_users", "UserId"],
-  ["trs_tracking_surat_masuk", "kepada_pengguna_id", "mst_users", "UserId"],
+  // SUDAH DIPERBAIKI (sebelumnya mst_users dan UserId)
+  ["trs_tracking_surat_masuk", "dari_pengguna_id", "mst_pengguna", "id_pengguna"],
+  ["trs_tracking_surat_masuk", "kepada_pengguna_id", "mst_pengguna", "id_pengguna"],
 ];
 
 const rowsFromRaw = (result) =>
@@ -203,6 +205,7 @@ async function renameTableIfNeeded(knex, oldName, newName) {
   }
 }
 
+// SUDAH DIPERBAIKI: Menggunakan Raw Query untuk mencegah error Knex pada Auto_Increment
 async function renameColumnIfNeeded(knex, tableName, oldName, newName) {
   if (!(await knex.schema.hasTable(tableName))) return;
 
@@ -212,9 +215,37 @@ async function renameColumnIfNeeded(knex, tableName, oldName, newName) {
   ]);
 
   if (oldExists && !newExists) {
-    await knex.schema.alterTable(tableName, (table) => {
-      table.renameColumn(oldName, newName);
-    });
+    const result = await knex.raw("SHOW COLUMNS FROM ?? LIKE ?", [
+      tableName,
+      oldName,
+    ]);
+    const columns = rowsFromRaw(result);
+
+    if (columns.length > 0) {
+      const col = columns[0];
+      
+      const type = col.Type;
+      const isNull = col.Null === "YES" ? "NULL" : "NOT NULL";
+      
+      let defaultVal = "";
+      if (col.Default !== null) {
+        if (col.Default.toUpperCase().includes("TIMESTAMP") || col.Default.includes("()")) {
+          defaultVal = `DEFAULT ${col.Default}`;
+        } else {
+          defaultVal = `DEFAULT '${col.Default}'`;
+        }
+      } else if (col.Null === "YES") {
+        defaultVal = "DEFAULT NULL";
+      }
+
+      const extra = col.Extra; 
+
+      const query = `ALTER TABLE ?? CHANGE ?? ?? ${type} ${isNull} ${defaultVal} ${extra}`
+        .trim()
+        .replace(/\s+/g, " "); 
+
+      await knex.raw(query, [tableName, oldName, newName]);
+    }
   }
 }
 

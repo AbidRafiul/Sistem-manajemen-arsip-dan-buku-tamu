@@ -15,10 +15,10 @@ router.post("/", async (req, res) => {
       .select(
         "t.*",
         "mp.nama_tujuan_kunjungan as VisitPurposeName", 
-        "u.nama_lengkap as HostFullname"
+        "u.fullname as HostFullname"
       )
       .leftJoin("mst_tujuan_kunjungan as mp", "t.id_tujuan_kunjungan", "mp.id_tujuan_kunjungan")
-      .leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna");
+      .leftJoin("mst_pengguna as u", "t.id_user_host", "u.user_id");
 
     const qCount = DB("trs_kunjungan as t").count({ total: '*' });
 

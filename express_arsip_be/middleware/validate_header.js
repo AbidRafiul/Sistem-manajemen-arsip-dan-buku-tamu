@@ -15,6 +15,15 @@ import { AsyncLocalStorage } from "async_hooks";
 
 const als = new AsyncLocalStorage();
 
+const getColumns = async (tableName) => {
+  const [columns] = await DB.raw("SHOW COLUMNS FROM ??", [tableName]);
+  return columns.map((column) => column.Field);
+};
+
+const pickColumn = (columns, candidates) => {
+  return candidates.find((candidate) => columns.includes(candidate));
+};
+
 const isBypassed = (url) => {
   if (!url) return false;
   const lower = url.toLowerCase();
@@ -106,6 +115,29 @@ export const validateSignature = async (req, res, next) => {
 
     const cUserUnique = req.headers["x-uniqueid"];
 
+    const userColumns = await getColumns("mst_pengguna");
+    const userIdColumn = pickColumn(userColumns, ["user_id", "id_pengguna", "UserId"]);
+    const usernameColumn = pickColumn(userColumns, [
+      "username",
+      "nama_pengguna",
+      "NamaPengguna",
+      "email",
+    ]);
+    const fullnameColumn = pickColumn(userColumns, [
+      "fullname",
+      "nama_lengkap",
+      "Fullname",
+    ]);
+    const phoneColumn = pickColumn(userColumns, ["telp", "telepon", "PhoneNumber"]);
+
+    if (!userIdColumn || !usernameColumn) {
+      return res.status(400).json({
+        status: status.BAD_REQUEST,
+        message: "Credential column not found",
+        datetime: formatDateSystem(),
+      });
+    }
+
     // Cek nama tabel yang aktif (support nama lama & baru)
     const userRoleTable = (await DB.schema.hasTable("mst_pengguna_perans"))
       ? "mst_pengguna_perans"
@@ -121,11 +153,11 @@ export const validateSignature = async (req, res, next) => {
 
     // Query user dengan kolom nama baru (hasil migration)
     let query = DB("mst_pengguna").select(
-      "mst_pengguna.id_pengguna as IdPengguna",
-      "mst_pengguna.NamaPengguna as nama_pengguna",
-      "mst_pengguna.nama_lengkap as nama_lengkap",
-      "mst_pengguna.telepon as telepon",
-      "mst_pengguna.NamaPengguna as UniqueId",
+      `mst_pengguna.${userIdColumn} as IdPengguna`,
+      `mst_pengguna.${usernameColumn} as nama_pengguna`,
+      fullnameColumn ? `mst_pengguna.${fullnameColumn} as nama_lengkap` : DB.raw("NULL as nama_lengkap"),
+      phoneColumn ? `mst_pengguna.${phoneColumn} as telepon` : DB.raw("NULL as telepon"),
+      `mst_pengguna.${usernameColumn} as UniqueId`,
     );
 
     if (userRoleTable && roleTable) {
@@ -173,9 +205,9 @@ export const validateSignature = async (req, res, next) => {
     const numericId = Number(cUserUnique);
     const oUser = await query
       .where((builder) => {
-        builder.where("mst_pengguna.id_pengguna", numericId || 0);
+        builder.where(`mst_pengguna.${userIdColumn}`, numericId || 0);
         if (cUserUnique) {
-          builder.orWhere("mst_pengguna.NamaPengguna", cUserUnique);
+          builder.orWhere(`mst_pengguna.${usernameColumn}`, cUserUnique);
         }
       })
       .first();
