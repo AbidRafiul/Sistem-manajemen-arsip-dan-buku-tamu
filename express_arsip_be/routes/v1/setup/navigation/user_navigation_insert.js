@@ -1,10 +1,7 @@
 import "dotenv/config";
 
 import express from "express";
-import {
-  formatDateSystem,
-  status,
-} from "../../components/tools/general.js";
+import { formatDateSystem, status } from "../../components/tools/general.js";
 import { Logging, validatePayload } from "../../components/tools/servertool.js";
 import Joi from "joi";
 import DB from "../../../../core/config/knex.js";
@@ -61,12 +58,12 @@ router.post("/", async (req, res) => {
 
     await DB("user_navigation")
       .insert({
-        user_id: oPayload.NamaPengguna,
+        id_pengguna: oPayload.NamaPengguna,
         menu: oPayload.Menu,
         created_at: formatDateSystem(),
         updated_at: formatDateSystem(),
       })
-      .onConflict("user_id")
+      .onConflict("id_pengguna")
       .merge({
         menu: oPayload.Menu,
         updated_at: formatDateSystem(),

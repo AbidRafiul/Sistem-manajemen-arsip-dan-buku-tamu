@@ -18,7 +18,11 @@ const als = new AsyncLocalStorage();
 const isBypassed = (url) => {
   if (!url) return false;
   const lower = url.toLowerCase();
-  return lower.includes("/purposes") || lower.includes("/visit_checkin") || lower.includes("/visit_booking");
+  return (
+    lower.includes("/purposes") ||
+    lower.includes("/visit_checkin") ||
+    lower.includes("/visit_booking")
+  );
 };
 
 export const validateTimestamp = async (req, res, next) => {
@@ -106,14 +110,14 @@ export const validateSignature = async (req, res, next) => {
     const userRoleTable = (await DB.schema.hasTable("mst_pengguna_perans"))
       ? "mst_pengguna_perans"
       : (await DB.schema.hasTable("mst_pengguna_peran"))
-      ? "mst_pengguna_peran"
-      : null;
+        ? "mst_pengguna_peran"
+        : null;
 
     const roleTable = (await DB.schema.hasTable("mst_perans"))
       ? "mst_perans"
       : (await DB.schema.hasTable("mst_peran"))
-      ? "mst_peran"
-      : null;
+        ? "mst_peran"
+        : null;
 
     // Query user dengan kolom nama baru (hasil migration)
     let query = DB("mst_pengguna").select(
@@ -128,20 +132,36 @@ export const validateSignature = async (req, res, next) => {
       // Kolom FK di tabel user-role (support nama lama & baru)
       const [urCols] = await DB.raw("SHOW COLUMNS FROM ??", [userRoleTable]);
       const urColNames = urCols.map((c) => c.Field);
-      const userFkCol = urColNames.includes("id_pengguna") ? "id_pengguna"
-        : urColNames.includes("nama_pengguna") ? "nama_pengguna"
-        : "user_id";
-      const roleFkCol = urColNames.includes("id_peran") ? "id_peran" : "role_id";
+      const userFkCol = urColNames.includes("id_pengguna")
+        ? "id_pengguna"
+        : urColNames.includes("nama_pengguna")
+          ? "nama_pengguna"
+          : "id_pengguna";
+      const roleFkCol = urColNames.includes("id_peran")
+        ? "id_peran"
+        : "role_id";
 
       const [rCols] = await DB.raw("SHOW COLUMNS FROM ??", [roleTable]);
       const rColNames = rCols.map((c) => c.Field);
       const rolePkCol = rColNames.includes("id_peran") ? "id_peran" : "role_id";
-      const roleCodeCol = rColNames.includes("kode_peran") ? "kode_peran" : "role_code";
-      const roleNameCol = rColNames.includes("nama_peran") ? "nama_peran" : "role_name";
+      const roleCodeCol = rColNames.includes("kode_peran")
+        ? "kode_peran"
+        : "role_code";
+      const roleNameCol = rColNames.includes("nama_peran")
+        ? "nama_peran"
+        : "role_name";
 
       query = query
-        .leftJoin(userRoleTable, `mst_pengguna.id_pengguna`, `${userRoleTable}.${userFkCol}`)
-        .leftJoin(roleTable, `${userRoleTable}.${roleFkCol}`, `${roleTable}.${rolePkCol}`)
+        .leftJoin(
+          userRoleTable,
+          `mst_pengguna.id_pengguna`,
+          `${userRoleTable}.${userFkCol}`,
+        )
+        .leftJoin(
+          roleTable,
+          `${userRoleTable}.${roleFkCol}`,
+          `${roleTable}.${rolePkCol}`,
+        )
         .select(
           `${roleTable}.${rolePkCol} as peranId`,
           `${roleTable}.${roleCodeCol} as kode_peran`,
@@ -191,7 +211,6 @@ export const validateSignature = async (req, res, next) => {
     });
   }
 };
-
 
 export const validateBaseToken = async (req, res, next) => {
   if (isBypassed(req.originalUrl)) {

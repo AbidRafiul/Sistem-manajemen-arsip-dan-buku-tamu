@@ -85,7 +85,10 @@ const ARSIP_GROUP = {
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
 function hasGroup(menu, labelUpper) {
-  return Array.isArray(menu) && menu.some((g) => g.label?.toUpperCase() === labelUpper);
+  return (
+    Array.isArray(menu) &&
+    menu.some((g) => g.label?.toUpperCase() === labelUpper)
+  );
 }
 
 function safeParseMenu(raw) {
@@ -98,7 +101,9 @@ function safeParseMenu(raw) {
 }
 
 function insertBefore(menu, newGroup, targetLabels) {
-  const idx = menu.findIndex((g) => targetLabels.includes(g.label?.toUpperCase()));
+  const idx = menu.findIndex((g) =>
+    targetLabels.includes(g.label?.toUpperCase()),
+  );
   if (idx >= 0) {
     menu.splice(idx, 0, newGroup);
   } else {
@@ -117,9 +122,13 @@ async function main() {
 
     const menuCol = colNames.find((c) => ["menu", "Menu"].includes(c));
     const pkCol = colNames.find((c) =>
-      ["id_pengguna", "user_id", "nama_pengguna", "NamaPengguna"].includes(c)
+      ["id_pengguna", "id_pengguna", "nama_pengguna", "NamaPengguna"].includes(
+        c,
+      ),
     );
-    const updatedAtCol = colNames.find((c) => ["updated_at", "UpdatedAt"].includes(c));
+    const updatedAtCol = colNames.find((c) =>
+      ["updated_at", "UpdatedAt"].includes(c),
+    );
 
     if (!menuCol || !pkCol) {
       console.error("❌ Kolom menu atau primary key tidak ditemukan!");
@@ -154,7 +163,11 @@ async function main() {
 
       // 2. Tambah PERSURATAN (sebelum ARSIP DOKUMEN)
       if (!hasGroup(menu, "PERSURATAN")) {
-        insertBefore(menu, PERSURATAN_GROUP, ["ARSIP DOKUMEN", "ARSIP", "EDMS"]);
+        insertBefore(menu, PERSURATAN_GROUP, [
+          "ARSIP DOKUMEN",
+          "ARSIP",
+          "EDMS",
+        ]);
         console.log(`  ✅ ${pkCol}=${pkValue}: + PERSURATAN`);
         changed = true;
       } else {
@@ -162,7 +175,11 @@ async function main() {
       }
 
       // 3. Pastikan ARSIP DOKUMEN ada
-      if (!hasGroup(menu, "ARSIP DOKUMEN") && !hasGroup(menu, "ARSIP") && !hasGroup(menu, "EDMS")) {
+      if (
+        !hasGroup(menu, "ARSIP DOKUMEN") &&
+        !hasGroup(menu, "ARSIP") &&
+        !hasGroup(menu, "EDMS")
+      ) {
         menu.push(ARSIP_GROUP);
         console.log(`  ✅ ${pkCol}=${pkValue}: + ARSIP DOKUMEN`);
         changed = true;
@@ -180,7 +197,9 @@ async function main() {
       }
     }
 
-    console.log(`\n✅ Selesai! ${totalUpdated} dari ${rows.length} user diupdate.`);
+    console.log(
+      `\n✅ Selesai! ${totalUpdated} dari ${rows.length} user diupdate.`,
+    );
   } catch (err) {
     console.error("❌ Error:", err.message);
   } finally {

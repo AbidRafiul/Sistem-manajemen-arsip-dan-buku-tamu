@@ -1,10 +1,7 @@
 import "dotenv/config";
 
 import express from "express";
-import {
-  formatDateSystem,
-  status,
-} from "../../components/tools/general.js";
+import { formatDateSystem, status } from "../../components/tools/general.js";
 import { Logging, validatePayload } from "../../components/tools/servertool.js";
 import Joi from "joi";
 import DB from "../../../../core/config/knex.js";
@@ -71,7 +68,7 @@ router.post("/", async (req, res) => {
 
     let oNavigation = await DB("user_navigation")
       .select("menu")
-      .where("user_id", oPayload.NamaPengguna)
+      .where("id_pengguna", oPayload.NamaPengguna)
       .first();
 
     // fallback ke mst_navigasi kalau tidak ada
@@ -92,8 +89,11 @@ router.post("/", async (req, res) => {
 
     const oUser = await DB("mst_pengguna_peran")
       .leftJoin("mst_peran", "mst_pengguna_peran.role_id", "mst_peran.role_id")
-      .select("mst_peran.role_name as peran", "mst_peran.role_code as kode_peran")
-      .where("mst_pengguna_peran.user_id", oPayload.NamaPengguna)
+      .select(
+        "mst_peran.role_name as peran",
+        "mst_peran.role_code as kode_peran",
+      )
+      .where("mst_pengguna_peran.id_pengguna", oPayload.NamaPengguna)
       .where("mst_pengguna_peran.status", "active")
       .orderBy("mst_pengguna_peran.is_primary", "desc")
       .first();

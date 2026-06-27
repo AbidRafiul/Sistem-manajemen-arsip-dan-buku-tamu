@@ -242,7 +242,7 @@ export const seed = async function (knex) {
   await knex("mst_navigasi").insert(menus);
 
   // Superadmin memakai menu custom user_navigation lebih dulu daripada template
-  // role, jadi sync user_id 1 agar tampilan web langsung mengikuti menu master.
+  // role, jadi sync id_pengguna 1 agar tampilan web langsung mengikuti menu master.
   await knex("navigasi_pengguna")
     .insert({
       id_pengguna: 1,
@@ -291,7 +291,11 @@ export const seed = async function (knex) {
 
   await knex("config")
     .insert([
-      { id: 1, kode: "msNamaPerusahaan", keterangan: "Sistem Manajemen Arsip dan Buku Tamu" },
+      {
+        id: 1,
+        kode: "msNamaPerusahaan",
+        keterangan: "Sistem Manajemen Arsip dan Buku Tamu",
+      },
       { id: 2, kode: "msAlamatPerusahaan", keterangan: "-" },
       { id: 3, kode: "msKotaPerusahaan", keterangan: "-" },
       { id: 4, kode: "msTeleponPerusahaan", keterangan: "-" },

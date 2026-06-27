@@ -77,13 +77,13 @@ const incomingLetterCreate = async (req, res) => {
       {
         field: "created_by",
         table: "mst_pengguna",
-        key: "user_id",
+        key: "id_pengguna",
         label: "User pembuat",
       },
       {
         field: "updated_by",
         table: "mst_pengguna",
-        key: "user_id",
+        key: "id_pengguna",
         label: "User pengubah",
       },
     ];
