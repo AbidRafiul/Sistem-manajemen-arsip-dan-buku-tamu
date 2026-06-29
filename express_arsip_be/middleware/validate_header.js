@@ -20,8 +20,9 @@ const getColumns = async (tableName) => {
   return columns.map((column) => column.Field);
 };
 
-const pickColumn = (columns, candidates) =>
-  candidates.find((candidate) => columns.includes(candidate));
+const pickColumn = (columns, candidates) => {
+  return candidates.find((candidate) => columns.includes(candidate));
+};
 
 const pickTable = async (candidates) => {
   for (const tableName of candidates) {
@@ -118,29 +119,30 @@ export const validateSignature = async (req, res, next) => {
     const cUserUnique = req.headers["x-uniqueid"];
 
     const userColumns = await getColumns("mst_pengguna");
-    const idColumn = pickColumn(userColumns, [
-      "id_pengguna",
-      "user_id",
-      "UserId",
+    const userIdColumn = pickColumn(userColumns, ["user_id", "id_pengguna", "UserId"]);
+    const usernameColumn = pickColumn(userColumns, [
+      "username",
       "nama_pengguna",
+      "NamaPengguna",
+      "email",
     ]);
-    const usernameColumn = userColumns.includes("NamaPengguna")
-      ? "NamaPengguna"
-      : pickColumn(userColumns, ["nama_pengguna", "username", "Username"]);
     const fullnameColumn = pickColumn(userColumns, [
-      "nama_lengkap",
       "fullname",
+      "nama_lengkap",
       "Fullname",
     ]);
-    const phoneColumn = pickColumn(userColumns, ["telepon", "phone", "Phone"]);
+    const phoneColumn = pickColumn(userColumns, ["telp", "telepon", "PhoneNumber"]);
 
-    if (!idColumn && !usernameColumn) {
+    if (!userIdColumn || !usernameColumn) {
       return res.status(400).json({
         status: status.BAD_REQUEST,
         message: "Credential column not found",
         datetime: formatDateSystem(),
       });
     }
+
+    // Cek nama tabel yang aktif (support nama lama & baru)
+
 
     const userRoleTable = await pickTable([
       "mst_pengguna_peran",
@@ -150,66 +152,51 @@ export const validateSignature = async (req, res, next) => {
     const roleTable = await pickTable(["mst_peran", "mst_perans", "mst_roles"]);
 
     let query = DB("mst_pengguna").select(
-      idColumn ? `mst_pengguna.${idColumn} as IdPengguna` : DB.raw("NULL as IdPengguna"),
-      usernameColumn
-        ? `mst_pengguna.${usernameColumn} as nama_pengguna`
-        : DB.raw("NULL as nama_pengguna"),
-      fullnameColumn
-        ? `mst_pengguna.${fullnameColumn} as nama_lengkap`
-        : DB.raw("NULL as nama_lengkap"),
-      phoneColumn
-        ? `mst_pengguna.${phoneColumn} as telepon`
-        : DB.raw("NULL as telepon"),
-      usernameColumn
-        ? `mst_pengguna.${usernameColumn} as UniqueId`
-        : DB.raw("NULL as UniqueId"),
+      `mst_pengguna.${userIdColumn} as IdPengguna`,
+      `mst_pengguna.${usernameColumn} as nama_pengguna`,
+      fullnameColumn ? `mst_pengguna.${fullnameColumn} as nama_lengkap` : DB.raw("NULL as nama_lengkap"),
+      phoneColumn ? `mst_pengguna.${phoneColumn} as telepon` : DB.raw("NULL as telepon"),
+      `mst_pengguna.${usernameColumn} as UniqueId`,
     );
 
     if (userRoleTable && roleTable) {
-      const userRoleColumns = await getColumns(userRoleTable);
-      const roleColumns = await getColumns(roleTable);
-      const userFkCol = pickColumn(userRoleColumns, [
-        "id_pengguna",
+      // Kolom FK di tabel user-role (support nama lama & baru)
+      const urColNames = await getColumns(userRoleTable);
+      const userFkCol = pickColumn(urColNames, [
         "user_id",
-        "UserId",
+        "id_pengguna",
         "nama_pengguna",
+        "username",
       ]);
-      const roleFkCol = pickColumn(userRoleColumns, ["id_peran", "role_id"]);
-      const rolePkCol = pickColumn(roleColumns, ["id_peran", "role_id"]);
-      const roleCodeCol = pickColumn(roleColumns, ["kode_peran", "role_code"]);
-      const roleNameCol = pickColumn(roleColumns, ["nama_peran", "role_name"]);
+      const roleFkCol = pickColumn(urColNames, ["role_id", "id_peran"]);
 
-      const joinUserColumn =
-        userFkCol === "nama_pengguna" && !userColumns.includes("NamaPengguna")
+      const rColNames = await getColumns(roleTable);
+      const rolePkCol = pickColumn(rColNames, ["role_id", "id_peran"]);
+      const roleCodeCol = pickColumn(rColNames, ["role_code", "kode_peran"]);
+      const roleNameCol = pickColumn(rColNames, ["role_name", "nama_peran"]);
+
+      if (userFkCol && roleFkCol && rolePkCol) {
+        const userJoinColumn = ["nama_pengguna", "username"].includes(userFkCol)
           ? usernameColumn
-          : idColumn;
+          : userIdColumn;
 
-      if (userFkCol && joinUserColumn && roleFkCol && rolePkCol) {
         query = query
-        .leftJoin(userRoleTable, `mst_pengguna.${joinUserColumn}`, `${userRoleTable}.${userFkCol}`)
-        .leftJoin(roleTable, `${userRoleTable}.${roleFkCol}`, `${roleTable}.${rolePkCol}`)
-        .select(
-          `${roleTable}.${rolePkCol} as peranId`,
-          roleCodeCol ? `${roleTable}.${roleCodeCol} as kode_peran` : DB.raw("NULL as kode_peran"),
-          roleNameCol ? `${roleTable}.${roleNameCol} as peran` : DB.raw("NULL as peran"),
-        );
+          .leftJoin(userRoleTable, `mst_pengguna.${userJoinColumn}`, `${userRoleTable}.${userFkCol}`)
+          .leftJoin(roleTable, `${userRoleTable}.${roleFkCol}`, `${roleTable}.${rolePkCol}`)
+          .select(
+            `${roleTable}.${rolePkCol} as peranId`,
+            roleCodeCol ? `${roleTable}.${roleCodeCol} as kode_peran` : DB.raw("NULL as kode_peran"),
+            roleNameCol ? `${roleTable}.${roleNameCol} as peran` : DB.raw("NULL as peran"),
+          );
       }
     }
 
     const numericId = Number(cUserUnique);
     const oUser = await query
       .where((builder) => {
-        let hasLookup = false;
-        if (idColumn && Number.isFinite(numericId)) {
-          builder.where(`mst_pengguna.${idColumn}`, numericId);
-          hasLookup = true;
-        }
-        if (usernameColumn && cUserUnique) {
+        builder.where(`mst_pengguna.${userIdColumn}`, numericId || 0);
+        if (cUserUnique) {
           builder.orWhere(`mst_pengguna.${usernameColumn}`, cUserUnique);
-          hasLookup = true;
-        }
-        if (!hasLookup) {
-          builder.whereRaw("1 = 0");
         }
       })
       .first();

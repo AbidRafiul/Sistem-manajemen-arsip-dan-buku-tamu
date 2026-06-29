@@ -14,7 +14,7 @@ router.post("/", async (req, res) => {
         "u.user_id as id_pengguna",
         "u.fullname as nama_lengkap",
         "u.username as nama_pengguna",
-        "u.telp as telepon",
+        "u.telepon as telepon",
         "r.role_name as role",
       )
       .where("u.status", "active")

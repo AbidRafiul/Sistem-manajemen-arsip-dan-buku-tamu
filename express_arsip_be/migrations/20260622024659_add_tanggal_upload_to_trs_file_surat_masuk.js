@@ -1,9 +1,10 @@
 export async function up(knex) {
   await knex.schema.alterTable("trs_file_surat_masuk", (table) => {
-    table.date("tanggal_upload")
-    .notNullable()
-    .defaultTo(knex.fn.now())
-    .after("ukuran_file");
+    table
+      .date("tanggal_upload")
+      .notNullable()
+      .defaultTo(knex.raw("(CURRENT_DATE())"))
+      .after("ukuran_file");
   });
 }
 

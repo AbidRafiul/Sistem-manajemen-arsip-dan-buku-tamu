@@ -118,7 +118,6 @@ const getDocumentDetail = async (req, res) => {
         "ditinjau_oleh",
         "ditinjau_pada",
         "catatan_tinjauan"
-
       )
       .where("kode_dokumen", oDocument.kode_dokumen)
       .whereNotIn("status", ["rejected", "executed"])

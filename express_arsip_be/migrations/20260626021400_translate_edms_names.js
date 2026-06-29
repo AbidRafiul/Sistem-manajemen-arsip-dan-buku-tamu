@@ -1,6 +1,6 @@
 /**
  * Migration 3: Translasi Skema EDMS ke Bahasa Indonesia & Ganti trx_* ke trs_*
- * 
+ *
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
@@ -118,7 +118,7 @@ export async function up(knex) {
     'trx_destruction_proposals', 'trs_usulan_pemusnahan',
     'mst_document_categories', 'mst_kategori_dokumen',
     'mst_retention_schedule', 'mst_jadwal_retensi',
-    'trx_incoming_letters'
+    'trx_incoming_letters', 'trs_surat_masuk'
   ];
 
   for (const t of allTables) {
@@ -256,63 +256,63 @@ export async function up(knex) {
   // 4. CLEANUP DATA ORPHAN UNTUK MEMASTIKAN FOREIGN KEY BISA DIBUAT
   if (await knex.schema.hasColumn('mst_kategori_dokumen', 'kode_klasifikasi')) {
     await knex.raw(`
-      UPDATE mst_kategori_dokumen 
-      SET kode_klasifikasi = NULL 
-      WHERE kode_klasifikasi IS NOT NULL 
+      UPDATE mst_kategori_dokumen
+      SET kode_klasifikasi = NULL
+      WHERE kode_klasifikasi IS NOT NULL
         AND kode_klasifikasi NOT IN (SELECT kode_klasifikasi FROM mst_klasifikasi_arsip)
     `);
   }
 
   if (await knex.schema.hasColumn('mst_jadwal_retensi', 'kode_kategori_dokumen')) {
     await knex.raw(`
-      UPDATE mst_jadwal_retensi 
-      SET kode_kategori_dokumen = NULL 
-      WHERE kode_kategori_dokumen IS NOT NULL 
+      UPDATE mst_jadwal_retensi
+      SET kode_kategori_dokumen = NULL
+      WHERE kode_kategori_dokumen IS NOT NULL
         AND kode_kategori_dokumen NOT IN (SELECT kode_kategori_dokumen FROM mst_kategori_dokumen)
     `);
   }
 
   if (await knex.schema.hasColumn('trs_dokumen', 'kode_klasifikasi')) {
     await knex.raw(`
-      UPDATE trs_dokumen 
-      SET kode_klasifikasi = NULL 
-      WHERE kode_klasifikasi IS NOT NULL 
+      UPDATE trs_dokumen
+      SET kode_klasifikasi = NULL
+      WHERE kode_klasifikasi IS NOT NULL
         AND kode_klasifikasi NOT IN (SELECT kode_klasifikasi FROM mst_klasifikasi_arsip)
     `);
   }
 
   if (await knex.schema.hasColumn('trs_dokumen', 'kode_jenis_dokumen')) {
     await knex.raw(`
-      UPDATE trs_dokumen 
-      SET kode_jenis_dokumen = NULL 
-      WHERE kode_jenis_dokumen IS NOT NULL 
+      UPDATE trs_dokumen
+      SET kode_jenis_dokumen = NULL
+      WHERE kode_jenis_dokumen IS NOT NULL
         AND kode_jenis_dokumen NOT IN (SELECT kode_jenis_dokumen FROM mst_jenis_dokumen)
     `);
   }
 
   if (await knex.schema.hasColumn('trs_dokumen', 'kode_kategori_dokumen')) {
     await knex.raw(`
-      UPDATE trs_dokumen 
-      SET kode_kategori_dokumen = NULL 
-      WHERE kode_kategori_dokumen IS NOT NULL 
+      UPDATE trs_dokumen
+      SET kode_kategori_dokumen = NULL
+      WHERE kode_kategori_dokumen IS NOT NULL
         AND kode_kategori_dokumen NOT IN (SELECT kode_kategori_dokumen FROM mst_kategori_dokumen)
     `);
   }
 
   if (await knex.schema.hasColumn('trs_dokumen', 'kode_tingkat_kerahasiaan')) {
     await knex.raw(`
-      UPDATE trs_dokumen 
-      SET kode_tingkat_kerahasiaan = NULL 
-      WHERE kode_tingkat_kerahasiaan IS NOT NULL 
+      UPDATE trs_dokumen
+      SET kode_tingkat_kerahasiaan = NULL
+      WHERE kode_tingkat_kerahasiaan IS NOT NULL
         AND kode_tingkat_kerahasiaan NOT IN (SELECT kode_tingkat_kerahasiaan FROM mst_tingkat_kerahasiaan)
     `);
   }
 
   if (await knex.schema.hasColumn('trs_dokumen', 'kode_retensi')) {
     await knex.raw(`
-      UPDATE trs_dokumen 
-      SET kode_retensi = NULL 
-      WHERE kode_retensi IS NOT NULL 
+      UPDATE trs_dokumen
+      SET kode_retensi = NULL
+      WHERE kode_retensi IS NOT NULL
         AND kode_retensi NOT IN (SELECT kode_retensi FROM mst_jadwal_retensi)
     `);
   }
@@ -320,56 +320,81 @@ export async function up(knex) {
   // Hapus baris peminjaman, versi, usulan yang merujuk ke dokumen non-existent berdasarkan kode_dokumen
   if (await knex.schema.hasColumn('trs_peminjaman_arsip', 'kode_dokumen')) {
     await knex.raw(`
-      DELETE FROM trs_peminjaman_arsip 
+      DELETE FROM trs_peminjaman_arsip
       WHERE kode_dokumen NOT IN (SELECT kode_dokumen FROM trs_dokumen)
     `);
   }
 
   if (await knex.schema.hasColumn('trs_versi_dokumen', 'kode_dokumen')) {
     await knex.raw(`
-      DELETE FROM trs_versi_dokumen 
+      DELETE FROM trs_versi_dokumen
       WHERE kode_dokumen NOT IN (SELECT kode_dokumen FROM trs_dokumen)
     `);
   }
 
   if (await knex.schema.hasColumn('trs_usulan_pemusnahan', 'kode_dokumen')) {
     await knex.raw(`
-      DELETE FROM trs_usulan_pemusnahan 
+      DELETE FROM trs_usulan_pemusnahan
       WHERE kode_dokumen NOT IN (SELECT kode_dokumen FROM trs_dokumen)
     `);
   }
 
   if (await knex.schema.hasColumn('trs_usulan_pemusnahan', 'kode_retensi')) {
     await knex.raw(`
-      UPDATE trs_usulan_pemusnahan 
-      SET kode_retensi = NULL 
-      WHERE kode_retensi IS NOT NULL 
+      UPDATE trs_usulan_pemusnahan
+      SET kode_retensi = NULL
+      WHERE kode_retensi IS NOT NULL
         AND kode_retensi NOT IN (SELECT kode_retensi FROM mst_jadwal_retensi)
     `);
   }
 
-  if (await knex.schema.hasTable('trx_incoming_letters')) {
+  if (await knex.schema.hasTable('trs_surat_masuk')) {
+    if (await knex.schema.hasColumn('trs_surat_masuk', 'jenis_dokumen_id')) {
+      await knex.raw(`
+        UPDATE trs_surat_masuk
+        SET jenis_dokumen_id = NULL
+        WHERE jenis_dokumen_id IS NOT NULL
+          AND jenis_dokumen_id NOT IN (SELECT id_jenis_dokumen FROM mst_jenis_dokumen)
+      `);
+    }
+    if (await knex.schema.hasColumn('trs_surat_masuk', 'klasifikasi_arsip_id')) {
+      await knex.raw(`
+        UPDATE trs_surat_masuk
+        SET klasifikasi_arsip_id = NULL
+        WHERE klasifikasi_arsip_id IS NOT NULL
+          AND klasifikasi_arsip_id NOT IN (SELECT id_klasifikasi FROM mst_klasifikasi_arsip)
+      `);
+    }
+    if (await knex.schema.hasColumn('trs_surat_masuk', 'tingkat_kerahasiaan_id')) {
+      await knex.raw(`
+        UPDATE trs_surat_masuk
+        SET tingkat_kerahasiaan_id = NULL
+        WHERE tingkat_kerahasiaan_id IS NOT NULL
+          AND tingkat_kerahasiaan_id NOT IN (SELECT id_tingkat_kerahasiaan FROM mst_tingkat_kerahasiaan)
+      `);
+    }
+  } else if (await knex.schema.hasTable('trx_incoming_letters')) {
     if (await knex.schema.hasColumn('trx_incoming_letters', 'document_type_id')) {
       await knex.raw(`
-        UPDATE trx_incoming_letters 
-        SET document_type_id = NULL 
-        WHERE document_type_id IS NOT NULL 
+        UPDATE trx_incoming_letters
+        SET document_type_id = NULL
+        WHERE document_type_id IS NOT NULL
           AND document_type_id NOT IN (SELECT id_jenis_dokumen FROM mst_jenis_dokumen)
       `);
     }
     if (await knex.schema.hasColumn('trx_incoming_letters', 'archive_classification_id')) {
       await knex.raw(`
-        UPDATE trx_incoming_letters 
-        SET archive_classification_id = NULL 
-        WHERE archive_classification_id IS NOT NULL 
+        UPDATE trx_incoming_letters
+        SET archive_classification_id = NULL
+        WHERE archive_classification_id IS NOT NULL
           AND archive_classification_id NOT IN (SELECT id_klasifikasi FROM mst_klasifikasi_arsip)
       `);
     }
     if (await knex.schema.hasColumn('trx_incoming_letters', 'confidentiality_level_id')) {
       await knex.raw(`
-        UPDATE trx_incoming_letters 
-        SET confidentiality_level_id = NULL 
-        WHERE confidentiality_level_id IS NOT NULL 
+        UPDATE trx_incoming_letters
+        SET confidentiality_level_id = NULL
+        WHERE confidentiality_level_id IS NOT NULL
           AND confidentiality_level_id NOT IN (SELECT id_tingkat_kerahasiaan FROM mst_tingkat_kerahasiaan)
       `);
     }
@@ -406,7 +431,13 @@ export async function up(knex) {
   });
 
   // Untuk incoming letters, pasang FK menunjuk ke PK master table baru
-  if (await knex.schema.hasTable('trx_incoming_letters')) {
+  if (await knex.schema.hasTable('trs_surat_masuk')) {
+    await knex.schema.alterTable('trs_surat_masuk', (t) => {
+      t.foreign('jenis_dokumen_id').references('id_jenis_dokumen').inTable('mst_jenis_dokumen').onDelete('NO ACTION').onUpdate('NO ACTION');
+      t.foreign('klasifikasi_arsip_id').references('id_klasifikasi').inTable('mst_klasifikasi_arsip').onDelete('NO ACTION').onUpdate('NO ACTION');
+      t.foreign('tingkat_kerahasiaan_id').references('id_tingkat_kerahasiaan').inTable('mst_tingkat_kerahasiaan').onDelete('NO ACTION').onUpdate('NO ACTION');
+    });
+  } else if (await knex.schema.hasTable('trx_incoming_letters')) {
     await knex.schema.alterTable('trx_incoming_letters', (t) => {
       t.foreign('document_type_id').references('id_jenis_dokumen').inTable('mst_jenis_dokumen').onDelete('NO ACTION').onUpdate('NO ACTION');
       t.foreign('archive_classification_id').references('id_klasifikasi').inTable('mst_klasifikasi_arsip').onDelete('NO ACTION').onUpdate('NO ACTION');
@@ -424,7 +455,7 @@ export async function down(knex) {
     'trs_usulan_pemusnahan', 'trx_destruction_proposals',
     'mst_kategori_dokumen', 'mst_document_categories',
     'mst_jadwal_retensi', 'mst_retention_schedule',
-    'trx_incoming_letters'
+    'trx_incoming_letters', 'trs_surat_masuk'
   ];
 
   for (const t of newTables) {
@@ -562,63 +593,63 @@ export async function down(knex) {
   // 4. CLEANUP DATA ORPHAN UNTUK ROLLBACK
   if (await knex.schema.hasColumn('mst_document_categories', 'archive_classification_id')) {
     await knex.raw(`
-      UPDATE mst_document_categories 
-      SET archive_classification_id = NULL 
-      WHERE archive_classification_id IS NOT NULL 
+      UPDATE mst_document_categories
+      SET archive_classification_id = NULL
+      WHERE archive_classification_id IS NOT NULL
         AND archive_classification_id NOT IN (SELECT archive_classification_id FROM mst_archive_classifications)
     `);
   }
 
   if (await knex.schema.hasColumn('mst_retention_schedule', 'document_category_id')) {
     await knex.raw(`
-      UPDATE mst_retention_schedule 
-      SET document_category_id = NULL 
-      WHERE document_category_id IS NOT NULL 
+      UPDATE mst_retention_schedule
+      SET document_category_id = NULL
+      WHERE document_category_id IS NOT NULL
         AND document_category_id NOT IN (SELECT document_category_id FROM mst_document_categories)
     `);
   }
 
   if (await knex.schema.hasColumn('trx_documents', 'archive_classification_id')) {
     await knex.raw(`
-      UPDATE trx_documents 
-      SET archive_classification_id = NULL 
-      WHERE archive_classification_id IS NOT NULL 
+      UPDATE trx_documents
+      SET archive_classification_id = NULL
+      WHERE archive_classification_id IS NOT NULL
         AND archive_classification_id NOT IN (SELECT archive_classification_id FROM mst_archive_classifications)
     `);
   }
 
   if (await knex.schema.hasColumn('trx_documents', 'document_type_id')) {
     await knex.raw(`
-      UPDATE trx_documents 
-      SET document_type_id = NULL 
-      WHERE document_type_id IS NOT NULL 
+      UPDATE trx_documents
+      SET document_type_id = NULL
+      WHERE document_type_id IS NOT NULL
         AND document_type_id NOT IN (SELECT document_type_id FROM mst_document_type)
     `);
   }
 
   if (await knex.schema.hasColumn('trx_documents', 'document_category_id')) {
     await knex.raw(`
-      UPDATE trx_documents 
-      SET document_category_id = NULL 
-      WHERE document_category_id IS NOT NULL 
+      UPDATE trx_documents
+      SET document_category_id = NULL
+      WHERE document_category_id IS NOT NULL
         AND document_category_id NOT IN (SELECT document_category_id FROM mst_document_categories)
     `);
   }
 
   if (await knex.schema.hasColumn('trx_documents', 'confidentiality_level_id')) {
     await knex.raw(`
-      UPDATE trx_documents 
-      SET confidentiality_level_id = NULL 
-      WHERE confidentiality_level_id IS NOT NULL 
+      UPDATE trx_documents
+      SET confidentiality_level_id = NULL
+      WHERE confidentiality_level_id IS NOT NULL
         AND confidentiality_level_id NOT IN (SELECT confidentiality_level_id FROM mst_confidentiality_levels)
     `);
   }
 
   if (await knex.schema.hasColumn('trx_documents', 'retention_schedule_id')) {
     await knex.raw(`
-      UPDATE trx_documents 
-      SET retention_schedule_id = NULL 
-      WHERE retention_schedule_id IS NOT NULL 
+      UPDATE trx_documents
+      SET retention_schedule_id = NULL
+      WHERE retention_schedule_id IS NOT NULL
         AND retention_schedule_id NOT IN (SELECT retention_schedule_id FROM mst_retention_schedule)
     `);
   }
@@ -626,30 +657,30 @@ export async function down(knex) {
   // Hapus data yatim berdasarkan document_code sebelum membuat foreign key kembali ke trx_documents
   if (await knex.schema.hasColumn('trx_archive_loans', 'document_code')) {
     await knex.raw(`
-      DELETE FROM trx_archive_loans 
+      DELETE FROM trx_archive_loans
       WHERE document_code NOT IN (SELECT document_code FROM trx_documents)
     `);
   }
 
   if (await knex.schema.hasColumn('trx_document_versions', 'document_code')) {
     await knex.raw(`
-      DELETE FROM trx_document_versions 
+      DELETE FROM trx_document_versions
       WHERE document_code NOT IN (SELECT document_code FROM trx_documents)
     `);
   }
 
   if (await knex.schema.hasColumn('trx_destruction_proposals', 'document_code')) {
     await knex.raw(`
-      DELETE FROM trx_destruction_proposals 
+      DELETE FROM trx_destruction_proposals
       WHERE document_code NOT IN (SELECT document_code FROM trx_documents)
     `);
   }
 
   if (await knex.schema.hasColumn('trx_destruction_proposals', 'retention_schedule_id')) {
     await knex.raw(`
-      UPDATE trx_destruction_proposals 
-      SET retention_schedule_id = NULL 
-      WHERE retention_schedule_id IS NOT NULL 
+      UPDATE trx_destruction_proposals
+      SET retention_schedule_id = NULL
+      WHERE retention_schedule_id IS NOT NULL
         AND retention_schedule_id NOT IN (SELECT retention_schedule_id FROM mst_retention_schedule)
     `);
   }
@@ -657,25 +688,25 @@ export async function down(knex) {
   if (await knex.schema.hasTable('trx_incoming_letters')) {
     if (await knex.schema.hasColumn('trx_incoming_letters', 'document_type_id')) {
       await knex.raw(`
-        UPDATE trx_incoming_letters 
-        SET document_type_id = NULL 
-        WHERE document_type_id IS NOT NULL 
+        UPDATE trx_incoming_letters
+        SET document_type_id = NULL
+        WHERE document_type_id IS NOT NULL
           AND document_type_id NOT IN (SELECT document_type_id FROM mst_document_type)
       `);
     }
     if (await knex.schema.hasColumn('trx_incoming_letters', 'archive_classification_id')) {
       await knex.raw(`
-        UPDATE trx_incoming_letters 
-        SET archive_classification_id = NULL 
-        WHERE archive_classification_id IS NOT NULL 
+        UPDATE trx_incoming_letters
+        SET archive_classification_id = NULL
+        WHERE archive_classification_id IS NOT NULL
           AND archive_classification_id NOT IN (SELECT archive_classification_id FROM mst_archive_classifications)
       `);
     }
     if (await knex.schema.hasColumn('trx_incoming_letters', 'confidentiality_level_id')) {
       await knex.raw(`
-        UPDATE trx_incoming_letters 
-        SET confidentiality_level_id = NULL 
-        WHERE confidentiality_level_id IS NOT NULL 
+        UPDATE trx_incoming_letters
+        SET confidentiality_level_id = NULL
+        WHERE confidentiality_level_id IS NOT NULL
           AND confidentiality_level_id NOT IN (SELECT confidentiality_level_id FROM mst_confidentiality_levels)
       `);
     }
@@ -711,7 +742,13 @@ export async function down(knex) {
     t.foreign('retention_code').references('retention_code').inTable('mst_retention_schedule').onDelete('NO ACTION').onUpdate('CASCADE');
   });
 
-  if (await knex.schema.hasTable('trx_incoming_letters')) {
+  if (await knex.schema.hasTable('trs_surat_masuk')) {
+    await knex.schema.alterTable('trs_surat_masuk', (t) => {
+      t.foreign('jenis_dokumen_id').references('document_type_id').inTable('mst_document_type').onDelete('NO ACTION').onUpdate('NO ACTION');
+      t.foreign('klasifikasi_arsip_id').references('archive_classification_id').inTable('mst_archive_classifications').onDelete('NO ACTION').onUpdate('NO ACTION');
+      t.foreign('tingkat_kerahasiaan_id').references('confidentiality_level_id').inTable('mst_confidentiality_levels').onDelete('NO ACTION').onUpdate('NO ACTION');
+    });
+  } else if (await knex.schema.hasTable('trx_incoming_letters')) {
     await knex.schema.alterTable('trx_incoming_letters', (t) => {
       t.foreign('document_type_id').references('document_type_id').inTable('mst_document_type').onDelete('NO ACTION').onUpdate('NO ACTION');
       t.foreign('archive_classification_id').references('archive_classification_id').inTable('mst_archive_classifications').onDelete('NO ACTION').onUpdate('NO ACTION');

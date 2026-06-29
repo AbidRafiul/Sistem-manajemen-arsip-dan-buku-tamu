@@ -34,6 +34,7 @@ const Table = ({
     const [approvalDialog, setApprovalDialog] = useState(false);
     const [notes, setNotes] = useState('');
     const [targetStatus, setTargetStatus] = useState<'approved' | 'rejected' | ''>('');
+    const [returnDialog, setReturnDialog] = useState(false);
 
     const sessionUser = state.session?.user as any;
     const roleKey = String(sessionUser?.role || sessionUser?.roleCode || '').toLowerCase();
@@ -119,9 +120,8 @@ const Table = ({
                         tooltip="Kembalikan Dokumen"
                         tooltipOptions={{ position: 'top' }}
                         onClick={() => {
-                            if (confirm(`Kembalikan dokumen ${rowData.nomor_dokumen} yang dipinjam oleh ${rowData.nama_peminjam}?`)) {
-                                handleReturn(rowData.id_peminjaman);
-                            }
+                            setSelectedDetail(rowData);
+                            setReturnDialog(true);
                         }}
                     />
                 )}
@@ -380,6 +380,66 @@ const Table = ({
                             if (selectedDetail && targetStatus) {
                                 await handleApproveReject(selectedDetail.id_peminjaman, targetStatus, notes);
                                 setApprovalDialog(false); setSelectedDetail(null); setNotes(''); setTargetStatus('');
+                            }
+                        }}
+                        loading={state.load}
+                    />
+                </div>
+            </div>
+        </Dialog>
+
+        {/* Return Confirmation Dialog */}
+        <Dialog
+            visible={returnDialog}
+            header={
+                <div className="flex align-items-center gap-2">
+                    <i className="pi pi-replay text-info" />
+                    <span className="font-bold text-900">Konfirmasi Pengembalian</span>
+                </div>
+            }
+            modal
+            style={{ width: '32rem', maxWidth: '95vw' }}
+            onHide={() => { setReturnDialog(false); setSelectedDetail(null); }}
+            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
+        >
+            <div className="flex flex-column gap-4 pt-3">
+                <div className="p-3 border-round-lg border-1 bg-blue-50 border-blue-100">
+                    <p className="m-0 text-sm text-900">
+                        Apakah Anda yakin ingin memproses pengembalian dokumen ini?
+                    </p>
+                </div>
+                <div className="flex flex-column gap-2 text-sm text-700 bg-light p-1">
+                    <div className="flex justify-content-between">
+                        <span className="font-semibold">Nomor Dokumen:</span>
+                        <span>{selectedDetail?.nomor_dokumen || '-'}</span>
+                    </div>
+                    <div className="flex justify-content-between mt-1">
+                        <span className="font-semibold">Peminjam:</span>
+                        <span>{selectedDetail?.nama_peminjam || '-'}</span>
+                    </div>
+                    <div className="flex justify-content-between mt-1">
+                        <span className="font-semibold">Tanggal Pinjam:</span>
+                        <span>{formatDateOnly(selectedDetail?.tanggal_pinjam)}</span>
+                    </div>
+                </div>
+                <div className="flex justify-content-end gap-2">
+                    <Button
+                        label="Batal"
+                        severity="secondary"
+                        outlined
+                        size="small"
+                        onClick={() => { setReturnDialog(false); setSelectedDetail(null); }}
+                    />
+                    <Button
+                        label="Ya, Kembalikan"
+                        icon="pi pi-check"
+                        severity="info"
+                        size="small"
+                        onClick={async () => {
+                            if (selectedDetail) {
+                                await handleReturn(selectedDetail.id_peminjaman);
+                                setReturnDialog(false);
+                                setSelectedDetail(null);
                             }
                         }}
                         loading={state.load}

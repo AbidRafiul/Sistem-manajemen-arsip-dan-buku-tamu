@@ -24,7 +24,7 @@ router.post("/", async (req, res) => {
         "mu.user_id as id_pengguna",
         "mu.fullname as nama_lengkap",
         "mu.username as nama_pengguna",
-        "mu.telp as telepon",
+        "mu.telepon as telepon",
         "mu.email as surel",
         "mu.branch_id as id_cabang",
         "mu.division_id as id_divisi",

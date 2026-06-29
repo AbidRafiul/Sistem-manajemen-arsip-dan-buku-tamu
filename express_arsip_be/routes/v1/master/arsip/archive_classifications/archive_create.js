@@ -40,8 +40,18 @@ const createArchiveClassification = async (req, res) => {
     );
 
     if (cValidation) {
-      const oResult = { status: status.BAD_REQUEST, message: cValidation, datetime: datetime() };
-      Logging(null, { file: "archive_create.js", func: "createArchiveClassification", request: oPayload, response: oResult, user: username });
+      const oResult = {
+        status: status.BAD_REQUEST,
+        message: cValidation,
+        datetime: datetime(),
+      };
+      Logging(null, {
+        file: "archive_create.js",
+        func: "create",
+        request: oPayload,
+        response: oResult,
+        user: nama_pengguna,
+      });
       return res.status(422).json(oResult);
     }
 
@@ -61,8 +71,18 @@ const createArchiveClassification = async (req, res) => {
       datetime: formatDateSystem(),
     });
   } catch (error) {
-    const oResult = { status: status.BAD_REQUEST, message: "Gagal menyimpan. Pastikan Kode belum digunakan.", datetime: datetime() };
-    Logging(error, { file: "archive_create.js", func: "createArchiveClassification", request: oPayload, response: oResult, user: username });
+    const oResult = {
+      status: status.BAD_REQUEST,
+      message: "Gagal menyimpan. Pastikan Kode belum digunakan.",
+      datetime: datetime(),
+    };
+    Logging(error, {
+      file: "archive_create.js",
+      func: "create",
+      request: oPayload,
+      response: oResult,
+      user: nama_pengguna,
+    });
     return res.status(500).json(oResult);
   }
 };

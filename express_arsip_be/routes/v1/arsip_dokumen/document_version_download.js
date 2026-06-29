@@ -3,6 +3,7 @@ import { Logging } from "../components/tools/servertool.js";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import { downloadFileFromMinio } from "../../../core/components/tools/minio_helper.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,35 +43,53 @@ const downloadDocumentVersion = async (req, res) => {
       return res.status(404).json(oResult);
     }
 
-    // Bangun absolute path file
-    // FilePath tersimpan sebagai /uploads/documents/filename.ext
-    const cRelativePath = oVersion.file_path.replace(/^\//, "");
-    const cAbsolutePath = path.join(
-      __dirname,
-      "../../../../public",
-      cRelativePath,
-    );
-
-    // Cek file ada di disk
-    if (!fs.existsSync(cAbsolutePath)) {
-      const oResult = {
-        status: "error",
-        message: "File fisik tidak ditemukan di server",
-      };
-      return res.status(404).json(oResult);
-    }
-
     // Tentukan nama file download
     const cFileExtension = path.extname(oVersion.file_path);
     const cDownloadName = `${oVersion.nomor_dokumen}_V${oVersion.nomor_versi}${cFileExtension}`;
 
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${cDownloadName}"`,
-    );
-    res.setHeader("Content-Type", "application/octet-stream");
+    // Coba download dari MinIO dahulu
+    try {
+      const bucketName = process.env.MINIO_BUCKET_NAME || "arsip-bucket";
+      // Contoh file_path: "/uploads/documents/filename.ext" -> "documents/filename.ext"
+      const objectName = oVersion.file_path.replace(/^\/uploads\//, "").replace(/^\//, "");
+      
+      const stream = await downloadFileFromMinio(bucketName, objectName);
+      
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${cDownloadName}"`,
+      );
+      res.setHeader("Content-Type", "application/octet-stream");
 
-    return res.sendFile(cAbsolutePath);
+      return stream.pipe(res);
+    } catch (minioError) {
+      console.log("File tidak ditemukan di MinIO atau koneksi gagal, fallback ke lokal disk:", minioError.message);
+      
+      // Fallback: Bangun absolute path file lokal
+      const cRelativePath = oVersion.file_path.replace(/^\//, "");
+      const cAbsolutePath = path.join(
+        __dirname,
+        "../../../../public",
+        cRelativePath,
+      );
+
+      // Cek file ada di disk
+      if (!fs.existsSync(cAbsolutePath)) {
+        const oResult = {
+          status: "error",
+          message: "File fisik tidak ditemukan di server maupun di MinIO",
+        };
+        return res.status(404).json(oResult);
+      }
+
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${cDownloadName}"`,
+      );
+      res.setHeader("Content-Type", "application/octet-stream");
+
+      return res.sendFile(cAbsolutePath);
+    }
   } catch (error) {
     const oResult = {
       status: "error",

@@ -83,10 +83,9 @@ const incomingLetterUpdate = async (req, res) => {
         label: "Jenis surat",
       },
       {
-        field: "document_type_id",
+        field: "jenis_dokumen_id",
         table: "mst_jenis_dokumen",
-        key: "id_jenis_dokumen",
-
+        key: "DocumentTypeId",
         label: "Tipe dokumen",
       },
       {

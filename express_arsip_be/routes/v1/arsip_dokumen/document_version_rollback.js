@@ -64,9 +64,7 @@ const rollbackDocumentVersion = async (req, res) => {
       .orderBy("nomor_versi", "desc")
       .first();
 
-    const nNewVersionNumber = oLastVersion
-      ? oLastVersion.version_number + 1
-      : 1;
+    const nNewVersionNumber = oLastVersion ? oLastVersion.nomor_versi + 1 : 1;
 
     // Buat versi baru dengan FilePath dari versi target (rollback)
     const oNewVersion = {

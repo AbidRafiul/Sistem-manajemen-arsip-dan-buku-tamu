@@ -6,7 +6,7 @@ const approveArchiveLoan = async (req, res) => {
 
   try {
     const nLoanId = oPayload.id_peminjaman || oPayload.loan_id;
-    const cStatus = oPayload.status;
+    const cStatus = oPayload.status || oPayload.status_persetujuan;
     const cApprovalNotes = oPayload.catatan_persetujuan || oPayload.approval_notes || null;
     const cApprovedBy =
       req?.auth?.nama_pengguna ||

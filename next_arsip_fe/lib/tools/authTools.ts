@@ -42,12 +42,14 @@ const authOptions = {
         error: '/auth/login',
         signOut: '/auth/login'
     },
+    secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || 'random',
     session: {
         strategy: 'jwt' as const,
         maxAge: 7 * 24 * 60 * 60
     },
     callbacks: {
         async jwt({ token, user }: { token: JWT; user?: User }) {
+            console.log('NextAuth Callback - jwt: entering. User present:', !!user);
             // Initial sign in
             if (user) {
                 const anyUser = user as any;
@@ -67,17 +69,20 @@ const authOptions = {
                 const now = Math.floor(Date.now() / 1000);
                 const expireDuration = user.remember_me ? 24 * 60 * 60 : 7 * 60 * 60;
                 token.expiry = now + expireDuration;
+                console.log('NextAuth Callback - jwt: initialized token for user:', token.name, 'expiry in:', expireDuration, 'seconds');
             }
 
             // Check if token has expired
             const now = Math.floor(Date.now() / 1000);
             if (token.expiry && now > token.expiry) {
+                console.log('NextAuth Callback - jwt: Token has expired! expiry:', token.expiry, 'now:', now);
                 return { ...token, expired: true };
             }
 
             return token;
         },
         async session({ session, token }: { session: Session; token: JWT }) {
+            console.log('NextAuth Callback - session: entering. Token expired:', !!token.expired);
             if (token.expired) {
                 throw new Error('Session telah kadaluarsa');
             }
@@ -93,6 +98,7 @@ const authOptions = {
                 (session.user as any).roleId = (token as any).roleId;
                 session.user.name = token.name as string;
                 (session.user as any).nama_pengguna = token.nama_pengguna as string;
+                console.log('NextAuth Callback - session: set session user role:', session.user.role, 'name:', session.user.name);
             }
 
             if (token.expiry) {
