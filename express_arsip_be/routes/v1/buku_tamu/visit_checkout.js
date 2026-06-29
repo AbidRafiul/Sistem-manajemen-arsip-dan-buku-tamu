@@ -1,13 +1,13 @@
 import express from "express";
 import Joi from "joi";
 import { formatDateSystem } from "../components/tools/general.js";
-import { Logging, validatePayload } from "../components/tools/servertool.js"; 
+import { Logging, validatePayload } from "../components/tools/servertool.js";
 import DB from "../../../core/config/knex.js";
 
 const router = express.Router();
 
 router.put("/:id", async (req, res) => {
-  const { id } = req.params; 
+  const { id } = req.params;
   const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
@@ -42,7 +42,7 @@ router.put("/:id", async (req, res) => {
 
     const oDataUpdate = {
       status: "out",
-      waktu_keluar: formatDateSystem(), 
+      waktu_keluar: formatDateSystem(),
       updated_at: formatDateSystem()
     };
 

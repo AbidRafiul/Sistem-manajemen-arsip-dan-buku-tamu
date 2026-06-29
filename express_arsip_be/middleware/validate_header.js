@@ -24,6 +24,13 @@ const pickColumn = (columns, candidates) => {
   return candidates.find((candidate) => columns.includes(candidate));
 };
 
+const pickTable = async (candidates) => {
+  for (const tableName of candidates) {
+    if (await DB.schema.hasTable(tableName)) return tableName;
+  }
+  return null;
+};
+
 const isBypassed = (url) => {
   if (!url) return false;
   const lower = url.toLowerCase();
@@ -135,19 +142,15 @@ export const validateSignature = async (req, res, next) => {
     }
 
     // Cek nama tabel yang aktif (support nama lama & baru)
-    const userRoleTable = (await DB.schema.hasTable("mst_pengguna_perans"))
-      ? "mst_pengguna_perans"
-      : (await DB.schema.hasTable("mst_pengguna_peran"))
-      ? "mst_pengguna_peran"
-      : null;
 
-    const roleTable = (await DB.schema.hasTable("mst_perans"))
-      ? "mst_perans"
-      : (await DB.schema.hasTable("mst_peran"))
-      ? "mst_peran"
-      : null;
 
-    // Query user dengan kolom nama baru (hasil migration)
+    const userRoleTable = await pickTable([
+      "mst_pengguna_peran",
+      "mst_pengguna_perans",
+      "mst_user_roles",
+    ]);
+    const roleTable = await pickTable(["mst_peran", "mst_perans", "mst_roles"]);
+
     let query = DB("mst_pengguna").select(
       `mst_pengguna.${userIdColumn} as IdPengguna`,
       `mst_pengguna.${usernameColumn} as nama_pengguna`,
@@ -188,7 +191,6 @@ export const validateSignature = async (req, res, next) => {
       }
     }
 
-    // Cari user berdasarkan id_pengguna atau NamaPengguna (username)
     const numericId = Number(cUserUnique);
     const oUser = await query
       .where((builder) => {

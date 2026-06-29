@@ -5,23 +5,22 @@ const executeDestructionProposal = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const nProposalId = oPayload.proposal_id;
-    const cBeritaAcaraPath = oPayload.berita_acara_path || null;
-    const cExecutedBy =
-      req?.context?.nama_pengguna || oPayload.executed_by || "system";
+    const nProposalId = oPayload.id_usulan || oPayload.proposal_id;
+    const cBeritaAcaraPath = oPayload.file_berita_acara || oPayload.berita_acara_path || null;
+    const cExecutedBy = req?.context?.Username || oPayload.dieksekusi_oleh || oPayload.executed_by || "system";
     const dNow = new Date();
 
     if (!nProposalId) {
       const oResult = {
         status: "error",
-        message: "proposal_id wajib diisi",
+        message: "id_usulan wajib diisi",
       };
       return res.status(422).json(oResult);
     }
 
     // Ambil data proposal
-    const oProposal = await DB("trx_destruction_proposals")
-      .where("proposal_id", nProposalId)
+    const oProposal = await DB("trs_usulan_pemusnahan")
+      .where("id_usulan", nProposalId)
       .first();
 
     if (!oProposal) {
@@ -43,19 +42,19 @@ const executeDestructionProposal = async (req, res) => {
     // Jalankan dalam satu transaksi database
     await DB.transaction(async (trx) => {
       // 1. Update proposal jadi 'executed'
-      await trx("trx_destruction_proposals")
-        .where("proposal_id", nProposalId)
+      await trx("trs_usulan_pemusnahan")
+        .where("id_usulan", nProposalId)
         .update({
           status: "executed",
-          executed_by: cExecutedBy,
-          executed_at: dNow,
-          berita_acara_path: cBeritaAcaraPath,
+          dieksekusi_oleh: cExecutedBy,
+          dieksekusi_pada: dNow,
+          file_berita_acara: cBeritaAcaraPath,
           updated_at: dNow,
         });
 
       // 2. Soft-delete dokumen (Status → nonactive)
-      await trx("trx_documents")
-        .where("document_id", oProposal.document_id)
+      await trx("trs_dokumen")
+        .where("kode_dokumen", oProposal.kode_dokumen)
         .update({
           status: "nonactive",
           updated_at: dNow,
@@ -67,11 +66,11 @@ const executeDestructionProposal = async (req, res) => {
       message:
         "Pemusnahan arsip berhasil dieksekusi. Dokumen telah dinonaktifkan.",
       data: {
-        proposal_id: nProposalId,
-        document_id: oProposal.document_id,
+        id_usulan: nProposalId,
+        kode_dokumen: oProposal.kode_dokumen,
         executed_by: cExecutedBy,
         executed_at: dNow,
-        berita_acara_path: cBeritaAcaraPath,
+        file_berita_acara: cBeritaAcaraPath,
         document_status: "nonactive",
       },
     };

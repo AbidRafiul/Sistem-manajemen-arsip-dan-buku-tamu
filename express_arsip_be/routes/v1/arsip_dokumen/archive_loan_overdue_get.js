@@ -6,41 +6,41 @@ const getOverdueLoans = async (req, res) => {
     const dToday = new Date().toISOString().split("T")[0];
 
     // Ambil peminjaman yang overdue:
-    // 1. IsOverdue = 1 (sudah dikembalikan terlambat)
-    // 2. Status = 'borrowed' dan ExpectedReturnDate sudah lewat (belum kembali, sudah terlambat)
-    const vaData = await DB("trx_archive_loans as l")
+    // 1. terlambat = 1 (sudah dikembalikan terlambat)
+    // 2. Status = 'borrowed' dan tanggal_pengembalian sudah lewat (belum kembali, sudah terlambat)
+    const vaData = await DB("trs_peminjaman_arsip as l")
       .select(
-        "l.loan_id",
-        "l.document_id",
-        "l.borrower_name",
-        "l.loan_date",
-        "l.expected_return_date",
-        "l.return_date",
-        "l.purpose",
+        "l.id_peminjaman",
+        "l.kode_dokumen",
+        "l.nama_peminjam",
+        "l.tanggal_pinjam",
+        "l.tanggal_pengembalian",
+        "l.tanggal_kembali",
+        "l.keperluan",
         "l.status",
-        "l.is_overdue",
-        "l.approved_by",
+        "l.terlambat",
+        "l.disetujui_oleh",
         "l.created_at",
         // Data dokumen
-        "d.document_name",
-        "d.document_number",
-        "d.physical_location",
+        "d.nama_dokumen",
+        "d.nomor_dokumen",
+        "d.lokasi_fisik",
         // Kalkulasi hari keterlambatan
-        DB.raw(`DATEDIFF(?, l.expected_return_date) as OverdueDays`, [dToday]),
+        DB.raw(`DATEDIFF(?, l.tanggal_pengembalian) as OverdueDays`, [dToday])
       )
-      .leftJoin("trx_documents as d", "l.document_id", "d.document_id")
+      .leftJoin("trs_dokumen as d", "l.kode_dokumen", "d.kode_dokumen")
       .where((oBuilder) => {
         oBuilder
           // Sudah dikembalikan terlambat
-          .where("l.is_overdue", 1)
+          .where("l.terlambat", 1)
           // ATAU masih dipinjam tapi sudah lewat expected return date
           .orWhere((oInner) => {
             oInner
               .where("l.status", "borrowed")
-              .where("l.expected_return_date", "<", dToday);
+              .where("l.tanggal_pengembalian", "<", dToday);
           });
       })
-      .orderBy("l.expected_return_date", "asc");
+      .orderBy("l.tanggal_pengembalian", "asc");
 
     const oResult = {
       status: "success",

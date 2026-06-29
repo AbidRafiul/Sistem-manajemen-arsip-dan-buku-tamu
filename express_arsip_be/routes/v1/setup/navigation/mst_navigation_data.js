@@ -60,6 +60,27 @@ const getNavigationByRole = async (roles) => {
         .first();
 };
 
+const queryNavigationByRoleId = async (roleId) => {
+    const tableName = (await DB.schema.hasTable("mst_navigasi"))
+        ? "mst_navigasi"
+        : (await DB.schema.hasTable("mst_navigation"))
+            ? "mst_navigation"
+            : null;
+
+    if (!tableName) return null;
+
+    const [columns] = await DB.raw("SHOW COLUMNS FROM ??", [tableName]);
+    const columnNames = columns.map((column) => column.Field);
+    const menuColumn = columnNames.includes("menu") ? "menu" : columnNames.includes("Menu") ? "Menu" : null;
+    const roleColumn = columnNames.includes("peran") ? "peran" : columnNames.includes("role") ? "role" : null;
+
+    if (!menuColumn || !roleColumn) return null;
+
+    return await DB(tableName)
+      .select(`${menuColumn} as menu`)
+      .where(roleColumn, roleId);
+};
+
 router.post("/", async (req, res) => {
   const { body } = req;
   const oPayload = body;
@@ -105,9 +126,7 @@ router.post("/", async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    const oData = await DB("mst_navigasi")
-      .select("Menu as menu")
-      .where("peran", oPayload?.peran);
+    const oData = await queryNavigationByRoleId(oPayload?.peran);
 
     if (!oData) {
       const oResult = {

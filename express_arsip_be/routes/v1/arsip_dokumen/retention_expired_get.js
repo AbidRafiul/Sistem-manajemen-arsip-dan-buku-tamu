@@ -4,62 +4,67 @@ import { Logging } from "../components/tools/servertool.js";
 const getRetentionExpiredDocuments = async (req, res) => {
   try {
     const cStatus = req.query.status || "active";
-    const nDocumentCategoryId = req.query.document_category_id;
+    const nDocumentCategoryId = req.query.id_kategori_dokumen || req.query.document_category_id;
+    const cKodeKategoriDokumen = req.query.kode_kategori_dokumen;
 
     // Dokumen yang masa retensinya sudah habis:
-    // DocumentDate + RetentionYears (dalam tahun) <= Hari ini
+    // tanggal + tahun_retensi (dalam tahun) <= Hari ini
     // Menggunakan DATE_ADD MySQL untuk kalkulasi
-    const oQuery = DB("trx_documents as d")
+    const oQuery = DB("trs_dokumen as d")
       .select(
-        "d.document_id",
-        "d.document_name",
-        "d.document_number",
-        "d.document_date",
-        "d.expired_date",
-        "d.pic_name",
-        "d.physical_location",
+        "d.id_dokumen",
+        "d.kode_dokumen",
+        "d.nama_dokumen",
+        "d.nomor_dokumen",
+        "d.tanggal",
+        "d.tanggal_kedaluwarsa",
+        "d.nama_pic",
+        "d.lokasi_fisik",
         "d.status",
         "d.created_at",
         // Master data
-        "dc.document_category_name",
-        "rs.retention_schedule_id",
-        "rs.retention_name",
-        "rs.retention_years",
-        "rs.retention_action",
+        "dc.nama_kategori_dokumen",
+        "rs.id_jadwal_retensi",
+        "rs.kode_retensi",
+        "rs.nama_retensi",
+        "rs.tahun_retensi",
+        "rs.tindakan_retensi",
         // Kalkulasi tanggal retensi berakhir
         DB.raw(
-          "DATE_ADD(d.document_date, INTERVAL rs.retention_years YEAR) as RetentionEndDate",
+          "DATE_ADD(d.tanggal, INTERVAL rs.tahun_retensi YEAR) as RetentionEndDate"
         ),
         // Kalkulasi berapa tahun sudah lewat
         DB.raw(
-          "TIMESTAMPDIFF(YEAR, DATE_ADD(d.document_date, INTERVAL rs.retention_years YEAR), NOW()) as YearsOverRetention",
+          "TIMESTAMPDIFF(YEAR, DATE_ADD(d.tanggal, INTERVAL rs.tahun_retensi YEAR), NOW()) as YearsOverRetention"
         ),
         // Status proposal pemusnahan (jika ada)
         DB.raw(
-          "(SELECT status FROM trx_destruction_proposals WHERE document_id = d.document_id AND status NOT IN ('rejected', 'executed') LIMIT 1) as ActiveProposalStatus",
-        ),
+          "(SELECT status FROM trs_usulan_pemusnahan WHERE kode_dokumen = d.kode_dokumen AND status NOT IN ('rejected', 'executed') LIMIT 1) as ActiveProposalStatus"
+        )
       )
       .join(
-        "mst_retention_schedule as rs",
-        "d.retention_schedule_id",
-        "rs.retention_schedule_id",
+        "mst_jadwal_retensi as rs",
+        "d.kode_retensi",
+        "rs.kode_retensi"
       )
       .leftJoin(
-        "mst_document_categories as dc",
-        "d.document_category_id",
-        "dc.document_category_id",
+        "mst_kategori_dokumen as dc",
+        "d.kode_kategori_dokumen",
+        "dc.kode_kategori_dokumen"
       )
       .where("d.status", cStatus)
       // Kondisi utama: masa retensi sudah lewat
       .whereRaw(
-        "DATE_ADD(d.document_date, INTERVAL rs.retention_years YEAR) <= NOW()",
+        "DATE_ADD(d.tanggal, INTERVAL rs.tahun_retensi YEAR) <= NOW()"
       );
 
-    if (nDocumentCategoryId) {
-      oQuery.andWhere("d.document_category_id", nDocumentCategoryId);
+    if (cKodeKategoriDokumen) {
+      oQuery.andWhere("d.kode_kategori_dokumen", cKodeKategoriDokumen);
+    } else if (nDocumentCategoryId) {
+      oQuery.andWhere("dc.id_kategori_dokumen", nDocumentCategoryId);
     }
 
-    const vaData = await oQuery.orderBy("d.document_date", "asc");
+    const vaData = await oQuery.orderBy("d.tanggal", "asc");
 
     const oResult = {
       status: "success",

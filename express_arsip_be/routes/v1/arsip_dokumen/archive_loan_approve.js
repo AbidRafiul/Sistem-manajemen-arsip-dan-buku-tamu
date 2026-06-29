@@ -5,9 +5,9 @@ const approveArchiveLoan = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const nLoanId = oPayload.loan_id;
-    const cStatus = oPayload.status;
-    const cApprovalNotes = oPayload.approval_notes || null;
+    const nLoanId = oPayload.id_peminjaman || oPayload.loan_id;
+    const cStatus = oPayload.status || oPayload.status_persetujuan;
+    const cApprovalNotes = oPayload.catatan_persetujuan || oPayload.approval_notes || null;
     const cApprovedBy =
       req?.auth?.nama_pengguna ||
       req?.context?.nama_pengguna ||
@@ -19,7 +19,7 @@ const approveArchiveLoan = async (req, res) => {
     if (!nLoanId) {
       const oResult = {
         status: "error",
-        message: "loan_id wajib diisi",
+        message: "id_peminjaman wajib diisi",
       };
       return res.status(422).json(oResult);
     }
@@ -33,8 +33,8 @@ const approveArchiveLoan = async (req, res) => {
     }
 
     // Cek loan ada dan masih pending
-    const oLoan = await Knex("trx_archive_loans")
-      .where("loan_id", nLoanId)
+    const oLoan = await Knex("trs_peminjaman_arsip")
+      .where("id_peminjaman", nLoanId)
       .first();
 
     if (!oLoan) {
@@ -58,21 +58,23 @@ const approveArchiveLoan = async (req, res) => {
 
     const oData = {
       status: cNewStatus,
-      approved_by: cApprovedBy,
-      approved_at: dNow,
-      approval_notes: cApprovalNotes,
+      disetujui_oleh: cApprovedBy,
+      disetujui_pada: dNow,
+      catatan_persetujuan: cApprovalNotes,
       updated_at: dNow,
     };
 
-    await Knex("trx_archive_loans").where("loan_id", nLoanId).update(oData);
+    await Knex("trs_peminjaman_arsip")
+      .where("id_peminjaman", nLoanId)
+      .update(oData);
 
     const oResult = {
       status: "success",
       message: `Peminjaman arsip berhasil di-${cStatus === "approved" ? "setujui (status: borrowed)" : "tolak"}`,
       data: {
-        loan_id: nLoanId,
-        document_id: oLoan.document_id,
-        borrower_name: oLoan.borrower_name,
+        id_peminjaman: nLoanId,
+        kode_dokumen: oLoan.kode_dokumen,
+        nama_peminjam: oLoan.nama_peminjam,
         ...oData,
       },
     };

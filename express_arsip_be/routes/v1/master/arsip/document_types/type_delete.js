@@ -9,14 +9,15 @@ import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
-router.delete("/:DocumentTypeId", async (req, res) => {
-  const cDocumentTypeId = req.params.DocumentTypeId;
-  const nama_pengguna = req?.auth?.nama_pengguna || "";
-  const oPayload = { id: cDocumentTypeId };
+const deleteDocumentType = async (req, res) => {
+  const cIdJenisDokumen = req.params.id_jenis_dokumen;
+  const username = req?.auth?.username || "";
+  const oPayload = { id: cIdJenisDokumen };
+
 
   try {
-    const nUpdated = await DB("mst_document_type")
-      .where("document_type_id", cDocumentTypeId)
+    const nUpdated = await DB("mst_jenis_dokumen")
+      .where("id_jenis_dokumen", cIdJenisDokumen)
       .update({ status: "nonactive", updated_at: new Date() });
 
     if (!nUpdated) {
@@ -41,7 +42,7 @@ router.delete("/:DocumentTypeId", async (req, res) => {
 
     Logging(error, {
       file: "type_delete.js",
-      func: "delete",
+      func: "deleteDocumentType",
       request: oPayload,
       response: oResult,
       user: nama_pengguna,
@@ -49,6 +50,8 @@ router.delete("/:DocumentTypeId", async (req, res) => {
 
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.delete("/:id_jenis_dokumen", deleteDocumentType);
 
 export default router;

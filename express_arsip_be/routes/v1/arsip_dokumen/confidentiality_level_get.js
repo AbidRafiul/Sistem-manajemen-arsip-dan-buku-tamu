@@ -5,17 +5,17 @@ const getConfidentialityLevels = async (req, res) => {
   try {
     const cStatus = req.query.status || "active";
 
-    const vaData = await DB("mst_confidentiality_levels")
+    const vaData = await DB("mst_tingkat_kerahasiaan")
       .select(
-        "confidentiality_level_id",
-        "confidentiality_level_code",
-        "confidentiality_level_name",
-        "confidentiality_level",
+        "id_tingkat_kerahasiaan",
+        "kode_tingkat_kerahasiaan",
+        "nama_tingkat_kerahasiaan",
+        "tingkat_kerahasiaan",
         "deskripsi",
-        "status",
+        "status"
       )
       .where("status", cStatus)
-      .orderBy("confidentiality_level", "asc");
+      .orderBy("tingkat_kerahasiaan", "asc");
 
     const oResult = {
       status: "success",

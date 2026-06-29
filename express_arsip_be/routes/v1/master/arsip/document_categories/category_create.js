@@ -13,7 +13,7 @@ import {
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+const createDocumentCategory = async (req, res) => {
   const { body: oPayload } = req;
   const nama_pengguna = req?.auth?.nama_pengguna || "";
 
@@ -28,20 +28,21 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        archive_classification_id: Joi.number()
+        kode_klasifikasi: Joi.string()
+          .max(255)
           .required()
-          .label("ID Klasifikasi"),
-        document_category_code: Joi.string()
-          .max(45)
+          .label("Kode Klasifikasi"),
+        kode_kategori_dokumen: Joi.string()
+          .max(255)
           .required()
           .label("Kode Kategori"),
-        document_category_name: Joi.string()
-          .max(45)
+        nama_kategori_dokumen: Joi.string()
+          .max(255)
           .required()
           .label("Nama Kategori"),
-
         deskripsi: Joi.string()
-          .max(45)
+          .max(255)
+
           .optional()
           .allow(null, "")
           .label("Deskripsi"),
@@ -62,7 +63,7 @@ router.post("/", async (req, res) => {
 
       Logging(null, {
         file: "category_create.js",
-        func: "create",
+        func: "createDocumentCategory",
         request: oPayload,
         response: oResult,
         user: nama_pengguna,
@@ -72,10 +73,11 @@ router.post("/", async (req, res) => {
     }
 
     const dNow = new Date();
-    await DB("mst_document_categories").insert({
-      archive_classification_id: oPayload.archive_classification_id,
-      document_category_code: oPayload.document_category_code,
-      document_category_name: oPayload.document_category_name,
+    await DB("mst_kategori_dokumen").insert({
+      kode_klasifikasi: oPayload.kode_klasifikasi,
+      kode_kategori_dokumen: oPayload.kode_kategori_dokumen,
+      nama_kategori_dokumen: oPayload.nama_kategori_dokumen,
+
       deskripsi: oPayload.deskripsi || null,
       status: "active",
       created_at: dNow,
@@ -96,7 +98,7 @@ router.post("/", async (req, res) => {
 
     Logging(error, {
       file: "category_create.js",
-      func: "create",
+      func: "createDocumentCategory",
       request: oPayload,
       response: oResult,
       user: nama_pengguna,
@@ -104,6 +106,8 @@ router.post("/", async (req, res) => {
 
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.post("/", createDocumentCategory);
 
 export default router;

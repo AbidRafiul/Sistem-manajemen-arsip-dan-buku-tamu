@@ -16,7 +16,7 @@ export async function up(knex) {
       .inTable("trx_documents")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
-      
+
     table.string("borrower_name").notNullable();
     table.date("loan_date").notNullable();
     table.date("return_date").nullable();
@@ -31,7 +31,7 @@ export async function up(knex) {
       ])
       .notNullable()
       .defaultTo("pending");
-      
+
     table.datetime("created_at").notNullable();
     table.datetime("updated_at").notNullable();
   });

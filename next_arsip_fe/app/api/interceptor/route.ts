@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { encryptChunkRSA } from '@/lib/tools/serverTools';
 import axios from 'axios';
 import { formatDateCalendar } from '@/lib/tools/dateTools';
-import { jwtVerify, SignJWT } from 'jose';
-import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
 import { auth } from '@/lib/tools/authTools';
-import { A2FPayload } from '@/types/next-auth';
 
 interface CustomHeaders {
     'x-endpoint'?: string;
@@ -14,15 +11,56 @@ interface CustomHeaders {
     'x-credential'?: string;
 }
 
+const getBridgeCookie = (request: NextRequest) => {
+    return request.cookies.get('_A2F')?.value || request.cookies.get('_A2R')?.value || '';
+};
+
+const getBridgeCookieCandidates = (request: NextRequest, bridgeCookie = '') => {
+    return [bridgeCookie, request.cookies.get('_A2F')?.value || '', request.cookies.get('_A2R')?.value || ''].filter(Boolean);
+};
+
+const hasBridgeAuth = async (request: NextRequest, session: any) => {
+    if (session) return true;
+
+    try {
+        const secret = new TextEncoder().encode(process.env.USER_KEY);
+        for (const token of getBridgeCookieCandidates(request)) {
+            try {
+                await jwtVerify<any>(token, secret);
+                return true;
+            } catch {
+                // Try the next cookie candidate.
+            }
+        }
+
+        return false;
+    } catch {
+        return false;
+    }
+};
+
+const resolveUniqueId = async (request: NextRequest, bridgeCookie: string) => {
+    const secret = new TextEncoder().encode(process.env.USER_KEY);
+
+    for (const token of getBridgeCookieCandidates(request, bridgeCookie)) {
+        try {
+            const { payload } = await jwtVerify<any>(token, secret);
+            const uid = payload.IdPengguna ?? payload.id_pengguna ?? payload.nama_pengguna ?? payload.uid ?? payload.uniqueId ?? payload.id;
+            if (uid) return String(uid);
+        } catch {
+            // Try the next cookie candidate.
+        }
+    }
+
+    return '';
+};
+
 export const POST = async (request: NextRequest) => {
     try {
-        // Check cookies
-        const cookieStore = request.cookies;
         const session = await auth();
-        const a2fCookie = cookieStore.get('_A2F');
-        console.log('cookie', request.cookies.getAll());
+        const bridgeCookie = getBridgeCookie(request);
 
-        if (!session) {
+        if (!(await hasBridgeAuth(request, session))) {
             return NextResponse.json(
                 {
                     status: 99,
@@ -32,7 +70,7 @@ export const POST = async (request: NextRequest) => {
                 { status: 401 }
             );
         }
-        if (!a2fCookie) {
+        if (!bridgeCookie) {
             return NextResponse.json(
                 {
                     status: 99,
@@ -66,7 +104,7 @@ export const POST = async (request: NextRequest) => {
         }
 
         // Process POST request
-        return await postCRUD(request, token, a2fCookie.value);
+        return await postCRUD(request, token, bridgeCookie);
     } catch (error: any) {
         console.error('Bridge error:', error);
 
@@ -99,11 +137,10 @@ export const POST = async (request: NextRequest) => {
 
 export const GET = async (request: NextRequest) => {
     try {
-        const cookieStore = request.cookies;
         const session = await auth();
-        const a2fCookie = cookieStore.get('_A2F');
+        const bridgeCookie = getBridgeCookie(request);
 
-        if (!session) {
+        if (!(await hasBridgeAuth(request, session))) {
             return NextResponse.json(
                 {
                     status: 99,
@@ -113,7 +150,7 @@ export const GET = async (request: NextRequest) => {
                 { status: 401 }
             );
         }
-        if (!a2fCookie) {
+        if (!bridgeCookie) {
             return NextResponse.json(
                 {
                     status: 99,
@@ -145,7 +182,7 @@ export const GET = async (request: NextRequest) => {
             );
         }
 
-        return await getCRUD(request, token, a2fCookie.value);
+        return await getCRUD(request, token, bridgeCookie);
     } catch (error: any) {
         console.error('Bridge error:', error);
 
@@ -195,25 +232,9 @@ async function postCRUD(request: NextRequest, token: any, a2fCookie: string) {
             ...customHeader
         };
 
-        // Selalu pasang x-uniqueid dari _A2R (cookie yang selalu ada setelah login)
-        try {
-            const secret = new TextEncoder().encode(process.env.USER_KEY);
-            const { payload } = await jwtVerify<any>(a2fCookie, secret);
-            const uid = payload.IdPengguna ?? payload.id_pengguna ?? payload.uid ?? payload.id;
-            if (uid) {
-                requestHeaders['x-uniqueid'] = String(uid);
-            }
-        } catch (e) {
-            // Fallback: coba dari _A2R jika _A2F gagal
-            try {
-                const a2rCookieVal = request.cookies.get('_A2R')?.value || '';
-                if (a2rCookieVal) {
-                    const secret = new TextEncoder().encode(process.env.USER_KEY);
-                    const { payload: rPayload } = await jwtVerify<any>(a2rCookieVal, secret);
-                    const uid = rPayload.IdPengguna ?? rPayload.id_pengguna ?? rPayload.uid ?? rPayload.id;
-                    if (uid) requestHeaders['x-uniqueid'] = String(uid);
-                }
-            } catch { /* ignore */ }
+        const uid = await resolveUniqueId(request, a2fCookie);
+        if (uid) {
+            requestHeaders['x-uniqueid'] = uid;
         }
 
         if (customHeader['X-Credential']) {
@@ -222,11 +243,7 @@ async function postCRUD(request: NextRequest, token: any, a2fCookie: string) {
         // Remove our custom headers before sending to backend
         delete requestHeaders['X-Level'];
 
-        // --- TAMBAHKAN KODE INI UNTUK DEBUGGING ---
         const targetUrl = `${process.env.API_URL}/${endpoint.replace(/^\/+/, '')}`;
-        console.log(' [DEBUG INTERCEPTOR] Menembak ke Backend:', targetUrl);
-        console.log(' [DEBUG INTERCEPTOR] Isi Body:', body);
-
         const result = await axios.post(targetUrl, body, { headers: requestHeaders });
 
         return NextResponse.json(result.data);
@@ -270,14 +287,10 @@ async function getCRUD(request: NextRequest, token: any, a2fCookie: string) {
             ...customHeader
         };
 
-        // 🔥 MODE STRICT: Hanya pasang KTP jika Frontend menyuruh (X-Level = 1)
         if (customHeader['X-Level'] && customHeader['X-Level'] == '1') {
-            try {
-                const secret = new TextEncoder().encode(process.env.USER_KEY);
-                const { payload } = await jwtVerify<any>(a2fCookie, secret);
-                requestHeaders['x-uniqueid'] = String(payload.IdPengguna || payload.IdPengguna || payload.id || '');
-            } catch (e) {
-                console.error('Gagal membaca cookie A2F:', e);
+            const uid = await resolveUniqueId(request, a2fCookie);
+            if (uid) {
+                requestHeaders['x-uniqueid'] = uid;
             }
         }
 
@@ -287,9 +300,6 @@ async function getCRUD(request: NextRequest, token: any, a2fCookie: string) {
         return NextResponse.json(result.data);
     } catch (err: any) {
         if (err?.response?.status === 401) {
-            const cookieStore = cookies();
-            cookieStore.delete('_A2R');
-            cookieStore.delete('_A2F');
             return NextResponse.json(err?.response?.data || { error: 'Unauthorized' }, { status: 401 });
         }
         return NextResponse.json(err?.response?.data || { error: 'Internal server error' }, { status: err?.response?.status || 500 });

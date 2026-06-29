@@ -22,9 +22,6 @@ const AppFooter = () => {
                     <span className="text-500 font-medium">
                         {currentYear}
                     </span>
-                    <span className="text-500 font-semibold text-xs tracking-wider uppercase" style={{ marginLeft: '100rem' }}>
-                        v1.2.0
-                    </span>
                 </div>
 
                 {/* Status Badges & Versioning */}

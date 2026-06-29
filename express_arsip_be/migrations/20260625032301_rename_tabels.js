@@ -116,4 +116,3 @@ export async function down(knex) {
 
   await knex.raw("SET FOREIGN_KEY_CHECKS = 1;");
 }
-

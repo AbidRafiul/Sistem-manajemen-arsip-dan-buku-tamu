@@ -5,68 +5,74 @@ const getDocuments = async (req, res) => {
   try {
     const cSearch = req.query.search;
     const cStatus = req.query.status;
-    const cPicName = req.query.pic_name;
-    const nDocumentTypeId = req.query.document_type_id;
-    const nDocumentCategoryId = req.query.document_category_id;
-    const nConfidentialityLevelId = req.query.confidentiality_level_id;
-    const nArchiveClassificationId = req.query.archive_classification_id;
+    const cPicName = req.query.nama_pic || req.query.pic_name;
+    const cDocumentTypeCode = req.query.kode_jenis_dokumen || req.query.document_type_id;
+    const cDocumentCategoryCode = req.query.kode_kategori_dokumen || req.query.document_category_id;
+    const cConfidentialityLevelCode = req.query.kode_tingkat_kerahasiaan || req.query.confidentiality_level_id;
+    const cArchiveClassificationCode = req.query.kode_klasifikasi || req.query.archive_classification_id;
     const cTags = req.query.tags;
-    const dDateFrom = req.query.date_from;
-    const dDateTo = req.query.date_to;
+    const dDateFrom = req.query.date_from || req.query.tanggal_dari;
+    const dDateTo = req.query.date_to || req.query.tanggal_sampai;
     const bExpiredOnly = req.query.expired_only === "true";
 
-    const oQuery = DB("trx_documents as d")
+    const oQuery = DB("trs_dokumen as d")
       .select(
-        "d.document_id",
-        "d.document_name",
-        "d.document_number",
-        "d.document_date",
-        "d.expired_date",
-        "d.pic_name",
-        "d.physical_location",
+        "d.id_dokumen",
+        "d.kode_dokumen",
+        "d.nama_dokumen",
+        "d.nomor_dokumen",
+        "d.tanggal",
+        "d.tanggal_kedaluwarsa",
+        "d.nama_pic",
+        "d.lokasi_fisik",
         "d.qr_code",
         "d.tags",
         "d.status",
         "d.created_at",
         "d.updated_at",
         // Master joins
-        "dt.document_type_id as document_type_id",
-        "dt.document_type_name as document_type_name",
-        "dc.document_category_id as document_category_id",
-        "dc.document_category_name as document_category_name",
-        "ac.archive_classification_id as archive_classification_id",
-        "ac.classification_name as classification_name",
-        "cl.confidentiality_level_id as confidentiality_level_id",
-        "cl.confidentiality_level_name as confidentiality_level_name",
-        "cl.confidentiality_level as confidentiality_level",
-        "rs.retention_schedule_id as retention_schedule_id",
-        "rs.retention_name as retention_name",
-        "rs.retention_years as retention_years",
+        "dt.id_jenis_dokumen as id_jenis_dokumen",
+        "dt.kode_jenis_dokumen as kode_jenis_dokumen",
+        "dt.nama_jenis_dokumen as nama_jenis_dokumen",
+        "dc.id_kategori_dokumen as id_kategori_dokumen",
+        "dc.kode_kategori_dokumen as kode_kategori_dokumen",
+        "dc.nama_kategori_dokumen as nama_kategori_dokumen",
+        "ac.id_klasifikasi as id_klasifikasi",
+        "ac.kode_klasifikasi as kode_klasifikasi",
+        "ac.nama_klasifikasi as nama_klasifikasi",
+        "cl.id_tingkat_kerahasiaan as id_tingkat_kerahasiaan",
+        "cl.kode_tingkat_kerahasiaan as kode_tingkat_kerahasiaan",
+        "cl.nama_tingkat_kerahasiaan as nama_tingkat_kerahasiaan",
+        "cl.tingkat_kerahasiaan as tingkat_kerahasiaan",
+        "rs.id_jadwal_retensi as id_jadwal_retensi",
+        "rs.kode_retensi as kode_retensi",
+        "rs.nama_retensi as nama_retensi",
+        "rs.tahun_retensi as tahun_retensi"
       )
       .leftJoin(
-        "mst_document_type as dt",
-        "d.document_type_id",
-        "dt.document_type_id",
+        "mst_jenis_dokumen as dt",
+        "d.kode_jenis_dokumen",
+        "dt.kode_jenis_dokumen"
       )
       .leftJoin(
-        "mst_document_categories as dc",
-        "d.document_category_id",
-        "dc.document_category_id",
+        "mst_kategori_dokumen as dc",
+        "d.kode_kategori_dokumen",
+        "dc.kode_kategori_dokumen"
       )
       .leftJoin(
-        "mst_archive_classifications as ac",
-        "d.archive_classification_id",
-        "ac.archive_classification_id",
+        "mst_klasifikasi_arsip as ac",
+        "d.kode_klasifikasi",
+        "ac.kode_klasifikasi"
       )
       .leftJoin(
-        "mst_confidentiality_levels as cl",
-        "d.confidentiality_level_id",
-        "cl.confidentiality_level_id",
+        "mst_tingkat_kerahasiaan as cl",
+        "d.kode_tingkat_kerahasiaan",
+        "cl.kode_tingkat_kerahasiaan"
       )
       .leftJoin(
-        "mst_retention_schedule as rs",
-        "d.retention_schedule_id",
-        "rs.retention_schedule_id",
+        "mst_jadwal_retensi as rs",
+        "d.kode_retensi",
+        "rs.kode_retensi"
       );
 
     // Filter: status (default active)
@@ -80,16 +86,16 @@ const getDocuments = async (req, res) => {
     if (cSearch) {
       oQuery.where((oBuilder) => {
         oBuilder
-          .where("d.document_name", "like", `%${cSearch}%`)
-          .orWhere("d.document_number", "like", `%${cSearch}%`)
-          .orWhere("d.pic_name", "like", `%${cSearch}%`)
+          .where("d.nama_dokumen", "like", `%${cSearch}%`)
+          .orWhere("d.nomor_dokumen", "like", `%${cSearch}%`)
+          .orWhere("d.nama_pic", "like", `%${cSearch}%`)
           .orWhere("d.tags", "like", `%${cSearch}%`);
       });
     }
 
     // Filter: PIC
     if (cPicName) {
-      oQuery.andWhere("d.pic_name", "like", `%${cPicName}%`);
+      oQuery.andWhere("d.nama_pic", "like", `%${cPicName}%`);
     }
 
     // Filter: tags
@@ -97,37 +103,53 @@ const getDocuments = async (req, res) => {
       oQuery.andWhere("d.tags", "like", `%${cTags}%`);
     }
 
-    // Filter: jenis dokumen
-    if (nDocumentTypeId) {
-      oQuery.andWhere("d.document_type_id", nDocumentTypeId);
+    // Filter: jenis dokumen (bisa ID atau Code)
+    if (cDocumentTypeCode) {
+      if (isNaN(cDocumentTypeCode)) {
+        oQuery.andWhere("d.kode_jenis_dokumen", cDocumentTypeCode);
+      } else {
+        oQuery.andWhere("dt.id_jenis_dokumen", parseInt(cDocumentTypeCode, 10));
+      }
     }
 
-    // Filter: kategori dokumen
-    if (nDocumentCategoryId) {
-      oQuery.andWhere("d.document_category_id", nDocumentCategoryId);
+    // Filter: kategori dokumen (bisa ID atau Code)
+    if (cDocumentCategoryCode) {
+      if (isNaN(cDocumentCategoryCode)) {
+        oQuery.andWhere("d.kode_kategori_dokumen", cDocumentCategoryCode);
+      } else {
+        oQuery.andWhere("dc.id_kategori_dokumen", parseInt(cDocumentCategoryCode, 10));
+      }
     }
 
-    // Filter: tingkat kerahasiaan
-    if (nConfidentialityLevelId) {
-      oQuery.andWhere("d.confidentiality_level_id", nConfidentialityLevelId);
+    // Filter: tingkat kerahasiaan (bisa ID atau Code)
+    if (cConfidentialityLevelCode) {
+      if (isNaN(cConfidentialityLevelCode)) {
+        oQuery.andWhere("d.kode_tingkat_kerahasiaan", cConfidentialityLevelCode);
+      } else {
+        oQuery.andWhere("cl.id_tingkat_kerahasiaan", parseInt(cConfidentialityLevelCode, 10));
+      }
     }
 
-    // Filter: klasifikasi arsip
-    if (nArchiveClassificationId) {
-      oQuery.andWhere("d.archive_classification_id", nArchiveClassificationId);
+    // Filter: klasifikasi arsip (bisa ID atau Code)
+    if (cArchiveClassificationCode) {
+      if (isNaN(cArchiveClassificationCode)) {
+        oQuery.andWhere("d.kode_klasifikasi", cArchiveClassificationCode);
+      } else {
+        oQuery.andWhere("ac.id_klasifikasi", parseInt(cArchiveClassificationCode, 10));
+      }
     }
 
     // Filter: rentang tanggal dokumen
     if (dDateFrom) {
-      oQuery.andWhere("d.document_date", ">=", dDateFrom);
+      oQuery.andWhere("d.tanggal", ">=", dDateFrom);
     }
     if (dDateTo) {
-      oQuery.andWhere("d.document_date", "<=", dDateTo);
+      oQuery.andWhere("d.tanggal", "<=", dDateTo);
     }
 
     // Filter: hanya dokumen yang sudah expired
     if (bExpiredOnly) {
-      oQuery.andWhere("d.expired_date", "<=", DB.fn.now());
+      oQuery.andWhere("d.tanggal_kedaluwarsa", "<=", DB.fn.now());
     }
 
     const vaData = await oQuery.orderBy("d.created_at", "desc");

@@ -9,14 +9,15 @@ import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
-router.delete("/:ConfidentialityLevelId", async (req, res) => {
-  const cConfidentialityLevelId = req.params.ConfidentialityLevelId;
-  const nama_pengguna = req?.auth?.nama_pengguna || "";
-  const oPayload = { id: cConfidentialityLevelId };
+const deleteConfidentialityLevel = async (req, res) => {
+  const cIdTingkatKerahasiaan = req.params.id_tingkat_kerahasiaan;
+  const username = req?.auth?.username || "";
+  const oPayload = { id: cIdTingkatKerahasiaan };
+
 
   try {
-    const nUpdated = await DB("mst_confidentiality_levels")
-      .where("confidentiality_level_id", cConfidentialityLevelId)
+    const nUpdated = await DB("mst_tingkat_kerahasiaan")
+      .where("id_tingkat_kerahasiaan", cIdTingkatKerahasiaan)
       .update({ status: "nonactive", updated_at: new Date() });
 
     if (!nUpdated) {
@@ -41,7 +42,7 @@ router.delete("/:ConfidentialityLevelId", async (req, res) => {
 
     Logging(error, {
       file: "level_delete.js",
-      func: "delete",
+      func: "deleteConfidentialityLevel",
       request: oPayload,
       response: oResult,
       user: nama_pengguna,
@@ -49,6 +50,8 @@ router.delete("/:ConfidentialityLevelId", async (req, res) => {
 
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.delete("/:id_tingkat_kerahasiaan", deleteConfidentialityLevel);
 
 export default router;

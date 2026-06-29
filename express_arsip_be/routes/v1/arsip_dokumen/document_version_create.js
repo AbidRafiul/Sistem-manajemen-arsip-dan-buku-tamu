@@ -4,22 +4,23 @@ import { Logging } from "../components/tools/servertool.js";
 const createDocumentVersion = async (req, res) => {
   const oPayload = req.body;
   try {
-    const nDocumentId = oPayload.document_id;
-    const nVersionNumber = oPayload.version_number;
-    const cChangeNotes = oPayload.change_notes;
+    const cKodeDokumen = oPayload.kode_dokumen;
+    const nVersionNumber = oPayload.nomor_versi;
+    const cChangeNotes = oPayload.catatan_perubahan;
     const cFilePath = oPayload.file_path;
     const dNow = new Date();
 
     const oData = {
-      document_id: nDocumentId,
-      version_number: nVersionNumber,
-      change_notes: cChangeNotes,
+      kode_dokumen: cKodeDokumen,
+      nomor_versi: nVersionNumber,
+      catatan_perubahan: cChangeNotes,
       file_path: cFilePath,
+      tanggal_transaksi: dNow,
       created_at: dNow,
       updated_at: dNow,
     };
 
-    await DB("trx_document_versions").insert(oData);
+    await DB("trs_versi_dokumen").insert(oData);
 
     const oResult = {
       status: "success",

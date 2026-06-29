@@ -45,28 +45,29 @@ const Page = () => {
 
     const formik = useFormik<initValue>({
         initialValues: {
-            document_id: null,
-            borrower_name: '',
-            expected_return_date: '',
-            purpose: ''
+            kode_dokumen: '',
+            nama_peminjam: '',
+            tanggal_pinjam: '',
+            tanggal_pengembalian: '',
+            keperluan: ''
         },
         validate: (data: initValue) => {
             const errors = {} as any;
 
-            if (!data.document_id) {
-                errors.document_id = 'Document wajib dipilih';
+            if (!data.kode_dokumen) {
+                errors.kode_dokumen = 'Dokumen wajib dipilih';
             }
 
-            if (!data.borrower_name.trim()) {
-                errors.borrower_name = 'Nama peminjam wajib diisi';
+            if (!data.nama_peminjam.trim()) {
+                errors.nama_peminjam = 'Nama peminjam wajib diisi';
             }
 
-            if (!data.expected_return_date) {
-                errors.expected_return_date = 'Rencana tanggal pengembalian wajib diisi';
+            if (!data.tanggal_pengembalian) {
+                errors.tanggal_pengembalian = 'Rencana tanggal pengembalian wajib diisi';
             }
 
-            if (!data.purpose.trim()) {
-                errors.purpose = 'Keperluan peminjaman wajib diisi';
+            if (!data.keperluan.trim()) {
+                errors.keperluan = 'Keperluan peminjaman wajib diisi';
             }
 
             return errors;
@@ -108,11 +109,11 @@ const Page = () => {
         setState((p) => ({ ...p, load: true }));
         try {
             const res = await postData(apiLoanCreate, {
-                document_id: input.document_id,
-                borrower_name: input.borrower_name.trim(),
-                loan_date: getLocalDateInputValue(),
-                expected_return_date: input.expected_return_date,
-                purpose: input.purpose.trim(),
+                kode_dokumen: input.kode_dokumen,
+                nama_peminjam: input.nama_peminjam.trim(),
+                tanggal_pinjam: getLocalDateInputValue(),
+                tanggal_pengembalian: input.tanggal_pengembalian,
+                keperluan: input.keperluan.trim(),
             });
 
             showSuccess(toast, res.data?.message || 'Pengajuan peminjaman berhasil diajukan');
@@ -131,9 +132,9 @@ const Page = () => {
         setState((p) => ({ ...p, load: true }));
         try {
             const res = await postData(apiLoanApprove, {
-                loan_id: loanId,
+                id_peminjaman: loanId,
                 status: status,
-                approval_notes: notes
+                catatan_persetujuan: notes
             });
 
             showSuccess(toast, res.data?.message || `Peminjaman berhasil ${status === 'approved' ? 'disetujui' : 'ditolak'}`);
@@ -150,7 +151,7 @@ const Page = () => {
         setState((p) => ({ ...p, load: true }));
         try {
             const res = await postData(apiLoanReturn, {
-                loan_id: loanId
+                id_peminjaman: loanId
             });
 
             showSuccess(toast, res.data?.message || 'Dokumen berhasil dikembalikan');

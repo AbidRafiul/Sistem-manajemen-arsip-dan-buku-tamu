@@ -63,7 +63,7 @@ export default function GuestDataTable({
     const statusBodyTemplate = (rowData: any) => {
         let severity: "success" | "info" | "warning" | "danger" | null = null;
         let statusLabel = rowData.status;
-        
+
         if (rowData.status === 'in') {
             severity = "success";
             statusLabel = "in";
@@ -73,14 +73,14 @@ export default function GuestDataTable({
         } else {
             severity = "warning";
         }
-        
+
         return <Tag severity={severity} value={statusLabel} />;
     };
 
     const approvalBodyTemplate = (rowData: any) => {
         let severity: "success" | "info" | "warning" | "danger" | null = null;
         let statusLabel = "Pending";
-        
+
         if (rowData.status_persetujuan === 'approved') {
             severity = "success";
             statusLabel = "Disetujui";
@@ -90,7 +90,7 @@ export default function GuestDataTable({
         } else {
             severity = "warning";
         }
-        
+
         return <Tag severity={severity} value={statusLabel} />;
     };
 
@@ -98,30 +98,30 @@ export default function GuestDataTable({
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
             <h5 className="m-0 font-bold">Riwayat Kunjungan Tamu</h5>
             <div className="flex flex-column sm:flex-row gap-2">
-                <Dropdown 
-                    value={state.statusFilter} 
-                    options={statusOptions} 
-                    onChange={(e) => onFilterStatus(e.value)} 
-                    placeholder="Filter Status" 
-                    className="w-full sm:w-12rem p-inputtext-sm" 
+                <Dropdown
+                    value={state.statusFilter}
+                    options={statusOptions}
+                    onChange={(e) => onFilterStatus(e.value)}
+                    placeholder="Filter Status"
+                    className="w-full sm:w-12rem p-inputtext-sm"
                 />
                 <span className="p-input-icon-left w-full sm:w-auto">
                     <i className="pi pi-search" />
-                    <InputText 
-                        type="search" 
-                        value={state.searchVal} 
-                        onChange={(e) => setState((p: State) => ({ ...p, searchVal: e.target.value }))} 
-                        placeholder="Cari Nama Tamu..." 
-                        className="w-full sm:w-auto p-inputtext-sm" 
+                    <InputText
+                        type="search"
+                        value={state.searchVal}
+                        onChange={(e) => setState((p: State) => ({ ...p, searchVal: e.target.value }))}
+                        placeholder="Cari Nama Tamu..."
+                        className="w-full sm:w-auto p-inputtext-sm"
                     />
                 </span>
-                <Button 
-                    type="button" 
-                    icon="pi pi-refresh" 
-                    severity="secondary" 
-                    outlined 
+                <Button
+                    type="button"
+                    icon="pi pi-refresh"
+                    severity="secondary"
+                    outlined
                     className="p-button-sm px-3 bg-white"
-                    onClick={onRefresh} 
+                    onClick={onRefresh}
                 />
             </div>
         </div>

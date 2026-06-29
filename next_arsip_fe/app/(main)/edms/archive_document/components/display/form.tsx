@@ -37,74 +37,74 @@ const Form = ({
             <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-1 pt-3 text-sm">
 
                 <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="document_number" className="font-semibold text-sm text-900">
+                    <label htmlFor="nomor_dokumen" className="font-semibold text-sm text-900">
                         Nomor Dokumen <span className="text-red-500">*</span>
                     </label>
                     <InputText
-                        id="document_number"
-                        value={formik.values.document_number}
-                        onChange={(e) => formik.setFieldValue('document_number', e.target.value)}
-                        className={`w-full ${isFormFieldInvalid('document_number') ? 'p-invalid' : ''}`}
+                        id="nomor_dokumen"
+                        value={formik.values.nomor_dokumen}
+                        onChange={(e) => formik.setFieldValue('nomor_dokumen', e.target.value)}
+                        className={`w-full ${isFormFieldInvalid('nomor_dokumen') ? 'p-invalid' : ''}`}
                         placeholder="Contoh: DOC-2024-001"
                     />
-                    {getFormErrorMessage('document_number')}
+                    {getFormErrorMessage('nomor_dokumen')}
                 </div>
 
                 <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="document_name" className="font-semibold text-sm text-900">
+                    <label htmlFor="nama_dokumen" className="font-semibold text-sm text-900">
                         Nama Dokumen <span className="text-red-500">*</span>
                     </label>
                     <InputText
-                        id="document_name"
-                        value={formik.values.document_name}
-                        onChange={(e) => formik.setFieldValue('document_name', e.target.value)}
-                        className={`w-full ${isFormFieldInvalid('document_name') ? 'p-invalid' : ''}`}
+                        id="nama_dokumen"
+                        value={formik.values.nama_dokumen}
+                        onChange={(e) => formik.setFieldValue('nama_dokumen', e.target.value)}
+                        className={`w-full ${isFormFieldInvalid('nama_dokumen') ? 'p-invalid' : ''}`}
                         placeholder="Masukkan nama lengkap dokumen"
                     />
-                    {getFormErrorMessage('document_name')}
+                    {getFormErrorMessage('nama_dokumen')}
                 </div>
 
                 <div className="grid mb-2">
                     <div className="col-12 md:col-6 flex flex-column gap-1">
-                        <label htmlFor="document_date" className="font-semibold text-sm text-900">
+                        <label htmlFor="tanggal" className="font-semibold text-sm text-900">
                             Tanggal Dokumen <span className="text-red-500">*</span>
                         </label>
                         <InputText
-                            id="document_date"
+                            id="tanggal"
                             type="date"
-                            value={formik.values.document_date}
-                            onChange={(e) => formik.setFieldValue('document_date', e.target.value)}
-                            className={`w-full ${isFormFieldInvalid('document_date') ? 'p-invalid' : ''}`}
+                            value={formik.values.tanggal}
+                            onChange={(e) => formik.setFieldValue('tanggal', e.target.value)}
+                            className={`w-full ${isFormFieldInvalid('tanggal') ? 'p-invalid' : ''}`}
                         />
-                        {getFormErrorMessage('document_date')}
+                        {getFormErrorMessage('tanggal')}
                     </div>
                     <div className="col-12 md:col-6 flex flex-column gap-1">
-                        <label htmlFor="expired_date" className="font-semibold text-sm text-900">
+                        <label htmlFor="tanggal_kedaluwarsa" className="font-semibold text-sm text-900">
                             Tanggal Kedaluwarsa <span className="text-color-secondary font-normal">(Opsional)</span>
                         </label>
                         <InputText
-                            id="expired_date"
+                            id="tanggal_kedaluwarsa"
                             type="date"
-                            value={formik.values.expired_date}
-                            onChange={(e) => formik.setFieldValue('expired_date', e.target.value)}
+                            value={formik.values.tanggal_kedaluwarsa}
+                            onChange={(e) => formik.setFieldValue('tanggal_kedaluwarsa', e.target.value)}
                             className="w-full"
                         />
-                        {getFormErrorMessage('expired_date')}
+                        {getFormErrorMessage('tanggal_kedaluwarsa')}
                     </div>
                 </div>
 
                 <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="pic_name" className="font-semibold text-sm text-900">
+                    <label htmlFor="nama_pic" className="font-semibold text-sm text-900">
                         Nama PIC <span className="text-red-500">*</span>
                     </label>
                     <InputText
-                        id="pic_name"
-                        value={formik.values.pic_name}
-                        onChange={(e) => formik.setFieldValue('pic_name', e.target.value)}
-                        className={`w-full ${isFormFieldInvalid('pic_name') ? 'p-invalid' : ''}`}
+                        id="nama_pic"
+                        value={formik.values.nama_pic}
+                        onChange={(e) => formik.setFieldValue('nama_pic', e.target.value)}
+                        className={`w-full ${isFormFieldInvalid('nama_pic') ? 'p-invalid' : ''}`}
                         placeholder="Masukkan nama penanggung jawab dokumen"
                     />
-                    {getFormErrorMessage('pic_name')}
+                    {getFormErrorMessage('nama_pic')}
                 </div>
 
                 <Divider className="my-2" />

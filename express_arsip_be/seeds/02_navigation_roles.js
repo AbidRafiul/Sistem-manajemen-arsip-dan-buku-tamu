@@ -291,7 +291,11 @@ export const seed = async function (knex) {
 
   await knex("config")
     .insert([
-      { id: 1, kode: "msNamaPerusahaan", keterangan: "Sistem Manajemen Arsip dan Buku Tamu" },
+      {
+        id: 1,
+        kode: "msNamaPerusahaan",
+        keterangan: "Sistem Manajemen Arsip dan Buku Tamu",
+      },
       { id: 2, kode: "msAlamatPerusahaan", keterangan: "-" },
       { id: 3, kode: "msKotaPerusahaan", keterangan: "-" },
       { id: 4, kode: "msTeleponPerusahaan", keterangan: "-" },

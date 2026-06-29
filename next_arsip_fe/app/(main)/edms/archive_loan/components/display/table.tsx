@@ -34,6 +34,7 @@ const Table = ({
     const [approvalDialog, setApprovalDialog] = useState(false);
     const [notes, setNotes] = useState('');
     const [targetStatus, setTargetStatus] = useState<'approved' | 'rejected' | ''>('');
+    const [returnDialog, setReturnDialog] = useState(false);
 
     const sessionUser = state.session?.user as any;
     const roleKey = String(sessionUser?.role || sessionUser?.roleCode || '').toLowerCase();
@@ -41,7 +42,7 @@ const Table = ({
     const canApproveLoan = ['superadmin', 'administrator', 'admin', 'adm', 'pimpinan', 'pmn'].includes(roleKey) || [1, 2].includes(roleId);
 
     const getStatusConfig = (rowData: LoanData): { label: string; severity: 'success' | 'danger' | 'warning' | 'info'; icon: string } => {
-        if (rowData.is_overdue === 1 && rowData.status === 'borrowed') return { label: 'Terlambat', severity: 'danger', icon: 'pi pi-exclamation-triangle' };
+        if (rowData.terlambat === 1 && rowData.status === 'borrowed') return { label: 'Terlambat', severity: 'danger', icon: 'pi pi-exclamation-triangle' };
         if (rowData.status === 'returned') return { label: 'Dikembalikan', severity: 'success', icon: 'pi pi-check-circle' };
         if (rowData.status === 'rejected') return { label: 'Ditolak', severity: 'danger', icon: 'pi pi-times-circle' };
         if (rowData.status === 'borrowed') return { label: 'Dipinjam', severity: 'info', icon: 'pi pi-info-circle' };
@@ -56,18 +57,18 @@ const Table = ({
     const borrowerTemplate = (rowData: LoanData) => (
         <div className="flex align-items-center gap-2">
             <Avatar
-                label={rowData.borrower_name?.slice(0, 1).toUpperCase() || 'B'}
+                label={rowData.nama_peminjam?.slice(0, 1).toUpperCase() || 'B'}
                 shape="circle"
                 style={{ width: '2rem', height: '2rem', fontSize: '0.75rem', background: '#EEF2FF', color: '#4F46E5', fontWeight: '700', flexShrink: 0 }}
             />
-            <span className="font-semibold text-900 text-sm">{rowData.borrower_name}</span>
+            <span className="font-semibold text-900 text-sm">{rowData.nama_peminjam}</span>
         </div>
     );
 
     const documentTemplate = (rowData: LoanData) => (
         <div>
-            <span className="font-semibold text-sm text-900 block">{rowData.document_number}</span>
-            <span className="text-xs text-color-secondary">{rowData.document_name}</span>
+            <span className="font-semibold text-sm text-900 block">{rowData.nomor_dokumen}</span>
+            <span className="text-xs text-color-secondary">{rowData.nama_dokumen}</span>
         </div>
     );
 
@@ -119,9 +120,8 @@ const Table = ({
                         tooltip="Kembalikan Dokumen"
                         tooltipOptions={{ position: 'top' }}
                         onClick={() => {
-                            if (confirm(`Kembalikan dokumen ${rowData.document_number} yang dipinjam oleh ${rowData.borrower_name}?`)) {
-                                handleReturn(rowData.loan_id);
-                            }
+                            setSelectedDetail(rowData);
+                            setReturnDialog(true);
                         }}
                     />
                 )}
@@ -148,17 +148,17 @@ const Table = ({
     const filteredData = state.data.filter((item) => {
         const query = state.searchVal?.toLowerCase() || '';
         const matchSearch =
-            item.borrower_name?.toLowerCase().includes(query) ||
-            item.document_name?.toLowerCase().includes(query) ||
-            item.document_number?.toLowerCase().includes(query) ||
-            item.purpose?.toLowerCase().includes(query);
+            item.nama_peminjam?.toLowerCase().includes(query) ||
+            item.nama_dokumen?.toLowerCase().includes(query) ||
+            item.nomor_dokumen?.toLowerCase().includes(query) ||
+            item.keperluan?.toLowerCase().includes(query);
         if (!matchSearch) return false;
         const tab = state.activeTab;
         if (tab === 'all') return true;
         if (tab === 'pending') return item.status === 'pending';
-        if (tab === 'borrowed') return item.status === 'borrowed' && item.is_overdue !== 1;
+        if (tab === 'borrowed') return item.status === 'borrowed' && item.terlambat !== 1;
         if (tab === 'returned') return item.status === 'returned';
-        if (tab === 'overdue') return item.is_overdue === 1 && item.status === 'borrowed';
+        if (tab === 'overdue') return item.terlambat === 1 && item.status === 'borrowed';
         return true;
     });
 
@@ -173,9 +173,9 @@ const Table = ({
     const tabCounts: Record<string, number> = {
         all: state.data.length,
         pending: state.data.filter(d => d.status === 'pending').length,
-        borrowed: state.data.filter(d => d.status === 'borrowed' && d.is_overdue !== 1).length,
+        borrowed: state.data.filter(d => d.status === 'borrowed' && d.terlambat !== 1).length,
         returned: state.data.filter(d => d.status === 'returned').length,
-        overdue: state.data.filter(d => d.is_overdue === 1 && d.status === 'borrowed').length,
+        overdue: state.data.filter(d => d.terlambat === 1 && d.status === 'borrowed').length,
     };
 
     useEffect(() => { getLoans(); }, []);
@@ -232,7 +232,7 @@ const Table = ({
                 rows={10}
                 header={headerTemplate}
                 loading={state.load}
-                dataKey="loan_id"
+                dataKey="id_peminjaman"
                 emptyMessage={
                     <div className="flex flex-column align-items-center py-5 gap-3 text-color-secondary">
                         <i className="pi pi-inbox text-4xl text-300" />
@@ -246,9 +246,9 @@ const Table = ({
             >
                 <Column header="Peminjam" body={borrowerTemplate} style={{ minWidth: '180px' }} />
                 <Column header="Dokumen" body={documentTemplate} style={{ minWidth: '180px' }} />
-                <Column field="loan_date" header="Tgl. Pinjam" sortable body={rowData => formatDateOnly(rowData.loan_date)} style={{ width: '120px' }} />
-                <Column field="expected_return_date" header="Tgl. Jatuh Tempo" sortable body={rowData => formatDateOnly(rowData.expected_return_date)} style={{ width: '140px' }} />
-                <Column field="return_date" header="Tgl. Kembali" sortable body={rowData => formatDateOnly(rowData.return_date)} style={{ width: '120px' }} />
+                <Column field="tanggal_pinjam" header="Tgl. Pinjam" sortable body={rowData => formatDateOnly(rowData.tanggal_pinjam)} style={{ width: '120px' }} />
+                <Column field="tanggal_pengembalian" header="Tgl. Jatuh Tempo" sortable body={rowData => formatDateOnly(rowData.tanggal_pengembalian)} style={{ width: '140px' }} />
+                <Column field="tanggal_kembali" header="Tgl. Kembali" sortable body={rowData => formatDateOnly(rowData.tanggal_kembali)} style={{ width: '120px' }} />
                 <Column body={statusTemplate} header="Status" style={{ width: '130px', textAlign: 'center' }} />
                 <Column header="Aksi" body={actionTemplate} style={{ width: '130px', textAlign: 'center' }} />
             </DataTable>
@@ -274,13 +274,13 @@ const Table = ({
                 <div className="flex flex-column gap-4 pt-3">
                     <div className="flex align-items-center gap-3 p-3 surface-50 border-round-xl border-1 surface-border">
                         <Avatar
-                            label={selectedDetail.borrower_name?.slice(0, 2).toUpperCase() || 'NA'}
+                            label={selectedDetail.nama_peminjam?.slice(0, 2).toUpperCase() || 'NA'}
                             shape="circle"
                             size="large"
                             style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%)', color: '#FFFFFF', fontWeight: '700' }}
                         />
                         <div>
-                            <div className="font-bold text-900 text-lg">{selectedDetail.borrower_name}</div>
+                            <div className="font-bold text-900 text-lg">{selectedDetail.nama_peminjam}</div>
                             <div className="mt-1">{statusTemplate(selectedDetail)}</div>
                         </div>
                     </div>
@@ -288,41 +288,41 @@ const Table = ({
                     <div className="grid">
                         <div className="col-12">
                             <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Dokumen</div>
-                            <div className="font-semibold text-900">{selectedDetail.document_number}</div>
-                            <div className="text-color-secondary text-sm">{selectedDetail.document_name}</div>
+                            <div className="font-semibold text-900">{selectedDetail.nomor_dokumen}</div>
+                            <div className="text-color-secondary text-sm">{selectedDetail.nama_dokumen}</div>
                         </div>
                         <div className="col-12"><Divider className="my-2" /></div>
                         <div className="col-12 md:col-4">
                             <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Tgl. Pinjam</div>
-                            <div className="font-semibold text-sm">{formatDateOnly(selectedDetail.loan_date)}</div>
+                            <div className="font-semibold text-sm">{formatDateOnly(selectedDetail.tanggal_pinjam)}</div>
                         </div>
                         <div className="col-12 md:col-4">
                             <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Jatuh Tempo</div>
-                            <div className="font-semibold text-sm">{formatDateOnly(selectedDetail.expected_return_date)}</div>
+                            <div className="font-semibold text-sm">{formatDateOnly(selectedDetail.tanggal_pengembalian)}</div>
                         </div>
                         <div className="col-12 md:col-4">
                             <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Tgl. Kembali</div>
-                            <div className="font-semibold text-sm text-primary">{selectedDetail.return_date ? formatDateOnly(selectedDetail.return_date) : <span className="text-orange-500">Belum Dikembalikan</span>}</div>
+                            <div className="font-semibold text-sm text-primary">{selectedDetail.tanggal_kembali ? formatDateOnly(selectedDetail.tanggal_kembali) : <span className="text-orange-500">Belum Dikembalikan</span>}</div>
                         </div>
                         <div className="col-12"><Divider className="my-2" /></div>
                         <div className="col-12">
                             <div className="text-color-secondary text-xs font-bold uppercase mb-2" style={{ letterSpacing: '0.08em' }}>Keperluan Peminjaman</div>
-                            <div className="p-3 surface-50 border-round-lg border-1 surface-border text-sm text-900">{selectedDetail.purpose}</div>
+                            <div className="p-3 surface-50 border-round-lg border-1 surface-border text-sm text-900">{selectedDetail.keperluan}</div>
                         </div>
-                        {(selectedDetail.approved_by || selectedDetail.approval_notes) && (
+                        {(selectedDetail.disetujui_oleh || selectedDetail.catatan_persetujuan) && (
                             <>
                                 <div className="col-12"><Divider className="my-2" /></div>
                                 <div className="col-12 md:col-6">
                                     <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Diproses Oleh</div>
-                                    <div className="font-semibold text-sm">{selectedDetail.approved_by}</div>
+                                    <div className="font-semibold text-sm">{selectedDetail.disetujui_oleh}</div>
                                 </div>
                                 <div className="col-12 md:col-6">
                                     <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Waktu Proses</div>
-                                    <div className="font-semibold text-sm">{selectedDetail.approved_at ? formatDateCalendar(selectedDetail.approved_at) : '-'}</div>
+                                    <div className="font-semibold text-sm">{selectedDetail.disetujui_pada ? formatDateCalendar(selectedDetail.disetujui_pada) : '-'}</div>
                                 </div>
                                 <div className="col-12">
                                     <div className="text-color-secondary text-xs font-bold uppercase mb-2" style={{ letterSpacing: '0.08em' }}>Catatan Persetujuan</div>
-                                    <div className="p-3 surface-50 border-round-lg border-1 surface-border text-sm">{selectedDetail.approval_notes || 'Tidak ada catatan.'}</div>
+                                    <div className="p-3 surface-50 border-round-lg border-1 surface-border text-sm">{selectedDetail.catatan_persetujuan || 'Tidak ada catatan.'}</div>
                                 </div>
                             </>
                         )}
@@ -349,8 +349,8 @@ const Table = ({
                 <div className={`p-3 border-round-lg border-1 ${targetStatus === 'approved' ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
                     <p className="m-0 text-sm text-900">
                         Apakah Anda yakin ingin <strong>{targetStatus === 'approved' ? 'menyetujui' : 'menolak'}</strong> peminjaman dokumen{' '}
-                        <Chip label={selectedDetail?.document_number || ''} className="text-xs mx-1" style={{ padding: '0.1rem 0.6rem', height: 'auto' }} />{' '}
-                        oleh <strong>{selectedDetail?.borrower_name}</strong>?
+                        <Chip label={selectedDetail?.nomor_dokumen || ''} className="text-xs mx-1" style={{ padding: '0.1rem 0.6rem', height: 'auto' }} />{' '}
+                        oleh <strong>{selectedDetail?.nama_peminjam}</strong>?
                     </p>
                 </div>
                 <div className="flex flex-column gap-2">
@@ -378,8 +378,68 @@ const Table = ({
                         size="small"
                         onClick={async () => {
                             if (selectedDetail && targetStatus) {
-                                await handleApproveReject(selectedDetail.loan_id, targetStatus, notes);
+                                await handleApproveReject(selectedDetail.id_peminjaman, targetStatus, notes);
                                 setApprovalDialog(false); setSelectedDetail(null); setNotes(''); setTargetStatus('');
+                            }
+                        }}
+                        loading={state.load}
+                    />
+                </div>
+            </div>
+        </Dialog>
+
+        {/* Return Confirmation Dialog */}
+        <Dialog
+            visible={returnDialog}
+            header={
+                <div className="flex align-items-center gap-2">
+                    <i className="pi pi-replay text-info" />
+                    <span className="font-bold text-900">Konfirmasi Pengembalian</span>
+                </div>
+            }
+            modal
+            style={{ width: '32rem', maxWidth: '95vw' }}
+            onHide={() => { setReturnDialog(false); setSelectedDetail(null); }}
+            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
+        >
+            <div className="flex flex-column gap-4 pt-3">
+                <div className="p-3 border-round-lg border-1 bg-blue-50 border-blue-100">
+                    <p className="m-0 text-sm text-900">
+                        Apakah Anda yakin ingin memproses pengembalian dokumen ini?
+                    </p>
+                </div>
+                <div className="flex flex-column gap-2 text-sm text-700 bg-light p-1">
+                    <div className="flex justify-content-between">
+                        <span className="font-semibold">Nomor Dokumen:</span>
+                        <span>{selectedDetail?.nomor_dokumen || '-'}</span>
+                    </div>
+                    <div className="flex justify-content-between mt-1">
+                        <span className="font-semibold">Peminjam:</span>
+                        <span>{selectedDetail?.nama_peminjam || '-'}</span>
+                    </div>
+                    <div className="flex justify-content-between mt-1">
+                        <span className="font-semibold">Tanggal Pinjam:</span>
+                        <span>{formatDateOnly(selectedDetail?.tanggal_pinjam)}</span>
+                    </div>
+                </div>
+                <div className="flex justify-content-end gap-2">
+                    <Button
+                        label="Batal"
+                        severity="secondary"
+                        outlined
+                        size="small"
+                        onClick={() => { setReturnDialog(false); setSelectedDetail(null); }}
+                    />
+                    <Button
+                        label="Ya, Kembalikan"
+                        icon="pi pi-check"
+                        severity="info"
+                        size="small"
+                        onClick={async () => {
+                            if (selectedDetail) {
+                                await handleReturn(selectedDetail.id_peminjaman);
+                                setReturnDialog(false);
+                                setSelectedDetail(null);
                             }
                         }}
                         loading={state.load}
