@@ -22,6 +22,7 @@ const Table = ({
     getDocuments,
     getDocumentDetail,
     deleteDocuments,
+    handleFetchPreviewUrl,
     toast
 }: TableProps) => {
     const router = useRouter();
@@ -61,7 +62,7 @@ const Table = ({
     const actionTemplate = (rowData: DocumentData) => (
         <div className="flex gap-1 align-items-center">
             <Button
-                icon="pi pi-eye"
+                icon="pi pi-info-circle"
                 rounded
                 text
                 size="small"
@@ -111,6 +112,20 @@ const Table = ({
                 onClick={() => setState((p) => ({ ...p, delete: true, selectedDocuments: [rowData] }))}
             />
         </div>
+    );
+
+    const previewTemplate = (rowData: DocumentData) => (
+        <Button
+            icon="pi pi-eye"
+            rounded
+            text
+            severity="info"
+            size="small"
+            tooltip={rowData.file_path ? "Pratinjau Dokumen" : "Belum ada file berkas"}
+            tooltipOptions={{ position: 'top' }}
+            onClick={() => handleFetchPreviewUrl(rowData.file_path || '')}
+            disabled={!rowData.file_path}
+        />
     );
 
     const headerTemplate = (
@@ -228,6 +243,7 @@ const Table = ({
                 <Column field="tanggal" header="Tgl. Dokumen" sortable body={rowData => formatDateCalendar(rowData.tanggal)} style={{ width: '130px' }} />
                 <Column field="tanggal_kedaluwarsa" header="Tgl. Kedaluwarsa" sortable body={rowData => formatDateCalendar(rowData.tanggal_kedaluwarsa)} style={{ width: '140px' }} />
                 <Column body={statusTemplate} header="Status" style={{ width: '110px', textAlign: 'center' }} />
+                <Column header="Preview" body={previewTemplate} style={{ width: '90px', textAlign: 'center' }} />
                 <Column header="Aksi" body={actionTemplate} style={{ width: '150px', textAlign: 'center' }} />
             </DataTable>
         </Card>
@@ -337,6 +353,38 @@ const Table = ({
                             : `Dokumen "${state.selectedDocuments[0]?.nomor_dokumen || ''}" akan dinonaktifkan.`}
                     </p>
                 </div>
+            </div>
+        </Dialog>
+
+        {/* Document Preview Dialog */}
+        <Dialog
+            visible={state.isPreviewVisible}
+            header={
+                <div className="flex align-items-center gap-2">
+                    <i className="pi pi-file-pdf text-primary" />
+                    <span className="font-bold text-900">Pratinjau Dokumen</span>
+                </div>
+            }
+            modal
+            style={{ width: '60rem', maxWidth: '95vw' }}
+            onHide={() => setState(p => ({ ...p, isPreviewVisible: false, previewUrl: '' }))}
+            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
+        >
+            <div className="pt-3">
+                {state.previewUrl ? (
+                    <iframe
+                        src={state.previewUrl}
+                        width="100%"
+                        height="600px"
+                        style={{ border: 'none', borderRadius: '8px' }}
+                        title="Preview Arsip"
+                    />
+                ) : (
+                    <div className="flex flex-column align-items-center justify-content-center py-5 text-color-secondary">
+                        <i className="pi pi-spin pi-spinner text-3xl mb-3" />
+                        <span>Memuat dokumen...</span>
+                    </div>
+                )}
             </div>
         </Dialog>
     </>

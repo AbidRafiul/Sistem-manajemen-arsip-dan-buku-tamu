@@ -20,7 +20,8 @@ import {
     apiEndpointVersionUpload,
     apiEndpointVersionDownload,
     apiEndpointVersionRollback,
-    apiEndpointVersionApprove
+    apiEndpointVersionApprove,
+    apiEndpointDocumentPreview
 } from "./components/endpoints";
 import { initValue, State } from "./components/interfaces";
 
@@ -42,6 +43,8 @@ const Page = () => {
         filters: { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
         session: null,
         submittedData: null,
+        previewUrl: '',
+        isPreviewVisible: false,
     });
 
     const formik = useFormik<initValue>({
@@ -241,6 +244,31 @@ const Page = () => {
         }
     };
 
+    const handleFetchPreviewUrl = async (fileName: string) => {
+        if (!fileName) {
+            showError(toast, 'Berkas dokumen belum diunggah untuk versi ini');
+            return;
+        }
+        setState((p) => ({ ...p, load: true }));
+        try {
+            const res = await getData(apiEndpointDocumentPreview, { file_name: fileName });
+            if (res.data?.status === 'success') {
+                setState((p) => ({
+                    ...p,
+                    previewUrl: res.data.preview_url,
+                    isPreviewVisible: true,
+                }));
+            } else {
+                showError(toast, res.data?.message || 'Gagal mengambil URL preview');
+            }
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || 'Gagal memproses pratinjau dokumen');
+        } finally {
+            setState((p) => ({ ...p, load: false }));
+        }
+    };
+
     useEffect(() => {
         if (session) {
             setState((prev) => ({
@@ -267,6 +295,7 @@ const Page = () => {
                 downloadVersion={downloadVersion}
                 rollbackVersion={rollbackVersion}
                 approveVersion={approveVersion}
+                handleFetchPreviewUrl={handleFetchPreviewUrl}
                 state={state}
                 setState={setState}
                 formik={formik}

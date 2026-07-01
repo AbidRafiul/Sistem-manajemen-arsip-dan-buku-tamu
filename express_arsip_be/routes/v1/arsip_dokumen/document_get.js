@@ -30,6 +30,9 @@ const getDocuments = async (req, res) => {
         "d.status",
         "d.created_at",
         "d.updated_at",
+        DB.raw(
+          "(SELECT file_path FROM trs_versi_dokumen WHERE trs_versi_dokumen.kode_dokumen = d.kode_dokumen AND status_persetujuan = 'approved' ORDER BY nomor_versi DESC LIMIT 1) as file_path"
+        ),
         // Master joins
         "dt.id_jenis_dokumen as id_jenis_dokumen",
         "dt.kode_jenis_dokumen as kode_jenis_dokumen",

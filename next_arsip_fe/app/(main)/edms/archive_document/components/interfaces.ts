@@ -38,6 +38,7 @@ export interface DocumentData {
     kode_retensi?: string | null
     nama_retensi?: string | null
     tahun_retensi?: number | null
+    file_path?: string | null
 }
 
 export interface VersionData {
@@ -97,6 +98,8 @@ export interface State {
     };
     session: Session | null
     submittedData: initValue | null
+    previewUrl: string
+    isPreviewVisible: boolean
 }
 
 export interface TableProps {
@@ -110,6 +113,7 @@ export interface TableProps {
     downloadVersion: (idVersi: number, fileName: string) => Promise<void>;
     rollbackVersion: (idDokumen: number, idVersi: number) => Promise<void>;
     approveVersion: (idVersi: number, status: 'approved' | 'rejected', notes?: string) => Promise<void>;
+    handleFetchPreviewUrl: (fileName: string) => Promise<void>;
     toast: RefObject<Toast>
 }
 

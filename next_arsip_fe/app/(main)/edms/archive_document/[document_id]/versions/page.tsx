@@ -15,6 +15,7 @@ import {
     apiEndpointVersionDownload,
     apiEndpointVersionRollback,
     apiEndpointVersionUpload,
+    apiEndpointDocumentPreview,
 } from "../../components/endpoints";
 import { DetailData, VersionData } from "../../components/interfaces";
 import Table from "./components/display/table";
@@ -33,6 +34,8 @@ const Page = () => {
     const [rejectDialogVisible, setRejectDialogVisible] = useState(false);
     const [rejectNotes, setRejectNotes] = useState('');
     const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
+    const [previewUrl, setPreviewUrl] = useState('');
+    const [isPreviewVisible, setIsPreviewVisible] = useState(false);
 
     const sessionUser = session?.user as any;
     const roleKey = String(sessionUser?.role || sessionUser?.roleCode || '').toLowerCase();
@@ -172,6 +175,28 @@ const Page = () => {
         }
     };
 
+    const handleFetchPreviewUrl = async (fileName: string) => {
+        if (!fileName) {
+            showError(toast, 'Berkas dokumen belum diunggah untuk versi ini');
+            return;
+        }
+        setLoad(true);
+        try {
+            const res = await getData(apiEndpointDocumentPreview, { file_name: fileName });
+            if (res.data?.status === 'success') {
+                setPreviewUrl(res.data.preview_url);
+                setIsPreviewVisible(true);
+            } else {
+                showError(toast, res.data?.message || 'Gagal mengambil URL preview');
+            }
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || 'Gagal memproses pratinjau dokumen');
+        } finally {
+            setLoad(false);
+        }
+    };
+
     useEffect(() => {
         fetchDocumentDetail();
     }, [documentId]);
@@ -200,6 +225,11 @@ const Page = () => {
                 approveVersion={approveVersion}
                 submitRejection={submitRejection}
                 fetchDocumentDetail={fetchDocumentDetail}
+                handleFetchPreviewUrl={handleFetchPreviewUrl}
+                previewUrl={previewUrl}
+                isPreviewVisible={isPreviewVisible}
+                setIsPreviewVisible={setIsPreviewVisible}
+                setPreviewUrl={setPreviewUrl}
                 router={router}
                 toast={toast}
             />

@@ -43,3 +43,9 @@ run_dev.sh
 # Temporary / Debug Scripts
 # ========================
 **/temp/
+
+# ========================
+# TypeScript Build Info
+# ========================
+**/*.tsbuildinfo
+

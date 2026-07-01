@@ -34,6 +34,11 @@ interface TableProps {
     approveVersion: (versionId: number, status: 'approved' | 'rejected', notes?: string) => Promise<void>;
     submitRejection: () => Promise<void>;
     fetchDocumentDetail: () => Promise<void>;
+    handleFetchPreviewUrl: (fileName: string) => Promise<void>;
+    previewUrl: string;
+    isPreviewVisible: boolean;
+    setIsPreviewVisible: (visible: boolean) => void;
+    setPreviewUrl: (url: string) => void;
     router: any;
     toast: React.RefObject<Toast>;
 }
@@ -59,6 +64,11 @@ const Table: React.FC<TableProps> = ({
     approveVersion,
     submitRejection,
     fetchDocumentDetail,
+    handleFetchPreviewUrl,
+    previewUrl,
+    isPreviewVisible,
+    setIsPreviewVisible,
+    setPreviewUrl,
     router,
     toast
 }) => {
@@ -70,29 +80,45 @@ const Table: React.FC<TableProps> = ({
         return <Tag value={status === 'approved' ? 'Disetujui' : status === 'rejected' ? 'Ditolak' : 'Pending'} severity={severity} />;
     };
 
+    const versionPreviewTemplate = (rowData: VersionData) => (
+        <Button
+            icon="pi pi-eye"
+            rounded
+            text
+            severity="info"
+            size="small"
+            tooltip={rowData.file_path ? "Pratinjau Dokumen" : "Belum ada file berkas"}
+            tooltipOptions={{ position: 'top' }}
+            onClick={() => handleFetchPreviewUrl(rowData.file_path || '')}
+            disabled={!rowData.file_path}
+        />
+    );
+
     const versionActionTemplate = (rowData: VersionData) => {
         const isLatest = rowData.nomor_versi === highestVersionNumber;
         const status = rowData.status_persetujuan || 'pending';
 
         return (
-            <div className="flex gap-2 justify-content-center">
+            <div className="flex gap-1 justify-content-center align-items-center">
                 <Button
                     icon="pi pi-download"
                     rounded
-                    outlined
+                    text
                     severity="secondary"
-                    className="p-button-sm"
+                    size="small"
                     tooltip="Unduh File"
+                    tooltipOptions={{ position: 'top' }}
                     onClick={() => downloadVersion(rowData)}
                 />
                 {status === 'approved' && !isLatest && (
                     <Button
                         icon="pi pi-replay"
                         rounded
-                        outlined
+                        text
                         severity="warning"
-                        className="p-button-sm"
+                        size="small"
                         tooltip="Rollback ke versi ini"
+                        tooltipOptions={{ position: 'top' }}
                         onClick={() => rollbackVersion(rowData)}
                     />
                 )}
@@ -101,19 +127,21 @@ const Table: React.FC<TableProps> = ({
                         <Button
                             icon="pi pi-check"
                             rounded
-                            outlined
+                            text
                             severity="success"
-                            className="p-button-sm"
+                            size="small"
                             tooltip="Setujui Versi"
+                            tooltipOptions={{ position: 'top' }}
                             onClick={() => approveVersion(rowData.id_versi, 'approved')}
                         />
                         <Button
                             icon="pi pi-times"
                             rounded
-                            outlined
+                            text
                             severity="danger"
-                            className="p-button-sm"
+                            size="small"
                             tooltip="Tolak Versi"
+                            tooltipOptions={{ position: 'top' }}
                             onClick={() => {
                                 setSelectedVersionId(rowData.id_versi);
                                 setRejectNotes('');
@@ -235,13 +263,14 @@ const Table: React.FC<TableProps> = ({
                 className="text-sm"
                 dataKey="id_versi"
             >
-                <Column field="nomor_versi" header="Versi" sortable />
+                <Column field="nomor_versi" header="Versi" sortable style={{ width: '80px', textAlign: 'center' }} />
                 <Column field="catatan_perubahan" header="Catatan Perubahan" />
                 <Column field="diunggah_oleh" header="Diunggah Oleh" body={(rowData: VersionData) => rowData.diunggah_oleh || '-'} />
-                <Column field="status_persetujuan" header="Status" body={versionStatusTemplate} />
+                <Column field="status_persetujuan" header="Status" body={versionStatusTemplate} style={{ width: '120px', textAlign: 'center' }} />
                 <Column field="disetujui_oleh" header="Disetujui/Ditolak Oleh" body={(rowData: VersionData) => rowData.disetujui_oleh || '-'} />
-                <Column field="created_at" header="Tanggal Dibuat" body={(rowData: VersionData) => formatDateCalendar(rowData.created_at)} />
-                <Column headerStyle={{ textAlign: 'center' }} header="Aksi" body={versionActionTemplate} style={{ width: '14rem' }} />
+                <Column field="created_at" header="Tanggal Dibuat" body={(rowData: VersionData) => formatDateCalendar(rowData.created_at)} style={{ width: '160px' }} />
+                <Column header="Preview" body={versionPreviewTemplate} style={{ width: '90px', textAlign: 'center' }} />
+                <Column headerStyle={{ textAlign: 'center' }} header="Aksi" body={versionActionTemplate} style={{ width: '130px', textAlign: 'center' }} />
             </DataTable>
 
             <Dialog
@@ -276,6 +305,41 @@ const Table: React.FC<TableProps> = ({
                             className="w-full text-sm"
                         />
                     </div>
+                </div>
+            </Dialog>
+
+            {/* Document Preview Dialog */}
+            <Dialog
+                visible={isPreviewVisible}
+                header={
+                    <div className="flex align-items-center gap-2">
+                        <i className="pi pi-file-pdf text-primary" />
+                        <span className="font-bold text-900">Pratinjau Dokumen</span>
+                    </div>
+                }
+                modal
+                style={{ width: '60rem', maxWidth: '95vw' }}
+                onHide={() => {
+                    setIsPreviewVisible(false);
+                    setPreviewUrl('');
+                }}
+                pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
+            >
+                <div className="pt-3">
+                    {previewUrl ? (
+                        <iframe
+                            src={previewUrl}
+                            width="100%"
+                            height="600px"
+                            style={{ border: 'none', borderRadius: '8px' }}
+                            title="Preview Arsip"
+                        />
+                    ) : (
+                        <div className="flex flex-column align-items-center justify-content-center py-5 text-color-secondary">
+                            <i className="pi pi-spin pi-spinner text-3xl mb-3" />
+                            <span>Memuat dokumen...</span>
+                        </div>
+                    )}
                 </div>
             </Dialog>
         </div>

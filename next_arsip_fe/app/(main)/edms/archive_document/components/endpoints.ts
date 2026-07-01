@@ -3,6 +3,7 @@ export const apiEndpointDocumentCreate = '/arsip-dokumen/create'
 export const apiEndpointDocumentUpdate = '/arsip-dokumen/update'
 export const apiEndpointDocumentDelete = '/arsip-dokumen/delete'
 export const apiEndpointDocumentDetail = '/arsip-dokumen/detail'
+export const apiEndpointDocumentPreview = '/arsip-dokumen/preview'
 
 // Versioning
 export const apiEndpointVersionUpload = '/arsip-dokumen/version/upload'
