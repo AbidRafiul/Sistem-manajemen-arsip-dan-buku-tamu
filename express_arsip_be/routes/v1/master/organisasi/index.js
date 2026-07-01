@@ -52,17 +52,19 @@ import workUnitCreate from "./work_unit/work_unit_create.js";
 import workUnitUpdate from "./work_unit/work_unit_update.js";
 import workUnitDelete from "./work_unit/work_unit_delete.js";
 
-router.use("/work-unit", workUnitGet);
-router.use("/work-unit", workUnitCreate);
-router.use("/work-unit", workUnitUpdate);
-router.use("/work-unit", workUnitDelete);
+router.use("/work_unit", workUnitGet);
+router.use("/work_unit", workUnitCreate);
+router.use("/work_unit", workUnitUpdate);
+router.use("/work_unit", workUnitDelete);
 
 // 5. peran
+import peranPermissions from "./roles/roles_permissions.js";
 import peranGet from "./roles/roles_get.js";
 import peranCreate from "./roles/roles_create.js";
 import peranUpdate from "./roles/roles_update.js";
 import peranDelete from "./roles/roles_delete.js";
 
+router.use("/roles/permissions", peranPermissions);
 router.use("/roles", peranGet);
 router.use("/roles", peranCreate);
 router.use("/roles", peranUpdate);

@@ -12,52 +12,57 @@ import { normalizeLegacyMenu, roleAliases } from "./navigation_helper.js";
 const router = express.Router();
 
 const uniqueValues = (values) => {
-    return Array.from(
-        new Set(
-            values
-                .flat()
-                .map((value) => String(value || "").trim())
-                .filter(Boolean),
-        ),
-    );
+  return Array.from(
+    new Set(
+      values
+        .flat()
+        .map((value) => String(value || "").trim())
+        .filter(Boolean),
+    ),
+  );
 };
 
 const getRoleById = async (roleId) => {
-    if (!roleId) return null;
+  if (!roleId) return null;
 
-    return await DB("mst_roles")
-        .select("role_name", "role_code")
-        .where("role_id", roleId)
-        .orWhere("RoleId", roleId)
-        .first()
-        .catch(() => null);
+  return await DB("mst_roles")
+    .select("role_name", "role_code")
+    .where("role_id", roleId)
+    .orWhere("RoleId", roleId)
+    .first()
+    .catch(() => null);
 };
 
 const getRoleByUserId = async (userId) => {
-    if (!userId) return null;
+  if (!userId) return null;
 
-    return await DB("mst_user_roles")
-        .leftJoin("mst_roles", "mst_user_roles.role_id", "mst_roles.role_id")
-        .select("mst_roles.role_name as role_name", "mst_roles.role_code as role_code")
-        .where("mst_user_roles.user_id", userId)
-        .where((builder) => {
-            builder.where("mst_user_roles.status", "active").orWhereNull("mst_user_roles.status");
-        })
-        .orderBy("mst_user_roles.is_primary", "desc")
-        .first()
-        .catch(() => null);
+  return await DB("mst_user_roles")
+    .leftJoin("mst_roles", "mst_user_roles.role_id", "mst_roles.role_id")
+    .select(
+      "mst_roles.role_name as role_name",
+      "mst_roles.role_code as role_code",
+    )
+    .where("mst_user_roles.id_pengguna", userId)
+    .where((builder) => {
+      builder
+        .where("mst_user_roles.status", "active")
+        .orWhereNull("mst_user_roles.status");
+    })
+    .orderBy("mst_user_roles.is_primary", "desc")
+    .first()
+    .catch(() => null);
 };
 
 const getNavigationByRole = async (roles) => {
-    const aliases = uniqueValues(roles.map((role) => roleAliases(role)));
+  const aliases = uniqueValues(roles.map((role) => roleAliases(role)));
 
-    if (!aliases.length) return null;
+  if (!aliases.length) return null;
 
-    return await DB("mst_navigation")
-        .select("menu", "role")
-        .whereIn("role", aliases)
-        .orderByRaw(`CASE WHEN role = ? THEN 0 ELSE 1 END`, [roles[0] || ""])
-        .first();
+  return await DB("mst_navigation")
+    .select("menu", "role")
+    .whereIn("role", aliases)
+    .orderByRaw(`CASE WHEN role = ? THEN 0 ELSE 1 END`, [roles[0] || ""])
+    .first();
 };
 
 const queryNavigationByRoleId = async (roleId) => {

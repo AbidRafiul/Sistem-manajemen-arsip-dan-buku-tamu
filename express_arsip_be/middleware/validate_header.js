@@ -34,7 +34,11 @@ const pickTable = async (candidates) => {
 const isBypassed = (url) => {
   if (!url) return false;
   const lower = url.toLowerCase();
-  return lower.includes("/purposes") || lower.includes("/visit_checkin") || lower.includes("/visit_booking");
+  return (
+    lower.includes("/purposes") ||
+    lower.includes("/visit_checkin") ||
+    lower.includes("/visit_booking")
+  );
 };
 
 export const validateTimestamp = async (req, res, next) => {
@@ -142,8 +146,6 @@ export const validateSignature = async (req, res, next) => {
     }
 
     // Cek nama tabel yang aktif (support nama lama & baru)
-
-
     const userRoleTable = await pickTable([
       "mst_pengguna_peran",
       "mst_pengguna_perans",
@@ -161,34 +163,43 @@ export const validateSignature = async (req, res, next) => {
 
     if (userRoleTable && roleTable) {
       // Kolom FK di tabel user-role (support nama lama & baru)
-      const urColNames = await getColumns(userRoleTable);
-      const userFkCol = pickColumn(urColNames, [
-        "user_id",
-        "id_pengguna",
-        "nama_pengguna",
-        "username",
-      ]);
-      const roleFkCol = pickColumn(urColNames, ["role_id", "id_peran"]);
+      const [urCols] = await DB.raw("SHOW COLUMNS FROM ??", [userRoleTable]);
+      const urColNames = urCols.map((c) => c.Field);
+      const userFkCol = urColNames.includes("id_pengguna")
+        ? "id_pengguna"
+        : urColNames.includes("nama_pengguna")
+          ? "nama_pengguna"
+          : "id_pengguna";
+      const roleFkCol = urColNames.includes("id_peran")
+        ? "id_peran"
+        : "role_id";
 
-      const rColNames = await getColumns(roleTable);
-      const rolePkCol = pickColumn(rColNames, ["role_id", "id_peran"]);
-      const roleCodeCol = pickColumn(rColNames, ["role_code", "kode_peran"]);
-      const roleNameCol = pickColumn(rColNames, ["role_name", "nama_peran"]);
+      const [rCols] = await DB.raw("SHOW COLUMNS FROM ??", [roleTable]);
+      const rColNames = rCols.map((c) => c.Field);
+      const rolePkCol = rColNames.includes("id_peran") ? "id_peran" : "role_id";
+      const roleCodeCol = rColNames.includes("kode_peran")
+        ? "kode_peran"
+        : "role_code";
+      const roleNameCol = rColNames.includes("nama_peran")
+        ? "nama_peran"
+        : "role_name";
 
-      if (userFkCol && roleFkCol && rolePkCol) {
-        const userJoinColumn = ["nama_pengguna", "username"].includes(userFkCol)
-          ? usernameColumn
-          : userIdColumn;
-
-        query = query
-          .leftJoin(userRoleTable, `mst_pengguna.${userJoinColumn}`, `${userRoleTable}.${userFkCol}`)
-          .leftJoin(roleTable, `${userRoleTable}.${roleFkCol}`, `${roleTable}.${rolePkCol}`)
-          .select(
-            `${roleTable}.${rolePkCol} as peranId`,
-            roleCodeCol ? `${roleTable}.${roleCodeCol} as kode_peran` : DB.raw("NULL as kode_peran"),
-            roleNameCol ? `${roleTable}.${roleNameCol} as peran` : DB.raw("NULL as peran"),
-          );
-      }
+      query = query
+        .leftJoin(
+          userRoleTable,
+          `mst_pengguna.id_pengguna`,
+          `${userRoleTable}.${userFkCol}`,
+        )
+        .leftJoin(
+          roleTable,
+          `${userRoleTable}.${roleFkCol}`,
+          `${roleTable}.${rolePkCol}`,
+        )
+        .select(
+          `${roleTable}.${rolePkCol} as peranId`,
+          `${roleTable}.${roleCodeCol} as kode_peran`,
+          `${roleTable}.${roleNameCol} as peran`,
+        );
     }
 
     const numericId = Number(cUserUnique);
@@ -232,7 +243,6 @@ export const validateSignature = async (req, res, next) => {
     });
   }
 };
-
 
 export const validateBaseToken = async (req, res, next) => {
   if (isBypassed(req.originalUrl)) {

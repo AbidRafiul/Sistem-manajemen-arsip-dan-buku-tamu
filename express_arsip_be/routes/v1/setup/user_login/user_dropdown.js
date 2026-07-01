@@ -8,10 +8,10 @@ const router = express.Router();
 router.post("/", async (req, res) => {
   try {
     const vaData = await DB("mst_pengguna as u")
-      .leftJoin("mst_pengguna_peran as ur", "u.user_id", "ur.user_id")
+      .leftJoin("mst_pengguna_peran as ur", "u.id_pengguna", "ur.id_pengguna")
       .leftJoin("mst_peran as r", "ur.role_id", "r.role_id")
       .select(
-        "u.user_id as id_pengguna",
+        "u.id_pengguna as id_pengguna",
         "u.fullname as nama_lengkap",
         "u.username as nama_pengguna",
         "u.telepon as telepon",

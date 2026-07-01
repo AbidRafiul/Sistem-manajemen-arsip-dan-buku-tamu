@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { DocumentData, LoanData, TableProps } from "../interfaces";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
 import Form from "./form";
+import { usePermissions } from '@/hooks/usePermissions';
 
 const Table = ({
     state,
@@ -24,6 +25,7 @@ const Table = ({
     deleteDocuments,
     toast
 }: TableProps) => {
+    const permissions = usePermissions();
     const router = useRouter();
 
     const formatDateInput = (value?: string) => {
