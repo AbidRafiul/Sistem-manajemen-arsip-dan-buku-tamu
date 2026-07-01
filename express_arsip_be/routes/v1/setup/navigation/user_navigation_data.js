@@ -51,13 +51,13 @@ router.post("/", async (req, res) => {
 
     const cUserLookup = String(
       oPayload.id_pengguna ||
-        oPayload.user_id ||
-        oPayload.IdPengguna ||
-        oPayload.nama_pengguna ||
-        req?.auth?.IdPengguna ||
-        req?.auth?.id_pengguna ||
-        req?.auth?.nama_pengguna ||
-        "",
+      oPayload.id_pengguna ||
+      oPayload.IdPengguna ||
+      oPayload.nama_pengguna ||
+      req?.auth?.IdPengguna ||
+      req?.auth?.id_pengguna ||
+      req?.auth?.nama_pengguna ||
+      "",
     ).trim();
 
     if (cValidation || !cUserLookup) {
