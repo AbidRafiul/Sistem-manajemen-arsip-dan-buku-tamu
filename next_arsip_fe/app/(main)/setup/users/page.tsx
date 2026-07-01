@@ -131,19 +131,19 @@ const Page = () => {
     useEffect(() => {
         if (state.add || state.edit) {
             const vaEndpoints = [
-                { key: 'branches', path: '/master/organisasi/branches' },
-                { key: 'positions', path: '/master/organisasi/positions' },
-                { key: 'divisions', path: '/master/organisasi/divisions' },
-                { key: 'departments', path: '/master/organisasi/department' },
-                { key: 'workUnits', path: '/master/organisasi/work-unit' },
-                { key: 'roles', path: '/master/organisasi/roles' }
+                { key: 'branches', path: '/master/organisasi/branches/get_data' },
+                { key: 'positions', path: '/master/organisasi/positions/get_data' },
+                { key: 'divisions', path: '/master/organisasi/divisions/get_data' },
+                { key: 'departments', path: '/master/organisasi/department/get_data' },
+                { key: 'workUnits', path: '/master/organisasi/work_unit/get_data' },
+                { key: 'roles', path: '/master/organisasi/roles/get_data' }
             ];
 
             const token = (session as any)?.accessToken || localStorage.getItem('token');
             const myIdPengguna = (session as any)?.user?.IdPengguna || (session as any)?.user?.id || '';
 
             vaEndpoints.forEach((oItem) => {
-                apiGetData(
+                postData(
                     oItem.path,
                     {},
                     {

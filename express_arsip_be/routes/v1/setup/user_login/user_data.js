@@ -38,7 +38,7 @@ router.post("/", async (req, res) => {
         "mu.status",
         "mu.created_at",
         "mr.id_peran",    
-        "mr.nama_peran"    
+        "mr.nama_peran as role"    
       )
       .orderBy("mu.created_at", "desc");
 

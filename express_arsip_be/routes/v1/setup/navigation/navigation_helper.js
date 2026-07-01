@@ -746,29 +746,79 @@ const getRbacMenu = async (DB, user) => {
 const getNavigationMenu = async (DB, uniqueId) => {
   const user = await getUser(DB, uniqueId);
 
-  const legacyUserMenu = await getLegacyUserMenu(DB, user, uniqueId);
-  if (legacyUserMenu.length) {
-    return {
-      menu: ensureArchiveDocumentMenu(legacyUserMenu),
-      source: "user_navigation",
-      user,
-    };
+  let legacyMenu = await getLegacyUserMenu(DB, user, uniqueId);
+  if (!legacyMenu || !legacyMenu.length) {
+    legacyMenu = await getLegacyperanMenu(DB, user?.peran);
   }
 
   const rbacMenu = await getRbacMenu(DB, user);
-  if (rbacMenu.length) {
-    return {
-      menu: ensureArchiveDocumentMenu(rbacMenu),
-      source: "mst_peran_menus",
-      user,
-    };
+
+  // Helper to merge menus
+  const mergeMenus = (m1, m2) => {
+    const merged = [...(m1 || [])];
+    (m2 || []).forEach(item2 => {
+      const existing = merged.find(m => m.label && item2.label && m.label.toUpperCase() === item2.label.toUpperCase());
+      if (existing) {
+        if (item2.items && item2.items.length) {
+          existing.items = mergeMenus(existing.items, item2.items);
+        }
+      } else {
+        merged.push(item2);
+      }
+    });
+    return merged;
+  };
+
+  const combinedMenu = mergeMenus(legacyMenu, rbacMenu);
+
+  let setupGroup = combinedMenu.find(m => m.label && (m.label.toUpperCase() === 'SETUP' || m.label.toUpperCase() === 'SET UP'));
+  
+  // Pindahkan Management Menu ke dalam Setup (buat grup jika belum ada)
+  const managementMenuIdx = combinedMenu.findIndex(m => m.label && m.label.toUpperCase() === 'MANAGEMENT MENU');
+  if (managementMenuIdx !== -1) {
+     const mm = combinedMenu.splice(managementMenuIdx, 1)[0];
+     if (!setupGroup) {
+         setupGroup = { label: 'SETUP', items: [] };
+         // Sisipkan setelah HOME jika ada, atau di indeks 0
+         const homeIdx = combinedMenu.findIndex(m => m.label && (m.label.toUpperCase() === 'HOME' || m.label.toUpperCase() === 'BERANDA'));
+         combinedMenu.splice(homeIdx !== -1 ? homeIdx + 1 : 0, 0, setupGroup);
+     }
+     setupGroup.items = setupGroup.items || [];
+     setupGroup.items.push(mm);
   }
 
-  const legacyperanMenu = await getLegacyperanMenu(DB, user?.peran);
-  if (legacyperanMenu.length) {
+  const removeEmptyItems = (menuArray) => {
+    return menuArray.map(item => {
+      const newItem = { ...item };
+      if (newItem.items) {
+        if (newItem.items.length === 0) {
+          delete newItem.items;
+        } else {
+          newItem.items = removeEmptyItems(newItem.items);
+          if (newItem.items.length === 0) {
+            delete newItem.items;
+          }
+        }
+      }
+      return newItem;
+    });
+  };
+
+  if (combinedMenu && combinedMenu.length) {
+    // Reorder: Letakkan "Master Organisasi" tepat di bawah "SETUP"
+    const masterOrgIdx = combinedMenu.findIndex(m => m.label && m.label.toUpperCase() === 'MASTER ORGANISASI');
+    const setupIdx = combinedMenu.findIndex(m => m.label && (m.label.toUpperCase() === 'SETUP' || m.label.toUpperCase() === 'SET UP'));
+    
+    if (masterOrgIdx !== -1 && setupIdx !== -1 && masterOrgIdx !== setupIdx + 1) {
+       const mo = combinedMenu.splice(masterOrgIdx, 1)[0];
+       // Karena masterOrgIdx bisa saja di depan atau di belakang setupIdx, kita cari lagi setupIdx yang baru
+       const newSetupIdx = combinedMenu.findIndex(m => m.label && (m.label.toUpperCase() === 'SETUP' || m.label.toUpperCase() === 'SET UP'));
+       combinedMenu.splice(newSetupIdx + 1, 0, mo);
+    }
+
     return {
-      menu: ensureArchiveDocumentMenu(legacyperanMenu),
-      source: "mst_navigasi",
+      menu: removeEmptyItems(ensureArchiveDocumentMenu(combinedMenu)),
+      source: "merged",
       user,
     };
   }
