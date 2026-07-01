@@ -5,40 +5,47 @@ const createDestructionProposal = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const nDocumentId = oPayload.document_id;
-    const cProposalReason = oPayload.proposal_reason;
-    const cProposedBy =
-      req?.context?.nama_pengguna || oPayload.proposed_by || "system";
+    const cKodeDokumen = oPayload.kode_dokumen || oPayload.document_code;
+    const nIdDokumen = oPayload.id_dokumen || oPayload.document_id;
+    const cProposalReason = oPayload.alasan_usulan || oPayload.proposal_reason;
+    const cProposedBy = req?.context?.Username || oPayload.diusulkan_oleh || oPayload.proposed_by || "system";
     const dNow = new Date();
 
-    if (!nDocumentId || !cProposalReason) {
+    if ((!cKodeDokumen && !nIdDokumen) || !cProposalReason) {
       const oResult = {
         status: "error",
-        message: "document_id dan proposal_reason wajib diisi",
+        message: "kode_dokumen/id_dokumen dan alasan_usulan wajib diisi",
       };
       return res.status(422).json(oResult);
     }
 
     // Verifikasi dokumen aktif
-    const oDocument = await DB("trx_documents as d")
+    let oQueryBuilder = DB("trs_dokumen as d")
       .select(
-        "d.document_id",
-        "d.document_name",
-        "d.document_number",
-        "d.document_date",
-        "d.expired_date",
-        "d.retention_schedule_id",
-        "rs.retention_years",
-        "rs.retention_action",
+        "d.id_dokumen",
+        "d.kode_dokumen",
+        "d.nama_dokumen",
+        "d.nomor_dokumen",
+        "d.tanggal",
+        "d.tanggal_kedaluwarsa",
+        "d.kode_retensi",
+        "rs.tahun_retensi",
+        "rs.tindakan_retensi"
       )
       .leftJoin(
-        "mst_retention_schedule as rs",
-        "d.retention_schedule_id",
-        "rs.retention_schedule_id",
+        "mst_jadwal_retensi as rs",
+        "d.kode_retensi",
+        "rs.kode_retensi"
       )
-      .where("d.document_id", nDocumentId)
-      .where("d.status", "active")
-      .first();
+      .where("d.status", "active");
+
+    if (cKodeDokumen) {
+      oQueryBuilder.where("d.kode_dokumen", cKodeDokumen);
+    } else {
+      oQueryBuilder.where("d.id_dokumen", nIdDokumen);
+    }
+
+    const oDocument = await oQueryBuilder.first();
 
     if (!oDocument) {
       const oResult = {
@@ -49,48 +56,49 @@ const createDestructionProposal = async (req, res) => {
     }
 
     // Cek apakah sudah ada proposal aktif untuk dokumen ini
-    const oExistingProposal = await DB("trx_destruction_proposals")
-      .where("document_id", nDocumentId)
+    const oExistingProposal = await DB("trs_usulan_pemusnahan")
+      .where("kode_dokumen", oDocument.kode_dokumen)
       .whereNotIn("status", ["rejected", "executed"])
       .first();
 
     if (oExistingProposal) {
       const oResult = {
         status: "error",
-        message: `Dokumen ini sudah memiliki proposal pemusnahan aktif dengan status '${oExistingProposal.status}' (ProposalId: ${oExistingProposal.proposal_id})`,
+        message: `Dokumen ini sudah memiliki proposal pemusnahan aktif dengan status '${oExistingProposal.status}' (ProposalId: ${oExistingProposal.id_usulan})`,
       };
       return res.status(422).json(oResult);
     }
 
     const oData = {
-      document_id: nDocumentId,
-      retention_schedule_id: oDocument.retention_schedule_id || null,
-      proposal_reason: cProposalReason,
-      proposed_by: cProposedBy,
-      proposed_at: dNow,
+      kode_dokumen: oDocument.kode_dokumen,
+      kode_retensi: oDocument.kode_retensi || null,
+      alasan_usulan: cProposalReason,
+      diusulkan_oleh: cProposedBy,
+      diusulkan_pada: dNow,
       status: "submitted",
-      reviewed_by: null,
-      reviewed_at: null,
-      review_notes: null,
-      executed_by: null,
-      executed_at: null,
-      berita_acara_path: null,
+      ditinjau_oleh: null,
+      ditinjau_pada: null,
+      catatan_tinjauan: null,
+      dieksekusi_oleh: null,
+      dieksekusi_pada: null,
+      file_berita_acara: null,
+      tanggal_transaksi: dNow,
       created_at: dNow,
       updated_at: dNow,
     };
 
-    const [nProposalId] = await DB("trx_destruction_proposals").insert(oData);
+    const [nProposalId] = await DB("trs_usulan_pemusnahan").insert(oData);
 
     const oResult = {
       status: "success",
       message:
         "Proposal pemusnahan arsip berhasil diajukan dan menunggu review",
       data: {
-        proposal_id: nProposalId,
-        document_name: oDocument.document_name,
-        document_number: oDocument.document_number,
-        retention_years: oDocument.retention_years,
-        retention_action: oDocument.retention_action,
+        id_usulan: nProposalId,
+        document_name: oDocument.nama_dokumen,
+        document_number: oDocument.nomor_dokumen,
+        retention_years: oDocument.tahun_retensi,
+        retention_action: oDocument.tindakan_retensi,
         ...oData,
       },
     };

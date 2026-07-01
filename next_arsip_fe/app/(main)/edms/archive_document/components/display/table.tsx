@@ -44,19 +44,19 @@ const Table = ({
 
     const documentTemplate = (rowData: DocumentData) => (
         <div>
-            <span className="font-semibold text-sm text-900 block">{rowData.document_number}</span>
-            <span className="text-xs text-color-secondary">{rowData.document_name}</span>
+            <span className="font-semibold text-sm text-900 block">{rowData.nomor_dokumen}</span>
+            <span className="text-xs text-color-secondary">{rowData.nama_dokumen}</span>
         </div>
     );
 
     const picTemplate = (rowData: DocumentData) => (
         <div className="flex align-items-center gap-2">
             <Avatar
-                label={rowData.pic_name?.slice(0, 1).toUpperCase() || 'P'}
+                label={rowData.nama_pic?.slice(0, 1).toUpperCase() || 'P'}
                 shape="circle"
                 style={{ width: '1.75rem', height: '1.75rem', fontSize: '0.7rem', background: '#EEF2FF', color: '#4F46E5', fontWeight: '700', flexShrink: 0 }}
             />
-            <span className="text-sm text-900">{rowData.pic_name}</span>
+            <span className="text-sm text-900">{rowData.nama_pic}</span>
         </div>
     );
 
@@ -70,7 +70,7 @@ const Table = ({
                 tooltip="Detail Dokumen"
                 tooltipOptions={{ position: 'top' }}
                 loading={state.detailLoad}
-                onClick={() => getDocumentDetail(rowData.document_id)}
+                onClick={() => getDocumentDetail(rowData.id_dokumen)}
             />
             <Button
                 icon="pi pi-history"
@@ -80,7 +80,7 @@ const Table = ({
                 size="small"
                 tooltip="Riwayat Versi"
                 tooltipOptions={{ position: 'top' }}
-                onClick={() => router.push(`/edms/archive_document/${rowData.document_id}/versions`)}
+                onClick={() => router.push(`/edms/archive_document/${rowData.id_dokumen}/versions`)}
             />
             <Button
                 icon="pi pi-pencil"
@@ -92,12 +92,12 @@ const Table = ({
                 tooltipOptions={{ position: 'top' }}
                 onClick={() => {
                     formik.setValues({
-                        document_id: rowData.document_id,
-                        document_name: rowData.document_name,
-                        document_number: rowData.document_number,
-                        document_date: formatDateInput(rowData.document_date),
-                        expired_date: formatDateInput(rowData.expired_date),
-                        pic_name: rowData.pic_name,
+                        id_dokumen: rowData.id_dokumen,
+                        nama_dokumen: rowData.nama_dokumen,
+                        nomor_dokumen: rowData.nomor_dokumen,
+                        tanggal: formatDateInput(rowData.tanggal),
+                        tanggal_kedaluwarsa: formatDateInput(rowData.tanggal_kedaluwarsa),
+                        nama_pic: rowData.nama_pic,
                     });
                     setState((p) => ({ ...p, add: false, edit: true, delete: false, selectedDocuments: [rowData] }));
                 }}
@@ -207,7 +207,7 @@ const Table = ({
                 onSelectionChange={(e) => setState((p) => ({ ...p, selectedDocuments: e.value }))}
                 rows={10}
                 header={headerTemplate}
-                globalFilterFields={['document_name', 'document_number', 'pic_name', 'status', 'document_type_name', 'document_category_name', 'confidentiality_level_name']}
+                globalFilterFields={['nama_dokumen', 'nomor_dokumen', 'nama_pic', 'status', 'nama_jenis_dokumen', 'nama_kategori_dokumen', 'nama_tingkat_kerahasiaan']}
                 filters={state.filters}
                 loading={state.load}
                 rowHover
@@ -222,13 +222,13 @@ const Table = ({
                 className="text-sm"
             >
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
-                <Column header="Nomor & Nama Dokumen" body={documentTemplate} sortable sortField="document_number" style={{ minWidth: '200px' }} />
-                <Column field="document_type_name" header="Tipe" sortable style={{ minWidth: '110px' }} />
-                <Column field="document_category_name" header="Kategori" sortable style={{ minWidth: '110px' }} />
-                <Column field="confidentiality_level_name" header="Kerahasiaan" sortable style={{ minWidth: '120px' }} />
-                <Column header="PIC" body={picTemplate} sortable sortField="pic_name" style={{ minWidth: '150px' }} />
-                <Column field="document_date" header="Tgl. Dokumen" sortable body={rowData => formatDateCalendar(rowData.document_date)} style={{ width: '130px' }} />
-                <Column field="expired_date" header="Tgl. Kedaluwarsa" sortable body={rowData => formatDateCalendar(rowData.expired_date)} style={{ width: '140px' }} />
+                <Column header="Nomor & Nama Dokumen" body={documentTemplate} sortable sortField="nomor_dokumen" style={{ minWidth: '200px' }} />
+                <Column field="nama_jenis_dokumen" header="Tipe" sortable style={{ minWidth: '110px' }} />
+                <Column field="nama_kategori_dokumen" header="Kategori" sortable style={{ minWidth: '110px' }} />
+                <Column field="nama_tingkat_kerahasiaan" header="Kerahasiaan" sortable style={{ minWidth: '120px' }} />
+                <Column header="PIC" body={picTemplate} sortable sortField="nama_pic" style={{ minWidth: '150px' }} />
+                <Column field="tanggal" header="Tgl. Dokumen" sortable body={rowData => formatDateCalendar(rowData.tanggal)} style={{ width: '130px' }} />
+                <Column field="tanggal_kedaluwarsa" header="Tgl. Kedaluwarsa" sortable body={rowData => formatDateCalendar(rowData.tanggal_kedaluwarsa)} style={{ width: '140px' }} />
                 <Column body={statusTemplate} header="Status" style={{ width: '110px', textAlign: 'center' }} />
                 <Column header="Aksi" body={actionTemplate} style={{ width: '150px', textAlign: 'center' }} />
             </DataTable>
@@ -254,23 +254,23 @@ const Table = ({
                 <div className="grid surface-50 border-round-xl p-3 border-1 surface-border text-sm">
                     <div className="col-12 md:col-6">
                         <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Nomor Dokumen</div>
-                        <div className="font-bold text-900">{state.detailData?.document?.document_number || '-'}</div>
+                        <div className="font-bold text-900">{state.detailData?.document?.nomor_dokumen || '-'}</div>
                     </div>
                     <div className="col-12 md:col-6">
                         <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Nama Dokumen</div>
-                        <div className="font-semibold text-900">{state.detailData?.document?.document_name || '-'}</div>
+                        <div className="font-semibold text-900">{state.detailData?.document?.nama_dokumen || '-'}</div>
                     </div>
                     <div className="col-12 md:col-4">
                         <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>PIC</div>
-                        <div className="text-900">{state.detailData?.document?.pic_name || '-'}</div>
+                        <div className="text-900">{state.detailData?.document?.nama_pic || '-'}</div>
                     </div>
                     <div className="col-12 md:col-4">
                         <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Tanggal Dokumen</div>
-                        <div className="text-900">{state.detailData?.document?.document_date ? formatDateCalendar(state.detailData.document.document_date) : '-'}</div>
+                        <div className="text-900">{state.detailData?.document?.tanggal ? formatDateCalendar(state.detailData.document.tanggal) : '-'}</div>
                     </div>
                     <div className="col-12 md:col-4">
                         <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Tanggal Kedaluwarsa</div>
-                        <div className="text-900">{state.detailData?.document?.expired_date ? formatDateCalendar(state.detailData.document.expired_date) : '-'}</div>
+                        <div className="text-900">{state.detailData?.document?.tanggal_kedaluwarsa ? formatDateCalendar(state.detailData.document.tanggal_kedaluwarsa) : '-'}</div>
                     </div>
                 </div>
 
@@ -294,10 +294,10 @@ const Table = ({
                         className="text-sm"
                         rowHover
                     >
-                        <Column field="borrower_name" header="Peminjam" sortable />
-                        <Column field="loan_date" header="Tgl. Pinjam" body={(rowData: LoanData) => formatDateCalendar(rowData.loan_date)} />
-                        <Column field="return_date" header="Tgl. Kembali" body={(rowData: LoanData) => rowData.return_date ? formatDateCalendar(rowData.return_date) : <span className="text-orange-500 font-medium">Belum Kembali</span>} />
-                        <Column field="purpose" header="Keperluan" />
+                        <Column field="nama_peminjam" header="Peminjam" sortable />
+                        <Column field="tanggal_pinjam" header="Tgl. Pinjam" body={(rowData: LoanData) => formatDateCalendar(rowData.tanggal_pinjam)} />
+                        <Column field="tanggal_kembali" header="Tgl. Kembali" body={(rowData: LoanData) => rowData.tanggal_kembali ? formatDateCalendar(rowData.tanggal_kembali) : <span className="text-orange-500 font-medium">Belum Kembali</span>} />
+                        <Column field="keperluan" header="Keperluan" />
                         <Column field="status" header="Status" body={(rowData: LoanData) => (
                             <Tag
                                 value={rowData.status === 'approved' ? 'Disetujui' : rowData.status === 'rejected' ? 'Ditolak' : 'Pending'}
@@ -336,7 +336,7 @@ const Table = ({
                     <p className="text-color-secondary text-sm m-0">
                         {state.selectedDocuments.length > 1
                             ? `${state.selectedDocuments.length} dokumen yang dipilih akan dinonaktifkan.`
-                            : `Dokumen "${state.selectedDocuments[0]?.document_number || ''}" akan dinonaktifkan.`}
+                            : `Dokumen "${state.selectedDocuments[0]?.nomor_dokumen || ''}" akan dinonaktifkan.`}
                     </p>
                 </div>
             </div>

@@ -90,14 +90,14 @@ const incomingLetterUpdate = async (req, res) => {
       },
       {
         field: "archive_classification_id",
-        table: "mst_archive_classifications",
-        key: "ArchiveClassificationId",
+        table: "mst_klasifikasi_arsip",
+        key: "id_klasifikasi",
         label: "Klasifikasi arsip",
       },
       {
         field: "confidentiality_level_id",
-        table: "mst_confidentiality_levels",
-        key: "ConfidentialityLevelId",
+        table: "mst_tingkat_kerahasiaan",
+        key: "id_tingkat_kerahasiaan",
         label: "Level kerahasiaan",
       },
       {

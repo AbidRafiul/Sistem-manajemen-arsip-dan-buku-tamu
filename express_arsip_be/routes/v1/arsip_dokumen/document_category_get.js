@@ -5,24 +5,24 @@ const getDocumentCategories = async (req, res) => {
   try {
     const cStatus = req.query.status || "active";
 
-    const vaData = await DB("mst_document_categories as dc")
+    const vaData = await DB("mst_kategori_dokumen as dc")
       .select(
-        "dc.document_category_id",
-        "dc.document_category_code",
-        "dc.document_category_name",
+        "dc.id_kategori_dokumen",
+        "dc.kode_kategori_dokumen",
+        "dc.nama_kategori_dokumen",
         "dc.deskripsi",
         "dc.status",
-        "ac.archive_classification_id",
-        "ac.classification_code",
-        "ac.classification_name",
+        "ac.id_klasifikasi",
+        "ac.kode_klasifikasi",
+        "ac.nama_klasifikasi"
       )
       .leftJoin(
-        "mst_archive_classifications as ac",
-        "dc.archive_classification_id",
-        "ac.archive_classification_id",
+        "mst_klasifikasi_arsip as ac",
+        "dc.kode_klasifikasi",
+        "ac.kode_klasifikasi"
       )
       .where("dc.status", cStatus)
-      .orderBy("dc.document_category_name", "asc");
+      .orderBy("dc.nama_kategori_dokumen", "asc");
 
     const oResult = {
       status: "success",

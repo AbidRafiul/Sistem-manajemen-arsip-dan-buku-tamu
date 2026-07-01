@@ -13,10 +13,11 @@ import {
 
 const router = express.Router();
 
-router.put("/:ConfidentialityLevelId", async (req, res) => {
+const updateConfidentialityLevel = async (req, res) => {
   const { body: oPayload } = req;
-  const cConfidentialityLevelId = req.params.ConfidentialityLevelId;
-  const nama_pengguna = req?.auth?.nama_pengguna || "";
+  const cIdTingkatKerahasiaan = req.params.id_tingkat_kerahasiaan;
+  const username = req?.auth?.username || "";
+
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
@@ -29,20 +30,11 @@ router.put("/:ConfidentialityLevelId", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        confidentiality_level_code: Joi.string()
-          .max(45)
-          .required()
-          .label("Kode Kerahasiaan"),
-        confidentiality_level_name: Joi.string()
-          .max(100)
-          .required()
-          .label("Nama Kerahasiaan"),
-        confidentiality_level: Joi.number().required().label("Level (Angka)"),
-        deskripsi: Joi.string()
-          .max(45)
-          .optional()
-          .allow(null, "")
-          .label("Deskripsi"),
+        kode_tingkat_kerahasiaan: Joi.string().max(255).required().label("Kode Kerahasiaan"),
+        nama_tingkat_kerahasiaan: Joi.string().max(255).required().label("Nama Kerahasiaan"),
+        tingkat_kerahasiaan: Joi.number().required().label("Level (Angka)"),
+        deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
+
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
@@ -60,7 +52,7 @@ router.put("/:ConfidentialityLevelId", async (req, res) => {
 
       Logging(null, {
         file: "level_update.js",
-        func: "update",
+        func: "updateConfidentialityLevel",
         request: oPayload,
         response: oResult,
         user: nama_pengguna,
@@ -69,12 +61,13 @@ router.put("/:ConfidentialityLevelId", async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    const nUpdated = await DB("mst_confidentiality_levels")
-      .where("confidentiality_level_id", cConfidentialityLevelId)
+    const nUpdated = await DB("mst_tingkat_kerahasiaan")
+      .where("id_tingkat_kerahasiaan", cIdTingkatKerahasiaan)
       .update({
-        confidentiality_level_code: oPayload.confidentiality_level_code,
-        confidentiality_level_name: oPayload.confidentiality_level_name,
-        confidentiality_level: oPayload.confidentiality_level,
+        kode_tingkat_kerahasiaan: oPayload.kode_tingkat_kerahasiaan,
+        nama_tingkat_kerahasiaan: oPayload.nama_tingkat_kerahasiaan,
+        tingkat_kerahasiaan: oPayload.tingkat_kerahasiaan,
+
         deskripsi: oPayload.deskripsi || null,
         updated_at: new Date(),
       });
@@ -101,7 +94,7 @@ router.put("/:ConfidentialityLevelId", async (req, res) => {
 
     Logging(error, {
       file: "level_update.js",
-      func: "update",
+      func: "updateConfidentialityLevel",
       request: oPayload,
       response: oResult,
       user: nama_pengguna,
@@ -109,6 +102,8 @@ router.put("/:ConfidentialityLevelId", async (req, res) => {
 
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.put("/:id_tingkat_kerahasiaan", updateConfidentialityLevel);
 
 export default router;

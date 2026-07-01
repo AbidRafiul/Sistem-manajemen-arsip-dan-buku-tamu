@@ -17,9 +17,12 @@ const authOptions = {
                     const userData = JSON.parse(credentials.userData as string);
 
                     // PASTIIN DATA DARI EXPRESS DIPETAKAN KE SINI
+                    const activeId = userData.IdPengguna || userData.id_pengguna || userData.uniqueId || userData.uid || userData.id || userData.nama_pengguna;
                     return {
-                        id: userData.IdPengguna, // KUNCI: Pake IdPengguna dari Express
-                        IdPengguna: userData.IdPengguna, // Tambahkan eksplisit
+                        id: activeId,
+                        IdPengguna: activeId,
+                        id_pengguna: activeId,
+                        uniqueId: activeId,
                         name: userData.nama_lengkap || userData.name,
                         nama_pengguna: userData.nama_pengguna,
                         role: userData.role || userData.roleCode,
@@ -39,21 +42,25 @@ const authOptions = {
         error: '/auth/login',
         signOut: '/auth/login'
     },
+    secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || 'random',
     session: {
         strategy: 'jwt' as const,
         maxAge: 7 * 24 * 60 * 60
     },
     callbacks: {
         async jwt({ token, user }: { token: JWT; user?: User }) {
+            console.log('NextAuth Callback - jwt: entering. User present:', !!user);
             // Initial sign in
             if (user) {
                 const anyUser = user as any;
-                token.id = anyUser.IdPengguna || anyUser.id;
-                token.id = anyUser.id;
+                const activeId = anyUser.IdPengguna || anyUser.id_pengguna || anyUser.uniqueId || anyUser.id || anyUser.nama_pengguna;
+
+                token.id = activeId;
+                (token as any).IdPengguna = activeId;
                 token.role = anyUser.role;
                 (token as any).roleCode = anyUser.roleCode;
                 (token as any).roleId = anyUser.roleId;
-                token.uniqueId = anyUser.uniqueId;
+                token.uniqueId = activeId;
                 token.name = anyUser.name;
                 token.nama_pengguna = anyUser.nama_pengguna;
                 token.remember_me = anyUser.remember_me;
@@ -62,17 +69,20 @@ const authOptions = {
                 const now = Math.floor(Date.now() / 1000);
                 const expireDuration = user.remember_me ? 24 * 60 * 60 : 7 * 60 * 60;
                 token.expiry = now + expireDuration;
+                console.log('NextAuth Callback - jwt: initialized token for user:', token.name, 'expiry in:', expireDuration, 'seconds');
             }
 
             // Check if token has expired
             const now = Math.floor(Date.now() / 1000);
             if (token.expiry && now > token.expiry) {
+                console.log('NextAuth Callback - jwt: Token has expired! expiry:', token.expiry, 'now:', now);
                 return { ...token, expired: true };
             }
 
             return token;
         },
         async session({ session, token }: { session: Session; token: JWT }) {
+            console.log('NextAuth Callback - session: entering. Token expired:', !!token.expired);
             if (token.expired) {
                 throw new Error('Session telah kadaluarsa');
             }
@@ -81,12 +91,14 @@ const authOptions = {
                 // TAMBAHKAN INI BIAR IdPengguna NYAMPE KE FRONTEND
                 (session.user as any).id = token.id;
                 (session.user as any).IdPengguna = token.id;
+                (session.user as any).uniqueId = token.uniqueId || token.id;
                 session.user.id = token.id as string;
                 session.user.role = token.role as string;
                 (session.user as any).roleCode = (token as any).roleCode;
                 (session.user as any).roleId = (token as any).roleId;
                 session.user.name = token.name as string;
                 (session.user as any).nama_pengguna = token.nama_pengguna as string;
+                console.log('NextAuth Callback - session: set session user role:', session.user.role, 'name:', session.user.name);
             }
 
             if (token.expiry) {
@@ -103,9 +115,12 @@ const authOptions = {
                 const maxAge = anyUser.remember_me ? 60 * 60 * 24 : 60 * 60 * 7;
 
                 const secret = new TextEncoder().encode(process.env.USER_KEY);
+                const activeId = anyUser.IdPengguna || anyUser.id_pengguna || anyUser.uniqueId || user.id || anyUser.nama_pengguna;
                 const jwtPayload = {
-                    IdPengguna: anyUser.IdPengguna || user.id,
-                    id_pengguna: anyUser.IdPengguna || user.id,
+                    IdPengguna: activeId,
+                    id_pengguna: activeId,
+                    uid: activeId,
+                    uniqueId: activeId,
                     name: user.name,
                     nama_pengguna: anyUser.nama_pengguna
                 };
@@ -151,6 +166,7 @@ const authOptions = {
             try {
                 const cookieStore = cookies();
                 cookieStore.delete('_A2F');
+                cookieStore.delete('_A2R');
             } catch (error) {
                 console.error('Error deleting cookie:', error);
             }

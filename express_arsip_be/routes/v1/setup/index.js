@@ -7,7 +7,7 @@ import userUpdate from "./user_login/user_update.js";
 import userDelete from "./user_login/user_delete.js";
 import userDropdown from "./user_login/user_dropdown.js";
 
-import navBase from "./navigation//mst_navigation_data.js"; 
+import navBase from "./navigation//mst_navigation_data.js";
 import navUser from "./navigation/user_navigation_data.js";
 import navUserEdit from "./navigation/user_navigation_data_edit.js";
 import navUserInsert from "./navigation/user_navigation_insert.js";

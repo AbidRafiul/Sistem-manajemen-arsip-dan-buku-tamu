@@ -173,11 +173,18 @@ const AppMenu = () => {
         menu: []
     });
 
-    const getMenu = async (nama_pengguna: string) => {
+    const getMenu = async (user: any) => {
         setState((prev) => ({ ...prev, load: true }));
 
         try {
-            const { data: vaData } = await postData('setup/nav/user-data', { nama_pengguna });
+            const activeId = user?.IdPengguna || user?.id_pengguna || user?.uniqueId || user?.id || '';
+            const namaPengguna = String(user?.nama_pengguna || user?.kode_pengguna || '').trim();
+            console.log('AppMenu: Fetching menu for activeId:', activeId, 'namaPengguna:', namaPengguna);
+            const { data: vaData } = await postData('setup/nav/user-data', {
+                ...(activeId ? { IdPengguna: activeId, id_pengguna: activeId, user_id: activeId } : {}),
+                ...(namaPengguna ? { nama_pengguna: namaPengguna } : {})
+            });
+            console.log('AppMenu: Received menu data:', vaData);
             const dbMenu = parseMenuPayload(vaData);
             const menu = normalizeMailInMenu(cloneMenu(dbMenu));
 
@@ -210,20 +217,23 @@ const AppMenu = () => {
 
     useEffect(() => {
         const user = session?.user as any;
+        console.log('AppMenu: session status =', status, 'session user =', user);
 
         if (status === 'loading') {
             setState((prev) => ({ ...prev, load: true }));
             return;
         }
 
+        const activeId = String(user?.IdPengguna || user?.id_pengguna || user?.uniqueId || user?.id || '').trim();
         const nama_pengguna = String(user?.nama_pengguna || user?.kode_pengguna || '').trim();
 
-        if (!nama_pengguna) {
+        if (!activeId && !nama_pengguna) {
+            console.log('AppMenu: activeId and nama_pengguna are empty. Returning empty menu.');
             setState((prev) => ({ ...prev, filteredMenu: [], menu: [], load: false }));
             return;
         }
 
-        getMenu(nama_pengguna);
+        getMenu(user);
     }, [session, status]);
 
     useEffect(() => {

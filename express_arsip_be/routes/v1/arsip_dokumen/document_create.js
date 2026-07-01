@@ -6,16 +6,16 @@ const createDocument = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const cDocumentName = oPayload.document_name;
-    const cDocumentNumber = oPayload.document_number;
-    const dDocumentDate = oPayload.document_date;
-    const dExpiredDate = oPayload.expired_date || null;
-    const nDocumentTypeId = oPayload.document_type_id || null;
-    const nDocumentCategoryId = oPayload.document_category_id || null;
-    const nArchiveClassificationId = oPayload.archive_classification_id || null;
-    const nConfidentialityLevelId = oPayload.confidentiality_level_id || null;
-    const nRetentionScheduleId = oPayload.retention_schedule_id || null;
-    const cPhysicalLocation = oPayload.physical_location || null;
+    const cDocumentName = oPayload.nama_dokumen;
+    const cDocumentNumber = oPayload.nomor_dokumen;
+    const dDocumentDate = oPayload.tanggal;
+    const dExpiredDate = oPayload.tanggal_kedaluwarsa || null;
+    const cDocumentTypeCode = oPayload.kode_jenis_dokumen || null;
+    const cDocumentCategoryCode = oPayload.kode_kategori_dokumen || null;
+    const cClassificationCode = oPayload.kode_klasifikasi || null;
+    const cConfidentialityLevelCode = oPayload.kode_tingkat_kerahasiaan || null;
+    const cRetentionCode = oPayload.kode_retensi || null;
+    const cPhysicalLocation = oPayload.lokasi_fisik || null;
     const cTags = oPayload.tags || null;
     const dNow = new Date();
 
@@ -23,13 +23,13 @@ const createDocument = async (req, res) => {
     if (!cDocumentName || !cDocumentNumber || !dDocumentDate) {
       const oResult = {
         status: "error",
-        message: "document_name, document_number, dan document_date wajib diisi",
+        message: "nama_dokumen, nomor_dokumen, dan tanggal wajib diisi",
       };
       return res.status(422).json(oResult);
     }
 
     // Logika Fallback Pintar untuk Variabel cPic
-    let cPic = oPayload.pic || oPayload.pic_name;
+    let cPic = oPayload.nama_pic;
     if (typeof cPic === "string") {
       cPic = cPic.trim();
     }
@@ -38,8 +38,8 @@ const createDocument = async (req, res) => {
     }
 
     // Cek duplikat nomor dokumen
-    const oExisting = await DB("trx_documents")
-      .where("document_number", cDocumentNumber)
+    const oExisting = await DB("trs_dokumen")
+      .where("nomor_dokumen", cDocumentNumber)
       .where("status", "active")
       .first();
 
@@ -55,17 +55,17 @@ const createDocument = async (req, res) => {
     const cQRCode = `DOC-${uuidv4()}`;
 
     const oData = {
-      archive_classification_id: nArchiveClassificationId,
-      document_type_id: nDocumentTypeId,
-      document_category_id: nDocumentCategoryId,
-      confidentiality_level_id: nConfidentialityLevelId,
-      retention_schedule_id: nRetentionScheduleId,
-      document_name: cDocumentName,
-      document_number: cDocumentNumber,
-      document_date: dDocumentDate,
-      expired_date: dExpiredDate,
-      pic_name: cPic,
-      physical_location: cPhysicalLocation,
+      kode_klasifikasi: cClassificationCode,
+      kode_jenis_dokumen: cDocumentTypeCode,
+      kode_kategori_dokumen: cDocumentCategoryCode,
+      kode_tingkat_kerahasiaan: cConfidentialityLevelCode,
+      kode_retensi: cRetentionCode,
+      nama_dokumen: cDocumentName,
+      nomor_dokumen: cDocumentNumber,
+      tanggal: dDocumentDate,
+      tanggal_kedaluwarsa: dExpiredDate,
+      nama_pic: cPic,
+      lokasi_fisik: cPhysicalLocation,
       qr_code: cQRCode,
       tags: cTags,
       status: "active",
@@ -73,14 +73,21 @@ const createDocument = async (req, res) => {
       updated_at: dNow,
     };
 
-    const [nDocumentId] = await DB("trx_documents").insert(oData);
+    const nDocumentId = await DB.transaction(async (trx) => {
+      const [nId] = await trx("trs_dokumen").insert(oData);
+      const cKodeDokumen = `${cDocumentNumber}-${nId}`;
+      await trx("trs_dokumen")
+        .where("id_dokumen", nId)
+        .update({ kode_dokumen: cKodeDokumen });
+      return nId;
+    });
 
     const oResult = {
       status: "success",
       message: "Document metadata registered successfully",
       data: {
-        id: nDocumentId,
-        pic: cPic,
+        id_dokumen: nDocumentId,
+        nama_pic: cPic,
       },
     };
 

@@ -5,9 +5,9 @@ const approveDocumentVersion = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const nVersionId = oPayload.version_id;
-    const cStatus = oPayload.status;
-    const cApprovalNotes = oPayload.approval_notes || null;
+    const nVersionId = oPayload.id_versi || oPayload.version_id;
+    const cStatus = oPayload.status || oPayload.status_persetujuan;
+    const cApprovalNotes = oPayload.catatan_persetujuan || oPayload.approval_notes || null;
     const cApprovedBy =
       req?.auth?.nama_pengguna ||
       req?.context?.nama_pengguna ||
@@ -20,7 +20,7 @@ const approveDocumentVersion = async (req, res) => {
     if (!nVersionId) {
       const oResult = {
         status: "error",
-        message: "version_id wajib diisi",
+        message: "id_versi wajib diisi",
       };
       return res.status(422).json(oResult);
     }
@@ -34,8 +34,8 @@ const approveDocumentVersion = async (req, res) => {
     }
 
     // Cek versi ada dan masih pending
-    const oVersion = await DB("trx_document_versions")
-      .where("version_id", nVersionId)
+    const oVersion = await DB("trs_versi_dokumen")
+      .where("id_versi", nVersionId)
       .first();
 
     if (!oVersion) {
@@ -46,33 +46,33 @@ const approveDocumentVersion = async (req, res) => {
       return res.status(404).json(oResult);
     }
 
-    if (oVersion.approval_status !== "pending") {
+    if (oVersion.status_persetujuan !== "pending") {
       const oResult = {
         status: "error",
-        message: `Versi dokumen sudah diproses sebelumnya dengan status '${oVersion.approval_status}'`,
+        message: `Versi dokumen sudah diproses sebelumnya dengan status '${oVersion.status_persetujuan}'`,
       };
       return res.status(422).json(oResult);
     }
 
     const oData = {
-      approval_status: cStatus,
-      approved_by: cApprovedBy,
-      approved_at: dNow,
-      approval_notes: cApprovalNotes,
+      status_persetujuan: cStatus,
+      disetujui_oleh: cApprovedBy,
+      disetujui_pada: dNow,
+      catatan_persetujuan: cApprovalNotes,
       updated_at: dNow,
     };
 
-    await DB("trx_document_versions")
-      .where("version_id", nVersionId)
+    await DB("trs_versi_dokumen")
+      .where("id_versi", nVersionId)
       .update(oData);
 
     const oResult = {
       status: "success",
       message: `Versi dokumen berhasil di-${cStatus === "approved" ? "setujui" : "tolak"}`,
       data: {
-        version_id: nVersionId,
-        document_id: oVersion.document_id,
-        version_number: oVersion.version_number,
+        id_versi: nVersionId,
+        kode_dokumen: oVersion.kode_dokumen,
+        nomor_versi: oVersion.nomor_versi,
         ...oData,
       },
     };

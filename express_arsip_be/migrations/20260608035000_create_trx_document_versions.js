@@ -16,7 +16,7 @@ export async function up(knex) {
       .inTable("trx_documents")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
-      
+
     table.integer("version_number").notNullable();
     table.text("change_notes").nullable();
     table.string("file_path").notNullable();

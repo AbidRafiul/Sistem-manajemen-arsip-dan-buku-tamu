@@ -13,10 +13,11 @@ import {
 
 const router = express.Router();
 
-router.put("/:DocumentTypeId", async (req, res) => {
+const updateDocumentType = async (req, res) => {
   const { body: oPayload } = req;
-  const cDocumentTypeId = req.params.DocumentTypeId;
-  const nama_pengguna = req?.auth?.nama_pengguna || "";
+  const cIdJenisDokumen = req.params.id_jenis_dokumen;
+  const username = req?.auth?.username || "";
+
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
@@ -29,19 +30,10 @@ router.put("/:DocumentTypeId", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        document_type_code: Joi.string()
-          .max(45)
-          .required()
-          .label("Kode Jenis Dokumen"),
-        document_type_name: Joi.string()
-          .max(45)
-          .required()
-          .label("Nama Jenis Dokumen"),
-        deskripsi: Joi.string()
-          .max(45)
-          .optional()
-          .allow(null, "")
-          .label("Deskripsi"),
+        kode_jenis_dokumen: Joi.string().max(255).required().label("Kode Jenis Dokumen"),
+        nama_jenis_dokumen: Joi.string().max(255).required().label("Nama Jenis Dokumen"),
+        deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
+
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
@@ -59,7 +51,7 @@ router.put("/:DocumentTypeId", async (req, res) => {
 
       Logging(null, {
         file: "type_update.js",
-        func: "update",
+        func: "updateDocumentType",
         request: oPayload,
         response: oResult,
         user: nama_pengguna,
@@ -68,11 +60,12 @@ router.put("/:DocumentTypeId", async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    const nUpdated = await DB("mst_document_type")
-      .where("document_type_id", cDocumentTypeId)
+    const nUpdated = await DB("mst_jenis_dokumen")
+      .where("id_jenis_dokumen", cIdJenisDokumen)
       .update({
-        document_type_code: oPayload.document_type_code,
-        document_type_name: oPayload.document_type_name,
+        kode_jenis_dokumen: oPayload.kode_jenis_dokumen,
+        nama_jenis_dokumen: oPayload.nama_jenis_dokumen,
+
         deskripsi: oPayload.deskripsi || null,
         updated_at: new Date(),
       });
@@ -99,7 +92,7 @@ router.put("/:DocumentTypeId", async (req, res) => {
 
     Logging(error, {
       file: "type_update.js",
-      func: "update",
+      func: "updateDocumentType",
       request: oPayload,
       response: oResult,
       user: nama_pengguna,
@@ -107,6 +100,8 @@ router.put("/:DocumentTypeId", async (req, res) => {
 
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.put("/:id_jenis_dokumen", updateDocumentType);
 
 export default router;

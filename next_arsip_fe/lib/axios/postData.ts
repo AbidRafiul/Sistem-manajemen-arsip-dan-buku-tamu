@@ -25,16 +25,16 @@ async function postData(endpoint: string, data = {}, customHeader = {}) {
             'X-Level': '1',
             ...customHeader,
         };
-        
+
         // 2. Bungkus ke dalam format yang dimengerti oleh route.ts
         const defaultHeader = {
             'X-ENDPOINT': endpoint, // Interceptor bakal baca tujuan aslinya dari sini
             'x-custom-header': JSON.stringify(mergedCustomHeaders), // WAJIB di-stringify
         };
-        
+
         // Kosongkan path parameter pertama ('') agar Axios HANYA menembak baseURL (/api/interceptor)
         const response = await Axios.post('', data, { headers: defaultHeader });
-        
+
         return response;
     } catch (error: any) {
         throw error;

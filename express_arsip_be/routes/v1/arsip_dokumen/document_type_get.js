@@ -5,16 +5,16 @@ const getDocumentTypes = async (req, res) => {
   try {
     const cStatus = req.query.status || "active";
 
-    const vaData = await DB("mst_document_type")
+    const vaData = await DB("mst_jenis_dokumen")
       .select(
-        "document_type_id",
-        "document_type_code",
-        "document_type_name",
+        "id_jenis_dokumen",
+        "kode_jenis_dokumen",
+        "nama_jenis_dokumen",
         "deskripsi",
-        "status",
+        "status"
       )
       .where("status", cStatus)
-      .orderBy("document_type_name", "asc");
+      .orderBy("nama_jenis_dokumen", "asc");
 
     const oResult = {
       status: "success",

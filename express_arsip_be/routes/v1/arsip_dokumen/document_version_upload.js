@@ -16,25 +16,33 @@ const uploadDocumentVersion = async (req, res) => {
     }
 
     const cFilePath = `/uploads/documents/${oFile.filename}`;
-    const nDocumentId = parseInt(oPayload.document_id, 10);
-    const cChangeNotes = oPayload.change_notes || null;
-    const cUploadedBy =
-      req?.context?.nama_pengguna || oPayload.uploaded_by || "system";
+    const cKodeDokumen = oPayload.kode_dokumen || oPayload.document_code;
+    const nIdDokumen = oPayload.id_dokumen || oPayload.document_id;
+    const cChangeNotes = oPayload.catatan_perubahan || oPayload.change_notes || null;
+    const cUploadedBy = req?.context?.Username || oPayload.diunggah_oleh || oPayload.uploaded_by || "system";
     const dNow = new Date();
 
-    if (!nDocumentId) {
+    if (!cKodeDokumen && !nIdDokumen) {
       const oResult = {
         status: "error",
-        message: "document_id wajib diisi",
+        message: "kode_dokumen atau id_dokumen wajib diisi",
       };
       return res.status(422).json(oResult);
     }
 
     // Verifikasi dokumen aktif
-    const oDocument = await DB("trx_documents")
-      .where("document_id", nDocumentId)
-      .where("status", "active")
-      .first();
+    let oDocument;
+    if (cKodeDokumen) {
+      oDocument = await DB("trs_dokumen")
+        .where("kode_dokumen", cKodeDokumen)
+        .where("status", "active")
+        .first();
+    } else {
+      oDocument = await DB("trs_dokumen")
+        .where("id_dokumen", nIdDokumen)
+        .where("status", "active")
+        .first();
+    }
 
     if (!oDocument) {
       const oResult = {
@@ -45,35 +53,36 @@ const uploadDocumentVersion = async (req, res) => {
     }
 
     // Hitung nomor versi berikutnya
-    const oLastVersion = await DB("trx_document_versions")
-      .select("version_number")
-      .where("document_id", nDocumentId)
-      .orderBy("version_number", "desc")
+    const oLastVersion = await DB("trs_versi_dokumen")
+      .select("nomor_versi")
+      .where("kode_dokumen", oDocument.kode_dokumen)
+      .orderBy("nomor_versi", "desc")
       .first();
 
-    const nVersionNumber = oLastVersion ? oLastVersion.version_number + 1 : 1;
+    const nVersionNumber = oLastVersion ? oLastVersion.nomor_versi + 1 : 1;
 
     const oData = {
-      document_id: nDocumentId,
-      version_number: nVersionNumber,
-      change_notes: cChangeNotes,
+      kode_dokumen: oDocument.kode_dokumen,
+      nomor_versi: nVersionNumber,
+      catatan_perubahan: cChangeNotes,
       file_path: cFilePath,
-      uploaded_by: cUploadedBy,
-      approval_status: "pending",
-      approved_by: null,
-      approved_at: null,
-      approval_notes: null,
+      diunggah_oleh: cUploadedBy,
+      status_persetujuan: "pending",
+      disetujui_oleh: null,
+      disetujui_pada: null,
+      catatan_persetujuan: null,
+      tanggal_transaksi: dNow,
       created_at: dNow,
       updated_at: dNow,
     };
 
-    const [nVersionId] = await DB("trx_document_versions").insert(oData);
+    const [nVersionId] = await DB("trs_versi_dokumen").insert(oData);
 
     const oResult = {
       status: "success",
       message: `Versi dokumen V${nVersionNumber} berhasil diunggah dan menunggu approval`,
       data: {
-        version_id: nVersionId,
+        id_versi: nVersionId,
         ...oData,
       },
     };

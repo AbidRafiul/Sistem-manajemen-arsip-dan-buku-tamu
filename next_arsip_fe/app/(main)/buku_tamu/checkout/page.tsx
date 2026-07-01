@@ -57,11 +57,11 @@ const CheckoutPage = () => {
 
     const onCheckout = (row: any) => {
         setSelectedId(row.id_kunjungan || '');
-        setState((p: State) => ({ 
-            ...p, 
-            showCheckoutDialog: true, 
-            checkoutToken: row.token_qr || row.kode_kunjungan || '', 
-            checkoutNotes: '' 
+        setState((p: State) => ({
+            ...p,
+            showCheckoutDialog: true,
+            checkoutToken: row.token_qr || row.kode_kunjungan || '',
+            checkoutNotes: ''
         }));
     };
 
@@ -84,7 +84,7 @@ const CheckoutPage = () => {
             setState((p: State) => ({ ...p, load: true }));
 
             const tokenSIAB = typeof window !== 'undefined' ? (localStorage.getItem('token') || sessionStorage.getItem('token') || '') : '';
-            
+
             let userIdAdmin = "";
             if (typeof window !== 'undefined') {
                 const userSessionString = sessionStorage.getItem('user') || localStorage.getItem('user');
@@ -105,10 +105,10 @@ const CheckoutPage = () => {
             const timestamp = new Date().toISOString();
 
             const response = await axios.put(
-                `http://localhost:8000/api/v1/buku_tamu/visit_checkout/${selectedId}`, 
-                {}, 
+                `http://localhost:8000/api/v1/buku_tamu/visit_checkout/${selectedId}`,
+                {},
                 {
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
                         'Authorization': tokenSIAB ? `Bearer ${tokenSIAB}` : '',
                         'x-access-token': tokenSIAB,
@@ -137,7 +137,7 @@ const CheckoutPage = () => {
             setState((p: State) => ({ ...p, load: true }));
 
             const tokenSIAB = typeof window !== 'undefined' ? (localStorage.getItem('token') || sessionStorage.getItem('token') || '') : '';
-            
+
             let userIdAdmin = "";
             if (typeof window !== 'undefined') {
                 const userSessionString = sessionStorage.getItem('user') || localStorage.getItem('user');
@@ -158,14 +158,14 @@ const CheckoutPage = () => {
             const timestamp = new Date().toISOString();
 
             const response = await axios.post(
-                `http://localhost:8000/api/v1${apiEndpointApproval}`, 
+                `http://localhost:8000/api/v1${apiEndpointApproval}`,
                 {
                     idKunjungan,
                     action,
                     catatanPersetujuan: ""
-                }, 
+                },
                 {
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
                         'Authorization': tokenSIAB ? `Bearer ${tokenSIAB}` : '',
                         'x-access-token': tokenSIAB,
@@ -193,7 +193,7 @@ const CheckoutPage = () => {
             setState((p: State) => ({ ...p, load: true }));
 
             const tokenSIAB = typeof window !== 'undefined' ? (localStorage.getItem('token') || sessionStorage.getItem('token') || '') : '';
-            
+
             let userIdAdmin = "";
             if (typeof window !== 'undefined') {
                 const userSessionString = sessionStorage.getItem('user') || localStorage.getItem('user');
@@ -214,10 +214,10 @@ const CheckoutPage = () => {
             const timestamp = new Date().toISOString();
 
             const response = await axios.put(
-                `http://localhost:8000/api/v1/buku_tamu/visit_checkin/${idKunjungan}`, 
-                {}, 
+                `http://localhost:8000/api/v1/buku_tamu/visit_checkin/${idKunjungan}`,
+                {},
                 {
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
                         'Authorization': tokenSIAB ? `Bearer ${tokenSIAB}` : '',
                         'x-access-token': tokenSIAB,
@@ -244,13 +244,13 @@ const CheckoutPage = () => {
         <div className="p-4">
             <Toast ref={toast} position="top-right" />
 
-            <GuestDataTable 
-                state={state} 
-                setState={setState} 
-                onCheckout={onCheckout} 
-                onDetail={onDetail} 
-                onFilterStatus={onFilterStatus} 
-                onRefresh={fetchAll} 
+            <GuestDataTable
+                state={state}
+                setState={setState}
+                onCheckout={onCheckout}
+                onDetail={onDetail}
+                onFilterStatus={onFilterStatus}
+                onRefresh={fetchAll}
                 onApprove={(row) => handleApproval(row.id_kunjungan, 'approved')}
                 onReject={(row) => handleApproval(row.id_kunjungan, 'rejected')}
                 onCheckin={(row) => handleCheckin(row.id_kunjungan)}

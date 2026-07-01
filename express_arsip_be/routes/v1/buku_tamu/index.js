@@ -16,7 +16,7 @@ router.use("/visit_checkin", VisitCheckin);
 router.use("/visit_checkout", VisitCheckout);
 router.use("/visit_registrasi", VisitRegistrasi);
 router.use("/visit_booking", VisitRegistrasi);
-router.use("/visit_data", VisitData); 
+router.use("/visit_data", VisitData);
 router.use("/visit_detail", VisitDetail);
 router.use("/visit_monitoring", VisitMonitoring);
 router.use("/visit_approval", VisitApproval);

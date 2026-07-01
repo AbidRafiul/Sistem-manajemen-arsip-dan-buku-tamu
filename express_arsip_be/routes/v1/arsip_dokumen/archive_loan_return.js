@@ -5,21 +5,21 @@ const returnArchiveLoan = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const nLoanId = oPayload.loan_id;
-    const dReturnDate = oPayload.return_date || null;
+    const nLoanId = oPayload.id_peminjaman || oPayload.loan_id;
+    const dReturnDate = oPayload.tanggal_kembali || oPayload.return_date || null;
     const dNow = new Date();
 
     if (!nLoanId) {
       const oResult = {
         status: "error",
-        message: "loan_id wajib diisi",
+        message: "id_peminjaman wajib diisi",
       };
       return res.status(422).json(oResult);
     }
 
     // Ambil data peminjaman
-    const oLoan = await DB("trx_archive_loans")
-      .where("loan_id", nLoanId)
+    const oLoan = await DB("trs_peminjaman_arsip")
+      .where("id_peminjaman", nLoanId)
       .first();
 
     if (!oLoan) {
@@ -41,35 +41,37 @@ const returnArchiveLoan = async (req, res) => {
     // Tanggal pengembalian aktual
     const dActualReturnDate = dReturnDate ? new Date(dReturnDate) : dNow;
 
-    // Deteksi keterlambatan: bandingkan tanggal kembali aktual vs ExpectedReturnDate
+    // Deteksi keterlambatan: bandingkan tanggal kembali aktual vs tanggal_pengembalian
     const bIsOverdue =
-      oLoan.expected_return_date &&
-      new Date(dActualReturnDate) > new Date(oLoan.expected_return_date)
+      oLoan.tanggal_pengembalian &&
+        new Date(dActualReturnDate) > new Date(oLoan.tanggal_pengembalian)
         ? 1
         : 0;
 
     const oData = {
       status: "returned",
-      return_date: dActualReturnDate,
-      is_overdue: bIsOverdue,
+      tanggal_kembali: dActualReturnDate,
+      terlambat: bIsOverdue,
       updated_at: dNow,
     };
 
-    await DB("trx_archive_loans").where("loan_id", nLoanId).update(oData);
+    await DB("trs_peminjaman_arsip")
+      .where("id_peminjaman", nLoanId)
+      .update(oData);
 
     const cOverdueMessage = bIsOverdue
-      ? ` (TERLAMBAT: seharusnya kembali ${oLoan.expected_return_date})`
+      ? ` (TERLAMBAT: seharusnya kembali ${oLoan.tanggal_pengembalian})`
       : "";
 
     const oResult = {
       status: "success",
       message: `Dokumen berhasil dikembalikan${cOverdueMessage}`,
       data: {
-        loan_id: nLoanId,
-        document_id: oLoan.document_id,
-        borrower_name: oLoan.borrower_name,
-        expected_return_date: oLoan.expected_return_date,
-        is_overdue: bIsOverdue,
+        id_peminjaman: nLoanId,
+        kode_dokumen: oLoan.kode_dokumen,
+        nama_peminjam: oLoan.nama_peminjam,
+        tanggal_pengembalian: oLoan.tanggal_pengembalian,
+        terlambat: bIsOverdue,
         ...oData,
       },
     };

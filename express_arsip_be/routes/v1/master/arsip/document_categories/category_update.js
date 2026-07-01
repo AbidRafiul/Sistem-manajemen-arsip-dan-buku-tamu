@@ -13,10 +13,11 @@ import {
 
 const router = express.Router();
 
-router.put("/:DocumentCategoryId", async (req, res) => {
+const updateDocumentCategory = async (req, res) => {
   const { body: oPayload } = req;
-  const cDocumentCategoryId = req.params.DocumentCategoryId;
-  const nama_pengguna = req?.auth?.nama_pengguna || "";
+  const cIdKategoriDokumen = req.params.id_kategori_dokumen;
+  const username = req?.auth?.username || "";
+
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
@@ -29,22 +30,11 @@ router.put("/:DocumentCategoryId", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        archive_classification_id: Joi.number()
-          .required()
-          .label("ID Klasifikasi Arsip"),
-        document_category_code: Joi.string()
-          .max(45)
-          .required()
-          .label("Kode Kategori"),
-        document_category_name: Joi.string()
-          .max(45)
-          .required()
-          .label("Nama Kategori"),
-        deskripsi: Joi.string()
-          .max(45)
-          .optional()
-          .allow(null, "")
-          .label("Deskripsi"),
+        kode_klasifikasi: Joi.string().required().label("Kode Klasifikasi Arsip"),
+        kode_kategori_dokumen: Joi.string().max(255).required().label("Kode Kategori"),
+        nama_kategori_dokumen: Joi.string().max(255).required().label("Nama Kategori"),
+        deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
+
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
@@ -62,7 +52,7 @@ router.put("/:DocumentCategoryId", async (req, res) => {
 
       Logging(null, {
         file: "category_update.js",
-        func: "update",
+        func: "updateDocumentCategory",
         request: oPayload,
         response: oResult,
         user: nama_pengguna,
@@ -71,12 +61,13 @@ router.put("/:DocumentCategoryId", async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    const nUpdated = await DB("mst_document_categories")
-      .where("document_category_id", cDocumentCategoryId)
+    const nUpdated = await DB("mst_kategori_dokumen")
+      .where("id_kategori_dokumen", cIdKategoriDokumen)
       .update({
-        archive_classification_id: oPayload.archive_classification_id,
-        document_category_code: oPayload.document_category_code,
-        document_category_name: oPayload.document_category_name,
+        kode_klasifikasi: oPayload.kode_klasifikasi,
+        kode_kategori_dokumen: oPayload.kode_kategori_dokumen,
+        nama_kategori_dokumen: oPayload.nama_kategori_dokumen,
+
         deskripsi: oPayload.deskripsi || null,
         updated_at: new Date(),
       });
@@ -103,7 +94,7 @@ router.put("/:DocumentCategoryId", async (req, res) => {
 
     Logging(error, {
       file: "category_update.js",
-      func: "update",
+      func: "updateDocumentCategory",
       request: oPayload,
       response: oResult,
       user: nama_pengguna,
@@ -111,6 +102,8 @@ router.put("/:DocumentCategoryId", async (req, res) => {
 
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.put("/:id_kategori_dokumen", updateDocumentCategory);
 
 export default router;

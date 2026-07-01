@@ -143,7 +143,7 @@ router.post(
           : Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
       const now = new Date();
-      const currentDateTime = now.toISOString().slice(0, 19).replace('T', ' '); 
+      const currentDateTime = now.toISOString().slice(0, 19).replace('T', ' ');
 
       const cleanHostUserId = HostUserId && HostUserId !== "" && HostUserId !== "null" && HostUserId !== "undefined" ? HostUserId : null;
       const cleanVisitPurposeId = VisitPurposeId && VisitPurposeId !== "" ? Number(VisitPurposeId) : null;
@@ -152,11 +152,11 @@ router.post(
         nama_tamu: GuestName || null,
         nomor_telepon: PhoneNumber || null,
         email_tamu: GuestEmail && GuestEmail !== "" ? GuestEmail : null,
-        instansi_tamu: GuestCompany && GuestCompany !== "" ? GuestCompany : "-", 
+        instansi_tamu: GuestCompany && GuestCompany !== "" ? GuestCompany : "-",
         jabatan_tamu: GuestPosition && GuestPosition !== "" ? GuestPosition : null,
         jenis_identitas: IdentityType && IdentityType !== "" ? IdentityType : null,
         nomor_identitas: IdentityNumber && IdentityNumber !== "" ? IdentityNumber : null,
-        id_tujuan_kunjungan: cleanVisitPurposeId, 
+        id_tujuan_kunjungan: cleanVisitPurposeId,
         id_user_host: cleanHostUserId,
         nama_host: HostName && HostName !== "" ? HostName : null,
         catatan_kunjungan: VisitNotes && VisitNotes !== "" ? VisitNotes : null,
@@ -164,7 +164,7 @@ router.post(
         foto_identitas: PhotoIdentity,
         kode_kunjungan: VisitCode,
         token_qr: QRToken,
-        waktu_masuk: currentDateTime, 
+        waktu_masuk: currentDateTime,
         status: "in",
         status_persetujuan: "approved",
         created_at: currentDateTime,
@@ -232,7 +232,7 @@ router.put("/:id", async (req, res) => {
     }
 
     const now = new Date();
-    const currentDateTime = now.toISOString().slice(0, 19).replace('T', ' '); 
+    const currentDateTime = now.toISOString().slice(0, 19).replace('T', ' ');
 
     await DB("trs_kunjungan")
       .where("id_kunjungan", id)
@@ -249,7 +249,7 @@ router.put("/:id", async (req, res) => {
     });
 
   } catch (error) {
-    console.error("❌ [Database Error Log visit_checkin.js PUT]:", error); 
+    console.error("❌ [Database Error Log visit_checkin.js PUT]:", error);
     const oResult = { status: "01", message: "Sistem error saat check-in tamu", datetime: formatDateSystem() };
     Logging(error, { file: "visit_checkin.js", func: "check-in-put", request: req.params, response: oResult, user: username });
     return res.status(500).json(oResult);

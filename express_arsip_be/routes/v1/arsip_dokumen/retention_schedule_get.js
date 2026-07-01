@@ -4,32 +4,36 @@ import { Logging } from "../components/tools/servertool.js";
 const getRetentionSchedules = async (req, res) => {
   try {
     const cStatus = req.query.status || "active";
-    const nDocumentCategoryId = req.query.document_category_id;
+    const cKodeKategoriDokumen = req.query.kode_kategori_dokumen || req.query.document_category_code;
+    const nIdKategoriDokumen = req.query.id_kategori_dokumen || req.query.document_category_id;
 
-    const oQuery = DB("mst_retention_schedule as rs")
+    const oQuery = DB("mst_jadwal_retensi as rs")
       .select(
-        "rs.retention_schedule_id",
-        "rs.retention_code",
-        "rs.retention_name",
-        "rs.retention_years",
-        "rs.retention_action",
+        "rs.id_jadwal_retensi",
+        "rs.kode_retensi",
+        "rs.nama_retensi",
+        "rs.tahun_retensi",
+        "rs.tindakan_retensi",
         "rs.deskripsi",
         "rs.status",
-        "dc.document_category_id",
-        "dc.document_category_name",
+        "dc.id_kategori_dokumen",
+        "dc.kode_kategori_dokumen",
+        "dc.nama_kategori_dokumen"
       )
       .leftJoin(
-        "mst_document_categories as dc",
-        "rs.document_category_id",
-        "dc.document_category_id",
+        "mst_kategori_dokumen as dc",
+        "rs.kode_kategori_dokumen",
+        "dc.kode_kategori_dokumen"
       )
       .where("rs.status", cStatus);
 
-    if (nDocumentCategoryId) {
-      oQuery.andWhere("rs.document_category_id", nDocumentCategoryId);
+    if (cKodeKategoriDokumen) {
+      oQuery.andWhere("rs.kode_kategori_dokumen", cKodeKategoriDokumen);
+    } else if (nIdKategoriDokumen) {
+      oQuery.andWhere("dc.id_kategori_dokumen", nIdKategoriDokumen);
     }
 
-    const vaData = await oQuery.orderBy("rs.retention_years", "asc");
+    const vaData = await oQuery.orderBy("rs.tahun_retensi", "asc");
 
     const oResult = {
       status: "success",

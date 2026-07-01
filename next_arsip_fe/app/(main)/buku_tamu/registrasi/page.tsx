@@ -98,10 +98,10 @@ export default function RegistrasiKunjunganPage() {
             const tokenSIAB = typeof window !== 'undefined' ? (localStorage.getItem('token') || sessionStorage.getItem('token') || '') : '';
 
             const response = await axios.post(
-                "http://localhost:8000/api/v1/buku_tamu/visit_checkin", 
-                submitData, 
+                "http://localhost:8000/api/v1/buku_tamu/visit_checkin",
+                submitData,
                 {
-                    headers: { 
+                    headers: {
                         'Content-Type': 'multipart/form-data',
                         'Authorization': tokenSIAB ? `Bearer ${tokenSIAB}` : '',
                         'x-access-token': tokenSIAB

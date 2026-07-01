@@ -221,7 +221,7 @@ const Page = () => {
             // Karena id_pengguna itu null, kita coba ambil dari 'v.id'
             // Pastikan data ini isinya beneran ANGKA (Number)
             const vaIdPengguna = state.selectedUsers.map((v: any) => v.id || v.id_pengguna);
-            
+
             // Kita bungkus angka tersebut ke dalam key 'NamaPengguna' demi backend
             const finalPayload = { NamaPengguna: vaIdPengguna.map(Number) };
 

@@ -28,7 +28,7 @@ app.use(
       "X-ENDPOINT",
       "x-endpoint",
       "x-level",
-      "x-access-token", 
+      "x-access-token",
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     optionSuccessStatus: 200,

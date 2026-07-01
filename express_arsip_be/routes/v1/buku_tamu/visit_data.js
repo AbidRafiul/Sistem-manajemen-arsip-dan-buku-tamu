@@ -14,7 +14,7 @@ router.post("/", async (req, res) => {
     const q = DB("trs_kunjungan as t")
       .select(
         "t.*",
-        "mp.nama_tujuan_kunjungan as VisitPurposeName", 
+        "mp.nama_tujuan_kunjungan as VisitPurposeName",
         "u.fullname as HostFullname"
       )
       .leftJoin("mst_tujuan_kunjungan as mp", "t.id_tujuan_kunjungan", "mp.id_tujuan_kunjungan")
@@ -56,7 +56,7 @@ router.post("/", async (req, res) => {
       } else {
         r.PhotoFaceUrl = null;
       }
-      
+
       if (r.foto_identitas) {
         r.PhotoIdentityUrl = r.foto_identitas.startsWith('http') ? r.foto_identitas : `${cBaseUrl}/uploads/${r.foto_identitas}`;
       } else {

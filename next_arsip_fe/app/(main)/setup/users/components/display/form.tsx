@@ -23,7 +23,7 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                 disabled={state.load}
             />
             <Button
-                type="button" 
+                type="button"
                 label="Hapus"
                 icon="pi pi-check"
                 severity="danger"

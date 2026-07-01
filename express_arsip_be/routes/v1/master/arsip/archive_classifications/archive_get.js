@@ -9,18 +9,18 @@ import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+const getArchiveClassification = async (req, res) => {
   const oPayload = req.body;
   const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
-    const vaData = await DB("mst_archive_classifications")
+    const vaData = await DB("mst_klasifikasi_arsip")
       .select(
-        "archive_classification_id",
-        "classification_code",
-        "classification_name",
+        "id_klasifikasi",
+        "kode_klasifikasi",
+        "nama_klasifikasi",
         "deskripsi",
-        "status",
+        "status"
       )
       .where("status", "active")
       .orderBy("created_at", "desc");
@@ -48,6 +48,8 @@ router.get("/", async (req, res) => {
     });
     return res.status(500).json(oResult);
   }
-});
+};
+
+router.get("/", getArchiveClassification);
 
 export default router;

@@ -5,9 +5,9 @@ const reviewDestructionProposal = async (req, res) => {
   const oPayload = req.body;
 
   try {
-    const nProposalId = oPayload.proposal_id;
+    const nProposalId = oPayload.id_usulan || oPayload.proposal_id;
     const cStatus = oPayload.status;
-    const cReviewNotes = oPayload.review_notes || null;
+    const cReviewNotes = oPayload.catatan_tinjauan || oPayload.review_notes || null;
     const cReviewedBy =
       req?.auth?.nama_pengguna ||
       req?.context?.nama_pengguna ||
@@ -19,7 +19,7 @@ const reviewDestructionProposal = async (req, res) => {
     if (!nProposalId) {
       const oResult = {
         status: "error",
-        message: "proposal_id wajib diisi",
+        message: "id_usulan wajib diisi",
       };
       return res.status(422).json(oResult);
     }
@@ -33,8 +33,8 @@ const reviewDestructionProposal = async (req, res) => {
     }
 
     // Cek proposal ada dan masih bisa di-review
-    const oProposal = await DB("trx_destruction_proposals")
-      .where("proposal_id", nProposalId)
+    const oProposal = await DB("trs_usulan_pemusnahan")
+      .where("id_usulan", nProposalId)
       .first();
 
     if (!oProposal) {
@@ -55,22 +55,22 @@ const reviewDestructionProposal = async (req, res) => {
 
     const oData = {
       status: cStatus,
-      reviewed_by: cReviewedBy,
-      reviewed_at: dNow,
-      review_notes: cReviewNotes,
+      ditinjau_oleh: cReviewedBy,
+      ditinjau_pada: dNow,
+      catatan_tinjauan: cReviewNotes,
       updated_at: dNow,
     };
 
-    await DB("trx_destruction_proposals")
-      .where("proposal_id", nProposalId)
+    await DB("trs_usulan_pemusnahan")
+      .where("id_usulan", nProposalId)
       .update(oData);
 
     const oResult = {
       status: "success",
       message: `Proposal pemusnahan berhasil di-${cStatus === "approved" ? "setujui" : "tolak"}`,
       data: {
-        proposal_id: nProposalId,
-        document_id: oProposal.document_id,
+        id_usulan: nProposalId,
+        kode_dokumen: oProposal.kode_dokumen,
         ...oData,
       },
     };
