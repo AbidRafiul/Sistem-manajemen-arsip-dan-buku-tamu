@@ -37,7 +37,7 @@ const findUserReference = async (value) => {
   const idColumn = pickColumn(columns, [
     "id_pengguna",
     "nama_pengguna",
-    "user_id",
+    "id_pengguna",
     "UserId",
   ]);
 
@@ -193,12 +193,12 @@ const letterDispositionCreate = async (req, res) => {
     ]);
     const fromUserColumn = pickColumn(dispositionColumns, [
       "dari_pengguna_id",
-      "from_user_id",
+      "from_id_pengguna",
       "from_nama_pengguna",
     ]);
     const toUserColumn = pickColumn(dispositionColumns, [
       "kepada_pengguna_id",
-      "to_user_id",
+      "to_id_pengguna",
       "to_nama_pengguna",
     ]);
     const instructionIdColumn = pickColumn(dispositionColumns, [
@@ -382,12 +382,12 @@ const letterDispositionCreate = async (req, res) => {
         ]);
         const trackingFromColumn = pickColumn(trackingColumns, [
           "dari_pengguna_id",
-          "from_user_id",
+          "from_id_pengguna",
           "from_nama_pengguna",
         ]);
         const trackingToColumn = pickColumn(trackingColumns, [
           "kepada_pengguna_id",
-          "to_user_id",
+          "to_id_pengguna",
           "to_nama_pengguna",
         ]);
         const previousStatusColumn = pickColumn(trackingColumns, [

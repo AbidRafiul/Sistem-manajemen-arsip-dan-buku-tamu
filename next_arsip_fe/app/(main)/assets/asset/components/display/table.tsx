@@ -12,6 +12,7 @@ import { useEffect } from "react"
 import { apiEndpointGet } from "../endpoints"
 import { Divider } from "primereact/divider"
 import Form from "./form"
+import { usePermissions } from '@/hooks/usePermissions';
 
 const Table = ({
     state,
@@ -20,6 +21,7 @@ const Table = ({
     getData,
     toast
 }: TableProps) => {
+    const permissions = usePermissions();
 
     const headerTemplate = (
         <div className="flex flex-wrap align-items-center justify-content-between gap-2">

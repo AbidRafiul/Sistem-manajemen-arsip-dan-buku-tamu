@@ -94,12 +94,12 @@ export const seed = async function (knex) {
   // 2. Data menu dengan created_at
   const menus = [
     {
-      role: "master",
+      peran: "master",
       menu: JSON.stringify(masterMenu),
       created_at: dNow,
     },
     {
-      role: "Administrator",
+      peran: "Administrator",
       menu: JSON.stringify([
         {
           label: "HOME",
@@ -123,7 +123,7 @@ export const seed = async function (knex) {
       created_at: dNow,
     },
     {
-      role: "Pimpinan",
+      peran: "Pimpinan",
       menu: JSON.stringify([
         {
           label: "HOME",
@@ -145,7 +145,7 @@ export const seed = async function (knex) {
       created_at: dNow,
     },
     {
-      role: "Sekretaris",
+      peran: "Sekretaris",
       menu: JSON.stringify([
         {
           label: "HOME",
@@ -167,7 +167,7 @@ export const seed = async function (knex) {
       created_at: dNow,
     },
     {
-      role: "Staff Arsip",
+      peran: "Staff Arsip",
       menu: JSON.stringify([
         {
           label: "HOME",
@@ -189,7 +189,7 @@ export const seed = async function (knex) {
       created_at: dNow,
     },
     {
-      role: "Staff Umum",
+      peran: "Staff Umum",
       menu: JSON.stringify([
         {
           label: "HOME",
@@ -206,7 +206,7 @@ export const seed = async function (knex) {
       created_at: dNow,
     },
     {
-      role: "Resepsionis",
+      peran: "Resepsionis",
       menu: JSON.stringify([
         {
           label: "HOME",
@@ -223,7 +223,7 @@ export const seed = async function (knex) {
       created_at: dNow,
     },
     {
-      role: "Auditor",
+      peran: "Auditor",
       menu: JSON.stringify([
         {
           label: "HOME",
@@ -242,15 +242,15 @@ export const seed = async function (knex) {
   await knex("mst_navigasi").insert(menus);
 
   // Superadmin memakai menu custom user_navigation lebih dulu daripada template
-  // role, jadi sync user_id 1 agar tampilan web langsung mengikuti menu master.
-  await knex("user_navigation")
+  // role, jadi sync id_pengguna 1 agar tampilan web langsung mengikuti menu master.
+  await knex("navigasi_pengguna")
     .insert({
-      user_id: 1,
+      id_pengguna: 1,
       menu: JSON.stringify(masterMenu),
       created_at: dNow,
       updated_at: dNow,
     })
-    .onConflict("user_id")
+    .onConflict("id_pengguna")
     .merge({
       menu: JSON.stringify(masterMenu),
       updated_at: dNow,

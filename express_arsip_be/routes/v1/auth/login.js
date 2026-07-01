@@ -26,7 +26,11 @@ const pickColumn = (columns, candidates) => {
 
 const getUserByUsername = async (namaPengguna) => {
   const columns = await getColumns("mst_pengguna");
-  const idColumn = pickColumn(columns, ["id_pengguna", "user_id", "UserId"]);
+  const idColumn = pickColumn(columns, [
+    "id_pengguna",
+    "id_pengguna",
+    "UserId",
+  ]);
   const usernameColumn = pickColumn(columns, [
     "nama_pengguna",
     "username",
@@ -52,7 +56,9 @@ const getUserByUsername = async (namaPengguna) => {
       `${idColumn} as id_pengguna`,
       `${usernameColumn} as nama_pengguna`,
       `${passwordColumn} as kata_sandi`,
-      fullnameColumn ? `${fullnameColumn} as nama_lengkap` : DB.raw("NULL as nama_lengkap"),
+      fullnameColumn
+        ? `${fullnameColumn} as nama_lengkap`
+        : DB.raw("NULL as nama_lengkap"),
       statusColumn ? `${statusColumn} as status` : DB.raw("'active' as status"),
     )
     .first();
@@ -62,7 +68,7 @@ const getUserRole = async (user) => {
   const oldTables = {
     userRole: "mst_pengguna_peran",
     role: "mst_peran",
-    userId: "user_id",
+    userId: "id_pengguna",
     roleId: "role_id",
     primary: "is_primary",
     roleCode: "role_code",
@@ -80,7 +86,10 @@ const getUserRole = async (user) => {
 
   const hasOld = await DB.schema.hasTable(oldTables.userRole);
   const cfg = hasOld ? oldTables : newTables;
-  if (!(await DB.schema.hasTable(cfg.userRole)) || !(await DB.schema.hasTable(cfg.role))) {
+  if (
+    !(await DB.schema.hasTable(cfg.userRole)) ||
+    !(await DB.schema.hasTable(cfg.role))
+  ) {
     return null;
   }
 
@@ -90,13 +99,33 @@ const getUserRole = async (user) => {
     cfg.userId,
     "id_pengguna",
     "nama_pengguna",
-    "user_id",
+    "id_pengguna",
   ]);
-  const roleJoinColumn = pickColumn(userRoleColumns, [cfg.roleId, "id_peran", "role_id"]);
-  const roleIdColumn = pickColumn(roleColumns, [cfg.roleId, "id_peran", "role_id"]);
-  const roleCodeColumn = pickColumn(roleColumns, [cfg.roleCode, "kode_peran", "role_code"]);
-  const roleNameColumn = pickColumn(roleColumns, [cfg.roleName, "nama_peran", "role_name"]);
-  const primaryColumn = pickColumn(userRoleColumns, [cfg.primary, "peran_utama", "is_primary"]);
+  const roleJoinColumn = pickColumn(userRoleColumns, [
+    cfg.roleId,
+    "id_peran",
+    "role_id",
+  ]);
+  const roleIdColumn = pickColumn(roleColumns, [
+    cfg.roleId,
+    "id_peran",
+    "role_id",
+  ]);
+  const roleCodeColumn = pickColumn(roleColumns, [
+    cfg.roleCode,
+    "kode_peran",
+    "role_code",
+  ]);
+  const roleNameColumn = pickColumn(roleColumns, [
+    cfg.roleName,
+    "nama_peran",
+    "role_name",
+  ]);
+  const primaryColumn = pickColumn(userRoleColumns, [
+    cfg.primary,
+    "peran_utama",
+    "is_primary",
+  ]);
   const statusColumn = pickColumn(userRoleColumns, ["status", "Status"]);
 
   if (!userJoinColumn || !roleJoinColumn || !roleIdColumn) return null;
@@ -106,11 +135,19 @@ const getUserRole = async (user) => {
     : user.id_pengguna;
 
   const query = DB(`${cfg.userRole} as user_role`)
-    .leftJoin(`${cfg.role} as role`, `user_role.${roleJoinColumn}`, `role.${roleIdColumn}`)
+    .leftJoin(
+      `${cfg.role} as role`,
+      `user_role.${roleJoinColumn}`,
+      `role.${roleIdColumn}`,
+    )
     .select(
       `user_role.${roleJoinColumn} as id_peran`,
-      roleCodeColumn ? `role.${roleCodeColumn} as kode_peran` : DB.raw("NULL as kode_peran"),
-      roleNameColumn ? `role.${roleNameColumn} as nama_peran` : DB.raw("NULL as nama_peran"),
+      roleCodeColumn
+        ? `role.${roleCodeColumn} as kode_peran`
+        : DB.raw("NULL as kode_peran"),
+      roleNameColumn
+        ? `role.${roleNameColumn} as nama_peran`
+        : DB.raw("NULL as nama_peran"),
     )
     .where(`user_role.${userJoinColumn}`, userValue);
 
@@ -229,7 +266,12 @@ router.post("/", async (req, res) => {
       .setProtectedHeader({ alg: "HS512" })
       .sign(secretKey);
 
-    await recordAuditTrail(oUser.nama_pengguna, String(peranId || ""), "LOGIN", req);
+    await recordAuditTrail(
+      oUser.nama_pengguna,
+      String(peranId || ""),
+      "LOGIN",
+      req,
+    );
 
     return res.status(200).json({
       status: status.SUKSES,

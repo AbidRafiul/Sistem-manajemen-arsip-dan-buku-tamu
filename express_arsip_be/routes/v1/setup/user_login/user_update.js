@@ -69,7 +69,7 @@ router.post("/", async (req, res) => {
           .where("username", oPayload.nama_pengguna)
           .orWhere("telp", oPayload.telepon);
       })
-      .whereNot("user_id", userId)
+      .whereNot("id_pengguna", userId)
       .first();
 
     if (existingUser) {
@@ -111,29 +111,25 @@ router.post("/", async (req, res) => {
     // TRANSAKSI UPDATE
     await DB.transaction(async (trx) => {
       // 2. Update mst_pengguna
-      await trx("mst_pengguna")
-        .where("user_id", userId)
-        .update(oDataUser);
+      await trx("mst_pengguna").where("id_pengguna", userId).update(oDataUser);
 
-      // 3. Update/insert mst_pengguna_peran berdasarkan user_id
+      // 3. Update/insert mst_pengguna_peran berdasarkan id_pengguna
       const roleId = Number(oPayload.peran) || null;
       if (roleId) {
         const existingRole = await trx("mst_pengguna_peran")
-          .where("user_id", userId)
+          .where("id_pengguna", userId)
           .first();
 
         if (existingRole) {
-          await trx("mst_pengguna_peran")
-            .where("user_id", userId)
-            .update({
-              role_id: roleId,
-              is_primary: 1,
-              status: "active",
-              updated_at: formatDateSystem(),
-            });
+          await trx("mst_pengguna_peran").where("id_pengguna", userId).update({
+            role_id: roleId,
+            is_primary: 1,
+            status: "active",
+            updated_at: formatDateSystem(),
+          });
         } else {
           await trx("mst_pengguna_peran").insert({
-            user_id: userId,
+            id_pengguna: userId,
             role_id: roleId,
             is_primary: 1,
             status: "active",
@@ -149,7 +145,7 @@ router.post("/", async (req, res) => {
           this.on("n.role", "r.role_name").orOn("n.role", "r.role_code");
         })
         .select("n.menu")
-        .where("ur.user_id", userId)
+        .where("ur.id_pengguna", userId)
         .where("ur.status", "active")
         .orderBy("ur.is_primary", "desc")
         .first();
@@ -157,12 +153,12 @@ router.post("/", async (req, res) => {
       if (navigation?.menu) {
         await trx("user_navigation")
           .insert({
-            user_id: userId,
+            id_pengguna: userId,
             menu: navigation.menu,
             created_at: formatDateSystem(),
             updated_at: formatDateSystem(),
           })
-          .onConflict("user_id")
+          .onConflict("id_pengguna")
           .merge({
             menu: navigation.menu,
             updated_at: formatDateSystem(),

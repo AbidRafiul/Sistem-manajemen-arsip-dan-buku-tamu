@@ -10,6 +10,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { Tag } from 'primereact/tag';
 import { State } from "@/app/(main)/buku_tamu/checkout/components/interfaces";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface TableProps {
     state: State;

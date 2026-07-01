@@ -11,9 +11,12 @@ import navBase from "./navigation//mst_navigation_data.js";
 import navUser from "./navigation/user_navigation_data.js";
 import navUserEdit from "./navigation/user_navigation_data_edit.js";
 import navUserInsert from "./navigation/user_navigation_insert.js";
+import navUserPermissions from "./navigation/user_permissions.js";
 
 import configCreate from "./config/config_create.js";
 import configData from "./config/config_data.js";
+
+import menuData from "./menu/menu.js";
 
 // master
 // user
@@ -30,5 +33,9 @@ router.use("/nav/base-data", navBase);
 router.use("/nav/user-data", navUser);
 router.use("/nav/user-data-edit", navUserEdit);
 router.use("/nav/user-insert", navUserInsert);
+router.use("/nav/user-permissions", navUserPermissions);
+
+// menu
+router.use("/menu", menuData);
 
 export default router;

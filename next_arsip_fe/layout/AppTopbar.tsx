@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+'use client';
 
 import Link from 'next/link';
 import React, { forwardRef, useContext, useEffect, useImperativeHandle, useRef, useState } from 'react';
@@ -38,7 +39,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     }, [session]);
 
     const handleLogout = () => {
-        signOut();
+        signOut({ callbackUrl: '/auth/login' });
     };
 
     return (

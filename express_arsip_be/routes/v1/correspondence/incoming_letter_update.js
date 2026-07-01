@@ -103,7 +103,7 @@ const incomingLetterUpdate = async (req, res) => {
       {
         field: "updated_by",
         table: "mst_pengguna",
-        key: "user_id",
+        key: "id_pengguna",
         label: "User pengubah",
       },
     ];

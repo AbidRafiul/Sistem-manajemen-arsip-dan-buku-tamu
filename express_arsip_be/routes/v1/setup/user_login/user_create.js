@@ -163,7 +163,7 @@ router.post("/", async (req, res) => {
 
       // Masuk ke mst_pengguna_peran (Relasi Jabatan)
       await trx("mst_pengguna_peran").insert({
-        user_id: newUserId,
+        id_pengguna: newUserId,
         role_id: peranData.role_id,
         is_primary: 1,
         status: "active",
@@ -175,12 +175,12 @@ router.post("/", async (req, res) => {
       // Pakai oNavigation.menu dari pencarian di atas
       await trx("user_navigation")
         .insert({
-          user_id: newUserId,
+          id_pengguna: newUserId,
           menu: oNavigation.menu,
           created_at: formatDateSystem(),
           updated_at: formatDateSystem(),
         })
-        .onConflict("user_id")
+        .onConflict("id_pengguna")
         .merge({
           menu: oNavigation.menu,
           updated_at: formatDateSystem(),
