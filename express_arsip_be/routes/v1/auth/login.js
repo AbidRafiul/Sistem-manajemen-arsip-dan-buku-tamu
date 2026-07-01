@@ -28,7 +28,7 @@ const getUserByUsername = async (namaPengguna) => {
   const columns = await getColumns("mst_pengguna");
   const idColumn = pickColumn(columns, [
     "id_pengguna",
-    "id_pengguna",
+    "user_id",
     "UserId",
   ]);
   const usernameColumn = pickColumn(columns, [
@@ -99,7 +99,7 @@ const getUserRole = async (user) => {
     cfg.userId,
     "id_pengguna",
     "nama_pengguna",
-    "id_pengguna",
+    "user_id",
   ]);
   const roleJoinColumn = pickColumn(userRoleColumns, [
     cfg.roleId,

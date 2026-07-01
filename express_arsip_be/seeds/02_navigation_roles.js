@@ -241,20 +241,46 @@ export const seed = async function (knex) {
   // 3. Masukkan ke database
   await knex("mst_navigasi").insert(menus);
 
-  // Superadmin memakai menu custom user_navigation lebih dulu daripada template
-  // role, jadi sync id_pengguna 1 agar tampilan web langsung mengikuti menu master.
-  await knex("navigasi_pengguna")
-    .insert({
-      id_pengguna: 1,
-      menu: JSON.stringify(masterMenu),
-      created_at: dNow,
-      updated_at: dNow,
-    })
-    .onConflict("id_pengguna")
-    .merge({
-      menu: JSON.stringify(masterMenu),
-      updated_at: dNow,
-    });
+  // Superadmin memakai menu custom pengguna lebih dulu daripada template role.
+  // Dukung nama tabel lama dan baru selama proses migrasi database.
+  const userNavigationTable = (await knex.schema.hasTable(
+    "navigasi_pengguna",
+  ))
+    ? "navigasi_pengguna"
+    : (await knex.schema.hasTable("user_navigation"))
+      ? "user_navigation"
+      : null;
+
+  if (userNavigationTable) {
+    const columns = await knex(userNavigationTable).columnInfo();
+    const userColumn = [
+      "id_pengguna",
+      "user_id",
+      "nama_pengguna",
+      "UserId",
+      "UniqueId",
+      "unique_id",
+    ].find((column) => columns[column]);
+
+    if (!userColumn) {
+      throw new Error(
+        `Kolom pengguna tidak ditemukan pada tabel ${userNavigationTable}`,
+      );
+    }
+
+    await knex(userNavigationTable)
+      .insert({
+        [userColumn]: 1,
+        menu: JSON.stringify(masterMenu),
+        created_at: dNow,
+        updated_at: dNow,
+      })
+      .onConflict(userColumn)
+      .merge({
+        menu: JSON.stringify(masterMenu),
+        updated_at: dNow,
+      });
+  }
 
   await knex("mst_tujuan_kunjungan")
     .insert([

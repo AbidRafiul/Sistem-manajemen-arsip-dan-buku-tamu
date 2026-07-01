@@ -311,7 +311,7 @@ const getPrimaryRole = async (DB, user) => {
   const roleColumns = await getColumns(DB, roleTable);
   const userColumn = pickColumn(userRoleColumns, [
     "id_pengguna",
-    "id_pengguna",
+    "user_id",
     "nama_pengguna",
     "UserId",
   ]);
@@ -388,7 +388,7 @@ const getUser = async (DB, uniqueId) => {
   const columns = await getColumns(DB, userTable);
   const idColumn = pickColumn(columns, [
     "id_pengguna",
-    "id_pengguna",
+    "user_id",
     "UserId",
     "nama_pengguna",
   ]);
@@ -457,7 +457,7 @@ const getLegacyUserMenu = async (DB, user, uniqueId) => {
   const menuColumn = pickColumn(columns, ["menu", "Menu"]);
   const userColumn = pickColumn(columns, [
     "id_pengguna",
-    "id_pengguna",
+    "user_id",
     "nama_pengguna",
     "UserId",
     "UniqueId",
@@ -625,7 +625,7 @@ const getRbacMenu = async (DB, user) => {
   if (userRoleTable && user?.id_pengguna) {
     const userColumn = pickColumn(userRoleColumns, [
       "id_pengguna",
-      "id_pengguna",
+      "user_id",
       "nama_pengguna",
       "UserId",
     ]);
