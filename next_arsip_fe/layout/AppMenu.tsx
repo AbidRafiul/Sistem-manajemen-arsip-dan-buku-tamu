@@ -188,6 +188,16 @@ const AppMenu = () => {
             const dbMenu = parseMenuPayload(vaData);
             const menu = normalizeMailInMenu(cloneMenu(dbMenu));
 
+            // Fetch and store granular permissions
+            try {
+                const { data: permissionsRes } = await postData('setup/nav/user-permissions', { nama_pengguna });
+                if (permissionsRes?.data) {
+                    localStorage.setItem('rbac_permissions', JSON.stringify(permissionsRes.data));
+                }
+            } catch (permError) {
+                console.error('Error loading permissions:', permError);
+            }
+
             setState((prev) => ({
                 ...prev,
                 filteredMenu: cloneMenu(menu),

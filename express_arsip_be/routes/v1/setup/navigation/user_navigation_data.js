@@ -1,10 +1,7 @@
 import "dotenv/config";
 
 import express from "express";
-import {
-  formatDateSystem,
-  status,
-} from "../../components/tools/general.js";
+import { formatDateSystem, status } from "../../components/tools/general.js";
 import { Logging, validatePayload } from "../../components/tools/servertool.js";
 import Joi from "joi";
 import DB from "../../../../core/config/knex.js";
@@ -31,10 +28,10 @@ router.post("/", async (req, res) => {
           .try(Joi.string(), Joi.number())
           .optional()
           .label("nama_pengguna"),
-        user_id: Joi.alternatives()
+        id_pengguna: Joi.alternatives()
           .try(Joi.string(), Joi.number())
           .optional()
-          .label("user_id"),
+          .label("id_pengguna"),
         id_pengguna: Joi.alternatives()
           .try(Joi.string(), Joi.number())
           .optional()
@@ -53,7 +50,7 @@ router.post("/", async (req, res) => {
     );
 
     const cUserLookup = String(
-      oPayload.user_id ||
+      oPayload.id_pengguna ||
         oPayload.id_pengguna ||
         oPayload.IdPengguna ||
         oPayload.nama_pengguna ||
@@ -66,7 +63,7 @@ router.post("/", async (req, res) => {
     if (cValidation || !cUserLookup) {
       const oResult = {
         status: status.BAD_REQUEST,
-        message: cValidation || "nama_pengguna atau user_id wajib diisi",
+        message: cValidation || "nama_pengguna atau id_pengguna wajib diisi",
         datetime: formatDateSystem(),
       };
 
@@ -81,7 +78,11 @@ router.post("/", async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    const { menu: vaData, source, user } = await getNavigationMenu(DB, cUserLookup);
+    const {
+      menu: vaData,
+      source,
+      user,
+    } = await getNavigationMenu(DB, cUserLookup);
 
     return res.status(200).json({
       status: status.SUKSES,

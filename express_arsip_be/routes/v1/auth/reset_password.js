@@ -47,16 +47,12 @@ router.post("/", async (req, res) => {
     const oUser = await DB("mst_pengguna")
       .leftJoin(
         "mst_pengguna_peran",
-        "mst_pengguna.user_id",
-        "mst_pengguna_peran.user_id",
+        "mst_pengguna.id_pengguna",
+        "mst_pengguna_peran.id_pengguna",
       )
-      .leftJoin(
-        "mst_peran",
-        "mst_pengguna_peran.role_id",
-        "mst_peran.role_id",
-      )
+      .leftJoin("mst_peran", "mst_pengguna_peran.role_id", "mst_peran.role_id")
       .select(
-        "mst_pengguna.user_id",
+        "mst_pengguna.id_pengguna",
         "mst_pengguna.username as nama_pengguna",
         "mst_pengguna.password as kata_sandi",
         "mst_peran.role_name as peran",
@@ -93,12 +89,10 @@ router.post("/", async (req, res) => {
     const cHashedNewkata_sandi = hmac(cNewkata_sandi, cSecret, "sha512");
 
     // 5. Update Database dengan kata_sandi Baru
-    await DB("mst_pengguna")
-      .where("user_id", oUser.user_id)
-      .update({
-        password: cHashedNewkata_sandi,
-        updated_at: formatDateSystem(),
-      });
+    await DB("mst_pengguna").where("id_pengguna", oUser.id_pengguna).update({
+      password: cHashedNewkata_sandi,
+      updated_at: formatDateSystem(),
+    });
 
     // 6. Catat Aktivitas ke CCTV
     recordAuditTrail(

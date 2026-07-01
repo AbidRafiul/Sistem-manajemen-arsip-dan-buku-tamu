@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { LoanData, TableProps } from "../interfaces";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
 import Form from "./form";
+import { usePermissions } from '@/hooks/usePermissions';
 
 const formatDateOnly = (value?: string | Date | null) => {
     if (!value) return '-';
@@ -28,6 +29,7 @@ const Table = ({
     handleApproveReject,
     handleReturn,
 }: TableProps) => {
+    const permissions = usePermissions();
 
     const [detailDialog, setDetailDialog] = useState(false);
     const [selectedDetail, setSelectedDetail] = useState<LoanData | null>(null);

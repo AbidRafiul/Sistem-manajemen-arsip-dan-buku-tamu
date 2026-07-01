@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 import { apiEndpointDetail, apiEndpointFileDownload, apiEndpointGet } from "../endpoints";
 import { IncomingLetterFile, IncomingLetterStatus, TableData, TableProps } from "../interfaces";
 import Form from "./form";
+import { usePermissions } from '@/hooks/usePermissions';
 
 const statusOptions = [
     { label: "Semua Status", value: "" },
@@ -53,6 +54,7 @@ const Table = ({
     getData,
     toast
 }: TableProps) => {
+    const permissions = usePermissions();
     const [previewFile, setPreviewFile] = useState<{ url: string; mimeType: string; fileName: string } | null>(null);
 
     const buildPayload = () => ({ keyword: state.searchVal || "", status: state.statusFilter || "" });

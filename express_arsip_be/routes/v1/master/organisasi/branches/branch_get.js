@@ -1,26 +1,31 @@
 import express from "express";
 import DB from "../../../../../core/config/knex.js";
-import {
-  status,
-  formatDateSystem,
-  datetime,
-} from "../../../components/tools/general.js";
+import { status, formatDateSystem } from "../../../components/tools/general.js";
 import { Logging } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+router.post("/get_data", async (req, res) => {
   const oPayload = req.body;
   const cnama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     const vaData = await DB("mst_cabang")
-      .select("id_cabang as id", "kode_cabang", "nama_cabang as name", "status")
-      .where("status", "active");
+      .select(
+        "id_cabang as id",
+        "id_cabang",
+        "kode_cabang",
+        "nama_cabang",
+        "alamat",
+        "telepon",
+        "surel",
+        "status"
+      )
+      .whereNot("status", "deleted");
 
     return res.status(200).json({
       status: status.SUKSES,
-      message: "Data branch berhasil ditarik",
+      message: "Data berhasil ditarik",
       datetime: formatDateSystem(),
       data: vaData,
     });
@@ -30,13 +35,7 @@ router.get("/", async (req, res) => {
       message: "Terjadi kesalahan sistem",
       datetime: formatDateSystem(),
     };
-    Logging(error, {
-      file: "branch_get.js",
-      func: "get",
-      request: oPayload,
-      response: oResult,
-      user: cnama_pengguna,
-    });
+    Logging(error, { file: "get.js", func: "get", request: oPayload, response: oResult, user: cnama_pengguna });
     return res.status(500).json(oResult);
   }
 });

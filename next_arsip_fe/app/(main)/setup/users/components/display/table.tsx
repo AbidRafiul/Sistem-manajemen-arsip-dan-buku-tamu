@@ -11,8 +11,10 @@ import { Divider } from 'primereact/divider';
 import { apiEndpointGet } from '../endpoints';
 import { useEffect } from 'react';
 import Form from './form';
+import { usePermissions } from '@/hooks/usePermissions';
 
 const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBar, navBar, getNav, handleSave, handleDelete }: TableProps) => {
+    const permissions = usePermissions();
     const headerTemplate = (
         <div className="flex flex-wrap align-items-center justify-content-between gap-2">
             <span className="text-xl font-bold">Manajemen Pengguna</span>
