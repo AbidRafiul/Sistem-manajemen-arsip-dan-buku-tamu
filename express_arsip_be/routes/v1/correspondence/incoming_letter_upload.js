@@ -1,35 +1,15 @@
 import express from "express";
 import multer from "multer";
-import path from "path";
-import fs from "fs";
 import DB from "../../../core/config/knex.js";
+import {
+  removeFileFromMinio,
+  uploadFileToMinio,
+} from "../../../core/components/tools/minio_helper.js";
 
 const router = express.Router();
 
-const cUploadDir = "uploads/surat_masuk";
-
-if (!fs.existsSync(cUploadDir)) {
-  fs.mkdirSync(cUploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, cUploadDir);
-  },
-  filename: (req, file, cb) => {
-    const cExt = path.extname(file.originalname);
-    const cBaseName = path
-      .basename(file.originalname, cExt)
-      .replace(/\s+/g, "_")
-      .replace(/[^a-zA-Z0-9_-]/g, "");
-
-    const cFileName = `${Date.now()}_${cBaseName}${cExt}`;
-    cb(null, cFileName);
-  },
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 10 * 1024 * 1024,
   },
@@ -53,6 +33,10 @@ const upload = multer({
 });
 
 const incomingLetterUpload = async (req, res) => {
+  const cBucketName = process.env.MINIO_BUCKET_NAME || "arsip-bucket";
+  let cObjectName = null;
+  let bObjectPersisted = false;
+
   try {
     const oPayload = req.body || {};
     const oFile = req.file;
@@ -82,41 +66,95 @@ const incomingLetterUpload = async (req, res) => {
       });
     }
 
+    cObjectName = await uploadFileToMinio(
+      cBucketName,
+      oFile,
+      "correspondence/surat_masuk",
+    );
+
     const dNow = new Date();
+    let vaInserted;
+    let vaReplacedFiles = [];
 
-    const vaInserted = await DB("trs_file_surat_masuk").insert({
-      surat_masuk_id: oPayload.surat_masuk_id,
-      path_file: oFile.path.replace(/\\/g, "/"),
-      nama_file: oFile.originalname,
-      tipe_mime_file: oFile.mimetype,
-      ukuran_file: oFile.size,
-      uploaded_by: oPayload.uploaded_by || oPayload.UploadedBy || null,
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
+    await DB.transaction(async (trx) => {
+      vaReplacedFiles = await trx("trs_file_surat_masuk")
+        .select("file_surat_masuk_id", "path_file")
+        .where("surat_masuk_id", oPayload.surat_masuk_id)
+        .where("status", "active")
+        .forUpdate();
+
+      if (vaReplacedFiles.length > 0) {
+        await trx("trs_file_surat_masuk")
+          .where("surat_masuk_id", oPayload.surat_masuk_id)
+          .where("status", "active")
+          .update({
+            status: "nonactive",
+            updated_at: dNow,
+          });
+      }
+
+      vaInserted = await trx("trs_file_surat_masuk").insert({
+        surat_masuk_id: oPayload.surat_masuk_id,
+        path_file: cObjectName,
+        nama_file: oFile.originalname,
+        tipe_mime_file: oFile.mimetype,
+        ukuran_file: oFile.size,
+        uploaded_by: oPayload.uploaded_by || oPayload.UploadedBy || null,
+        status: "active",
+        created_at: dNow,
+        updated_at: dNow,
+      });
+
+      await trx("trs_tracking_surat_masuk").insert({
+        surat_masuk_id: oPayload.surat_masuk_id,
+        disposisi_surat_id: null,
+        nama_aksi: "file_surat_diupload",
+        dari_pengguna_id: null,
+        kepada_pengguna_id: null,
+        status_sebelumnya: oLetter.status,
+        status_saat_ini: oLetter.status,
+        catatan:
+          vaReplacedFiles.length > 0
+            ? `File surat diganti dengan ${oFile.originalname}`
+            : `File ${oFile.originalname} berhasil diupload`,
+        processed_at: dNow,
+        created_by: oPayload.uploaded_by || oPayload.UploadedBy || null,
+        created_at: dNow,
+        updated_at: dNow,
+      });
     });
 
-    await DB("trs_tracking_surat_masuk").insert({
-      surat_masuk_id: oPayload.surat_masuk_id,
-      disposisi_surat_id: null,
-      nama_aksi: "file_surat_diupload",
-      dari_pengguna_id: null,
-      kepada_pengguna_id: null,
-      status_sebelumnya: oLetter.status,
-      status_saat_ini: oLetter.status,
-      catatan: `File ${oFile.originalname} berhasil diupload`,
-      processed_at: dNow,
-      created_by: oPayload.uploaded_by || oPayload.UploadedBy || null,
-      created_at: dNow,
-      updated_at: dNow,
-    });
+    bObjectPersisted = true;
+
+    for (const oReplacedFile of vaReplacedFiles) {
+      const cReplacedPath = oReplacedFile.path_file?.replace(/\\/g, "/");
+      const bIsLegacyLocalFile =
+        !cReplacedPath || /^\/?uploads\/surat_masuk\//.test(cReplacedPath);
+
+      if (bIsLegacyLocalFile) continue;
+
+      try {
+        await removeFileFromMinio(
+          cBucketName,
+          cReplacedPath.replace(/^\/+/, ""),
+        );
+      } catch (cleanupError) {
+        console.error(
+          `Gagal menghapus file lama ${cReplacedPath} dari MinIO:`,
+          cleanupError.message,
+        );
+      }
+    }
 
     return res.status(201).json({
       status: true,
-      message: "File surat masuk berhasil diupload",
+      message:
+        vaReplacedFiles.length > 0
+          ? "File surat masuk berhasil diganti"
+          : "File surat masuk berhasil diupload",
       data: {
         file_surat_masuk_id: vaInserted[0],
-        path_file: oFile.path.replace(/\\/g, "/"),
+        path_file: cObjectName,
         nama_file: oFile.originalname,
         tipe_mime_file: oFile.mimetype,
         ukuran_file: oFile.size,
@@ -125,8 +163,15 @@ const incomingLetterUpload = async (req, res) => {
   } catch (error) {
     console.log(error);
 
-    if (req.file?.path && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
+    if (cObjectName && !bObjectPersisted) {
+      try {
+        await removeFileFromMinio(cBucketName, cObjectName);
+      } catch (cleanupError) {
+        console.error(
+          "Gagal membersihkan file surat masuk dari MinIO:",
+          cleanupError.message,
+        );
+      }
     }
 
     return res.status(500).json({

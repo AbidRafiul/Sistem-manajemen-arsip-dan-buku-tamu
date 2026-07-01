@@ -85,7 +85,15 @@ const Form = ({
 
             showSuccess(toast, res?.message || "Berhasil Menyimpan Data");
             formik.resetForm();
-            setState((p) => ({ ...p, add: false, edit: false, delete: false, selectedLetters: [] }));
+            setState((p) => ({
+                ...p,
+                add: false,
+                edit: false,
+                delete: false,
+                detail: false,
+                detailData: null,
+                selectedLetters: [],
+            }));
             await getData(apiEndpointGet);
         } catch (error: any) {
             const e = error?.response?.data || error;

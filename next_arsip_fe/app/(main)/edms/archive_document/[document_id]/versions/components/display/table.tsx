@@ -20,6 +20,8 @@ interface TableProps {
     setNewVersionFile: (file: File | null) => void;
     changeNotes: string;
     setChangeNotes: (notes: string) => void;
+    approveDialogVisible: boolean;
+    setApproveDialogVisible: (visible: boolean) => void;
     rejectDialogVisible: boolean;
     setRejectDialogVisible: (visible: boolean) => void;
     rejectNotes: string;
@@ -45,6 +47,8 @@ const Table: React.FC<TableProps> = ({
     setNewVersionFile,
     changeNotes,
     setChangeNotes,
+    approveDialogVisible,
+    setApproveDialogVisible,
     rejectDialogVisible,
     setRejectDialogVisible,
     rejectNotes,
@@ -62,6 +66,15 @@ const Table: React.FC<TableProps> = ({
     router,
     toast
 }) => {
+    const selectedVersion = (detailData?.versions || []).find(
+        (version) => version.id_versi === selectedVersionId,
+    );
+
+    const closeApproveDialog = () => {
+        setApproveDialogVisible(false);
+        setSelectedVersionId(null);
+    };
+
     const versionStatusTemplate = (rowData: VersionData) => {
         const status = rowData.status_persetujuan || 'pending';
         let severity: 'success' | 'danger' | 'warning' | 'info' = 'warning';
@@ -105,7 +118,10 @@ const Table: React.FC<TableProps> = ({
                             severity="success"
                             className="p-button-sm"
                             tooltip="Setujui Versi"
-                            onClick={() => approveVersion(rowData.id_versi, 'approved')}
+                            onClick={() => {
+                                setSelectedVersionId(rowData.id_versi);
+                                setApproveDialogVisible(true);
+                            }}
                         />
                         <Button
                             icon="pi pi-times"
@@ -125,6 +141,33 @@ const Table: React.FC<TableProps> = ({
             </div>
         );
     };
+
+    const approveDialogFooter = (
+        <div className="flex justify-content-end gap-2 mt-3">
+            <Button
+                label="Batal"
+                icon="pi pi-times"
+                outlined
+                severity="secondary"
+                onClick={closeApproveDialog}
+                disabled={load}
+                className="p-button-sm font-semibold"
+            />
+            <Button
+                label="Ya, Setujui"
+                icon="pi pi-check"
+                severity="success"
+                loading={load}
+                disabled={!selectedVersionId}
+                onClick={async () => {
+                    if (!selectedVersionId) return;
+                    await approveVersion(selectedVersionId, 'approved');
+                    closeApproveDialog();
+                }}
+                className="p-button-sm font-semibold"
+            />
+        </div>
+    );
 
     const rejectDialogFooter = (
         <div className="flex justify-content-end gap-2 mt-3">
@@ -243,6 +286,47 @@ const Table: React.FC<TableProps> = ({
                 <Column field="created_at" header="Tanggal Dibuat" body={(rowData: VersionData) => formatDateCalendar(rowData.created_at)} />
                 <Column headerStyle={{ textAlign: 'center' }} header="Aksi" body={versionActionTemplate} style={{ width: '14rem' }} />
             </DataTable>
+
+            <Dialog
+                header={
+                    <div className="flex align-items-center gap-2">
+                        <i className="pi pi-check-circle text-green-500 text-xl" />
+                        <span className="font-bold">Setujui Versi Dokumen</span>
+                    </div>
+                }
+                visible={approveDialogVisible}
+                style={{ width: '450px', maxWidth: '95vw' }}
+                modal
+                footer={approveDialogFooter}
+                closable={!load}
+                onHide={closeApproveDialog}
+            >
+                <div className="flex flex-column gap-3 pt-2">
+                    <div className="p-3 border-round-lg border-1 bg-green-50 border-green-100">
+                        <div className="flex align-items-start gap-3">
+                            <i className="pi pi-file-check text-green-600 text-2xl mt-1" />
+                            <div>
+                                <div className="font-semibold text-900 mb-1">
+                                    Konfirmasi Persetujuan
+                                </div>
+                                <p className="m-0 text-sm text-color-secondary line-height-3">
+                                    Apakah Anda yakin ingin menyetujui versi{' '}
+                                    <strong className="text-900">
+                                        V{selectedVersion?.nomor_versi || '-'}
+                                    </strong>{' '}
+                                    untuk dokumen{' '}
+                                    <strong className="text-900">
+                                        {detailData?.document?.nama_dokumen || '-'}
+                                    </strong>?
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <small className="text-color-secondary">
+                        Status versi akan berubah menjadi disetujui dan tercatat pada riwayat dokumen.
+                    </small>
+                </div>
+            </Dialog>
 
             <Dialog
                 header="Tolak Versi Dokumen"

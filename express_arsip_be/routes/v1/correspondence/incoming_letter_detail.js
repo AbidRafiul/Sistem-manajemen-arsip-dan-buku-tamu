@@ -81,7 +81,9 @@ const incomingLetterDetail = async (req, res) => {
       )
       .where("surat_masuk_id", oPayload.surat_masuk_id)
       .where("status", "active")
-      .orderBy("created_at", "desc");
+      .orderBy("created_at", "desc")
+      .orderBy("file_surat_masuk_id", "desc")
+      .limit(1);
 
     const vaDispositions = await DB("trs_disposisi_surat as tld")
       .leftJoin(
