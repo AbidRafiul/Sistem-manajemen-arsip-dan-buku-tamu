@@ -32,10 +32,10 @@ router.post("/", async (req, res) => {
           .try(Joi.string(), Joi.number())
           .optional()
           .label("id_pengguna"),
-        id_pengguna: Joi.alternatives()
+        user_id: Joi.alternatives()
           .try(Joi.string(), Joi.number())
           .optional()
-          .label("id_pengguna"),
+          .label("user_id"),
         IdPengguna: Joi.alternatives()
           .try(Joi.string(), Joi.number())
           .optional()
@@ -51,7 +51,7 @@ router.post("/", async (req, res) => {
 
     const cUserLookup = String(
       oPayload.id_pengguna ||
-        oPayload.id_pengguna ||
+        oPayload.user_id ||
         oPayload.IdPengguna ||
         oPayload.nama_pengguna ||
         req?.auth?.IdPengguna ||
