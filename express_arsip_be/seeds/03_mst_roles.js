@@ -5,7 +5,7 @@
 export const seed = async function (knex) {
   await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
 
-  await knex("mst_perans")
+  await knex("mst_peran")
     .whereIn("kode_peran", [
       "ADM",
       "PMN",
@@ -19,7 +19,7 @@ export const seed = async function (knex) {
 
   const dNow = new Date();
 
-  await knex("mst_perans").insert([
+  await knex("mst_peran").insert([
     {
       kode_peran: "ADM",
       nama_peran: "Administrator",

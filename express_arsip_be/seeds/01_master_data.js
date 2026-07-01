@@ -3,15 +3,14 @@ export async function seed(knex) {
   await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
 
   // 2. BERSIHKAN TABEL (Bumi hangus & reset ID kembali ke 1)
-  await knex("mst_departemens").truncate();
+  await knex("mst_departemen").truncate();
   await knex("mst_divisi").truncate();
-  await knex("mst_cabanges").truncate();
+  await knex("mst_cabang").truncate();
   await knex("mst_jabatan").truncate();
   await knex("mst_unit_kerja").truncate();
   await knex("mst_pengguna").truncate(); // Kosongin user juga biar bersih total
-  await knex("mst_pengguna_perans").truncate();
+  await knex("mst_pengguna_peran").truncate();
   await knex("navigasi_pengguna").truncate();
-  await knex("mst_pengguna").truncate();
   await knex("user_credential").truncate();
 
   // 3. HIDUPKAN kembali Foreign Key Check
@@ -20,7 +19,7 @@ export async function seed(knex) {
   // 4. MASUKKAN DATA MASTER DARI NOL (HIERARKI)
 
   // A. BRANCH (Cabang)
-  await knex("mst_cabanges").insert([
+  await knex("mst_cabang").insert([
     {
       id_cabang: 1,
       kode_cabang: "BR-001",
@@ -62,12 +61,12 @@ export async function seed(knex) {
   ]);
 
   // C. DEPARTMENT (Departemen)
-  await knex("mst_departemens").insert([
+  await knex("mst_departemen").insert([
     {
       id_departemen: 1,
       id_divisi: 1,
-      department_code: "DEPT-DEV",
-      department_name: "Software Development",
+      kode_departemen: "DEPT-DEV",
+      nama_departemen: "Software Development",
       status: "active",
       created_at: new Date(),
       updated_at: new Date(),
@@ -75,8 +74,8 @@ export async function seed(knex) {
     {
       id_departemen: 2,
       id_divisi: 2,
-      department_code: "DEPT-REC",
-      department_name: "Recruitment",
+      kode_departemen: "DEPT-REC",
+      nama_departemen: "Recruitment",
       status: "active",
       created_at: new Date(),
       updated_at: new Date(),
@@ -106,10 +105,10 @@ export async function seed(knex) {
   // E. WORK UNIT (Unit Kerja)
   await knex("mst_unit_kerja").insert([
     {
-      mst_unit_kerja: 1,
+      id_unit_kerja: 1,
       id_departemen: 1,
       kode_unit_kerja: "WU-PST",
-      work_unit_name: "Unit Pusat Utama",
+      nama_unit_kerja: "Unit Pusat Utama",
       status: "active",
       created_at: new Date(),
       updated_at: new Date(),

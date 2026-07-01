@@ -3,58 +3,58 @@
  * @returns { Promise<void> }
  */
 export async function seed(knex) {
-  await knex("mst_letter_types").del();
+  await knex("mst_jenis_surat").del();
 
-  await knex("mst_letter_types").insert([
+  await knex("mst_jenis_surat").insert([
     {
-      letter_type_code: "SURAT_TUGAS",
-      letter_type_name: "Surat Tugas",
-      direction: "outgoing",
+      kode_jenis_surat: "SURAT_TUGAS",
+      nama_jenis_surat: "Surat Tugas",
+      arah_surat: "outgoing",
       deskripsi: "Jenis surat tugas",
       status: "active",
       created_at: new Date(),
       updated_at: new Date(),
     },
     {
-      letter_type_code: "SURAT_KEPUTUSAN",
-      letter_type_name: "Surat Keputusan",
-      direction: "outgoing",
+      kode_jenis_surat: "SURAT_KEPUTUSAN",
+      nama_jenis_surat: "Surat Keputusan",
+      arah_surat: "outgoing",
       deskripsi: "Jenis surat keputusan",
       status: "active",
       created_at: new Date(),
       updated_at: new Date(),
     },
     {
-      letter_type_code: "SURAT_UNDANGAN",
-      letter_type_name: "Surat Undangan",
-      direction: "both",
+      kode_jenis_surat: "SURAT_UNDANGAN",
+      nama_jenis_surat: "Surat Undangan",
+      arah_surat: "both",
       deskripsi: "Jenis surat undangan",
       status: "active",
       created_at: new Date(),
       updated_at: new Date(),
     },
     {
-      letter_type_code: "SURAT_PERJANJIAN",
-      letter_type_name: "Surat Perjanjian",
-      direction: "both",
+      kode_jenis_surat: "SURAT_PERJANJIAN",
+      nama_jenis_surat: "Surat Perjanjian",
+      arah_surat: "both",
       deskripsi: "Jenis surat perjanjian",
       status: "active",
       created_at: new Date(),
       updated_at: new Date(),
     },
     {
-      letter_type_code: "SURAT_PEMBERITAHUAN",
-      letter_type_name: "Surat Pemberitahuan",
-      direction: "both",
+      kode_jenis_surat: "SURAT_PEMBERITAHUAN",
+      nama_jenis_surat: "Surat Pemberitahuan",
+      arah_surat: "both",
       deskripsi: "Jenis surat pemberitahuan",
       status: "active",
       created_at: new Date(),
       updated_at: new Date(),
     },
     {
-      letter_type_code: "SURAT_PERMOHONAN",
-      letter_type_name: "Surat Permohonan",
-      direction: "incoming",
+      kode_jenis_surat: "SURAT_PERMOHONAN",
+      nama_jenis_surat: "Surat Permohonan",
+      arah_surat: "incoming",
       deskripsi: "Jenis surat permohonan",
       status: "active",
       created_at: new Date(),
