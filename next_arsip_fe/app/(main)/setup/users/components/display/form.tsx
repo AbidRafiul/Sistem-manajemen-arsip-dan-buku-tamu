@@ -130,11 +130,12 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                                 name="id_cabang"
                                 value={formik?.values.id_cabang}
                                 options={state.masterData?.branches || []}
-                                optionLabel="name"
-                                optionValue="id"
+                                optionLabel="nama_cabang"
+                                optionValue="id_cabang"
                                 onChange={(e) => formik?.setFieldValue('id_cabang', e.value)}
                                 placeholder="Pilih Cabang"
                                 className="w-full"
+                                filter
                             />
                         </div>
 
@@ -145,11 +146,12 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                                 name="id_jabatan"
                                 value={formik?.values.id_jabatan}
                                 options={state.masterData?.positions || []}
-                                optionLabel="name"
-                                optionValue="id"
+                                optionLabel="nama_jabatan"
+                                optionValue="id_jabatan"
                                 onChange={(e) => formik?.setFieldValue('id_jabatan', e.value)}
                                 placeholder="Pilih Posisi"
                                 className="w-full"
+                                filter
                             />
                         </div>
 
@@ -160,11 +162,12 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                                 name="id_divisi"
                                 value={formik?.values.id_divisi}
                                 options={state.masterData?.divisions || []}
-                                optionLabel="name"
-                                optionValue="id"
+                                optionLabel="nama_divisi"
+                                optionValue="id_divisi"
                                 onChange={(e) => formik?.setFieldValue('id_divisi', e.value)}
                                 placeholder="Pilih Divisi"
                                 className="w-full"
+                                filter
                             />
                         </div>
 
@@ -175,11 +178,12 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                                 name="id_departemen"
                                 value={formik?.values.id_departemen}
                                 options={state.masterData?.departments || []}
-                                optionLabel="name"
-                                optionValue="id"
+                                optionLabel="nama_departemen"
+                                optionValue="id_departemen"
                                 onChange={(e) => formik?.setFieldValue('id_departemen', e.value)}
                                 placeholder="Pilih Departemen"
                                 className="w-full"
+                                filter
                             />
                         </div>
 
@@ -190,11 +194,12 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                                 name="id_unit_kerja"
                                 value={formik?.values.id_unit_kerja}
                                 options={state.masterData?.workUnits || []}
-                                optionLabel="name"
-                                optionValue="id"
+                                optionLabel="nama_unit_kerja"
+                                optionValue="id_unit_kerja"
                                 onChange={(e) => formik?.setFieldValue('id_unit_kerja', e.value)}
                                 placeholder="Pilih Unit Kerja"
                                 className="w-full"
+                                filter
                             />
                         </div>
                     </div>
@@ -210,12 +215,13 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                                     id="role_peran"
                                     name="role_peran"
                                     options={state.masterData?.roles || []}
-                                    optionLabel="name"
-                                    optionValue="id"
+                                    optionLabel="nama_peran"
+                                    optionValue="id_peran"
                                     value={formik?.values.id_peran}
                                     onChange={(e) => formik?.setFieldValue('id_peran', e.value)}
                                     placeholder="Pilih Role"
                                     className={isFormFieldInvalid('id_peran') ? 'p-invalid' : ''}
+                                    filter
                                 />
                             </div>
                             {isFormFieldInvalid('id_peran') ? getFormErrorMessage('id_peran') : ''}
@@ -231,8 +237,8 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                                 optionValue="kode"
                                 optionLabel="label"
                                 options={[
-                                    { kode: '0', label: 'Nonaktif' },
-                                    { kode: '1', label: 'Aktif' }
+                                    { kode: 'active', label: 'Aktif' },
+                                    { kode: 'nonactive', label: 'Nonaktif' }
                                 ]}
                                 value={formik?.values.status}
                                 onChange={(e) => formik?.setFieldValue('status', e.value)}

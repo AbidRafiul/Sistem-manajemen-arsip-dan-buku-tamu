@@ -1,0 +1,207 @@
+export async function seed(knex) {
+  const dNow = new Date();
+
+  // 1. Insert missing menus into mst_menu
+  const vaMenus = [
+    {
+      id_menu: 13,
+      id_menu_induk: null,
+      kode_menu: "BERANDA",
+      nama_menu: "BERANDA",
+      jalur_menu: "",
+      ikon_menu: "",
+      urutan: -1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 14,
+      id_menu_induk: 13,
+      kode_menu: "MENU_DASH",
+      nama_menu: "Dashboard",
+      jalur_menu: "/dashboard",
+      ikon_menu: "pi pi-fw pi-home",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 15,
+      id_menu_induk: 2,
+      kode_menu: "SETUP_USERS",
+      nama_menu: "Users",
+      jalur_menu: "/setup/users",
+      ikon_menu: "pi pi-fw pi-users",
+      urutan: 2,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 16,
+      id_menu_induk: 2,
+      kode_menu: "SETUP_CONFIG",
+      nama_menu: "Config",
+      jalur_menu: "/setup/config",
+      ikon_menu: "pi pi-fw pi-wrench",
+      urutan: 3,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 20,
+      id_menu_induk: null,
+      kode_menu: "BUKU_TAMU",
+      nama_menu: "BUKU TAMU",
+      jalur_menu: "",
+      ikon_menu: "",
+      urutan: 4,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 21,
+      id_menu_induk: 20,
+      kode_menu: "MENU_REGISTRASI_TAMU",
+      nama_menu: "Registrasi Tamu",
+      jalur_menu: "/buku_tamu/registrasi",
+      ikon_menu: "pi pi-fw pi-id-card",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 22,
+      id_menu_induk: 20,
+      kode_menu: "MENU_MONITORING_TAMU",
+      nama_menu: "Monitoring Tamu",
+      jalur_menu: "/buku_tamu/monitoring",
+      ikon_menu: "pi pi-fw pi-list",
+      urutan: 2,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 28,
+      id_menu_induk: 20,
+      kode_menu: "MENU_CHECKOUT_TAMU",
+      nama_menu: "Checkout Tamu",
+      jalur_menu: "/buku_tamu/checkout",
+      ikon_menu: "pi pi-fw pi-sign-out",
+      urutan: 3,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 23,
+      id_menu_induk: null,
+      kode_menu: "PERSURATAN",
+      nama_menu: "PERSURATAN",
+      jalur_menu: "",
+      ikon_menu: "",
+      urutan: 5,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 24,
+      id_menu_induk: 23,
+      kode_menu: "MENU_SURAT_MASUK",
+      nama_menu: "Surat Masuk",
+      jalur_menu: "",
+      ikon_menu: "pi pi-fw pi-inbox",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 25,
+      id_menu_induk: 24,
+      kode_menu: "SM_DASHBOARD",
+      nama_menu: "Dashboard",
+      jalur_menu: "/correspondence/mail_in",
+      ikon_menu: "pi pi-fw pi-chart-line",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 26,
+      id_menu_induk: 24,
+      kode_menu: "SM_DATA",
+      nama_menu: "Data Surat Masuk",
+      jalur_menu: "/correspondence/mail_in/data",
+      ikon_menu: "pi pi-fw pi-table",
+      urutan: 2,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 27,
+      id_menu_induk: 24,
+      kode_menu: "SM_DISPOSISI",
+      nama_menu: "Disposisi Surat",
+      jalur_menu: "/correspondence/mail_in/disposition",
+      ikon_menu: "pi pi-fw pi-send",
+      urutan: 3,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    }
+  ];
+
+  await knex("mst_menu").insert(vaMenus).onConflict("id_menu").merge();
+
+  // Perbaiki tanggal created_at/updated_at untuk menu bawaan 1-12 yang masih "0000-00-00"
+  await knex("mst_menu")
+    .where("id_menu", "<=", 12)
+    .whereRaw("created_at = '0000-00-00 00:00:00' OR created_at IS NULL")
+    .update({
+      created_at: dNow,
+      updated_at: dNow,
+    });
+
+  // 2. Insert into mst_peran_menu for Superadmin (id_peran: 1)
+  const vaPeranMenus = vaMenus.map(oMenu => ({
+    id_peran: 1, // Superadmin
+    id_menu: oMenu.id_menu,
+    hak_lihat: 1,
+    hak_buat: 1,
+    hak_ubah: 1,
+    hak_hapus: 1,
+    hak_setuju: 1,
+    created_at: dNow,
+    updated_at: dNow
+  }));
+
+  // also let's make sure id_menu 1 to 12 are mapped to superadmin if they are not
+  const vaExistingMenus = await knex("mst_menu").where("id_menu", "<", 13).select("id_menu");
+  for (const oRow of vaExistingMenus) {
+      vaPeranMenus.push({
+          id_peran: 1,
+          id_menu: oRow.id_menu,
+          hak_lihat: 1,
+          hak_buat: 1,
+          hak_ubah: 1,
+          hak_hapus: 1,
+          hak_setuju: 1,
+          created_at: dNow,
+          updated_at: dNow
+      });
+  }
+
+  // delete existing for id_peran 1 and re-insert all
+  await knex("mst_peran_menu").where("id_peran", 1).del();
+  await knex("mst_peran_menu").insert(vaPeranMenus);
+}

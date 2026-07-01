@@ -50,60 +50,7 @@ const parseMenuPayload = (payload: any): AppMenuItem[] => {
 
 const cloneMenu = (menu: AppMenuItem[]) => JSON.parse(JSON.stringify(menu)) as AppMenuItem[];
 
-const mailInSubMenuItems: AppMenuItem[] = [
-    {
-        label: 'Dashboard',
-        icon: 'pi pi-fw pi-chart-line',
-        to: '/correspondence/mail_in',
-        class: 'mail-in-child'
-    },
-    {
-        label: 'Data Surat Masuk',
-        icon: 'pi pi-fw pi-table',
-        to: '/correspondence/mail_in/data',
-        class: 'mail-in-child'
-    },
-    {
-        label: 'Disposisi Surat',
-        icon: 'pi pi-fw pi-send',
-        to: '/correspondence/mail_in/disposition',
-        class: 'mail-in-child'
-    }
-];
 
-const normalizeMailInMenu = (menu: AppMenuItem[]): AppMenuItem[] => {
-    const mailInPaths = new Set(mailInSubMenuItems.map((item) => item.to));
-
-    return menu.map((group) => {
-        if (group.label?.toUpperCase() !== 'PERSURATAN' || !Array.isArray(group.items)) {
-            return group;
-        }
-
-        const existingMailInParent = group.items.find((item) => item.label?.toLowerCase() === 'surat masuk' && Array.isArray(item.items));
-        const otherItems = group.items.filter((item) => !mailInPaths.has(item.to) && item !== existingMailInParent);
-
-        const mailInParent: AppMenuItem = {
-            label: 'Surat Masuk',
-            icon: 'pi pi-fw pi-inbox',
-            class: 'mail-in-menu',
-            items: mailInSubMenuItems.map((defaultItem) => {
-                const savedItem = existingMailInParent?.items?.find((item) => item.to === defaultItem.to) || group.items?.find((item) => item.to === defaultItem.to);
-
-                return {
-                    ...defaultItem,
-                    ...savedItem,
-                    label: defaultItem.label,
-                    class: 'mail-in-child'
-                };
-            })
-        };
-
-        return {
-            ...group,
-            items: [mailInParent, ...otherItems]
-        };
-    });
-};
 
 const searchMenuByLabel = (menu: AppMenuItem[] | undefined, keyword: string, parentIndexes: number[] = []): AppMenuItem[] => {
     if (!Array.isArray(menu) || menu.length === 0) return [];
@@ -186,11 +133,11 @@ const AppMenu = () => {
             });
             console.log('AppMenu: Received menu data:', vaData);
             const dbMenu = parseMenuPayload(vaData);
-            const menu = normalizeMailInMenu(cloneMenu(dbMenu));
+            const menu = cloneMenu(dbMenu);
 
             // Fetch and store granular permissions
             try {
-                const { data: permissionsRes } = await postData('setup/nav/user-permissions', { nama_pengguna });
+                const { data: permissionsRes } = await postData('setup/nav/user-permissions', { nama_pengguna: namaPengguna });
                 if (permissionsRes?.data) {
                     localStorage.setItem('rbac_permissions', JSON.stringify(permissionsRes.data));
                 }

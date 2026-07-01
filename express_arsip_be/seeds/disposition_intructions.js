@@ -3,44 +3,44 @@
  * @returns { Promise<void> }
  */
 export async function seed(knex) {
-  await knex("mst_disposition_instructions").del();
+  await knex("mst_instruksi_disposisi").del();
 
-  await knex("mst_disposition_instructions").insert([
+  await knex("mst_instruksi_disposisi").insert([
     {
-      instruction_code: "TINDAK_LANJUT",
-      instruction_name: "Tindak Lanjut",
+      kode_instruksi: "TINDAK_LANJUT",
+      nama_instruksi: "Tindak Lanjut",
       deskripsi: "Menindaklanjuti surat",
       status: "active",
       created_at: new Date(),
       updated_at: new Date(),
     },
     {
-      instruction_code: "PELAJARI",
-      instruction_name: "Pelajari",
+      kode_instruksi: "PELAJARI",
+      nama_instruksi: "Pelajari",
       deskripsi: "Mempelajari isi surat",
       status: "active",
       created_at: new Date(),
       updated_at: new Date(),
     },
     {
-      instruction_code: "KOORDINASIKAN",
-      instruction_name: "Koordinasikan",
+      kode_instruksi: "KOORDINASIKAN",
+      nama_instruksi: "Koordinasikan",
       deskripsi: "Koordinasi dengan pihak terkait",
       status: "active",
       created_at: new Date(),
       updated_at: new Date(),
     },
     {
-      instruction_code: "ARSIPKAN",
-      instruction_name: "Arsipkan",
+      kode_instruksi: "ARSIPKAN",
+      nama_instruksi: "Arsipkan",
       deskripsi: "Mengarsipkan surat",
       status: "active",
       created_at: new Date(),
       updated_at: new Date(),
     },
     {
-      instruction_code: "BUAT_BALASAN",
-      instruction_name: "Buat Balasan",
+      kode_instruksi: "BUAT_BALASAN",
+      nama_instruksi: "Buat Balasan",
       deskripsi: "Membuat surat balasan",
       status: "active",
       created_at: new Date(),
