@@ -107,7 +107,7 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="kata_sandi">kata_sandi</label>
+                        <label htmlFor="kata_sandi">Kata Sandi</label>
                         <div className="p-inputgroup">
                             <Password
                                 id="kata_sandi"
@@ -115,7 +115,9 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                                 toggleMask
                                 value={formik?.values.kata_sandi}
                                 onChange={(e) => formik?.setFieldValue('kata_sandi', e.target.value)}
-                                className={isFormFieldInvalid('kata_sandi') ? 'p-invalid' : ''}
+                                className={isFormFieldInvalid('kata_sandi') ? 'p-invalid w-full' : 'w-full'}
+                                inputClassName="w-full"
+                                inputStyle={{ padding: '1rem' }}
                             />
                         </div>
                         {isFormFieldInvalid('kata_sandi') ? getFormErrorMessage('kata_sandi') : ''}
