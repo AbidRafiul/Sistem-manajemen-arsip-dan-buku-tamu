@@ -36,7 +36,7 @@ router.post("/", async (req, res) => {
           .max(13)
           .required()
           .label("telepon"),
-        peran: Joi.any().required(),
+        id_peran: Joi.any().required().label("id_peran"),
         kata_sandi: Joi.string().optional().allow(""),
         status: Joi.string().required().label("status"),
       },
@@ -63,11 +63,12 @@ router.post("/", async (req, res) => {
       });
     }
 
+    // Cek duplikat nama_pengguna / telepon (kecuali diri sendiri)
     const existingUser = await DB("mst_pengguna")
       .where((builder) => {
         builder
-          .where("username", oPayload.nama_pengguna)
-          .orWhere("telp", oPayload.telepon);
+          .where("nama_pengguna", oPayload.nama_pengguna)
+          .orWhere("telepon", oPayload.telepon);
       })
       .whereNot("id_pengguna", userId)
       .first();
@@ -76,7 +77,7 @@ router.post("/", async (req, res) => {
       return res.status(422).json({
         status: status.BAD_REQUEST,
         message:
-          existingUser.username === oPayload.nama_pengguna
+          existingUser.nama_pengguna === oPayload.nama_pengguna
             ? "Data dengan nama_pengguna tersebut sudah digunakan"
             : "Data dengan telepon tersebut sudah digunakan",
         datetime: datetime(),
@@ -85,36 +86,36 @@ router.post("/", async (req, res) => {
 
     // Siapkan data update mst_pengguna
     const oDataUser = {
-      fullname: oPayload.nama_lengkap,
-      username: oPayload.nama_pengguna,
-      email: oPayload.surel || oPayload.email || oPayload.nama_pengguna,
-      telp: oPayload.telepon,
+      nama_lengkap: oPayload.nama_lengkap,
+      nama_pengguna: oPayload.nama_pengguna,
+      surel: oPayload.surel || oPayload.nama_pengguna,
+      telepon: oPayload.telepon,
       status:
         oPayload.status == "1" || oPayload.status == "active"
           ? "active"
           : "nonactive",
-      branch_id: Number(oPayload.id_cabang) || 1,
-      position_id: Number(oPayload.id_jabatan) || 1,
-      division_id: Number(oPayload.id_divisi) || 1,
-      department_id: Number(oPayload.id_departemen) || 1,
-      work_unit_id: Number(oPayload.id_unit_kerja) || 1,
+      id_cabang: Number(oPayload.id_cabang) || null,
+      id_jabatan: Number(oPayload.id_jabatan) || null,
+      id_divisi: Number(oPayload.id_divisi) || null,
+      id_departemen: Number(oPayload.id_departemen) || null,
+      id_unit_kerja: Number(oPayload.id_unit_kerja) || null,
       updated_at: formatDateSystem(),
     };
 
     if (oPayload.kata_sandi) {
-      const ckata_sandi =
+      const cKataSandi =
         process.env.USER_KEY + oPayload.nama_pengguna + oPayload.kata_sandi;
       const secret = process.env.USER_SECRET;
-      oDataUser.password = hmac(ckata_sandi, secret, "sha512");
+      oDataUser.kata_sandi = hmac(cKataSandi, secret, "sha512");
     }
 
     // TRANSAKSI UPDATE
     await DB.transaction(async (trx) => {
-      // 2. Update mst_pengguna
+      // 1. Update mst_pengguna
       await trx("mst_pengguna").where("id_pengguna", userId).update(oDataUser);
 
-      // 3. Update/insert mst_pengguna_peran berdasarkan id_pengguna
-      const roleId = Number(oPayload.peran) || null;
+      // 2. Update/insert mst_pengguna_peran berdasarkan id_pengguna
+      const roleId = Number(oPayload.id_peran) || null;
       if (roleId) {
         const existingRole = await trx("mst_pengguna_peran")
           .where("id_pengguna", userId)
@@ -122,16 +123,16 @@ router.post("/", async (req, res) => {
 
         if (existingRole) {
           await trx("mst_pengguna_peran").where("id_pengguna", userId).update({
-            role_id: roleId,
-            is_primary: 1,
+            id_peran: roleId,
+            peran_utama: 1,
             status: "active",
             updated_at: formatDateSystem(),
           });
         } else {
           await trx("mst_pengguna_peran").insert({
             id_pengguna: userId,
-            role_id: roleId,
-            is_primary: 1,
+            id_peran: roleId,
+            peran_utama: 1,
             status: "active",
             created_at: formatDateSystem(),
             updated_at: formatDateSystem(),
@@ -139,19 +140,20 @@ router.post("/", async (req, res) => {
         }
       }
 
+      // 3. Update navigasi_pengguna berdasarkan peran
       const navigation = await trx("mst_pengguna_peran as ur")
-        .leftJoin("mst_peran as r", "ur.role_id", "r.role_id")
+        .leftJoin("mst_peran as r", "ur.id_peran", "r.id_peran")
         .leftJoin("mst_navigasi as n", function () {
-          this.on("n.role", "r.role_name").orOn("n.role", "r.role_code");
+          this.on("n.peran", "r.nama_peran").orOn("n.peran", "r.kode_peran");
         })
         .select("n.menu")
         .where("ur.id_pengguna", userId)
         .where("ur.status", "active")
-        .orderBy("ur.is_primary", "desc")
+        .orderBy("ur.peran_utama", "desc")
         .first();
 
       if (navigation?.menu) {
-        await trx("user_navigation")
+        await trx("navigasi_pengguna")
           .insert({
             id_pengguna: userId,
             menu: navigation.menu,
@@ -172,7 +174,7 @@ router.post("/", async (req, res) => {
       datetime: formatDateSystem(),
     });
   } catch (error) {
-    console.log("ERROR DATABASE:", error); //TAMBAHKAN BARIS INI
+    console.log("ERROR DATABASE:", error);
     return res.status(500).json({
       status: status.BAD_REQUEST,
       message: "Sistem maintenance",

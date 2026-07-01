@@ -136,7 +136,7 @@ const menu = JSON.stringify([
 export async function seed(knex) {
   const dNow = now();
 
-  await seedRows(knex, "mst_perans", "kode_peran", [
+  await seedRows(knex, "mst_peran", "kode_peran", [
     {
       kode_peran: "ADM",
       nama_peran: "Administrator",
@@ -179,7 +179,7 @@ export async function seed(knex) {
     },
   ]);
 
-  await seedRows(knex, "mst_cabanges", "kode_cabang", [
+  await seedRows(knex, "mst_cabang", "kode_cabang", [
     {
       kode_cabang: "BR-PST",
       nama_cabang: "Kantor Pusat",
@@ -192,7 +192,7 @@ export async function seed(knex) {
     },
   ]);
 
-  const branch = await knex("mst_cabanges")
+  const branch = await knex("mst_cabang")
     .where("kode_cabang", "BR-PST")
     .first();
 
@@ -222,11 +222,11 @@ export async function seed(knex) {
     .first();
   const divIt = await knex("mst_divisi").where("kode_divisi", "DIV-IT").first();
 
-  await seedRows(knex, "mst_departemens", "department_code", [
+  await seedRows(knex, "mst_departemen", "kode_departemen", [
     {
       id_divisi: divOps?.id_divisi || 1,
-      department_code: "DEP-ARSIP",
-      department_name: "Arsip dan Tata Usaha",
+      kode_departemen: "DEP-ARSIP",
+      nama_departemen: "Arsip dan Tata Usaha",
       deskripsi: "Unit arsip dan administrasi",
       status: "active",
       created_at: dNow,
@@ -234,8 +234,8 @@ export async function seed(knex) {
     },
     {
       id_divisi: divIt?.id_divisi || 2,
-      department_code: "DEP-IT",
-      department_name: "IT Support",
+      kode_departemen: "DEP-IT",
+      nama_departemen: "IT Support",
       deskripsi: "Dukungan sistem",
       status: "active",
       created_at: dNow,
@@ -273,15 +273,15 @@ export async function seed(knex) {
     },
   ]);
 
-  const depArsip = await knex("mst_departemens")
-    .where("department_code", "DEP-ARSIP")
+  const depArsip = await knex("mst_departemen")
+    .where("kode_departemen", "DEP-ARSIP")
     .first();
 
   await seedRows(knex, "mst_unit_kerja", "kode_unit_kerja", [
     {
       id_departemen: depArsip?.id_departemen || 1,
       kode_unit_kerja: "WU-ARSIP",
-      work_unit_name: "Unit Arsip",
+      nama_unit_kerja: "Unit Arsip",
       deskripsi: "Pengelolaan arsip",
       status: "active",
       created_at: dNow,
@@ -343,6 +343,7 @@ export async function seed(knex) {
     },
   ]);
 
+  if (!(await hasTable(knex, 'mst_archive_classifications'))) return;
   const adm = await knex("mst_archive_classifications")
     .where("classification_code", "ADM")
     .first();
@@ -505,8 +506,8 @@ export async function seed(knex) {
   const workUnit = await knex("mst_unit_kerja")
     .where("kode_unit_kerja", "WU-ARSIP")
     .first();
-  const peranAdm = await knex("mst_perans").where("kode_peran", "ADM").first();
-  const peranStaff = await knex("mst_perans")
+  const peranAdm = await knex("mst_peran").where("kode_peran", "ADM").first();
+  const peranStaff = await knex("mst_peran")
     .where("kode_peran", "STF_ARS")
     .first();
 
@@ -521,7 +522,7 @@ export async function seed(knex) {
       id_divisi: divOps?.id_divisi || 1,
       id_departemen: depArsip?.id_departemen || 1,
       id_jabatan: position?.id_jabatan || 1,
-      mst_unit_kerja: workUnit?.mst_unit_kerja || 1,
+      id_unit_kerja: workUnit?.id_unit_kerja || 1,
       gagal_masuk: 0,
       status: "active",
       created_at: dNow,
@@ -537,7 +538,7 @@ export async function seed(knex) {
       id_divisi: divOps?.id_divisi || 1,
       id_departemen: depArsip?.id_departemen || 1,
       id_jabatan: position?.id_jabatan || 1,
-      mst_unit_kerja: workUnit?.mst_unit_kerja || 1,
+      id_unit_kerja: workUnit?.id_unit_kerja || 1,
       gagal_masuk: 0,
       status: "active",
       created_at: dNow,
@@ -552,7 +553,7 @@ export async function seed(knex) {
     .where("nama_pengguna", "staff.arsip@example.local")
     .first();
 
-  await seedRows(knex, "mst_pengguna_perans", "id_peran_pengguna", [
+  await seedRows(knex, "mst_pengguna_peran", "id_peran_pengguna", [
     {
       id_peran_pengguna: 9001,
       nama_pengguna: superadmin?.nama_pengguna || 1,

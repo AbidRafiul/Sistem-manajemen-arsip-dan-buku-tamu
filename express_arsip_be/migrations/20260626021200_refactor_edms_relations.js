@@ -63,9 +63,7 @@ const ensureCodeColumn = async (knex, tableName, columnName, afterColumn) => {
         col = col.after(afterColumn);
       }
     }
-    if (isMySQL) {
-      col.collate('utf8mb4_0900_ai_ci');
-    }
+
   });
 };
 
@@ -111,27 +109,22 @@ export async function up(knex) {
   // 1. Sesuaikan panjang kolom master ke 255
   await knex.schema.alterTable('mst_archive_classifications', (table) => {
     let col = table.string('classification_code', 255);
-    if (isMySQL) col.collate('utf8mb4_0900_ai_ci');
     col.alter();
   });
   await knex.schema.alterTable('mst_document_type', (table) => {
     let col = table.string('document_type_code', 255);
-    if (isMySQL) col.collate('utf8mb4_0900_ai_ci');
     col.alter();
   });
   await knex.schema.alterTable('mst_document_categories', (table) => {
     let col = table.string('document_category_code', 255);
-    if (isMySQL) col.collate('utf8mb4_0900_ai_ci');
     col.alter();
   });
   await knex.schema.alterTable('mst_confidentiality_levels', (table) => {
     let col = table.string('confidentiality_level_code', 255);
-    if (isMySQL) col.collate('utf8mb4_0900_ai_ci');
     col.alter();
   });
   await knex.schema.alterTable('mst_retention_schedule', (table) => {
     let col = table.string('retention_code', 255);
-    if (isMySQL) col.collate('utf8mb4_0900_ai_ci');
     col.alter();
   });
 
