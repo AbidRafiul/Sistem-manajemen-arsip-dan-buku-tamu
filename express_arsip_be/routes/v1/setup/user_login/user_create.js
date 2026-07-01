@@ -33,10 +33,10 @@ router.post("/", async (req, res) => {
           .max(13)
           .required()
           .label("telepon"),
-        peran: Joi.alternatives()
+        id_peran: Joi.alternatives()
           .try(Joi.string(), Joi.number())
           .required()
-          .label("peran"),
+          .label("id_peran"),
         kata_sandi: Joi.string()
           .min(8)
           .pattern(
@@ -75,16 +75,17 @@ router.post("/", async (req, res) => {
       return res.status(422).json(oResult);
     }
 
+    // Cek apakah user sudah ada
     const existingUser = await DB("mst_pengguna")
-      .where("username", oPayload.nama_pengguna)
-      .orWhere("telp", oPayload.telepon)
+      .where("nama_pengguna", oPayload.nama_pengguna)
+      .orWhere("telepon", oPayload.telepon)
       .first();
 
     if (existingUser) {
       return res.status(422).json({
         status: status.BAD_REQUEST,
         message:
-          existingUser.username === oPayload.nama_pengguna
+          existingUser.nama_pengguna === oPayload.nama_pengguna
             ? "Data dengan nama_pengguna tersebut sudah digunakan"
             : "Data dengan telepon tersebut sudah digunakan",
         datetime: formatDateSystem(),
@@ -92,88 +93,82 @@ router.post("/", async (req, res) => {
     }
 
     // HASH kata_sandi PAKAI nama_pengguna SEBAGAI SALT
-    let hashedkata_sandi = "";
+    let hashedKataSandi = "";
     if (oPayload.kata_sandi) {
-      const ckata_sandi =
+      const cKataSandi =
         process.env.USER_KEY + oPayload.nama_pengguna + oPayload.kata_sandi;
       const secret = process.env.USER_SECRET;
-      hashedkata_sandi = hmac(ckata_sandi, secret, "sha512");
+      hashedKataSandi = hmac(cKataSandi, secret, "sha512");
     }
 
-    // 1. SIAPKAN INPUT peran (Menangani superadmin ke master)
-    let inputperan = oPayload.peran;
-    if (inputperan == "superadmin" || inputperan == "admin") {
-      inputperan = "master";
-    }
+    // 1. SIAPKAN INPUT peran
+    let inputPeran = oPayload.id_peran;
 
     // 2. CARI peran DATA TERLEBIH DAHULU SEBELUM TRANSAKSI
-    // Mencari berdasarkan ID (angka) atau peranName (string)
     const peranData = await DB("mst_peran")
-      .where("role_id", inputperan)
-      .orWhere("role_name", inputperan)
-      .orWhere("role_code", inputperan)
+      .where("id_peran", inputPeran)
+      .orWhere("nama_peran", inputPeran)
+      .orWhere("kode_peran", inputPeran)
       .first();
 
     if (!peranData) {
       return res.status(400).json({
-        status: status.GAGAL,
-        message: "peran tidak ditemukan di sistem",
+        status: status.BAD_REQUEST,
+        message: "Peran tidak ditemukan di sistem",
         datetime: formatDateSystem(),
       });
     }
 
-    // 3. CARI NAVIGASI
-    // Karena peranData sudah ketemu, kita pasti bisa mengambil peranName-nya
+    // 3. CARI NAVIGASI BERDASARKAN PERAN
     const oNavigation = await DB("mst_navigasi")
       .select("menu")
-      .where("role", peranData.role_name)
-      .orWhere("role", peranData.role_code)
+      .where("peran", peranData.nama_peran)
+      .orWhere("peran", peranData.kode_peran)
       .first();
 
     // 4. VALIDASI NAVIGASI
     if (!oNavigation || !oNavigation.menu) {
       return res.status(400).json({
-        status: status.GAGAL,
-        message: "peran tidak memiliki template menu di mst_navigasi",
+        status: status.BAD_REQUEST,
+        message: "Peran tidak memiliki template menu di mst_navigasi",
         datetime: formatDateSystem(),
       });
     }
 
     // 5. TRANSAKSI DATABASE KE 3 TABEL
     await DB.transaction(async (trx) => {
-      // 1. Masuk ke mst_pengguna (Buku Induk)
+      // 1. Masuk ke mst_pengguna
       const [newUserId] = await trx("mst_pengguna").insert({
-        fullname: oPayload.nama_lengkap,
-        username: oPayload.nama_pengguna,
-        email: oPayload.surel || oPayload.email || oPayload.nama_pengguna,
-        telp: oPayload.telepon,
-        password: hashedkata_sandi,
+        nama_lengkap: oPayload.nama_lengkap,
+        nama_pengguna: oPayload.nama_pengguna,
+        surel: oPayload.surel || oPayload.nama_pengguna,
+        telepon: oPayload.telepon,
+        kata_sandi: hashedKataSandi,
         status:
           oPayload.status == "1" || oPayload.status == "active"
             ? "active"
             : "nonactive",
-        branch_id: Number(oPayload.id_cabang) || 1,
-        position_id: Number(oPayload.id_jabatan) || 1,
-        division_id: Number(oPayload.id_divisi) || 1,
-        department_id: Number(oPayload.id_departemen) || 1,
-        work_unit_id: Number(oPayload.id_unit_kerja) || 1,
+        id_cabang: Number(oPayload.id_cabang) || null,
+        id_jabatan: Number(oPayload.id_jabatan) || null,
+        id_divisi: Number(oPayload.id_divisi) || null,
+        id_departemen: Number(oPayload.id_departemen) || null,
+        id_unit_kerja: Number(oPayload.id_unit_kerja) || null,
         created_at: formatDateSystem(),
         updated_at: formatDateSystem(),
       });
 
-      // Masuk ke mst_pengguna_peran (Relasi Jabatan)
+      // 2. Masuk ke mst_pengguna_peran (Relasi Peran)
       await trx("mst_pengguna_peran").insert({
         id_pengguna: newUserId,
-        role_id: peranData.role_id,
-        is_primary: 1,
+        id_peran: peranData.id_peran,
+        peran_utama: 1,
         status: "active",
         created_at: formatDateSystem(),
         updated_at: formatDateSystem(),
       });
 
-      // Masuk ke user_navigation (Nampan Menu Spesifik)
-      // Pakai oNavigation.menu dari pencarian di atas
-      await trx("user_navigation")
+      // 3. Masuk ke navigasi_pengguna (Menu Spesifik)
+      await trx("navigasi_pengguna")
         .insert({
           id_pengguna: newUserId,
           menu: oNavigation.menu,
@@ -189,7 +184,7 @@ router.post("/", async (req, res) => {
 
     return res.status(200).json({
       status: status.SUKSES,
-      message: "Data berhasil dibuat di sistem baru",
+      message: "Data berhasil dibuat",
       datetime: formatDateSystem(),
     });
   } catch (error) {

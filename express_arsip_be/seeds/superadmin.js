@@ -11,58 +11,60 @@ function formatDateSystem() {
 }
 
 export async function seed(knex) {
-  const nama_pengguna = "superadmin@admin.com";
+  const id_pengguna = "1";
   const nama_lengkap = "Superadmin";
   const telepon = "08100000000";
   const kata_sandi = "Superadmin321!";
 
   const peranId = 1;
 
-  // 1. CARI USER LAMA (Ubah 'nama_pengguna' menjadi 'nama_pengguna')
+  // 1. CARI USER LAMA (Ubah 'id_pengguna' menjadi 'id_pengguna')
   const existingUser = await knex("mst_pengguna")
-    .where("nama_pengguna", nama_pengguna)
+    .where("id_pengguna", id_pengguna)
     .first();
 
   if (existingUser) {
-    // Hapus relasi anak-anaknya dulu (Ubah ke nama_pengguna dan unique_id sesuai migrasi tabel)
-    await knex("mst_pengguna_perans")
-      .where("nama_pengguna", existingUser.nama_pengguna)
+    // Hapus relasi anak-anaknya dulu (Ubah ke id_pengguna dan id_pengguna sesuai migrasi tabel)
+    await knex("mst_pengguna_peran")
+      .where("id_pengguna", existingUser.id_pengguna)
       .del();
     await knex("navigasi_pengguna")
-      .where("unique_id", existingUser.nama_pengguna)
+      .where("id_pengguna", existingUser.id_pengguna)
       .del();
 
     // Baru hapus induknya
     await knex("mst_pengguna")
-      .where("nama_pengguna", existingUser.nama_pengguna)
+      .where("id_pengguna", existingUser.id_pengguna)
       .del();
   }
 
   // Hashing kata_sandi baru
-  const ckata_sandi = process.env.USER_KEY + nama_pengguna + kata_sandi;
+  const ckata_sandi = process.env.USER_KEY + "superadmin@admin.com" + kata_sandi;
   const dDatetime = formatDateSystem();
   const secret = process.env.USER_SECRET;
   const hashedkata_sandi = hmac(ckata_sandi, secret, "sha512");
 
-  // 2. TANAM KE mst_pengguna & TANGKAP nama_pengguna-nya
+  // 2. TANAM KE mst_pengguna & TANGKAP id_pengguna-nya
   const [insertedNamaPengguna] = await knex("mst_pengguna").insert({
     nama_lengkap: nama_lengkap,
-    nama_pengguna: nama_pengguna,
+    nama_pengguna: 'superadmin@admin.com',
+    surel: 'superadmin@admin.com',
+    id_pengguna: id_pengguna,
     telepon: telepon,
     kata_sandi: hashedkata_sandi,
     status: "active",
     id_cabang: 1,
     id_divisi: 1,
-    id_departemen: 1, // Diperbaiki dari departemen_id menjadi id_departemen agar sesuai nama tabel mst_departemens
+    id_departemen: 1, // Diperbaiki dari departemen_id menjadi id_departemen agar sesuai nama tabel mst_departemen
     id_jabatan: 1,
-    mst_unit_kerja: 1,
+    id_unit_kerja: 1,
     created_at: dDatetime,
     updated_at: dDatetime,
   });
 
-  // 3. TANAM KE mst_pengguna_perans
-  await knex("mst_pengguna_perans").insert({
-    nama_pengguna: insertedNamaPengguna,
+  // 3. TANAM KE mst_pengguna_peran
+  await knex("mst_pengguna_peran").insert({
+    id_pengguna: insertedNamaPengguna,
     id_peran: peranId,
     peran_utama: 1,
     status: "active",
@@ -77,7 +79,7 @@ export async function seed(knex) {
 
   if (oNavigation) {
     await knex("navigasi_pengguna").insert({
-      nama_pengguna: insertedNamaPengguna, // Sesuai struktur tabel navigasi_pengguna yang menggunakan unique_id
+      id_pengguna: insertedNamaPengguna, // Sesuai struktur tabel navigasi_pengguna yang menggunakan id_pengguna
       menu: oNavigation.menu,
       created_at: dDatetime,
       updated_at: dDatetime,

@@ -744,86 +744,67 @@ const getRbacMenu = async (DB, user) => {
 };
 
 const getNavigationMenu = async (DB, uniqueId) => {
-  const user = await getUser(DB, uniqueId);
+  const oUser = await getUser(DB, uniqueId);
 
-  let legacyMenu = await getLegacyUserMenu(DB, user, uniqueId);
-  if (!legacyMenu || !legacyMenu.length) {
-    legacyMenu = await getLegacyperanMenu(DB, user?.peran);
-  }
+  const vaRbacMenu = await getRbacMenu(DB, oUser);
 
-  const rbacMenu = await getRbacMenu(DB, user);
+  // Helper to merge menus is no longer strictly necessary if we only use vaRbacMenu,
+  // but let's keep it in case it's useful or just assign directly.
+  const vaCombinedMenu = [...(vaRbacMenu || [])];
 
-  // Helper to merge menus
-  const mergeMenus = (m1, m2) => {
-    const merged = [...(m1 || [])];
-    (m2 || []).forEach(item2 => {
-      const existing = merged.find(m => m.label && item2.label && m.label.toUpperCase() === item2.label.toUpperCase());
-      if (existing) {
-        if (item2.items && item2.items.length) {
-          existing.items = mergeMenus(existing.items, item2.items);
-        }
-      } else {
-        merged.push(item2);
-      }
-    });
-    return merged;
-  };
-
-  const combinedMenu = mergeMenus(legacyMenu, rbacMenu);
-
-  let setupGroup = combinedMenu.find(m => m.label && (m.label.toUpperCase() === 'SETUP' || m.label.toUpperCase() === 'SET UP'));
+  let oSetupGroup = vaCombinedMenu.find(m => m.label && (m.label.toUpperCase() === 'SETUP' || m.label.toUpperCase() === 'SET UP'));
   
   // Pindahkan Management Menu ke dalam Setup (buat grup jika belum ada)
-  const managementMenuIdx = combinedMenu.findIndex(m => m.label && m.label.toUpperCase() === 'MANAGEMENT MENU');
-  if (managementMenuIdx !== -1) {
-     const mm = combinedMenu.splice(managementMenuIdx, 1)[0];
-     if (!setupGroup) {
-         setupGroup = { label: 'SETUP', items: [] };
+  const nManagementMenuIdx = vaCombinedMenu.findIndex(m => m.label && m.label.toUpperCase() === 'MANAGEMENT MENU');
+  if (nManagementMenuIdx !== -1) {
+     const oMm = vaCombinedMenu.splice(nManagementMenuIdx, 1)[0];
+     if (!oSetupGroup) {
+         oSetupGroup = { label: 'SETUP', items: [] };
          // Sisipkan setelah HOME jika ada, atau di indeks 0
-         const homeIdx = combinedMenu.findIndex(m => m.label && (m.label.toUpperCase() === 'HOME' || m.label.toUpperCase() === 'BERANDA'));
-         combinedMenu.splice(homeIdx !== -1 ? homeIdx + 1 : 0, 0, setupGroup);
+         const nHomeIdx = vaCombinedMenu.findIndex(m => m.label && (m.label.toUpperCase() === 'HOME' || m.label.toUpperCase() === 'BERANDA'));
+         vaCombinedMenu.splice(nHomeIdx !== -1 ? nHomeIdx + 1 : 0, 0, oSetupGroup);
      }
-     setupGroup.items = setupGroup.items || [];
-     setupGroup.items.push(mm);
+     oSetupGroup.items = oSetupGroup.items || [];
+     oSetupGroup.items.push(oMm);
   }
 
-  const removeEmptyItems = (menuArray) => {
-    return menuArray.map(item => {
-      const newItem = { ...item };
-      if (newItem.items) {
-        if (newItem.items.length === 0) {
-          delete newItem.items;
+  const removeEmptyItems = (vaMenuArray) => {
+    return vaMenuArray.map(oItem => {
+      const oNewItem = { ...oItem };
+      if (oNewItem.items) {
+        if (oNewItem.items.length === 0) {
+          delete oNewItem.items;
         } else {
-          newItem.items = removeEmptyItems(newItem.items);
-          if (newItem.items.length === 0) {
-            delete newItem.items;
+          oNewItem.items = removeEmptyItems(oNewItem.items);
+          if (oNewItem.items.length === 0) {
+            delete oNewItem.items;
           }
         }
       }
-      return newItem;
+      return oNewItem;
     });
   };
 
-  if (combinedMenu && combinedMenu.length) {
+  if (vaCombinedMenu && vaCombinedMenu.length) {
     // Reorder: Letakkan "Master Organisasi" tepat di bawah "SETUP"
-    const masterOrgIdx = combinedMenu.findIndex(m => m.label && m.label.toUpperCase() === 'MASTER ORGANISASI');
-    const setupIdx = combinedMenu.findIndex(m => m.label && (m.label.toUpperCase() === 'SETUP' || m.label.toUpperCase() === 'SET UP'));
+    const nMasterOrgIdx = vaCombinedMenu.findIndex(m => m.label && m.label.toUpperCase() === 'MASTER ORGANISASI');
+    const nSetupIdx = vaCombinedMenu.findIndex(m => m.label && (m.label.toUpperCase() === 'SETUP' || m.label.toUpperCase() === 'SET UP'));
     
-    if (masterOrgIdx !== -1 && setupIdx !== -1 && masterOrgIdx !== setupIdx + 1) {
-       const mo = combinedMenu.splice(masterOrgIdx, 1)[0];
-       // Karena masterOrgIdx bisa saja di depan atau di belakang setupIdx, kita cari lagi setupIdx yang baru
-       const newSetupIdx = combinedMenu.findIndex(m => m.label && (m.label.toUpperCase() === 'SETUP' || m.label.toUpperCase() === 'SET UP'));
-       combinedMenu.splice(newSetupIdx + 1, 0, mo);
+    if (nMasterOrgIdx !== -1 && nSetupIdx !== -1 && nMasterOrgIdx !== nSetupIdx + 1) {
+       const oMo = vaCombinedMenu.splice(nMasterOrgIdx, 1)[0];
+       // Karena nMasterOrgIdx bisa saja di depan atau di belakang nSetupIdx, kita cari lagi nSetupIdx yang baru
+       const nNewSetupIdx = vaCombinedMenu.findIndex(m => m.label && (m.label.toUpperCase() === 'SETUP' || m.label.toUpperCase() === 'SET UP'));
+       vaCombinedMenu.splice(nNewSetupIdx + 1, 0, oMo);
     }
 
     return {
-      menu: removeEmptyItems(ensureArchiveDocumentMenu(combinedMenu)),
+      menu: removeEmptyItems(ensureArchiveDocumentMenu(vaCombinedMenu)),
       source: "merged",
-      user,
+      user: oUser,
     };
   }
 
-  return { menu: [], source: null, user };
+  return { menu: [], source: null, user: oUser };
 };
 
 export { getNavigationMenu, normalizeLegacyMenu, roleAliases };

@@ -54,32 +54,38 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
 
     const actionBodyTemplate = (rowData: TableData) => (
         <div className="flex gap-2">
-            <Button
-                icon="pi pi-pencil"
-                rounded
-                outlined
-                className="p-button-sm"
-                onClick={() => {
-                    formik.setValues((p) => ({
-                        ...p,
-                        ...rowData
-                    }));
+            {permissions.canUpdate && (
+                <Button
+                    icon="pi pi-pencil"
+                    rounded
+                    outlined
+                    className="p-button-sm"
+                    onClick={() => {
+                        formik.setValues((p) => ({
+                            ...p,
+                            ...rowData
+                        }));
 
-                    setState((p) => ({ ...p, add: false, delete: false, edit: true }));
-                }}
-                tooltip="Edit"
-            />
-            <Button icon="pi pi-trash" rounded outlined severity="danger" className="p-button-sm" onClick={() => setState((p) => ({ ...p, delete: true, selectedUsers: [rowData] }))} tooltip="Delete" />
-            <Button
-                icon="pi pi-wrench"
-                onClick={() => {
-                    getNav?.(rowData?.id_pengguna || '');
-                }}
-                severity="warning"
-                outlined
-                rounded
-                loading={navBar?.load}
-            />
+                        setState((p) => ({ ...p, add: false, delete: false, edit: true }));
+                    }}
+                    tooltip="Edit"
+                />
+            )}
+            {permissions.canDelete && (
+                <Button icon="pi pi-trash" rounded outlined severity="danger" className="p-button-sm" onClick={() => setState((p) => ({ ...p, delete: true, selectedUsers: [rowData] }))} tooltip="Delete" />
+            )}
+            {permissions.canApprove && (
+                <Button
+                    icon="pi pi-wrench"
+                    onClick={() => {
+                        getNav?.(rowData?.id_pengguna || '');
+                    }}
+                    severity="warning"
+                    outlined
+                    rounded
+                    loading={navBar?.load}
+                />
+            )}
         </div>
     );
 

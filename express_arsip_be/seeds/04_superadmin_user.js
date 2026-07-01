@@ -13,13 +13,13 @@ export async function seed(knex) {
   // 2. Pastikan Master Data Organisasi Lengkap (Department, Position, WorkUnit)
   // Branch & Division sudah diisi di 01_master_data.js (id_cabang: 1, id_divisi: 1)
 
-  await knex("mst_departemens")
+  await knex("mst_departemen")
     .insert([
       {
         id_departemen: 1,
         id_divisi: 1,
-        department_code: "DEPT-IT",
-        department_name: "IT Department",
+        kode_departemen: "DEPT-IT",
+        nama_departemen: "IT Department",
         status: "active",
         created_at: dNow,
         updated_at: dNow,
@@ -45,20 +45,20 @@ export async function seed(knex) {
   await knex("mst_unit_kerja")
     .insert([
       {
-        mst_unit_kerja: 1,
+        id_unit_kerja: 1,
         id_departemen: 1,
         kode_unit_kerja: "WU-DIR",
-        work_unit_name: "Direktorat Utama",
+        nama_unit_kerja: "Direktorat Utama",
         status: "active",
         created_at: dNow,
         updated_at: dNow,
       },
     ])
-    .onConflict("mst_unit_kerja")
+    .onConflict("id_unit_kerja")
     .ignore();
 
   // 3. Hapus data superadmin lama jika ada
-  await knex("mst_pengguna_perans").where("nama_pengguna", 1).del();
+  await knex("mst_pengguna_peran").where("id_pengguna", 1).del();
   await knex("mst_pengguna")
     .where("nama_pengguna", "superadmin@admin.com")
     .del();
@@ -73,7 +73,7 @@ export async function seed(knex) {
   // 4. Masukkan Superadmin ke `mst_pengguna` (Sistem Baru SIAB)
   const [NamaPengguna] = await knex("mst_pengguna").insert([
     {
-      nama_pengguna: 1,
+      id_pengguna: 1,
       nama_lengkap: "Superadmin SIAB",
       nama_pengguna: nama_pengguna,
       surel: nama_pengguna,
@@ -83,7 +83,7 @@ export async function seed(knex) {
       id_divisi: 1,
       id_departemen: 1,
       id_jabatan: 1,
-      mst_unit_kerja: 1,
+      id_unit_kerja: 1,
       status: "active",
       created_at: dNow,
       updated_at: dNow,
@@ -92,13 +92,13 @@ export async function seed(knex) {
 
   // 5. Masukkan peran Superadmin ke `mst_pengguna_perans`
   // Asumsi peranId 1 adalah ADM dari 03_mst_perans.js
-  const peranAdmin = await knex("mst_perans")
+  const peranAdmin = await knex("mst_peran")
     .where("kode_peran", "ADM")
     .first();
   if (peranAdmin) {
-    await knex("mst_pengguna_perans").insert([
+    await knex("mst_pengguna_peran").insert([
       {
-        nama_pengguna: 1,
+        id_pengguna: 1,
         id_peran: peranAdmin.id_peran,
         peran_utama: 1,
         status: "active",
@@ -115,12 +115,12 @@ export async function seed(knex) {
   if (oNavigation) {
     await knex("navigasi_pengguna")
       .insert({
-        nama_pengguna: 1,
+        id_pengguna: 1,
         menu: oNavigation.menu,
         created_at: dNow,
         updated_at: dNow,
       })
-      .onConflict("nama_pengguna")
+      .onConflict("id_pengguna")
       .merge({
         menu: oNavigation.menu,
         updated_at: dNow,

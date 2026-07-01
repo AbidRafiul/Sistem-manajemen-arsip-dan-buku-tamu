@@ -185,7 +185,7 @@ const Page = () => {
                 kata_sandi: input.kata_sandi,
                 telepon: input.telepon,
                 status: input.status,
-                peran: input.id_peran,
+                id_peran: input.id_peran,
                 id_cabang: input.id_cabang,
                 id_jabatan: input.id_jabatan,
                 id_divisi: input.id_divisi,
@@ -266,7 +266,7 @@ const Page = () => {
             const headers = {
                 'X-Level': '1'
             };
-            const vaData = await apiGetData(apiEndpointGetNavDataEdit, { IdPengguna: IdPengguna }, headers);
+            const vaData = await postData(apiEndpointGetNavDataEdit, { NamaPengguna: IdPengguna }, headers);
 
             let res = vaData.data;
             setNavBar((p) => ({
