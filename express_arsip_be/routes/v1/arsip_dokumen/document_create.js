@@ -1,6 +1,7 @@
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { v4 as uuidv4 } from "uuid";
+import { formatDateSystem } from "../components/tools/general.js";
 
 const createDocument = async (req, res) => {
   const oPayload = req.body;
@@ -74,11 +75,34 @@ const createDocument = async (req, res) => {
     };
 
     const nDocumentId = await DB.transaction(async (trx) => {
-      const [nId] = await trx("trs_dokumen").insert(oData);
-      const cKodeDokumen = `${cDocumentNumber}-${nId}`;
-      await trx("trs_dokumen")
-        .where("id_dokumen", nId)
-        .update({ kode_dokumen: cKodeDokumen });
+      const cClassification = cClassificationCode || "KLS";
+      const cDocType = cDocumentTypeCode || "DOC";
+      const cDateStr = formatDateSystem(dNow, "yyyyMMdd");
+      const cPrefix = `${cClassification}/${cDocType}/${cDateStr}/`;
+
+      const oLastDoc = await trx("trs_dokumen")
+        .select("kode_dokumen")
+        .where("kode_dokumen", "like", `${cPrefix}%`)
+        .orderBy("id_dokumen", "desc")
+        .first();
+
+      let nSeq = 1;
+      if (oLastDoc && oLastDoc.kode_dokumen) {
+        const parts = oLastDoc.kode_dokumen.split("/");
+        const lastSeqStr = parts[parts.length - 1];
+        const lastSeq = parseInt(lastSeqStr, 10);
+        if (!isNaN(lastSeq)) {
+          nSeq = lastSeq + 1;
+        }
+      }
+      const cSeqPadded = String(nSeq).padStart(4, "0");
+      const cKodeDokumen = `${cPrefix}${cSeqPadded}`;
+
+      // Insert directly with the pre-generated document code
+      const [nId] = await trx("trs_dokumen").insert({
+        ...oData,
+        kode_dokumen: cKodeDokumen
+      });
       return nId;
     });
 

@@ -7,7 +7,7 @@ const executeDestructionProposal = async (req, res) => {
   try {
     const nProposalId = oPayload.id_usulan || oPayload.proposal_id;
     const cBeritaAcaraPath = oPayload.file_berita_acara || oPayload.berita_acara_path || null;
-    const cExecutedBy = req?.context?.Username || oPayload.dieksekusi_oleh || oPayload.executed_by || "system";
+    const cExecutedBy = req?.auth?.nama_pengguna || req?.context?.nama_pengguna || oPayload.dieksekusi_oleh || oPayload.executed_by || "system";
     const dNow = new Date();
 
     if (!nProposalId) {

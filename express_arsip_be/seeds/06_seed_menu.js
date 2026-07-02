@@ -178,8 +178,18 @@ export async function seed(knex) {
             updated_at: dNow,
         });
 
-    // 2. Insert into mst_peran_menu for Superadmin (id_peran: 1) and Administrator (id_peran: 57)
-    const rolesToSeed = [1, 57];
+    // 2. Fetch role IDs for SUPERADMIN and ADM dynamically
+    const dbRoles = await knex("mst_peran")
+        .whereIn("kode_peran", ["SUPERADMIN", "ADM"])
+        .select("id_peran", "kode_peran");
+
+    const superadminRole = dbRoles.find(r => r.kode_peran === "SUPERADMIN");
+    const admRole = dbRoles.find(r => r.kode_peran === "ADM");
+
+    const idSuperadmin = superadminRole ? superadminRole.id_peran : 1;
+    const idAdm = admRole ? admRole.id_peran : 71; // default to 71 or fallback
+
+    const rolesToSeed = [idSuperadmin, idAdm];
     const peranMenus = [];
 
     for (const roleId of rolesToSeed) {
@@ -213,7 +223,7 @@ export async function seed(knex) {
         }
     }
 
-    // delete existing for id_peran 1 and 57 and re-insert all
+    // delete existing for id_peran and re-insert all
     await knex("mst_peran_menu").whereIn("id_peran", rolesToSeed).del();
     await knex("mst_peran_menu").insert(peranMenus);
 
@@ -223,7 +233,7 @@ export async function seed(knex) {
     }
 
     // Sync navigasi_pengguna for superadmin user (id_pengguna: 1)
-    const menuTree = await buildAndCacheMenu(57);
+    const menuTree = await buildAndCacheMenu(idAdm);
     await knex("navigasi_pengguna")
       .insert({
         id_pengguna: 1,

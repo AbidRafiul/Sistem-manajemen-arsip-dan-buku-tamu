@@ -11,6 +11,7 @@ function formatDateSystem() {
 }
 
 export async function seed(knex) {
+  await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
   const id_pengguna = "1";
   const nama_lengkap = "Superadmin";
   const telepon = "08100000000";
@@ -85,4 +86,6 @@ export async function seed(knex) {
       updated_at: dDatetime,
     });
   }
+
+  await knex.raw("SET FOREIGN_KEY_CHECKS = 1;");
 }

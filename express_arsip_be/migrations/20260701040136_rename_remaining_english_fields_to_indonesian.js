@@ -39,7 +39,7 @@ export async function up(knex) {
     division_id: "id_divisi",
     department_id: "id_departemen",
     position_id: "id_jabatan",
-    work_unit_id: "mst_unit_kerja",
+    work_unit_id: "id_unit_kerja",
     failed_login_attempts: "gagal_masuk",
     last_login_at: "terakhir_login",
   });
@@ -237,7 +237,7 @@ export async function down(knex) {
     id_divisi: "division_id",
     id_departemen: "department_id",
     id_jabatan: "position_id",
-    mst_unit_kerja: "work_unit_id",
+    id_unit_kerja: "work_unit_id",
     gagal_masuk: "failed_login_attempts",
     terakhir_login: "last_login_at",
   });

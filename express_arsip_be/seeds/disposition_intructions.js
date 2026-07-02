@@ -3,6 +3,7 @@
  * @returns { Promise<void> }
  */
 export async function seed(knex) {
+  await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
   await knex("mst_instruksi_disposisi").del();
 
   await knex("mst_instruksi_disposisi").insert([
@@ -47,4 +48,6 @@ export async function seed(knex) {
       updated_at: new Date(),
     },
   ]);
+
+  await knex.raw("SET FOREIGN_KEY_CHECKS = 1;");
 }

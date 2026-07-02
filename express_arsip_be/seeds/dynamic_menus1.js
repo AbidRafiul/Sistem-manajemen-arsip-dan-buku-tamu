@@ -4,6 +4,150 @@ export async function seed(knex) {
   // 1. Insert missing menus into mst_menu
   const vaMenus = [
     {
+      id_menu: 1,
+      id_menu_induk: 2,
+      kode_menu: "MENU",
+      nama_menu: "Management Menu",
+      jalur_menu: "/setup/menu",
+      ikon_menu: "i pi-fw pi-users",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 2,
+      id_menu_induk: null,
+      kode_menu: "MENU_SETUP",
+      nama_menu: "Set Up",
+      jalur_menu: "",
+      ikon_menu: "pi pi-fw pi-cog",
+      urutan: 0,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 3,
+      id_menu_induk: null,
+      kode_menu: "MASTER_ORG",
+      nama_menu: "Master Organisasi",
+      jalur_menu: "",
+      ikon_menu: "pi pi-fw pi-sitemap",
+      urutan: 0,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 4,
+      id_menu_induk: 3,
+      kode_menu: "MENU_CABANG",
+      nama_menu: "Data Cabang",
+      jalur_menu: "/master/organisasi/branches",
+      ikon_menu: "pi pi-building",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 5,
+      id_menu_induk: 3,
+      kode_menu: "MENU_DIVISI",
+      nama_menu: "Data Divisi",
+      jalur_menu: "/master/organisasi/divisions",
+      ikon_menu: "pi pi-sitemap",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 6,
+      id_menu_induk: 3,
+      kode_menu: "MENU_DEPART",
+      nama_menu: "Data Department",
+      jalur_menu: "/master/organisasi/department",
+      ikon_menu: "pi pi-briefcase",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 7,
+      id_menu_induk: 3,
+      kode_menu: "MENU_JABATAN",
+      nama_menu: "Data Jabatan",
+      jalur_menu: "/master/organisasi/positions",
+      ikon_menu: "pi pi-id-card",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 8,
+      id_menu_induk: 3,
+      kode_menu: "MENU PERAN",
+      nama_menu: "Data Peran",
+      jalur_menu: "/master/organisasi/roles",
+      ikon_menu: "pi pi-users",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 9,
+      id_menu_induk: 3,
+      kode_menu: "MENU UK",
+      nama_menu: "Data Unit Kerja",
+      jalur_menu: "/master/organisasi/work_unit",
+      ikon_menu: "pi pi-desktop",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 10,
+      id_menu_induk: null,
+      kode_menu: "ARSIP",
+      nama_menu: "ARSIP DOKUMEN",
+      jalur_menu: "",
+      ikon_menu: "pi pi-fw pi-folder",
+      urutan: 2,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 11,
+      id_menu_induk: 10,
+      kode_menu: "ARSIP_DOC",
+      nama_menu: "Dokumen Arsip",
+      jalur_menu: "/edms/archive_document",
+      ikon_menu: "pi pi-fw pi-folder-open",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 12,
+      id_menu_induk: 10,
+      kode_menu: "ARSIP_LOAN",
+      nama_menu: "Peminjaman Arsip",
+      jalur_menu: "/edms/archive_loan",
+      ikon_menu: "pi pi-fw pi-share-alt",
+      urutan: 2,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
       id_menu: 13,
       id_menu_induk: null,
       kode_menu: "BERANDA",
@@ -161,9 +305,21 @@ export async function seed(knex) {
     }
   ];
 
+  // Hapus menu lama yang memiliki id_menu atau kode_menu yang berkonflik agar tidak memicu error unique constraint
+  const targetMenuIds = vaMenus.map(m => m.id_menu);
+  const targetMenuCodes = vaMenus.map(m => m.kode_menu);
+
+  await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
+  await knex("mst_menu")
+    .whereIn("id_menu", targetMenuIds)
+    .orWhereIn("kode_menu", targetMenuCodes)
+    .del();
+
   await knex("mst_menu").insert(vaMenus).onConflict("id_menu").merge();
+  await knex.raw("SET FOREIGN_KEY_CHECKS = 1;");
 
   // Perbaiki tanggal created_at/updated_at untuk menu bawaan 1-12 yang masih "0000-00-00"
+  await knex.raw("SET SESSION sql_mode = '';");
   await knex("mst_menu")
     .where("id_menu", "<=", 12)
     .whereRaw("created_at = '0000-00-00 00:00:00' OR created_at IS NULL")

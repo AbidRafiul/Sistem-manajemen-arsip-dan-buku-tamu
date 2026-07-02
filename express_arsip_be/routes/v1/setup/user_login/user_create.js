@@ -47,6 +47,11 @@ router.post("/", async (req, res) => {
           .required()
           .label("kata_sandi"),
         status: Joi.string().required().label("status"),
+        id_cabang: Joi.number().integer().positive().required().label("id_cabang"),
+        id_jabatan: Joi.number().integer().positive().required().label("id_jabatan"),
+        id_divisi: Joi.number().integer().positive().required().label("id_divisi"),
+        id_departemen: Joi.number().integer().positive().required().label("id_departemen"),
+        id_unit_kerja: Joi.number().integer().positive().required().label("id_unit_kerja"),
       },
       {
         "string.base": "{#label} harus berupa string",

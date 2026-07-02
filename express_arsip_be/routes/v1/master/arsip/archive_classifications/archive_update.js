@@ -15,7 +15,7 @@ const router = express.Router();
 
 const updateArchiveClassification = async (req, res) => {
   const { body: oPayload } = req;
-  const cArchiveClassificationId = req.params.ArchiveClassificationId;
+  const cIdKlasifikasi = req.params.id_klasifikasi;
   const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {

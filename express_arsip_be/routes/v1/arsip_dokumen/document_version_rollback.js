@@ -8,7 +8,7 @@ const rollbackDocumentVersion = async (req, res) => {
     const cKodeDokumen = oPayload.kode_dokumen || oPayload.document_code;
     const nIdDokumen = oPayload.id_dokumen || oPayload.document_id;
     const nTargetVersionId = oPayload.id_versi || oPayload.version_id;
-    const cUploadedBy = req?.context?.Username || oPayload.rollback_by || "system";
+    const cUploadedBy = req?.auth?.nama_pengguna || req?.context?.nama_pengguna || oPayload.rollback_by || "system";
     const dNow = new Date();
 
     if ((!cKodeDokumen && !nIdDokumen) || !nTargetVersionId) {
