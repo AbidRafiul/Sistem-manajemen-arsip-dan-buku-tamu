@@ -1,5 +1,12 @@
 export async function seed(knex) {
   const dNow = new Date();
+  const adminRole = await knex("mst_peran")
+    .where("kode_peran", "ADM")
+    .first();
+
+  if (!adminRole) {
+    throw new Error("Peran ADM belum tersedia untuk seed dynamic menu");
+  }
 
   // 1. Insert missing menus into mst_menu
   const vaMenus = [
@@ -316,9 +323,9 @@ export async function seed(knex) {
       updated_at: dNow,
     });
 
-  // 2. Insert into mst_peran_menu for Superadmin (id_peran: 1)
+  // 2. Berikan seluruh hak menu kepada Administrator.
   const vaPeranMenus = vaMenus.map(oMenu => ({
-    id_peran: 1, // Superadmin
+    id_peran: adminRole.id_peran,
     id_menu: oMenu.id_menu,
     hak_lihat: 1,
     hak_buat: 1,
@@ -333,7 +340,7 @@ export async function seed(knex) {
   const vaExistingMenus = await knex("mst_menu").where("id_menu", "<", 13).select("id_menu");
   for (const oRow of vaExistingMenus) {
       vaPeranMenus.push({
-          id_peran: 1,
+          id_peran: adminRole.id_peran,
           id_menu: oRow.id_menu,
           hak_lihat: 1,
           hak_buat: 1,
@@ -345,7 +352,10 @@ export async function seed(knex) {
       });
   }
 
-  // delete existing for id_peran 1 and re-insert all
-  await knex("mst_peran_menu").where("id_peran", 1).del();
-  await knex("mst_peran_menu").insert(vaPeranMenus);
+  const uniquePeranMenus = Array.from(
+    new Map(vaPeranMenus.map((row) => [row.id_menu, row])).values(),
+  );
+
+  await knex("mst_peran_menu").where("id_peran", adminRole.id_peran).del();
+  await knex("mst_peran_menu").insert(uniquePeranMenus);
 }

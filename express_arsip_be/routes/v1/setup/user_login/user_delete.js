@@ -46,7 +46,7 @@ router.post("/", async (req, res) => {
         datetime: datetime(),
       });
 
-    //  TRANSAKSI SOFT DELETE (Mencakup mst_pengguna & mst_pengguna_perans)
+    // TRANSAKSI SOFT DELETE (mencakup mst_pengguna dan mst_pengguna_peran)
     await DB.transaction(async (trx) => {
       // 1. Nonaktifkan di mst_pengguna
       await trx("mst_pengguna")
@@ -56,7 +56,7 @@ router.post("/", async (req, res) => {
           updated_at: formatDateSystem(),
         });
 
-      // 2. Nonaktifkan juga di mst_pengguna_perans
+      // 2. Nonaktifkan juga di mst_pengguna_peran
       await trx("mst_pengguna_peran")
         .whereIn("id_pengguna", oPayload.NamaPengguna)
         .update({

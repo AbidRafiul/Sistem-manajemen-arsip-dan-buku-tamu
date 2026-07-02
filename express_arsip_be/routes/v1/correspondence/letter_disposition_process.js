@@ -32,7 +32,7 @@ const letterDispositionProcess = async (req, res) => {
     }
 
     const oDisposition = await DB("trs_disposisi_surat")
-      .where("disposisi_id", oPayload.disposition_id)
+      .where("disposisi_surat_id", oPayload.disposisi_id)
       .first();
 
     if (!oDisposition) {
@@ -75,15 +75,16 @@ const letterDispositionProcess = async (req, res) => {
     }
 
     const dNow = new Date();
+    const nActorId = oPayload.updated_by || req?.auth?.id_pengguna || null;
 
     await DB.transaction(async (trx) => {
-      await trx("trs_diposisi_surat")
-        .where("disposisi_id", oPayload.disposisi_id)
+      await trx("trs_disposisi_surat")
+        .where("disposisi_surat_id", oPayload.disposisi_id)
         .update({
           status: "diproses",
           received_at: oDisposition.received_at || dNow,
           processed_at: dNow,
-          updated_by: oPayload.updated_by || null,
+          updated_by: nActorId,
           updated_at: dNow,
         });
 
@@ -91,13 +92,13 @@ const letterDispositionProcess = async (req, res) => {
         .where("surat_masuk_id", oDisposition.surat_masuk_id)
         .update({
           status: "diproses",
-          updated_by: oPayload.updated_by || null,
+          updated_by: nActorId,
           updated_at: dNow,
         });
 
       await trx("trs_tracking_surat_masuk").insert({
         surat_masuk_id: oDisposition.surat_masuk_id,
-        disposisi_id: oPayload.disposisi_id,
+        disposisi_surat_id: oPayload.disposisi_id,
         nama_aksi: "disposisi_diproses",
         dari_pengguna_id: oDisposition.dari_pengguna_id || null,
         kepada_pengguna_id: oDisposition.kepada_pengguna_id || null,
@@ -105,7 +106,7 @@ const letterDispositionProcess = async (req, res) => {
         status_saat_ini: "diproses",
         catatan: oPayload.process_note || "Disposisi mulai diproses",
         processed_at: dNow,
-        created_by: oPayload.updated_by || null,
+        created_by: nActorId,
         created_at: dNow,
         updated_at: dNow,
       });

@@ -15,155 +15,39 @@ import { recordAuditTrail } from "../components/tools/audit_tool.js";
 
 const router = express.Router();
 
-const getColumns = async (tableName) => {
-  const [columns] = await DB.raw("SHOW COLUMNS FROM ??", [tableName]);
-  return columns.map((column) => column.Field);
-};
-
-const pickColumn = (columns, candidates) => {
-  return candidates.find((candidate) => columns.includes(candidate));
-};
-
 const getUserByUsername = async (namaPengguna) => {
-  const columns = await getColumns("mst_pengguna");
-  const idColumn = pickColumn(columns, [
-    "id_pengguna",
-    "id_pengguna",
-    "UserId",
-  ]);
-  const usernameColumn = pickColumn(columns, [
-    "nama_pengguna",
-    "username",
-    "Username",
-  ]);
-  const passwordColumn = pickColumn(columns, [
-    "kata_sandi",
-    "password",
-    "Password",
-  ]);
-  const fullnameColumn = pickColumn(columns, [
-    "nama_lengkap",
-    "fullname",
-    "Fullname",
-  ]);
-  const statusColumn = pickColumn(columns, ["status", "Status"]);
-
-  if (!idColumn || !usernameColumn || !passwordColumn) return null;
-
   return await DB("mst_pengguna")
-    .where(usernameColumn, namaPengguna)
+    .where("nama_pengguna", namaPengguna)
     .select(
-      `${idColumn} as id_pengguna`,
-      `${usernameColumn} as nama_pengguna`,
-      `${passwordColumn} as kata_sandi`,
-      fullnameColumn
-        ? `${fullnameColumn} as nama_lengkap`
-        : DB.raw("NULL as nama_lengkap"),
-      statusColumn ? `${statusColumn} as status` : DB.raw("'active' as status"),
+      "id_pengguna",
+      "nama_pengguna",
+      "kata_sandi",
+      "nama_lengkap",
+      "status",
     )
     .first();
 };
 
 const getUserRole = async (user) => {
-  const oldTables = {
-    userRole: "mst_pengguna_peran",
-    role: "mst_peran",
-    userId: "id_pengguna",
-    roleId: "role_id",
-    primary: "is_primary",
-    roleCode: "role_code",
-    roleName: "role_name",
-  };
-  const newTables = {
-    userRole: "mst_pengguna_perans",
-    role: "mst_perans",
-    userId: "nama_pengguna",
-    roleId: "id_peran",
-    primary: "peran_utama",
-    roleCode: "kode_peran",
-    roleName: "nama_peran",
-  };
-
-  const hasOld = await DB.schema.hasTable(oldTables.userRole);
-  const cfg = hasOld ? oldTables : newTables;
-  if (
-    !(await DB.schema.hasTable(cfg.userRole)) ||
-    !(await DB.schema.hasTable(cfg.role))
-  ) {
-    return null;
-  }
-
-  const userRoleColumns = await getColumns(cfg.userRole);
-  const roleColumns = await getColumns(cfg.role);
-  const userJoinColumn = pickColumn(userRoleColumns, [
-    cfg.userId,
-    "id_pengguna",
-    "nama_pengguna",
-    "id_pengguna",
-  ]);
-  const roleJoinColumn = pickColumn(userRoleColumns, [
-    cfg.roleId,
-    "id_peran",
-    "role_id",
-  ]);
-  const roleIdColumn = pickColumn(roleColumns, [
-    cfg.roleId,
-    "id_peran",
-    "role_id",
-  ]);
-  const roleCodeColumn = pickColumn(roleColumns, [
-    cfg.roleCode,
-    "kode_peran",
-    "role_code",
-  ]);
-  const roleNameColumn = pickColumn(roleColumns, [
-    cfg.roleName,
-    "nama_peran",
-    "role_name",
-  ]);
-  const primaryColumn = pickColumn(userRoleColumns, [
-    cfg.primary,
-    "peran_utama",
-    "is_primary",
-  ]);
-  const statusColumn = pickColumn(userRoleColumns, ["status", "Status"]);
-
-  if (!userJoinColumn || !roleJoinColumn || !roleIdColumn) return null;
-
-  const userValue = ["nama_pengguna", "username"].includes(userJoinColumn)
-    ? user.nama_pengguna
-    : user.id_pengguna;
-
-  const query = DB(`${cfg.userRole} as user_role`)
+  return await DB("mst_pengguna_peran as pengguna_peran")
     .leftJoin(
-      `${cfg.role} as role`,
-      `user_role.${roleJoinColumn}`,
-      `role.${roleIdColumn}`,
+      "mst_peran as peran",
+      "pengguna_peran.id_peran",
+      "peran.id_peran",
     )
     .select(
-      `user_role.${roleJoinColumn} as id_peran`,
-      roleCodeColumn
-        ? `role.${roleCodeColumn} as kode_peran`
-        : DB.raw("NULL as kode_peran"),
-      roleNameColumn
-        ? `role.${roleNameColumn} as nama_peran`
-        : DB.raw("NULL as nama_peran"),
+      "pengguna_peran.id_peran",
+      "peran.kode_peran",
+      "peran.nama_peran",
     )
-    .where(`user_role.${userJoinColumn}`, userValue);
-
-  if (statusColumn) {
-    query.where((builder) => {
+    .where("pengguna_peran.id_pengguna", user.id_pengguna)
+    .where((builder) => {
       builder
-        .where(`user_role.${statusColumn}`, "active")
-        .orWhereNull(`user_role.${statusColumn}`);
-    });
-  }
-
-  if (primaryColumn) {
-    query.orderBy(`user_role.${primaryColumn}`, "desc");
-  }
-
-  return await query.first();
+        .where("pengguna_peran.status", "active")
+        .orWhereNull("pengguna_peran.status");
+    })
+    .orderBy("pengguna_peran.peran_utama", "desc")
+    .first();
 };
 
 router.post("/", async (req, res) => {

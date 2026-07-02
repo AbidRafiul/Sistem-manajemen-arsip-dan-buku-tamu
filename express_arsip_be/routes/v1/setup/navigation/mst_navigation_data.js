@@ -25,10 +25,9 @@ const uniqueValues = (values) => {
 const getRoleById = async (roleId) => {
   if (!roleId) return null;
 
-  return await DB("mst_roles")
-    .select("role_name", "role_code")
-    .where("role_id", roleId)
-    .orWhere("RoleId", roleId)
+  return await DB("mst_peran")
+    .select("nama_peran", "kode_peran")
+    .where("id_peran", roleId)
     .first()
     .catch(() => null);
 };
@@ -36,19 +35,19 @@ const getRoleById = async (roleId) => {
 const getRoleByUserId = async (userId) => {
   if (!userId) return null;
 
-  return await DB("mst_user_roles")
-    .leftJoin("mst_roles", "mst_user_roles.role_id", "mst_roles.role_id")
+  return await DB("mst_pengguna_peran")
+    .leftJoin("mst_peran", "mst_pengguna_peran.id_peran", "mst_peran.id_peran")
     .select(
-      "mst_roles.role_name as role_name",
-      "mst_roles.role_code as role_code",
+      "mst_peran.nama_peran",
+      "mst_peran.kode_peran",
     )
-    .where("mst_user_roles.id_pengguna", userId)
+    .where("mst_pengguna_peran.id_pengguna", userId)
     .where((builder) => {
       builder
-        .where("mst_user_roles.status", "active")
-        .orWhereNull("mst_user_roles.status");
+        .where("mst_pengguna_peran.status", "active")
+        .orWhereNull("mst_pengguna_peran.status");
     })
-    .orderBy("mst_user_roles.is_primary", "desc")
+    .orderBy("mst_pengguna_peran.peran_utama", "desc")
     .first()
     .catch(() => null);
 };
@@ -58,32 +57,27 @@ const getNavigationByRole = async (roles) => {
 
   if (!aliases.length) return null;
 
-  return await DB("mst_navigation")
-    .select("menu", "role")
-    .whereIn("role", aliases)
-    .orderByRaw(`CASE WHEN role = ? THEN 0 ELSE 1 END`, [roles[0] || ""])
+  return await DB("mst_navigasi")
+    .select("menu", "peran")
+    .whereIn("peran", aliases)
+    .orderByRaw(`CASE WHEN peran = ? THEN 0 ELSE 1 END`, [roles[0] || ""])
     .first();
 };
 
 const queryNavigationByRoleId = async (roleId) => {
-    const tableName = (await DB.schema.hasTable("mst_navigasi"))
-        ? "mst_navigasi"
-        : (await DB.schema.hasTable("mst_navigation"))
-            ? "mst_navigation"
-            : null;
+  const role = await getRoleById(roleId);
+  if (!role) return null;
 
-    if (!tableName) return null;
+  const aliases = uniqueValues([
+    role.nama_peran,
+    role.kode_peran,
+    ...roleAliases(role.nama_peran),
+    ...roleAliases(role.kode_peran),
+  ]);
 
-    const [columns] = await DB.raw("SHOW COLUMNS FROM ??", [tableName]);
-    const columnNames = columns.map((column) => column.Field);
-    const menuColumn = columnNames.includes("menu") ? "menu" : columnNames.includes("Menu") ? "Menu" : null;
-    const roleColumn = columnNames.includes("peran") ? "peran" : columnNames.includes("role") ? "role" : null;
-
-    if (!menuColumn || !roleColumn) return null;
-
-    return await DB(tableName)
-      .select(`${menuColumn} as menu`)
-      .where(roleColumn, roleId);
+  return await DB("mst_navigasi")
+    .select("menu")
+    .whereIn("peran", aliases);
 };
 
 router.post("/", async (req, res) => {

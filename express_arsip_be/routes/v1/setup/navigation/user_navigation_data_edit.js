@@ -75,7 +75,7 @@ router.post("/", async (req, res) => {
     if (!oNavigation?.menu) {
       oNavigation = await DB("mst_navigasi")
         .select("menu")
-        .where("role", "master")
+        .where("peran", "master")
         .first();
     }
 
@@ -88,22 +88,22 @@ router.post("/", async (req, res) => {
     }
 
     const oUser = await DB("mst_pengguna_peran")
-      .leftJoin("mst_peran", "mst_pengguna_peran.role_id", "mst_peran.role_id")
+      .leftJoin("mst_peran", "mst_pengguna_peran.id_peran", "mst_peran.id_peran")
       .select(
-        "mst_peran.role_name as peran",
-        "mst_peran.role_code as kode_peran",
+        "mst_peran.nama_peran as peran",
+        "mst_peran.kode_peran",
       )
       .where("mst_pengguna_peran.id_pengguna", oPayload.NamaPengguna)
       .where("mst_pengguna_peran.status", "active")
-      .orderBy("mst_pengguna_peran.is_primary", "desc")
+      .orderBy("mst_pengguna_peran.peran_utama", "desc")
       .first();
 
     const oMst = await DB("mst_navigasi")
       .select("menu")
       .where((builder) => {
         builder
-          .where("role", oUser?.peran || "master")
-          .orWhere("role", oUser?.kode_peran || "master");
+          .where("peran", oUser?.peran || "master")
+          .orWhere("peran", oUser?.kode_peran || "master");
       })
       .first();
 

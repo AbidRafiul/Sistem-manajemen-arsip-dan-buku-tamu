@@ -11,7 +11,7 @@ const router = express.Router();
 
 const deleteDocumentType = async (req, res) => {
   const cIdJenisDokumen = req.params.id_jenis_dokumen;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
   const oPayload = { id: cIdJenisDokumen };
 
 

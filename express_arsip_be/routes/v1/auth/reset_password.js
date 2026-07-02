@@ -50,14 +50,14 @@ router.post("/", async (req, res) => {
         "mst_pengguna.id_pengguna",
         "mst_pengguna_peran.id_pengguna",
       )
-      .leftJoin("mst_peran", "mst_pengguna_peran.role_id", "mst_peran.role_id")
+      .leftJoin("mst_peran", "mst_pengguna_peran.id_peran", "mst_peran.id_peran")
       .select(
         "mst_pengguna.id_pengguna",
-        "mst_pengguna.username as nama_pengguna",
-        "mst_pengguna.password as kata_sandi",
-        "mst_peran.role_name as peran",
+        "mst_pengguna.nama_pengguna",
+        "mst_pengguna.kata_sandi",
+        "mst_peran.nama_peran as peran",
       )
-      .where("mst_pengguna.username", oPayload.nama_pengguna)
+      .where("mst_pengguna.nama_pengguna", oPayload.nama_pengguna)
       .first();
 
     if (!oUser) {
@@ -90,7 +90,7 @@ router.post("/", async (req, res) => {
 
     // 5. Update Database dengan kata_sandi Baru
     await DB("mst_pengguna").where("id_pengguna", oUser.id_pengguna).update({
-      password: cHashedNewkata_sandi,
+      kata_sandi: cHashedNewkata_sandi,
       updated_at: formatDateSystem(),
     });
 

@@ -3,8 +3,6 @@
  * @returns { Promise<void> }
  */
 export async function seed(knex) {
-  await knex("mst_instruksi_disposisi").del();
-
   await knex("mst_instruksi_disposisi").insert([
     {
       kode_instruksi: "TINDAK_LANJUT",
@@ -46,5 +44,5 @@ export async function seed(knex) {
       created_at: new Date(),
       updated_at: new Date(),
     },
-  ]);
+  ]).onConflict("kode_instruksi").merge();
 }

@@ -1,15 +1,10 @@
-import {
-  hmac,
-  formatDateSystem,
-} from "../routes/v1/components/tools/general.js";
+import { hmac } from "../routes/v1/components/tools/general.js";
 
 export async function seed(knex) {
   // 1. Matikan Foreign Key check
   await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
 
   const dNow = new Date();
-  const cDatetime = formatDateSystem();
-
   // 2. Pastikan Master Data Organisasi Lengkap (Department, Position, WorkUnit)
   // Branch & Division sudah diisi di 01_master_data.js (id_cabang: 1, id_divisi: 1)
 
@@ -28,7 +23,7 @@ export async function seed(knex) {
     .onConflict("id_departemen")
     .ignore();
 
-  await knex("mst_jabatan")
+  await knex("mst_positions")
     .insert([
       {
         id_jabatan: 1,
@@ -71,11 +66,11 @@ export async function seed(knex) {
   const hashedkata_sandi = hmac(ckata_sandi, secret, "sha512");
 
   // 4. Masukkan Superadmin ke `mst_pengguna` (Sistem Baru SIAB)
-  const [NamaPengguna] = await knex("mst_pengguna").insert([
+  await knex("mst_pengguna").insert([
     {
       id_pengguna: 1,
       nama_lengkap: "Superadmin SIAB",
-      nama_pengguna: nama_pengguna,
+      nama_pengguna,
       surel: nama_pengguna,
       telepon: "08100000000",
       kata_sandi: hashedkata_sandi,
@@ -113,7 +108,7 @@ export async function seed(knex) {
     .where("peran", "master")
     .first();
   if (oNavigation) {
-    await knex("navigasi_pengguna")
+    await knex("user_navigation")
       .insert({
         id_pengguna: 1,
         menu: oNavigation.menu,

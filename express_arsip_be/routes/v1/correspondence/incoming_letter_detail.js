@@ -81,7 +81,9 @@ const incomingLetterDetail = async (req, res) => {
       )
       .where("surat_masuk_id", oPayload.surat_masuk_id)
       .where("status", "active")
-      .orderBy("created_at", "desc");
+      .orderBy("created_at", "desc")
+      .orderBy("file_surat_masuk_id", "desc")
+      .limit(1);
 
     const vaDispositions = await DB("trs_disposisi_surat as tld")
       .leftJoin(
@@ -131,6 +133,20 @@ const incomingLetterDetail = async (req, res) => {
       .where("surat_masuk_id", oPayload.surat_masuk_id)
       .orderBy("processed_at", "desc");
 
+    const oArchivedDocument = await DB("trs_dokumen")
+      .select(
+        "id_dokumen",
+        "kode_dokumen",
+        "nama_dokumen",
+        "nomor_dokumen",
+        "tanggal",
+        "status",
+        "created_at",
+      )
+      .where("nomor_dokumen", oLetter.nomor_agenda)
+      .where("status", "active")
+      .first();
+
     return res.status(200).json({
       status: true,
       message: "Detail surat masuk berhasil diambil",
@@ -138,6 +154,7 @@ const incomingLetterDetail = async (req, res) => {
         surat: oLetter,
         letter: oLetter,
         files: vaFiles,
+        archived_document: oArchivedDocument || null,
         dispositions: vaDispositions,
         trackings: vaTrackings,
       },

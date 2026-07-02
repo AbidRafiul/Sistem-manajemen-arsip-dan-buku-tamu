@@ -32,18 +32,9 @@ const assignIfColumnExists = (target, columns, columnName, value) => {
 const findUserReference = async (value) => {
   if (value === undefined || value === null || value === "") return true;
 
-  const tableName = await getExistingTable(["mst_pengguna", "mst_users"]);
-  const columns = await getColumns(tableName);
-  const idColumn = pickColumn(columns, [
-    "id_pengguna",
-    "nama_pengguna",
-    "id_pengguna",
-    "UserId",
-  ]);
-
-  if (!tableName || !idColumn) return true;
-
-  const user = await DB(tableName).where(idColumn, value).first();
+  const user = await DB("mst_pengguna")
+    .where("id_pengguna", value)
+    .first();
   return Boolean(user);
 };
 

@@ -34,7 +34,7 @@ router.post("/update", async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    const nUpdated = await DB("mst_jabatan")
+    const nUpdated = await DB("mst_positions")
       .where("id_jabatan", oPayload.id_jabatan)
       .update({
         kode_jabatan: oPayload.kode_jabatan ? (oPayload.kode_jabatan.toUpperCase().startsWith("JB-") ? `JB-${oPayload.kode_jabatan.substring(3)}` : `JB-${oPayload.kode_jabatan}`) : null,

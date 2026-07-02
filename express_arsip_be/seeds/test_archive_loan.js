@@ -1,1 +1,1 @@
-export async function seed(knex) { /* disabled */ }
+export async function seed() { /* disabled */ }

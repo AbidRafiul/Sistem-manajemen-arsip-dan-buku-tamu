@@ -2,71 +2,65 @@ import { hmac } from "../routes/v1/components/tools/general.js";
 
 const now = () => new Date();
 
-const hasTable = (knex, tableName) => knex.schema.hasTable(tableName);
+const upsertRows = async (knex, tableName, keyColumn, rows) => {
+  if (!(await knex.schema.hasTable(tableName))) return;
 
-const hasColumn = async (knex, tableName, columnName) => {
-  if (!(await hasTable(knex, tableName))) {
-    return false;
-  }
-
-  return knex.schema.hasColumn(tableName, columnName);
-};
-
-const existingColumns = async (knex, tableName, columns) => {
-  const checks = await Promise.all(
-    columns.map(async (column) => [
-      column,
-      await hasColumn(knex, tableName, column),
-    ]),
-  );
-
-  return new Set(
-    checks.filter(([, exists]) => exists).map(([column]) => column),
-  );
-};
-
-const pickExisting = (row, columns) => {
-  return Object.fromEntries(
-    Object.entries(row).filter(([key]) => columns.has(key)),
-  );
-};
-
-const seedRows = async (knex, tableName, keyColumn, rows) => {
-  if (!(await hasTable(knex, tableName))) {
-    return;
-  }
-
-  const allColumns = [...new Set(rows.flatMap((row) => Object.keys(row)))];
-  const columns = await existingColumns(knex, tableName, allColumns);
+  const columns = await knex(tableName).columnInfo();
 
   for (const row of rows) {
-    const payload = pickExisting(row, columns);
-    if (!payload[keyColumn]) {
-      continue;
+    const payload = Object.fromEntries(
+      Object.entries(row).filter(([column]) => columns[column]),
+    );
+
+    if (payload[keyColumn] === undefined || payload[keyColumn] === null) {
+      throw new Error(
+        `Kolom kunci ${tableName}.${keyColumn} tidak ditemukan pada payload seed`,
+      );
     }
 
-    const exists = await knex(tableName)
-      .where(keyColumn, payload[keyColumn])
-      .first();
-    if (exists) {
-      const updatePayload = { ...payload };
-      if (columns.has("updated_at")) {
-        updatePayload.updated_at = payload.updated_at || now();
-      }
-
-      await knex(tableName)
-        .where(keyColumn, payload[keyColumn])
-        .update(updatePayload);
-    } else {
-      await knex(tableName).insert(payload);
-    }
+    await knex(tableName)
+      .insert(payload)
+      .onConflict(keyColumn)
+      .merge(payload);
   }
 };
 
-const hashkata_sandi = (nama_pengguna, kata_sandi) => {
+const insertIfMissing = async (knex, tableName, keyColumn, row) => {
+  const exists = await knex(tableName)
+    .where(keyColumn, row[keyColumn])
+    .first();
+
+  if (!exists) await knex(tableName).insert(row);
+};
+
+const seedUserRole = async (knex, userId, roleId, dNow) => {
+  const existing = await knex("mst_pengguna_peran")
+    .where("id_pengguna", userId)
+    .first();
+  const payload = {
+    id_pengguna: userId,
+    id_peran: roleId,
+    peran_utama: 1,
+    status: "active",
+    updated_at: dNow,
+  };
+
+  if (existing) {
+    await knex("mst_pengguna_peran")
+      .where("id_peran_pengguna", existing.id_peran_pengguna)
+      .update(payload);
+  } else {
+    await knex("mst_pengguna_peran").insert({
+      ...payload,
+      created_at: dNow,
+    });
+  }
+};
+
+const hashPassword = (username, password) => {
   const userKey = process.env.USER_KEY || "random";
   const userSecret = process.env.USER_SECRET || "random";
-  return hmac(`${userKey}${nama_pengguna}${kata_sandi}`, userSecret, "sha512");
+  return hmac(`${userKey}${username}${password}`, userSecret, "sha512");
 };
 
 const menu = JSON.stringify([
@@ -104,85 +98,15 @@ const menu = JSON.stringify([
       },
     ],
   },
-  {
-    label: "BUKU TAMU",
-    items: [
-      {
-        label: "Registrasi",
-        icon: "pi pi-fw pi-user-plus",
-        to: "/buku_tamu/registrasi",
-      },
-      {
-        label: "Monitoring",
-        icon: "pi pi-fw pi-desktop",
-        to: "/buku_tamu/monitoring",
-      },
-      {
-        label: "Checkout",
-        icon: "pi pi-fw pi-sign-out",
-        to: "/buku_tamu/checkout",
-      },
-    ],
-  },
-  {
-    label: "SETUP",
-    items: [
-      { label: "Users", icon: "pi pi-fw pi-users", to: "/setup/users" },
-      { label: "Config", icon: "pi pi-fw pi-wrench", to: "/setup/config" },
-    ],
-  },
 ]);
 
 export async function seed(knex) {
   const dNow = now();
 
-  await seedRows(knex, "mst_peran", "kode_peran", [
-    {
-      kode_peran: "ADM",
-      nama_peran: "Administrator",
-      deskripsi: "Akses penuh sistem",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-    {
-      kode_peran: "PMN",
-      nama_peran: "Pimpinan",
-      deskripsi: "Approval dan monitoring",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-    {
-      kode_peran: "SKR",
-      nama_peran: "Sekretaris",
-      deskripsi: "Kelola surat masuk",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-    {
-      kode_peran: "STF_ARS",
-      nama_peran: "Staff Arsip",
-      deskripsi: "Kelola arsip digital",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-    {
-      kode_peran: "RSP",
-      nama_peran: "Resepsionis",
-      deskripsi: "Kelola buku tamu",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-  ]);
-
-  await seedRows(knex, "mst_cabang", "kode_cabang", [
+  await upsertRows(knex, "mst_cabang", "kode_cabang", [
     {
       kode_cabang: "BR-PST",
-      nama_cabang: "Kantor Pusat",
+      nama_cabang: "Kantor Pusat Demo",
       alamat: "Jl. Merdeka No. 1",
       telepon: "0215550101",
       surel: "pusat@example.local",
@@ -191,14 +115,13 @@ export async function seed(knex) {
       updated_at: dNow,
     },
   ]);
-
   const branch = await knex("mst_cabang")
     .where("kode_cabang", "BR-PST")
     .first();
 
-  await seedRows(knex, "mst_divisi", "kode_divisi", [
+  await upsertRows(knex, "mst_divisi", "kode_divisi", [
     {
-      id_cabang: branch?.id_cabang || 1,
+      id_cabang: branch.id_cabang,
       kode_divisi: "DIV-OPS",
       nama_divisi: "Operasional",
       deskripsi: "Operasional kantor",
@@ -207,8 +130,8 @@ export async function seed(knex) {
       updated_at: dNow,
     },
     {
-      id_cabang: branch?.id_cabang || 1,
-      kode_divisi: "DIV-IT",
+      id_cabang: branch.id_cabang,
+      kode_divisi: "DIV-DEMO-IT",
       nama_divisi: "Teknologi",
       deskripsi: "Teknologi informasi",
       status: "active",
@@ -216,15 +139,13 @@ export async function seed(knex) {
       updated_at: dNow,
     },
   ]);
-
-  const divOps = await knex("mst_divisi")
+  const division = await knex("mst_divisi")
     .where("kode_divisi", "DIV-OPS")
     .first();
-  const divIt = await knex("mst_divisi").where("kode_divisi", "DIV-IT").first();
 
-  await seedRows(knex, "mst_departemen", "kode_departemen", [
+  await upsertRows(knex, "mst_departemen", "kode_departemen", [
     {
-      id_divisi: divOps?.id_divisi || 1,
+      id_divisi: division.id_divisi,
       kode_departemen: "DEP-ARSIP",
       nama_departemen: "Arsip dan Tata Usaha",
       deskripsi: "Unit arsip dan administrasi",
@@ -232,36 +153,12 @@ export async function seed(knex) {
       created_at: dNow,
       updated_at: dNow,
     },
-    {
-      id_divisi: divIt?.id_divisi || 2,
-      kode_departemen: "DEP-IT",
-      nama_departemen: "IT Support",
-      deskripsi: "Dukungan sistem",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
   ]);
+  const department = await knex("mst_departemen")
+    .where("kode_departemen", "DEP-ARSIP")
+    .first();
 
-  await seedRows(knex, "mst_jabatan", "kode_jabatan", [
-    {
-      kode_jabatan: "POS-DIR",
-      nama_jabatan: "Direktur",
-      tingkat_jabatan: 1,
-      deskripsi: "Pimpinan",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-    {
-      kode_jabatan: "POS-MGR",
-      nama_jabatan: "Manager",
-      tingkat_jabatan: 2,
-      deskripsi: "Manager unit",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
+  await upsertRows(knex, "mst_positions", "kode_jabatan", [
     {
       kode_jabatan: "POS-STF",
       nama_jabatan: "Staff",
@@ -272,14 +169,13 @@ export async function seed(knex) {
       updated_at: dNow,
     },
   ]);
-
-  const depArsip = await knex("mst_departemen")
-    .where("kode_departemen", "DEP-ARSIP")
+  const position = await knex("mst_positions")
+    .where("kode_jabatan", "POS-STF")
     .first();
 
-  await seedRows(knex, "mst_unit_kerja", "kode_unit_kerja", [
+  await upsertRows(knex, "mst_unit_kerja", "kode_unit_kerja", [
     {
-      id_departemen: depArsip?.id_departemen || 1,
+      id_departemen: department.id_departemen,
       kode_unit_kerja: "WU-ARSIP",
       nama_unit_kerja: "Unit Arsip",
       deskripsi: "Pengelolaan arsip",
@@ -288,241 +184,172 @@ export async function seed(knex) {
       updated_at: dNow,
     },
   ]);
+  const workUnit = await knex("mst_unit_kerja")
+    .where("kode_unit_kerja", "WU-ARSIP")
+    .first();
 
-  await seedRows(knex, "mst_archive_classifications", "classification_code", [
+  await upsertRows(knex, "mst_klasifikasi_arsip", "kode_klasifikasi", [
     {
-      classification_code: "ADM",
-      classification_name: "Administrasi",
+      kode_klasifikasi: "ADM",
+      nama_klasifikasi: "Administrasi",
       deskripsi: "Arsip administrasi",
-      status: "active",
+      Status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
     {
-      classification_code: "KEU",
-      classification_name: "Keuangan",
+      kode_klasifikasi: "KEU",
+      nama_klasifikasi: "Keuangan",
       deskripsi: "Arsip keuangan",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-    {
-      classification_code: "HRD",
-      classification_name: "SDM",
-      deskripsi: "Arsip SDM",
-      status: "active",
+      Status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
 
-  await seedRows(knex, "mst_document_type", "document_type_code", [
+  await upsertRows(knex, "mst_jenis_dokumen", "kode_jenis_dokumen", [
     {
-      document_type_code: "SURAT",
-      document_type_name: "Surat",
+      kode_jenis_dokumen: "SURAT",
+      nama_jenis_dokumen: "Surat",
       deskripsi: "Dokumen surat",
-      status: "active",
+      Status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
     {
-      document_type_code: "KONTRAK",
-      document_type_name: "Kontrak",
-      deskripsi: "Dokumen kontrak",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-    {
-      document_type_code: "LAPORAN",
-      document_type_name: "Laporan",
+      kode_jenis_dokumen: "LAPORAN",
+      nama_jenis_dokumen: "Laporan",
       deskripsi: "Dokumen laporan",
-      status: "active",
+      Status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
 
-  if (!(await hasTable(knex, 'mst_archive_classifications'))) return;
-  const adm = await knex("mst_archive_classifications")
-    .where("classification_code", "ADM")
-    .first();
-  const keu = await knex("mst_archive_classifications")
-    .where("classification_code", "KEU")
-    .first();
-
-  await seedRows(knex, "mst_document_categories", "document_category_code", [
+  await upsertRows(knex, "mst_kategori_dokumen", "kode_kategori_dokumen", [
     {
-      archive_classification_id: adm?.archive_classification_id || 1,
-      document_category_code: "ADM-UMUM",
-      document_category_name: "Administrasi Umum",
-      deskripsi: "Dokumen administrasi umum",
-      status: "active",
+      kode_kategori_dokumen: "ADM-UMUM",
+      nama_kategori_dokumen: "Administrasi Umum",
+      kode_klasifikasi: "ADM",
+      deskripsi: "Administrasi umum",
+      Status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
     {
-      archive_classification_id: keu?.archive_classification_id || 2,
-      document_category_code: "KEU-LAP",
-      document_category_name: "Laporan Keuangan",
-      deskripsi: "Dokumen laporan keuangan",
-      status: "active",
+      kode_kategori_dokumen: "KEU-LAP",
+      nama_kategori_dokumen: "Laporan Keuangan",
+      kode_klasifikasi: "KEU",
+      deskripsi: "Laporan keuangan",
+      Status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
 
-  await seedRows(
+  await upsertRows(
     knex,
-    "mst_confidentiality_levels",
-    "confidentiality_level_code",
+    "mst_tingkat_kerahasiaan",
+    "kode_tingkat_kerahasiaan",
     [
       {
-        confidentiality_level_code: "PUB",
-        confidentiality_level_name: "Publik",
-        confidentiality_level: 1,
-        deskripsi: "Dapat diakses umum",
-        status: "active",
-        created_at: dNow,
-        updated_at: dNow,
-      },
-      {
-        confidentiality_level_code: "INT",
-        confidentiality_level_name: "Internal",
-        confidentiality_level: 2,
+        kode_tingkat_kerahasiaan: "INT",
+        nama_tingkat_kerahasiaan: "Internal",
+        tingkat_kerahasiaan: 2,
         deskripsi: "Internal organisasi",
-        status: "active",
+        Status: "active",
         created_at: dNow,
         updated_at: dNow,
       },
       {
-        confidentiality_level_code: "RHS",
-        confidentiality_level_name: "Rahasia",
-        confidentiality_level: 3,
-        deskripsi: "Terbatas",
-        status: "active",
+        kode_tingkat_kerahasiaan: "RHS",
+        nama_tingkat_kerahasiaan: "Rahasia",
+        tingkat_kerahasiaan: 3,
+        deskripsi: "Akses terbatas",
+        Status: "active",
         created_at: dNow,
         updated_at: dNow,
       },
     ],
   );
 
-  const catAdm = await knex("mst_document_categories")
-    .where("document_category_code", "ADM-UMUM")
-    .first();
-  const catKeu = await knex("mst_document_categories")
-    .where("document_category_code", "KEU-LAP")
-    .first();
-
-  await seedRows(knex, "mst_retention_schedule", "retention_code", [
+  await upsertRows(knex, "mst_jadwal_retensi", "kode_retensi", [
     {
-      document_category_id: catAdm?.document_category_id || 1,
-      retention_code: "RET-ADM-05",
-      retention_name: "Retensi 5 Tahun",
-      retention_years: 5,
-      retention_action: "review",
-      deskripsi: "Evaluasi setelah 5 tahun",
-      status: "active",
+      kode_retensi: "RET-ADM-05",
+      kode_kategori_dokumen: "ADM-UMUM",
+      nama_retensi: "Retensi 5 Tahun",
+      tahun_retensi: 5,
+      tindakan_retensi: "review",
+      deskripsi: "Evaluasi 5 tahun",
+      Status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
     {
-      document_category_id: catKeu?.document_category_id || 2,
-      retention_code: "RET-KEU-10",
-      retention_name: "Retensi 10 Tahun",
-      retention_years: 10,
-      retention_action: "destroy",
-      deskripsi: "Musnah setelah 10 tahun",
-      status: "active",
+      kode_retensi: "RET-KEU-10",
+      kode_kategori_dokumen: "KEU-LAP",
+      nama_retensi: "Retensi 10 Tahun",
+      tahun_retensi: 10,
+      tindakan_retensi: "destroy",
+      deskripsi: "Musnah 10 tahun",
+      Status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
 
-  await seedRows(knex, "mst_letter_types", "letter_type_code", [
+  await upsertRows(knex, "mst_jenis_surat", "kode_jenis_surat", [
     {
-      letter_type_code: "SURAT_MASUK",
-      letter_type_name: "Surat Masuk",
-      direction: "incoming",
+      kode_jenis_surat: "SURAT_MASUK",
+      nama_jenis_surat: "Surat Masuk",
+      arah_surat: "incoming",
       deskripsi: "Surat masuk umum",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
-    {
-      letter_type_code: "SURAT_UNDANGAN",
-      letter_type_name: "Surat Undangan",
-      direction: "both",
-      deskripsi: "Surat undangan",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
   ]);
-
-  await seedRows(knex, "mst_disposition_instructions", "instruction_code", [
+  await upsertRows(knex, "mst_instruksi_disposisi", "kode_instruksi", [
     {
-      instruction_code: "TINDAK_LANJUT",
-      instruction_name: "Tindak Lanjut",
+      kode_instruksi: "TINDAK_LANJUT",
+      nama_instruksi: "Tindak Lanjut",
       deskripsi: "Menindaklanjuti surat",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
+  ]);
+
+  await upsertRows(knex, "mst_tujuan_kunjungan", "kode_tujuan_kunjungan", [
     {
-      instruction_code: "ARSIPKAN",
-      instruction_name: "Arsipkan",
-      deskripsi: "Mengarsipkan surat",
+      kode_tujuan_kunjungan: "MEETING",
+      nama_tujuan_kunjungan: "Meeting",
+      deskripsi: "Pertemuan kerja",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
 
-  await seedRows(knex, "mst_visit_purpose", "VisitPurposeCode", [
-    {
-      VisitPurposeId: 1,
-      VisitPurposeCode: "MEETING",
-      VisitPurposeName: "Meeting",
-      deskripsi: "Pertemuan kerja",
-      status: "active",
-      CreatedAt: dNow,
-      UpdatedAt: dNow,
-    },
-    {
-      VisitPurposeId: 2,
-      VisitPurposeCode: "DELIVERY",
-      VisitPurposeName: "Pengiriman",
-      deskripsi: "Pengiriman dokumen/barang",
-      status: "active",
-      CreatedAt: dNow,
-      UpdatedAt: dNow,
-    },
-  ]);
-
-  const position = await knex("mst_jabatan")
-    .where("kode_jabatan", "POS-STF")
+  const adminRole = await knex("mst_peran")
+    .where("kode_peran", "ADM")
     .first();
-  const workUnit = await knex("mst_unit_kerja")
-    .where("kode_unit_kerja", "WU-ARSIP")
-    .first();
-  const peranAdm = await knex("mst_peran").where("kode_peran", "ADM").first();
-  const peranStaff = await knex("mst_peran")
+  const staffRole = await knex("mst_peran")
     .where("kode_peran", "STF_ARS")
     .first();
 
-  await seedRows(knex, "mst_pengguna", "nama_pengguna", [
+  await upsertRows(knex, "mst_pengguna", "nama_pengguna", [
     {
       nama_lengkap: "Superadmin SIAB",
       nama_pengguna: "superadmin@admin.com",
       surel: "superadmin@admin.com",
       telepon: "08100000000",
-      kata_sandi: hashkata_sandi("superadmin@admin.com", "Superadmin321!"),
-      id_cabang: branch?.id_cabang || 1,
-      id_divisi: divOps?.id_divisi || 1,
-      id_departemen: depArsip?.id_departemen || 1,
-      id_jabatan: position?.id_jabatan || 1,
-      id_unit_kerja: workUnit?.id_unit_kerja || 1,
+      kata_sandi: hashPassword("superadmin@admin.com", "Superadmin321!"),
+      id_cabang: branch.id_cabang,
+      id_divisi: division.id_divisi,
+      id_departemen: department.id_departemen,
+      id_jabatan: position.id_jabatan,
+      id_unit_kerja: workUnit.id_unit_kerja,
       gagal_masuk: 0,
       status: "active",
       created_at: dNow,
@@ -533,19 +360,18 @@ export async function seed(knex) {
       nama_pengguna: "staff.arsip@example.local",
       surel: "staff.arsip@example.local",
       telepon: "08100000001",
-      kata_sandi: hashkata_sandi("staff.arsip@example.local", "kata_sandi123!"),
-      id_cabang: branch?.id_cabang || 1,
-      id_divisi: divOps?.id_divisi || 1,
-      id_departemen: depArsip?.id_departemen || 1,
-      id_jabatan: position?.id_jabatan || 1,
-      id_unit_kerja: workUnit?.id_unit_kerja || 1,
+      kata_sandi: hashPassword("staff.arsip@example.local", "Password123!"),
+      id_cabang: branch.id_cabang,
+      id_divisi: division.id_divisi,
+      id_departemen: department.id_departemen,
+      id_jabatan: position.id_jabatan,
+      id_unit_kerja: workUnit.id_unit_kerja,
       gagal_masuk: 0,
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
-
   const superadmin = await knex("mst_pengguna")
     .where("nama_pengguna", "superadmin@admin.com")
     .first();
@@ -553,289 +379,238 @@ export async function seed(knex) {
     .where("nama_pengguna", "staff.arsip@example.local")
     .first();
 
-  await seedRows(knex, "mst_pengguna_peran", "id_peran_pengguna", [
-    {
-      id_peran_pengguna: 9001,
-      nama_pengguna: superadmin?.nama_pengguna || 1,
-      id_peran: peranAdm?.id_peran || 1,
-      peran_utama: 1,
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-    {
-      id_peran_pengguna: 9002,
-      nama_pengguna: staff?.nama_pengguna || 2,
-      id_peran: peranStaff?.id_peran || peranAdm?.id_peran || 1,
-      peran_utama: 1,
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-  ]);
+  await seedUserRole(knex, superadmin.id_pengguna, adminRole.id_peran, dNow);
+  await seedUserRole(
+    knex,
+    staff.id_pengguna,
+    staffRole?.id_peran || adminRole.id_peran,
+    dNow,
+  );
 
-  await seedRows(knex, "mst_navigasi", "peran", [
-    { peran: "master", menu, created_at: dNow },
-    { peran: "Administrator", menu, created_at: dNow },
-    { peran: "Staff Arsip", menu, created_at: dNow },
-  ]);
+  await insertIfMissing(knex, "mst_navigasi", "peran", {
+    peran: "Staff Arsip",
+    menu,
+    created_at: dNow,
+  });
+  await insertIfMissing(knex, "user_navigation", "id_pengguna", {
+    id_pengguna: staff.id_pengguna,
+    menu,
+    created_at: dNow,
+    updated_at: dNow,
+  });
 
-  await seedRows(knex, "navigasi_pengguna", "nama_pengguna", [
+  await upsertRows(knex, "trs_dokumen", "kode_dokumen", [
     {
-      nama_pengguna: superadmin?.nama_pengguna || 1,
-      menu,
-      created_at: dNow,
-      updated_at: dNow,
-    },
-    {
-      nama_pengguna: staff?.nama_pengguna || 2,
-      menu,
-      created_at: dNow,
-      updated_at: dNow,
-    },
-  ]);
-
-  const surat = await knex("mst_document_type")
-    .where("document_type_code", "SURAT")
-    .first();
-  const laporan = await knex("mst_document_type")
-    .where("document_type_code", "LAPORAN")
-    .first();
-  const internal = await knex("mst_confidentiality_levels")
-    .where("confidentiality_level_code", "INT")
-    .first();
-  const rahasia = await knex("mst_confidentiality_levels")
-    .where("confidentiality_level_code", "RHS")
-    .first();
-  const retAdm = await knex("mst_retention_schedule")
-    .where("retention_code", "RET-ADM-05")
-    .first();
-  const retKeu = await knex("mst_retention_schedule")
-    .where("retention_code", "RET-KEU-10")
-    .first();
-
-  await seedRows(knex, "trx_documents", "document_number", [
-    {
-      archive_classification_id: adm?.archive_classification_id || 1,
-      document_type_id: surat?.document_type_id || 1,
-      document_category_id: catAdm?.document_category_id || 1,
-      confidentiality_level_id: internal?.confidentiality_level_id || 2,
-      retention_schedule_id: retAdm?.retention_schedule_id || 1,
-      physical_location: "Rak A / Box 01",
+      tanggal_transaksi: "2026-06-18",
+      kode_dokumen: "DOC-ADM-2026-001",
+      kode_klasifikasi: "ADM",
+      kode_jenis_dokumen: "SURAT",
+      kode_kategori_dokumen: "ADM-UMUM",
+      kode_tingkat_kerahasiaan: "INT",
+      kode_retensi: "RET-ADM-05",
+      lokasi_fisik: "Rak A / Box 01",
       qr_code: "DOC-QR-ADM-001",
       tags: "administrasi,internal,surat",
-      document_name: "Surat Keputusan Internal",
-      document_number: "DOC-ADM-2026-001",
-      document_date: "2026-06-01",
-      expired_date: "2031-06-01",
-      pic_name: "Staff Arsip Demo",
+      nama_dokumen: "Surat Keputusan Internal",
+      nomor_dokumen: "DOC-ADM-2026-001",
+      tanggal: "2026-06-01",
+      tanggal_kedaluwarsa: "2031-06-01",
+      nama_pic: "Staff Arsip Demo",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
     {
-      archive_classification_id: keu?.archive_classification_id || 2,
-      document_type_id: laporan?.document_type_id || 3,
-      document_category_id: catKeu?.document_category_id || 2,
-      confidentiality_level_id: rahasia?.confidentiality_level_id || 3,
-      retention_schedule_id: retKeu?.retention_schedule_id || 2,
-      physical_location: "Rak B / Box 02",
+      tanggal_transaksi: "2026-06-18",
+      kode_dokumen: "DOC-KEU-2026-001",
+      kode_klasifikasi: "KEU",
+      kode_jenis_dokumen: "LAPORAN",
+      kode_kategori_dokumen: "KEU-LAP",
+      kode_tingkat_kerahasiaan: "RHS",
+      kode_retensi: "RET-KEU-10",
+      lokasi_fisik: "Rak B / Box 02",
       qr_code: "DOC-QR-KEU-001",
       tags: "keuangan,laporan,rahasia",
-      document_name: "Laporan Keuangan Tahunan",
-      document_number: "DOC-KEU-2026-001",
-      document_date: "2026-06-10",
-      expired_date: "2036-06-10",
-      pic_name: "Staff Arsip Demo",
+      nama_dokumen: "Laporan Keuangan Tahunan",
+      nomor_dokumen: "DOC-KEU-2026-001",
+      tanggal: "2026-06-10",
+      tanggal_kedaluwarsa: "2036-06-10",
+      nama_pic: "Staff Arsip Demo",
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
 
-  const docAdm = await knex("trx_documents")
-    .where("document_number", "DOC-ADM-2026-001")
-    .first();
-  const docKeu = await knex("trx_documents")
-    .where("document_number", "DOC-KEU-2026-001")
-    .first();
-
-  await seedRows(knex, "trx_document_versions", "version_id", [
+  await upsertRows(knex, "trs_versi_dokumen", "id_versi", [
     {
-      version_id: 9001,
-      document_id: docAdm?.document_id || 1,
-      version_number: 1,
-      change_notes: "Versi awal dokumen",
+      id_versi: 9001,
+      tanggal_transaksi: "2026-06-18",
+      kode_dokumen: "DOC-ADM-2026-001",
+      nomor_versi: 1,
+      catatan_perubahan: "Versi awal dokumen",
       file_path: "demo/documents/DOC-ADM-2026-001-v1.pdf",
-      uploaded_by: staff?.nama_pengguna || "staff.arsip@example.local",
-      approval_status: "approved",
-      approved_by: superadmin?.nama_pengguna || "superadmin@admin.com",
-      approved_at: dNow,
-      approval_notes: "Data demo disetujui",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-    {
-      version_id: 9002,
-      document_id: docKeu?.document_id || 2,
-      version_number: 1,
-      change_notes: "Versi awal laporan",
-      file_path: "demo/documents/DOC-KEU-2026-001-v1.pdf",
-      uploaded_by: staff?.nama_pengguna || "staff.arsip@example.local",
-      approval_status: "pending",
+      diunggah_oleh: "staff.arsip@example.local",
+      status_persetujuan: "approved",
+      disetujui_oleh: "superadmin@admin.com",
+      disetujui_pada: dNow,
+      catatan_persetujuan: "Data demo disetujui",
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
-
-  await seedRows(knex, "trx_archive_loans", "loan_id", [
+  await upsertRows(knex, "trs_peminjaman_arsip", "id_peminjaman", [
     {
-      loan_id: 9001,
-      document_id: docAdm?.document_id || 1,
-      borrower_name: "Budi Santoso",
-      loan_date: "2026-06-18",
-      expected_return_date: "2026-06-25",
-      return_date: null,
-      purpose: "Referensi audit internal",
-      approved_by: superadmin?.nama_pengguna || "superadmin@admin.com",
-      approved_at: dNow,
-      approval_notes: "Disetujui untuk audit",
-      is_overdue: 0,
+      id_peminjaman: 9001,
+      tanggal_transaksi: "2026-06-18",
+      kode_dokumen: "DOC-ADM-2026-001",
+      nama_peminjam: "Budi Santoso",
+      tanggal_pinjam: "2026-06-18",
+      tanggal_pengembalian: "2026-06-25",
+      keperluan: "Referensi audit internal",
+      disetujui_oleh: "superadmin@admin.com",
+      disetujui_pada: dNow,
+      catatan_persetujuan: "Disetujui untuk audit",
+      terlambat: 0,
       status: "borrowed",
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
-
-  await seedRows(knex, "trx_destruction_proposals", "proposal_id", [
+  await upsertRows(knex, "trs_usulan_pemusnahan", "id_usulan", [
     {
-      proposal_id: 9001,
-      document_id: docKeu?.document_id || 2,
-      retention_schedule_id: retKeu?.retention_schedule_id || 2,
-      proposal_reason: "Contoh proposal pemusnahan data demo",
-      proposed_by: staff?.nama_pengguna || "staff.arsip@example.local",
-      proposed_at: dNow,
+      id_usulan: 9001,
+      tanggal_transaksi: "2026-06-18",
+      kode_dokumen: "DOC-KEU-2026-001",
+      alasan_usulan: "Contoh proposal pemusnahan data demo",
+      kode_retensi: "RET-KEU-10",
+      diusulkan_oleh: "staff.arsip@example.local",
+      diusulkan_pada: dNow,
       status: "submitted",
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
 
-  const letterType = await knex("mst_letter_types")
-    .where("letter_type_code", "SURAT_MASUK")
+  const letterType = await knex("mst_jenis_surat")
+    .where("kode_jenis_surat", "SURAT_MASUK")
     .first();
-  const tindakLanjut = await knex("mst_disposition_instructions")
-    .where("instruction_code", "TINDAK_LANJUT")
+  const documentType = await knex("mst_jenis_dokumen")
+    .where("kode_jenis_dokumen", "SURAT")
+    .first();
+  const classification = await knex("mst_klasifikasi_arsip")
+    .where("kode_klasifikasi", "ADM")
+    .first();
+  const confidentiality = await knex("mst_tingkat_kerahasiaan")
+    .where("kode_tingkat_kerahasiaan", "INT")
+    .first();
+  const instruction = await knex("mst_instruksi_disposisi")
+    .where("kode_instruksi", "TINDAK_LANJUT")
     .first();
 
-  await seedRows(knex, "trx_incoming_letters", "agenda_number", [
+  await upsertRows(knex, "trs_surat_masuk", "nomor_agenda", [
     {
-      agenda_number: "AG-2026-001",
-      letter_number: "EXT/001/VI/2026",
-      letter_date: "2026-06-17",
-      received_date: "2026-06-18",
-      sender_name: "PT Contoh Nusantara",
-      sender_institution: "PT Contoh Nusantara",
-      subject: "Permohonan kerja sama arsip digital",
-      attachment_deskripsi: "1 berkas proposal",
-      letter_type_id: letterType?.letter_type_id || 1,
-      document_type_id: surat?.document_type_id || 1,
-      archive_classification_id: adm?.archive_classification_id || 1,
-      confidentiality_level_id: internal?.confidentiality_level_id || 2,
+      nomor_agenda: "AG-2026-001",
+      nomor_surat: "EXT/001/VI/2026",
+      tanggal_surat: "2026-06-17",
+      tanggal_diterima: "2026-06-18",
+      nama_pengirim: "PT Contoh Nusantara",
+      instansi_pengirim: "PT Contoh Nusantara",
+      perihal: "Permohonan kerja sama arsip digital",
+      keterangan_lampiran: "1 berkas proposal",
+      jenis_surat_id: letterType.jenis_surat_id,
+      jenis_dokumen_id: documentType.id_jenis_dokumen,
+      klasifikasi_arsip_id: classification.id_klasifikasi,
+      tingkat_kerahasiaan_id: confidentiality.id_tingkat_kerahasiaan,
       status: "didisposisi",
-      created_by: superadmin?.nama_pengguna || 1,
-      updated_by: superadmin?.nama_pengguna || 1,
+      created_by: superadmin.id_pengguna,
+      updated_by: superadmin.id_pengguna,
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
-
-  const incoming = await knex("trx_incoming_letters")
-    .where("agenda_number", "AG-2026-001")
+  const incoming = await knex("trs_surat_masuk")
+    .where("nomor_agenda", "AG-2026-001")
     .first();
 
-  await seedRows(knex, "trx_letter_dispositions", "disid_jabatan", [
+  await upsertRows(knex, "trs_disposisi_surat", "disposisi_surat_id", [
     {
-      disid_jabatan: 9001,
-      incoming_letter_id: incoming?.incoming_letter_id || 1,
-      from_nama_pengguna: superadmin?.nama_pengguna || 1,
-      to_nama_pengguna: staff?.nama_pengguna || 2,
-      disposition_instruction_id: tindakLanjut?.disposition_instruction_id || 1,
-      instruction: "Tindak lanjuti dan arsipkan dokumen",
-      disposition_note: "Data demo disposisi",
-      due_date: "2026-06-24",
+      disposisi_surat_id: 9001,
+      surat_masuk_id: incoming.surat_masuk_id,
+      dari_pengguna_id: superadmin.id_pengguna,
+      kepada_pengguna_id: staff.id_pengguna,
+      instruksi_disposisi_id: instruction.instruksi_disposisi_id,
+      instruksi: "Tindak lanjuti dan arsipkan dokumen",
+      catatan_disposisi: "Data demo disposisi",
+      batas_waktu: "2026-06-24",
       status: "baru",
-      created_by: superadmin?.nama_pengguna || 1,
-      updated_by: superadmin?.nama_pengguna || 1,
+      created_by: superadmin.id_pengguna,
+      updated_by: superadmin.id_pengguna,
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
-
-  await seedRows(knex, "trx_incoming_letter_files", "incoming_letter_file_id", [
+  await upsertRows(knex, "trs_file_surat_masuk", "file_surat_masuk_id", [
     {
-      incoming_letter_file_id: 9001,
-      incoming_letter_id: incoming?.incoming_letter_id || 1,
-      file_path: "demo/incoming/AG-2026-001.pdf",
-      file_name: "AG-2026-001.pdf",
-      file_mime_type: "application/pdf",
-      file_size: 102400,
-      uploaded_by: superadmin?.nama_pengguna || 1,
+      file_surat_masuk_id: 9001,
+      surat_masuk_id: incoming.surat_masuk_id,
+      path_file: "demo/incoming/AG-2026-001.pdf",
+      nama_file: "AG-2026-001.pdf",
+      tipe_mime_file: "application/pdf",
+      ukuran_file: 102400,
+      tanggal_upload: "2026-06-18",
+      uploaded_by: superadmin.id_pengguna,
       status: "active",
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
-
-  await seedRows(
+  await upsertRows(
     knex,
-    "trx_incoming_letter_trackings",
-    "incoming_letter_tracking_id",
+    "trs_tracking_surat_masuk",
+    "tracking_surat_masuk_id",
     [
       {
-        incoming_letter_tracking_id: 9001,
-        incoming_letter_id: incoming?.incoming_letter_id || 1,
-        disid_jabatan: 9001,
-        action_name: "Disposisi dibuat",
-        from_nama_pengguna: superadmin?.nama_pengguna || 1,
-        to_nama_pengguna: staff?.nama_pengguna || 2,
-        previous_status: "baru",
-        current_status: "didisposisi",
-        notes: "Tracking demo",
+        tracking_surat_masuk_id: 9001,
+        surat_masuk_id: incoming.surat_masuk_id,
+        disposisi_surat_id: 9001,
+        nama_aksi: "Disposisi dibuat",
+        dari_pengguna_id: superadmin.id_pengguna,
+        kepada_pengguna_id: staff.id_pengguna,
+        status_sebelumnya: "baru",
+        status_saat_ini: "didisposisi",
+        catatan: "Tracking demo",
         processed_at: dNow,
-        created_by: superadmin?.nama_pengguna || 1,
+        created_by: superadmin.id_pengguna,
         created_at: dNow,
         updated_at: dNow,
       },
     ],
   );
 
-  await seedRows(knex, "tr_visitations", "visit_code", [
+  await upsertRows(knex, "trs_kunjungan", "kode_kunjungan", [
     {
-      guest_name: "Andi Wijaya",
-      phone_number: "081234567890",
-      guest_surel: "andi@example.local",
-      guest_company: "PT Contoh Nusantara",
-      guest_position: "Manager",
-      identity_type: "ktp",
-      identity_number: "3200000000000001",
-      check_in_time: dNow,
-      check_out_time: null,
+      nama_tamu: "Andi Wijaya",
+      nomor_telepon: "081234567890",
+      email_tamu: "andi@example.local",
+      instansi_tamu: "PT Contoh Nusantara",
+      jabatan_tamu: "Manager",
+      jenis_identitas: "ktp",
+      nomor_identitas: "3200000000000001",
+      waktu_masuk: dNow,
       status: "in",
-      host_nama_pengguna: String(staff?.nama_pengguna || 2),
-      host_name: "Staff Arsip Demo",
-      visit_notes: "Meeting arsip digital",
-      visit_code: "VIS-2026-001",
-      qr_token: "QR-VIS-2026-001",
-      approval_status: "approved",
-      nama_pengguna: staff?.nama_pengguna || 2,
-      visit_purpose_id: 1,
+      id_user_host: String(staff.id_pengguna),
+      nama_host: "Staff Arsip Demo",
+      catatan_kunjungan: "Meeting arsip digital",
+      kode_kunjungan: "VIS-2026-001",
+      token_qr: "QR-VIS-2026-001",
+      status_persetujuan: "approved",
+      id_user: staff.id_pengguna,
+      id_tujuan_kunjungan: 1,
       created_at: dNow,
       updated_at: dNow,
     },
   ]);
 
-  console.log(
-    "Full demo data seeder selesai. Aman dijalankan ulang karena tidak memakai truncate.",
-  );
+  console.log("Full demo data berhasil diisi dan aman dijalankan ulang.");
 }

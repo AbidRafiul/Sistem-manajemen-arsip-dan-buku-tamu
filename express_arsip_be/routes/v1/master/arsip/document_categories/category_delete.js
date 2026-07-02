@@ -11,7 +11,7 @@ const router = express.Router();
 
 const deleteDocumentCategory = async (req, res) => {
   const cIdKategoriDokumen = req.params.id_kategori_dokumen;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
   const oPayload = { id: cIdKategoriDokumen }; // Buat keperluan logging
 
 

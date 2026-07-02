@@ -3,13 +3,15 @@
 import fileDownload from "@/lib/axios/fileDownload";
 import postData from "@/lib/axios/postData";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
-import { showError } from "@/lib/tools/generalTools";
+import { showError, showSuccess } from "@/lib/tools/generalTools";
+import { useRouter } from "next/navigation";
 import { FilterMatchMode } from "primereact/api";
 import { Avatar } from "primereact/avatar";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { Chip } from "primereact/chip";
 import { Column } from "primereact/column";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { DataTable } from "primereact/datatable";
 import { Divider } from "primereact/divider";
 import { Dialog } from "primereact/dialog";
@@ -18,7 +20,7 @@ import { InputText } from "primereact/inputtext";
 import { Message } from "primereact/message";
 import { Tag } from "primereact/tag";
 import { useEffect, useState } from "react";
-import { apiEndpointDetail, apiEndpointFileDownload, apiEndpointGet } from "../endpoints";
+import { apiEndpointArchive, apiEndpointDetail, apiEndpointFileDownload, apiEndpointGet } from "../endpoints";
 import { IncomingLetterFile, IncomingLetterStatus, TableData, TableProps } from "../interfaces";
 import Form from "./form";
 import { usePermissions } from '@/hooks/usePermissions';
@@ -55,6 +57,7 @@ const Table = ({
     toast
 }: TableProps) => {
     const permissions = usePermissions();
+    const router = useRouter();
     const [previewFile, setPreviewFile] = useState<{ url: string; mimeType: string; fileName: string } | null>(null);
 
     const buildPayload = () => ({ keyword: state.searchVal || "", status: state.statusFilter || "" });
@@ -83,6 +86,51 @@ const Table = ({
         } finally {
             setState((p) => ({ ...p, detailLoad: false }));
         }
+    };
+
+    const reloadDetail = async (letterId: number) => {
+        const res = await postData(apiEndpointDetail, { surat_masuk_id: letterId });
+        setState((p) => ({ ...p, detailData: res.data?.data || null }));
+    };
+
+    const executeArchiveLetter = async () => {
+        if (!detailLetter?.surat_masuk_id) return;
+
+        setState((p) => ({ ...p, load: true }));
+        try {
+            const res = await postData(apiEndpointArchive, {
+                surat_masuk_id: detailLetter.surat_masuk_id,
+                nama_pic: detailLetter.nama_pengirim || "Sekretariat",
+                created_by: detailLetter.updated_by || detailLetter.created_by || null,
+            });
+            showSuccess(toast, res.data?.message || "Surat berhasil diarsipkan");
+            await reloadDetail(detailLetter.surat_masuk_id);
+            await refreshData();
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Surat gagal diarsipkan");
+        } finally {
+            setState((p) => ({ ...p, load: false }));
+        }
+    };
+
+    const confirmArchiveLetter = () => {
+        if (!detailLetter?.surat_masuk_id) return;
+        if (detailFiles.length < 1) {
+            showError(toast, "Upload file surat terlebih dahulu sebelum diarsipkan");
+            return;
+        }
+
+        confirmDialog({
+            header: "Konfirmasi Arsip",
+            message: `Arsipkan surat ${detailLetter.nomor_agenda || detailLetter.nomor_surat}?`,
+            icon: "pi pi-archive",
+            acceptLabel: "Arsipkan",
+            rejectLabel: "Batal",
+            acceptClassName: "p-button-success",
+            rejectClassName: "p-button-secondary p-button-outlined",
+            accept: executeArchiveLetter,
+        });
     };
 
     const getFileBlob = async (file: IncomingLetterFile) =>
@@ -241,9 +289,11 @@ const Table = ({
 
     const detailLetter = state.detailData?.surat || state.detailData?.letter || null;
     const detailFiles = state.detailData?.files || [];
+    const archivedDocument = state.detailData?.archived_document || null;
 
     return (
         <>
+            <ConfirmDialog />
             <Card className="shadow-1 border-round-2xl border-none">
                 {/* Page Header */}
                 <div className="mb-4">
@@ -355,9 +405,35 @@ const Table = ({
                                 <div className="flex gap-2 mt-2 flex-wrap">
                                     <Chip label={`Agenda: ${detailLetter?.nomor_agenda || "-"}`} className="text-xs" style={{ height: "auto", padding: "0.2rem 0.6rem" }} />
                                     <Chip label={`Surat: ${detailLetter?.nomor_surat || "-"}`} className="text-xs" style={{ height: "auto", padding: "0.2rem 0.6rem" }} />
+                                    {archivedDocument && (
+                                        <Chip label={`Arsip: ${archivedDocument.kode_dokumen}`} icon="pi pi-verified" className="text-xs" style={{ height: "auto", padding: "0.2rem 0.6rem" }} />
+                                    )}
                                 </div>
                             </div>
-                            {detailLetter?.status && statusTemplate({ status: detailLetter.status } as TableData)}
+                            <div className="flex flex-column align-items-end gap-2">
+                                {detailLetter?.status && statusTemplate({ status: detailLetter.status } as TableData)}
+                                {archivedDocument ? (
+                                    <Button
+                                        label="Lihat Arsip"
+                                        icon="pi pi-folder-open"
+                                        size="small"
+                                        outlined
+                                        onClick={() => router.push(`/edms/archive_document/${archivedDocument.id_dokumen}/versions`)}
+                                    />
+                                ) : (
+                                    <Button
+                                        label="Arsipkan"
+                                        icon="pi pi-archive"
+                                        size="small"
+                                        severity="success"
+                                        loading={state.load}
+                                        disabled={detailFiles.length < 1}
+                                        onClick={confirmArchiveLetter}
+                                        tooltip={detailFiles.length < 1 ? "Upload file surat terlebih dahulu" : "Arsipkan surat sebagai dokumen"}
+                                        tooltipOptions={{ position: "left" }}
+                                    />
+                                )}
+                            </div>
                         </div>
 
                         <div className="grid text-sm">

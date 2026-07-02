@@ -23,22 +23,22 @@ router.post("/", async (req, res) => {
         "mu.id_pengguna",
         "mur.id_pengguna",
       )
-      .leftJoin("mst_peran as mr", "mur.id_peran", "mr.id_peran") // Pastikan di mst_pengguna_peran namanya juga id_peran
+      .leftJoin("mst_peran as mr", "mur.id_peran", "mr.id_peran")
       .select(
         "mu.id_pengguna",
-        "mu.nama_lengkap", 
-        "mu.nama_pengguna", 
-        "mu.telepon",      
-        "mu.surel",        
-        "mu.id_cabang",    
-        "mu.id_divisi",    
+        "mu.nama_lengkap",
+        "mu.nama_pengguna",
+        "mu.telepon",
+        "mu.surel",
+        "mu.id_cabang",
+        "mu.id_divisi",
         "mu.id_departemen",
-        "mu.id_jabatan",   
+        "mu.id_jabatan",
         "mu.id_unit_kerja",
         "mu.status",
         "mu.created_at",
-        "mr.id_peran",    
-        "mr.nama_peran as role"    
+        "mr.id_peran",
+        "mr.nama_peran as role",
       )
       .orderBy("mu.created_at", "desc");
 

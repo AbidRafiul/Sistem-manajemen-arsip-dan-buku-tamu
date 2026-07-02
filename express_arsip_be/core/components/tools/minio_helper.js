@@ -58,4 +58,18 @@ const downloadFileFromMinio = async (bucketName, objectName) => {
     }
 };
 
-export { uploadFileToMinio, downloadFileFromMinio };
+/**
+ * Helper untuk menghapus file dari MinIO.
+ * @param {string} bucketName - Nama bucket
+ * @param {string} objectName - Nama objek/file di MinIO
+ */
+const removeFileFromMinio = async (bucketName, objectName) => {
+    try {
+        await minioClient.removeObject(bucketName, objectName);
+    } catch (error) {
+        console.error("Gagal menghapus file dari MinIO:", error);
+        throw error;
+    }
+};
+
+export { uploadFileToMinio, downloadFileFromMinio, removeFileFromMinio };

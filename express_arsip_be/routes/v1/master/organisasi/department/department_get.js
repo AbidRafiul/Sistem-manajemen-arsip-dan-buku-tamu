@@ -20,7 +20,7 @@ router.post("/get_data", async (req, res) => {
         "deskripsi",
         "status"
       )
-      .whereNot("status", "deleted");
+      .where("status", "active");
 
     return res.status(200).json({
       status: status.SUKSES,

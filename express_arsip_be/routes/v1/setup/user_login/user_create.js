@@ -168,7 +168,7 @@ router.post("/", async (req, res) => {
       });
 
       // 3. Masuk ke navigasi_pengguna (Menu Spesifik)
-      await trx("navigasi_pengguna")
+      await trx("user_navigation")
         .insert({
           id_pengguna: newUserId,
           menu: oNavigation.menu,

@@ -27,7 +27,7 @@ router.post(
   ]),
   async (req, res) => {
     const { body: oPayload } = req;
-    const username = req?.auth?.username || "";
+    const nama_pengguna = req?.auth?.nama_pengguna || "";
 
     try {
       const cValidation = await validatePayload(
@@ -102,7 +102,7 @@ router.post(
           func: "registrasi",
           request: oPayload,
           response: oResult,
-          user: username,
+          user: nama_pengguna,
         });
         return res.status(422).json(oResult);
       }
@@ -195,7 +195,7 @@ router.post(
           func: "notify",
           request: { HostUserId },
           response: "notify failed",
-          user: username,
+          user: nama_pengguna,
         });
       }
 
@@ -223,7 +223,7 @@ router.post(
         func: "registrasi",
         request: req.body,
         response: oResult,
-        user: username,
+        user: nama_pengguna,
       });
       return res.status(500).json(oResult);
     }

@@ -28,18 +28,14 @@ router.post("/", async (req, res) => {
           .try(Joi.string(), Joi.number())
           .optional()
           .label("nama_pengguna"),
-        id_pengguna: Joi.alternatives()
-          .try(Joi.string(), Joi.number())
-          .optional()
-          .label("id_pengguna"),
-        id_pengguna: Joi.alternatives()
-          .try(Joi.string(), Joi.number())
-          .optional()
-          .label("id_pengguna"),
         user_id: Joi.alternatives()
           .try(Joi.string(), Joi.number())
           .optional()
           .label("user_id"),
+        id_pengguna: Joi.alternatives()
+          .try(Joi.string(), Joi.number())
+          .optional()
+          .label("id_pengguna"),
         IdPengguna: Joi.alternatives()
           .try(Joi.string(), Joi.number())
           .optional()
@@ -54,7 +50,6 @@ router.post("/", async (req, res) => {
     );
 
     const cUserLookup = String(
-      oPayload.id_pengguna ||
       oPayload.id_pengguna ||
         oPayload.user_id ||
         oPayload.IdPengguna ||

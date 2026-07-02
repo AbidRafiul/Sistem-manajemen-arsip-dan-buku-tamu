@@ -86,10 +86,21 @@ export interface IncomingLetterTracking {
     processed_at: string;
 }
 
+export interface ArchivedDocumentSummary {
+    id_dokumen: number;
+    kode_dokumen: string;
+    nama_dokumen: string;
+    nomor_dokumen: string;
+    tanggal: string;
+    status: string;
+    created_at: string;
+}
+
 export interface IncomingLetterDetailData {
     surat: Record<string, any> | null;
     letter?: Record<string, any> | null;
     files: IncomingLetterFile[];
+    archived_document?: ArchivedDocumentSummary | null;
     disposisi: IncomingLetterDisposition[];
     dispositions?: IncomingLetterDisposition[];
     trackings: IncomingLetterTracking[];
