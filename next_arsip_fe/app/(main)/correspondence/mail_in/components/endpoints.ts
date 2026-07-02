@@ -5,4 +5,5 @@ export const apiEndpointDelete = '/correspondence/incoming-letter-delete';
 export const apiEndpointDetail = '/correspondence/incoming-letter-detail';
 export const apiEndpointUpload = '/correspondence/incoming-file-upload';
 export const apiEndpointFileDownload = '/correspondence/incoming-file-download';
+export const apiEndpointArchive = '/correspondence/incoming-letter-archive';
 export const apiEndpointLetterTypeData = '/correspondence/letter-type-data';
