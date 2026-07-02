@@ -38,7 +38,7 @@ router.post("/update", async (req, res) => {
       .where("id_unit_kerja", oPayload.id_unit_kerja)
       .update({
         id_departemen: oPayload.id_departemen || null,
-        kode_unit_kerja: oPayload.kode_unit_kerja || null,
+        kode_unit_kerja: oPayload.kode_unit_kerja ? (oPayload.kode_unit_kerja.toUpperCase().startsWith("UK-") ? `UK-${oPayload.kode_unit_kerja.substring(3)}` : `UK-${oPayload.kode_unit_kerja}`) : null,
         nama_unit_kerja: oPayload.nama_unit_kerja || null,
         deskripsi: oPayload.deskripsi || null,
         updated_at: new Date(),

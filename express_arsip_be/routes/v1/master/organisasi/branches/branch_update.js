@@ -38,7 +38,7 @@ router.post("/update", async (req, res) => {
     const nUpdated = await DB("mst_cabang")
       .where("id_cabang", oPayload.id_cabang)
       .update({
-        kode_cabang: oPayload.kode_cabang || null,
+        kode_cabang: oPayload.kode_cabang ? (oPayload.kode_cabang.toUpperCase().startsWith("CB-") ? `CB-${oPayload.kode_cabang.substring(3)}` : `CB-${oPayload.kode_cabang}`) : null,
         nama_cabang: oPayload.nama_cabang || null,
         alamat: oPayload.alamat || null,
         telepon: oPayload.telepon || null,
