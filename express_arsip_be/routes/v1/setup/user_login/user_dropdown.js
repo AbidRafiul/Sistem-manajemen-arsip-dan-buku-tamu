@@ -5,6 +5,19 @@ import { Logging } from "../../components/tools/servertool.js";
 
 const router = express.Router();
 
+async function getColumns(tableName) {
+  try {
+    const [cols] = await DB.raw(`SHOW COLUMNS FROM \`${tableName}\``);
+    return cols.map((c) => c.Field);
+  } catch (e) {
+    return [];
+  }
+}
+
+function pickColumn(columns, candidates) {
+  return candidates.find((c) => columns.includes(c)) || null;
+}
+
 router.post("/", async (req, res) => {
   try {
     const vaData = await DB("mst_pengguna as u")

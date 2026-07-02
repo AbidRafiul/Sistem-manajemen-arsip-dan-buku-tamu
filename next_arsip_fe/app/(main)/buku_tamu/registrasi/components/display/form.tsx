@@ -68,7 +68,7 @@ export default function RegistrasiForm({ formData, handleChange, setIdentityFile
                             </div>
                             <div className="field col-8">
                                 <label htmlFor="identity_number" className="font-semibold block mb-2 text-sm text-800">Nomor ID</label>
-                                <InputText id="identity_number" value={formData.identity_number || ''} onChange={(e) => handleChange('identity_number', e.target.value)} placeholder="Masukkan nomor identitas" disabled={!formData.identity_type} className="p-inputtext-sm" />
+                                <InputText id="identity_number" value={formData.identity_number || ''} onChange={(e) => handleChange('identity_number', e.target.value)} placeholder="Masukkan nomor identitas" className="p-inputtext-sm" />
                             </div>
                         </div>
                         <div className="field">
@@ -102,7 +102,7 @@ export default function RegistrasiForm({ formData, handleChange, setIdentityFile
                         </div>
                         <div className="field">
                             <label htmlFor="host_user_id" className="font-semibold block mb-2 text-sm text-800">Pegawai yang Ditemui</label>
-                            <Dropdown id="host_user_id" value={formData.host_user_id} options={hostUserOptions} optionLabel="nama_lengkap" optionValue="UniqueId" onChange={(e) => handleChange('host_user_id', e.value)} placeholder="Cari & pilih pegawai internal" filter showClear className="p-inputtext-sm" />
+                            <Dropdown id="host_user_id" value={formData.host_user_id} options={hostUserOptions} optionLabel="nama_lengkap" optionValue="id_pengguna" onChange={(e) => handleChange('host_user_id', e.value)} placeholder="Cari & pilih pegawai internal" filter showClear className="p-inputtext-sm" />
                         </div>
                         <div className="field">
                             <label htmlFor="host_name" className="font-semibold block mb-2 text-sm text-800">Nama Pegawai Manual</label>
