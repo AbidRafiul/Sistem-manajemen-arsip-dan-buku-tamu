@@ -230,8 +230,12 @@ const buildTree = (rows) => {
   });
 
   nodeById.forEach((node) => {
-    if (node.parentId && nodeById.has(node.parentId)) {
-      nodeById.get(node.parentId).items.push(node);
+    if (node.parentId) {
+      if (nodeById.has(node.parentId)) {
+        nodeById.get(node.parentId).items.push(node);
+      }
+      // Jika parentId ada tapi parent tidak ditemukan (orphan karena hak akses dicabut), 
+      // maka jangan dimasukkan ke roots agar tidak muncul berantakan di luar.
     } else {
       roots.push(node);
     }

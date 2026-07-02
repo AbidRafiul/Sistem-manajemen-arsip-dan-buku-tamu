@@ -36,7 +36,7 @@ router.post("/create", async (req, res) => {
     const dNow = new Date();
     await DB("mst_unit_kerja").insert({
       id_departemen: oPayload.id_departemen || null,
-      kode_unit_kerja: oPayload.kode_unit_kerja || null,
+      kode_unit_kerja: oPayload.kode_unit_kerja ? (oPayload.kode_unit_kerja.toUpperCase().startsWith("UK-") ? `UK-${oPayload.kode_unit_kerja.substring(3)}` : `UK-${oPayload.kode_unit_kerja}`) : null,
       nama_unit_kerja: oPayload.nama_unit_kerja || null,
       deskripsi: oPayload.deskripsi || null,
       status: "active",
