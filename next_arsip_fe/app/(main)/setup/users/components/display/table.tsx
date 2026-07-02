@@ -74,7 +74,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
             {permissions.canDelete && (
                 <Button icon="pi pi-trash" rounded outlined severity="danger" className="p-button-sm" onClick={() => setState((p) => ({ ...p, delete: true, selectedUsers: [rowData] }))} tooltip="Delete" />
             )}
-            {permissions.canApprove && (
+            {/* {permissions.canApprove && (
                 <Button
                     icon="pi pi-wrench"
                     onClick={() => {
@@ -85,7 +85,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                     rounded
                     loading={navBar?.load}
                 />
-            )}
+            )} */}
         </div>
     );
 
