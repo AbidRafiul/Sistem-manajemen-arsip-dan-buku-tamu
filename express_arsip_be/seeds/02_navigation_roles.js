@@ -38,8 +38,8 @@ export const seed = async function (knex) {
           to: "/buku_tamu/monitoring",
         },
         {
-          label: "Checkout Tamu",
-          icon: "pi pi-fw pi-sign-out",
+          label: "Riwayat Tamu",
+          icon: "pi pi-fw pi-history",
           to: "/buku_tamu/checkout",
         },
       ],
