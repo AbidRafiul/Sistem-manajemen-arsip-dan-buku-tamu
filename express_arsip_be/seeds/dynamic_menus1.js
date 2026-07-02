@@ -242,7 +242,7 @@ export async function seed(knex) {
       id_menu: 28,
       id_menu_induk: 20,
       kode_menu: "MENU_CHECKOUT_TAMU",
-      nama_menu: "Checkout Tamu",
+      nama_menu: "Riwayat Tamu",
       jalur_menu: "/buku_tamu/checkout",
       ikon_menu: "pi pi-fw pi-sign-out",
       urutan: 3,
