@@ -1,8 +1,159 @@
 export async function seed(knex) {
   const dNow = new Date();
+  const adminRole = await knex("mst_peran")
+    .where("kode_peran", "ADM")
+    .first();
+
+  if (!adminRole) {
+    throw new Error("Peran ADM belum tersedia untuk seed dynamic menu");
+  }
 
   // 1. Insert missing menus into mst_menu
   const vaMenus = [
+    {
+      id_menu: 1,
+      id_menu_induk: 2,
+      kode_menu: "MENU",
+      nama_menu: "Management Menu",
+      jalur_menu: "/setup/menu",
+      ikon_menu: "i pi-fw pi-users",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 2,
+      id_menu_induk: null,
+      kode_menu: "MENU_SETUP",
+      nama_menu: "Set Up",
+      jalur_menu: "",
+      ikon_menu: "pi pi-fw pi-cog",
+      urutan: 0,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 3,
+      id_menu_induk: null,
+      kode_menu: "MASTER_ORG",
+      nama_menu: "Master Organisasi",
+      jalur_menu: "",
+      ikon_menu: "pi pi-fw pi-sitemap",
+      urutan: 0,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 4,
+      id_menu_induk: 3,
+      kode_menu: "MENU_CABANG",
+      nama_menu: "Data Cabang",
+      jalur_menu: "/master/organisasi/branches",
+      ikon_menu: "pi pi-building",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 5,
+      id_menu_induk: 3,
+      kode_menu: "MENU_DIVISI",
+      nama_menu: "Data Divisi",
+      jalur_menu: "/master/organisasi/divisions",
+      ikon_menu: "pi pi-sitemap",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 6,
+      id_menu_induk: 3,
+      kode_menu: "MENU_DEPART",
+      nama_menu: "Data Department",
+      jalur_menu: "/master/organisasi/department",
+      ikon_menu: "pi pi-briefcase",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 7,
+      id_menu_induk: 3,
+      kode_menu: "MENU_JABATAN",
+      nama_menu: "Data Jabatan",
+      jalur_menu: "/master/organisasi/positions",
+      ikon_menu: "pi pi-id-card",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 8,
+      id_menu_induk: 3,
+      kode_menu: "MENU PERAN",
+      nama_menu: "Data Peran",
+      jalur_menu: "/master/organisasi/roles",
+      ikon_menu: "pi pi-users",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 9,
+      id_menu_induk: 3,
+      kode_menu: "MENU UK",
+      nama_menu: "Data Unit Kerja",
+      jalur_menu: "/master/organisasi/work_unit",
+      ikon_menu: "pi pi-desktop",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 10,
+      id_menu_induk: null,
+      kode_menu: "ARSIP",
+      nama_menu: "ARSIP DOKUMEN",
+      jalur_menu: "",
+      ikon_menu: "pi pi-fw pi-folder",
+      urutan: 2,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 11,
+      id_menu_induk: 10,
+      kode_menu: "ARSIP_DOC",
+      nama_menu: "Dokumen Arsip",
+      jalur_menu: "/edms/archive_document",
+      ikon_menu: "pi pi-fw pi-folder-open",
+      urutan: 1,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_menu: 12,
+      id_menu_induk: 10,
+      kode_menu: "ARSIP_LOAN",
+      nama_menu: "Peminjaman Arsip",
+      jalur_menu: "/edms/archive_loan",
+      ikon_menu: "pi pi-fw pi-share-alt",
+      urutan: 2,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow,
+    },
     {
       id_menu: 13,
       id_menu_induk: null,
@@ -172,9 +323,9 @@ export async function seed(knex) {
       updated_at: dNow,
     });
 
-  // 2. Insert into mst_peran_menu for Superadmin (id_peran: 1)
+  // 2. Berikan seluruh hak menu kepada Administrator.
   const vaPeranMenus = vaMenus.map(oMenu => ({
-    id_peran: 1, // Superadmin
+    id_peran: adminRole.id_peran,
     id_menu: oMenu.id_menu,
     hak_lihat: 1,
     hak_buat: 1,
@@ -189,7 +340,7 @@ export async function seed(knex) {
   const vaExistingMenus = await knex("mst_menu").where("id_menu", "<", 13).select("id_menu");
   for (const oRow of vaExistingMenus) {
       vaPeranMenus.push({
-          id_peran: 1,
+          id_peran: adminRole.id_peran,
           id_menu: oRow.id_menu,
           hak_lihat: 1,
           hak_buat: 1,
@@ -201,7 +352,10 @@ export async function seed(knex) {
       });
   }
 
-  // delete existing for id_peran 1 and re-insert all
-  await knex("mst_peran_menu").where("id_peran", 1).del();
-  await knex("mst_peran_menu").insert(vaPeranMenus);
+  const uniquePeranMenus = Array.from(
+    new Map(vaPeranMenus.map((row) => [row.id_menu, row])).values(),
+  );
+
+  await knex("mst_peran_menu").where("id_peran", adminRole.id_peran).del();
+  await knex("mst_peran_menu").insert(uniquePeranMenus);
 }

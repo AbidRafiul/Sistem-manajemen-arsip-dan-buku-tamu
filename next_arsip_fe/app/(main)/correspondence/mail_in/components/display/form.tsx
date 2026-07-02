@@ -175,13 +175,18 @@ const Form = ({
                 <form onSubmit={formik.handleSubmit} className="flex flex-column gap-1 pt-3 text-sm">
                     <div className="grid">
                         <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="nomor_agenda" className="font-semibold text-900">Nomor Agenda <span className="text-red-500">*</span></label>
+                            <label htmlFor="nomor_agenda" className="font-semibold text-900">
+                                Nomor Agenda {state.edit && <span className="text-red-500">*</span>}
+                            </label>
                             <InputText
                                 id="nomor_agenda"
                                 className={`w-full ${isFormFieldInvalid("nomor_agenda") ? "p-invalid" : ""}`}
-                                value={formik.values.nomor_agenda}
-                                onChange={(e) => formik.setFieldValue("nomor_agenda", e.target.value)}
-                                placeholder="Contoh: AG-2024-001"
+                                value={state.edit ? formik.values.nomor_agenda : "Otomatis saat disimpan"}
+                                onChange={(e) => {
+                                    if (state.edit) formik.setFieldValue("nomor_agenda", e.target.value);
+                                }}
+                                placeholder="AGD-2026-0001"
+                                disabled={!state.edit}
                             />
                             {getFormErrorMessage("nomor_agenda")}
                         </div>

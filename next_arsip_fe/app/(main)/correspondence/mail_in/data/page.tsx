@@ -57,7 +57,7 @@ const Page = () => {
         validate: (data: initValue) => {
             const errors = {} as Partial<Record<keyof initValue, string>>;
 
-            if (!data.nomor_agenda) errors.nomor_agenda = "Nomor agenda wajib diisi";
+            if (state.edit && !data.nomor_agenda) errors.nomor_agenda = "Nomor agenda wajib diisi";
             if (!data.nomor_surat) errors.nomor_surat = "Nomor surat wajib diisi";
             if (!data.tanggal_surat) errors.tanggal_surat = "Tanggal surat wajib diisi";
             if (!data.tanggal_diterima) errors.tanggal_diterima = "Tanggal diterima wajib diisi";

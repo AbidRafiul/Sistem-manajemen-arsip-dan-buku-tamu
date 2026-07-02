@@ -11,7 +11,7 @@ const router = express.Router();
 
 const deleteRetentionSchedule = async (req, res) => {
   const cIdJadwalRetensi = req.params.id_jadwal_retensi;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
   const oPayload = { id: cIdJadwalRetensi };
 
 

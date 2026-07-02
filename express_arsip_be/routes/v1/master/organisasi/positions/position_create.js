@@ -34,7 +34,7 @@ router.post("/create", async (req, res) => {
     }
 
     const dNow = new Date();
-    await DB("mst_jabatan").insert({
+    await DB("mst_positions").insert({
       kode_jabatan: oPayload.kode_jabatan || null,
       nama_jabatan: oPayload.nama_jabatan || null,
       tingkat_jabatan: oPayload.tingkat_jabatan || null,

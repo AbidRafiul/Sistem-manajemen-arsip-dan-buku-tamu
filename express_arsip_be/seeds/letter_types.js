@@ -3,8 +3,6 @@
  * @returns { Promise<void> }
  */
 export async function seed(knex) {
-  await knex("mst_jenis_surat").del();
-
   await knex("mst_jenis_surat").insert([
     {
       kode_jenis_surat: "SURAT_TUGAS",
@@ -60,5 +58,5 @@ export async function seed(knex) {
       created_at: new Date(),
       updated_at: new Date(),
     },
-  ]);
+  ]).onConflict("kode_jenis_surat").merge();
 }

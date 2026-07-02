@@ -14,7 +14,9 @@ router.post("/delete", async (req, res) => {
       return res.status(400).json({ status: status.BAD_REQUEST, message: "Array ID wajib diisi", datetime: formatDateSystem() });
     }
 
-    await DB("mst_departemen").whereIn("id_departemen", oPayload.id).update({ status: 'deleted', updated_at: new Date() });
+    await DB("mst_departemen")
+      .whereIn("id_departemen", oPayload.id)
+      .update({ status: "nonactive", updated_at: new Date() });
 
     return res.status(200).json({ status: status.SUKSES, message: "Berhasil dihapus!", datetime: formatDateSystem() });
   } catch (error) {

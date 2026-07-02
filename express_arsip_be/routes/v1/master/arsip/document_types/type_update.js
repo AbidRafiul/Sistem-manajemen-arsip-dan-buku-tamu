@@ -16,7 +16,7 @@ const router = express.Router();
 const updateDocumentType = async (req, res) => {
   const { body: oPayload } = req;
   const cIdJenisDokumen = req.params.id_jenis_dokumen;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
 
   try {

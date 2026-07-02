@@ -45,6 +45,15 @@ const incomingLetterDelete = async (req, res) => {
     }
 
     await DB.transaction(async (trx) => {
+      await trx("trs_tracking_surat_masuk")
+        .where("surat_masuk_id", oPayload.surat_masuk_id)
+        .del();
+      await trx("trs_file_surat_masuk")
+        .where("surat_masuk_id", oPayload.surat_masuk_id)
+        .del();
+      await trx("trs_disposisi_surat")
+        .where("surat_masuk_id", oPayload.surat_masuk_id)
+        .del();
       await trx("trs_surat_masuk")
         .where("surat_masuk_id", oPayload.surat_masuk_id)
         .del();

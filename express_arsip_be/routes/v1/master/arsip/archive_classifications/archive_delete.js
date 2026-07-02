@@ -7,7 +7,7 @@ const router = express.Router();
 
 const deleteArchiveClassification = async (req, res) => {
   const cIdKlasifikasi = req.params.id_klasifikasi;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
   const oPayload = { id: cIdKlasifikasi };
 
   try {
@@ -20,7 +20,7 @@ const deleteArchiveClassification = async (req, res) => {
 
   } catch (error) {
     const oResult = { status: status.BAD_REQUEST, message: "Sistem sedang maintenance", datetime: datetime() };
-    Logging(error, { file: "archive_delete.js", func: "deleteArchiveClassification", request: oPayload, response: oResult, user: username });
+    Logging(error, { file: "archive_delete.js", func: "deleteArchiveClassification", request: oPayload, response: oResult, user: nama_pengguna });
     return res.status(500).json(oResult);
   }
 };

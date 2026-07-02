@@ -141,19 +141,26 @@ router.post("/", async (req, res) => {
       }
 
       // 3. Update navigasi_pengguna berdasarkan peran
-      const navigation = await trx("mst_pengguna_peran as ur")
+      const activeRole = await trx("mst_pengguna_peran as ur")
         .leftJoin("mst_peran as r", "ur.id_peran", "r.id_peran")
-        .leftJoin("mst_navigasi as n", function () {
-          this.on("n.peran", "r.nama_peran").orOn("n.peran", "r.kode_peran");
-        })
-        .select("n.menu")
+        .select("r.nama_peran", "r.kode_peran")
         .where("ur.id_pengguna", userId)
         .where("ur.status", "active")
         .orderBy("ur.peran_utama", "desc")
         .first();
 
+      const roleAliases = [activeRole?.nama_peran, activeRole?.kode_peran].filter(
+        Boolean,
+      );
+      const navigation = roleAliases.length
+        ? await trx("mst_navigasi")
+            .select("menu")
+            .whereIn("peran", roleAliases)
+            .first()
+        : null;
+
       if (navigation?.menu) {
-        await trx("navigasi_pengguna")
+        await trx("user_navigation")
           .insert({
             id_pengguna: userId,
             menu: navigation.menu,

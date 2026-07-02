@@ -210,7 +210,7 @@ router.post(
 
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const username = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     const { error } = Joi.number().integer().required().validate(id);
@@ -251,7 +251,7 @@ router.put("/:id", async (req, res) => {
   } catch (error) {
     console.error("❌ [Database Error Log visit_checkin.js PUT]:", error);
     const oResult = { status: "01", message: "Sistem error saat check-in tamu", datetime: formatDateSystem() };
-    Logging(error, { file: "visit_checkin.js", func: "check-in-put", request: req.params, response: oResult, user: username });
+    Logging(error, { file: "visit_checkin.js", func: "check-in-put", request: req.params, response: oResult, user: nama_pengguna });
     return res.status(500).json(oResult);
   }
 });

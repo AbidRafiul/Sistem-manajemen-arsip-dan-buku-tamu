@@ -15,22 +15,6 @@ import { AsyncLocalStorage } from "async_hooks";
 
 const als = new AsyncLocalStorage();
 
-const getColumns = async (tableName) => {
-  const [columns] = await DB.raw("SHOW COLUMNS FROM ??", [tableName]);
-  return columns.map((column) => column.Field);
-};
-
-const pickColumn = (columns, candidates) => {
-  return candidates.find((candidate) => columns.includes(candidate));
-};
-
-const pickTable = async (candidates) => {
-  for (const tableName of candidates) {
-    if (await DB.schema.hasTable(tableName)) return tableName;
-  }
-  return null;
-};
-
 const isBypassed = (url) => {
   if (!url) return false;
   const lower = url.toLowerCase();
@@ -122,94 +106,37 @@ export const validateSignature = async (req, res, next) => {
 
     const cUserUnique = req.headers["x-uniqueid"];
 
-    const userColumns = await getColumns("mst_pengguna");
-    const userIdColumn = pickColumn(userColumns, ["user_id", "id_pengguna", "UserId"]);
-    const usernameColumn = pickColumn(userColumns, [
-      "username",
-      "nama_pengguna",
-      "NamaPengguna",
-      "email",
-    ]);
-    const fullnameColumn = pickColumn(userColumns, [
-      "fullname",
-      "nama_lengkap",
-      "Fullname",
-    ]);
-    const phoneColumn = pickColumn(userColumns, ["telp", "telepon", "PhoneNumber"]);
-
-    if (!userIdColumn || !usernameColumn) {
-      return res.status(400).json({
-        status: status.BAD_REQUEST,
-        message: "Credential column not found",
-        datetime: formatDateSystem(),
-      });
-    }
-
-    // Cek nama tabel yang aktif (support nama lama & baru)
-    const userRoleTable = await pickTable([
-      "mst_pengguna_peran",
-      "mst_pengguna_perans",
-      "mst_user_roles",
-    ]);
-    const roleTable = await pickTable(["mst_peran", "mst_perans", "mst_roles"]);
-
-    let query = DB("mst_pengguna").select(
-      `mst_pengguna.${userIdColumn} as IdPengguna`,
-      `mst_pengguna.${usernameColumn} as nama_pengguna`,
-      fullnameColumn ? `mst_pengguna.${fullnameColumn} as nama_lengkap` : DB.raw("NULL as nama_lengkap"),
-      phoneColumn ? `mst_pengguna.${phoneColumn} as telepon` : DB.raw("NULL as telepon"),
-      `mst_pengguna.${usernameColumn} as UniqueId`,
-    );
-
-    if (userRoleTable && roleTable) {
-      // Kolom FK di tabel user-role (support nama lama & baru)
-      const [urCols] = await DB.raw("SHOW COLUMNS FROM ??", [userRoleTable]);
-      const urColNames = urCols.map((c) => c.Field);
-      const userFkCol = urColNames.includes("id_pengguna")
-        ? "id_pengguna"
-        : urColNames.includes("nama_pengguna")
-          ? "nama_pengguna"
-          : "id_pengguna";
-      const roleFkCol = urColNames.includes("id_peran")
-        ? "id_peran"
-        : "role_id";
-
-      const [rCols] = await DB.raw("SHOW COLUMNS FROM ??", [roleTable]);
-      const rColNames = rCols.map((c) => c.Field);
-      const rolePkCol = rColNames.includes("id_peran") ? "id_peran" : "role_id";
-      const roleCodeCol = rColNames.includes("kode_peran")
-        ? "kode_peran"
-        : "role_code";
-      const roleNameCol = rColNames.includes("nama_peran")
-        ? "nama_peran"
-        : "role_name";
-
-      query = query
-        .leftJoin(
-          userRoleTable,
-          `mst_pengguna.id_pengguna`,
-          `${userRoleTable}.${userFkCol}`,
-        )
-        .leftJoin(
-          roleTable,
-          `${userRoleTable}.${roleFkCol}`,
-          `${roleTable}.${rolePkCol}`,
-        )
-        .select(
-          `${roleTable}.${rolePkCol} as peranId`,
-          `${roleTable}.${roleCodeCol} as kode_peran`,
-          `${roleTable}.${roleNameCol} as peran`,
-        );
-    }
+    const query = DB("mst_pengguna as pengguna")
+      .leftJoin(
+        "mst_pengguna_peran as pengguna_peran",
+        "pengguna.id_pengguna",
+        "pengguna_peran.id_pengguna",
+      )
+      .leftJoin(
+        "mst_peran as peran",
+        "pengguna_peran.id_peran",
+        "peran.id_peran",
+      )
+      .select(
+        "pengguna.id_pengguna as IdPengguna",
+        "pengguna.nama_pengguna",
+        "pengguna.nama_lengkap",
+        "pengguna.telepon",
+        "pengguna.nama_pengguna as UniqueId",
+        "peran.id_peran as peranId",
+        "peran.kode_peran",
+        "peran.nama_peran as peran",
+      );
 
     const numericId = Number(cUserUnique);
     const oUser = await query
       .where((builder) => {
-        builder.where(`mst_pengguna.${userIdColumn}`, numericId || 0);
+        builder.where("pengguna.id_pengguna", numericId || 0);
         if (cUserUnique) {
-          builder.orWhere(`mst_pengguna.${usernameColumn}`, cUserUnique);
+          builder.orWhere("pengguna.nama_pengguna", cUserUnique);
         }
       })
+      .orderBy("pengguna_peran.peran_utama", "desc")
       .first();
 
     if (!oUser) {

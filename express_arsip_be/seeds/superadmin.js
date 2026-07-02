@@ -1,88 +1,93 @@
 import crypto from "crypto";
 
-// 1. Definisikan fungsi hmac agar tidak error "not defined"
-function hmac(data, key, algorithm = "sha512") {
+const hmac = (data, key, algorithm = "sha512") => {
   return crypto.createHmac(algorithm, key).update(data).digest("hex");
-}
-
-// 2. Definisikan fungsi formatDateSystem untuk format tanggal MariaDB
-function formatDateSystem() {
-  return new Date().toISOString().slice(0, 19).replace("T", " ");
-}
+};
 
 export async function seed(knex) {
-  const id_pengguna = "1";
-  const nama_lengkap = "Superadmin";
-  const telepon = "08100000000";
-  const kata_sandi = "Superadmin321!";
+  const username = "superadmin@admin.com";
+  const dNow = new Date();
+  const password = hmac(
+    `${process.env.USER_KEY}${username}Superadmin321!`,
+    process.env.USER_SECRET,
+    "sha512",
+  );
 
-  const peranId = 1;
-
-  // 1. CARI USER LAMA (Ubah 'id_pengguna' menjadi 'id_pengguna')
   const existingUser = await knex("mst_pengguna")
-    .where("id_pengguna", id_pengguna)
+    .where("nama_pengguna", username)
     .first();
-
-  if (existingUser) {
-    // Hapus relasi anak-anaknya dulu (Ubah ke id_pengguna dan id_pengguna sesuai migrasi tabel)
-    await knex("mst_pengguna_peran")
-      .where("id_pengguna", existingUser.id_pengguna)
-      .del();
-    await knex("navigasi_pengguna")
-      .where("id_pengguna", existingUser.id_pengguna)
-      .del();
-
-    // Baru hapus induknya
-    await knex("mst_pengguna")
-      .where("id_pengguna", existingUser.id_pengguna)
-      .del();
-  }
-
-  // Hashing kata_sandi baru
-  const ckata_sandi = process.env.USER_KEY + "superadmin@admin.com" + kata_sandi;
-  const dDatetime = formatDateSystem();
-  const secret = process.env.USER_SECRET;
-  const hashedkata_sandi = hmac(ckata_sandi, secret, "sha512");
-
-  // 2. TANAM KE mst_pengguna & TANGKAP id_pengguna-nya
-  const [insertedNamaPengguna] = await knex("mst_pengguna").insert({
-    nama_lengkap: nama_lengkap,
-    nama_pengguna: 'superadmin@admin.com',
-    surel: 'superadmin@admin.com',
-    id_pengguna: id_pengguna,
-    telepon: telepon,
-    kata_sandi: hashedkata_sandi,
+  const userPayload = {
+    nama_lengkap: "Superadmin",
+    nama_pengguna: username,
+    surel: username,
+    telepon: "08100000000",
+    kata_sandi: password,
     status: "active",
     id_cabang: 1,
     id_divisi: 1,
-    id_departemen: 1, // Diperbaiki dari departemen_id menjadi id_departemen agar sesuai nama tabel mst_departemen
+    id_departemen: 1,
     id_jabatan: 1,
     id_unit_kerja: 1,
-    created_at: dDatetime,
-    updated_at: dDatetime,
-  });
+    updated_at: dNow,
+  };
 
-  // 3. TANAM KE mst_pengguna_peran
-  await knex("mst_pengguna_peran").insert({
-    id_pengguna: insertedNamaPengguna,
-    id_peran: peranId,
+  let userId = existingUser?.id_pengguna;
+  if (existingUser) {
+    await knex("mst_pengguna")
+      .where("id_pengguna", existingUser.id_pengguna)
+      .update(userPayload);
+  } else {
+    const [insertedId] = await knex("mst_pengguna").insert({
+      ...userPayload,
+      created_at: dNow,
+    });
+    userId = insertedId;
+  }
+
+  const adminRole = await knex("mst_peran")
+    .where("kode_peran", "ADM")
+    .first();
+  if (!adminRole) {
+    throw new Error("Peran ADM belum tersedia untuk seed superadmin");
+  }
+
+  const existingRole = await knex("mst_pengguna_peran")
+    .where("id_pengguna", userId)
+    .first();
+  const rolePayload = {
+    id_pengguna: userId,
+    id_peran: adminRole.id_peran,
     peran_utama: 1,
     status: "active",
-    created_at: dDatetime,
-    updated_at: dDatetime,
-  });
+    updated_at: dNow,
+  };
 
-  // 4. TANAM KE navigasi_pengguna (Ubah 'peran' menjadi 'peran' & 'Menu' menjadi 'menu')
-  const oNavigation = await knex("mst_navigasi")
-    .where("peran", "Master")
-    .first();
-
-  if (oNavigation) {
-    await knex("navigasi_pengguna").insert({
-      id_pengguna: insertedNamaPengguna, // Sesuai struktur tabel navigasi_pengguna yang menggunakan id_pengguna
-      menu: oNavigation.menu,
-      created_at: dDatetime,
-      updated_at: dDatetime,
+  if (existingRole) {
+    await knex("mst_pengguna_peran")
+      .where("id_peran_pengguna", existingRole.id_peran_pengguna)
+      .update(rolePayload);
+  } else {
+    await knex("mst_pengguna_peran").insert({
+      ...rolePayload,
+      created_at: dNow,
     });
+  }
+
+  const navigation = await knex("mst_navigasi")
+    .where("peran", "master")
+    .first();
+  if (navigation) {
+    await knex("user_navigation")
+      .insert({
+        id_pengguna: userId,
+        menu: navigation.menu,
+        created_at: dNow,
+        updated_at: dNow,
+      })
+      .onConflict("id_pengguna")
+      .merge({
+        menu: navigation.menu,
+        updated_at: dNow,
+      });
   }
 }
