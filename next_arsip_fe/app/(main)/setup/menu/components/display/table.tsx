@@ -33,7 +33,14 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                         <i className="pi pi-search" />
                         <InputText 
                             value={state.searchVal} 
-                            onChange={(e) => setState(p => ({ ...p, searchVal: e.target.value }))} 
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                let _filters = { ...state.filters };
+                                if (_filters['global']) {
+                                    _filters['global'].value = value;
+                                }
+                                setState(p => ({ ...p, searchVal: value, filters: _filters }));
+                            }} 
                             placeholder="Cari menu..." 
                         />
                     </span>
@@ -153,7 +160,8 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                 paginator 
                 rows={10} 
                 rowsPerPageOptions={[5, 10, 25]}
-                globalFilter={state.searchVal}
+                filters={state.filters}
+                globalFilterFields={["kode_menu", "nama_menu", "jalur_menu"]}
                 header={renderHeader()}
                 emptyMessage="Tidak ada data menu ditemukan."
                 loading={state.load}

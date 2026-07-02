@@ -35,7 +35,7 @@ router.post("/create", async (req, res) => {
 
     const dNow = new Date();
     await DB("mst_jabatan").insert({
-      kode_jabatan: oPayload.kode_jabatan || null,
+      kode_jabatan: oPayload.kode_jabatan ? (oPayload.kode_jabatan.toUpperCase().startsWith("JB-") ? `JB-${oPayload.kode_jabatan.substring(3)}` : `JB-${oPayload.kode_jabatan}`) : null,
       nama_jabatan: oPayload.nama_jabatan || null,
       tingkat_jabatan: oPayload.tingkat_jabatan || null,
       deskripsi: oPayload.deskripsi || null,
