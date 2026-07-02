@@ -28,6 +28,7 @@ const Table = ({
     getLoans,
     handleApproveReject,
     handleReturn,
+    toast,
 }: TableProps) => {
     const permissions = usePermissions();
 
@@ -256,7 +257,7 @@ const Table = ({
             </DataTable>
         </Card>
 
-        <Form state={state} setState={setState} formik={formik} toast={null as any} />
+        <Form state={state} setState={setState} formik={formik} toast={toast} />
 
         {/* Loan Detail Dialog */}
         <Dialog
