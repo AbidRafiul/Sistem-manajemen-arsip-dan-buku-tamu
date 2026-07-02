@@ -85,7 +85,7 @@ const incomingLetterUpdate = async (req, res) => {
       {
         field: "jenis_dokumen_id",
         table: "mst_jenis_dokumen",
-        key: "DocumentTypeId",
+        key: "id_jenis_dokumen",
         label: "Tipe dokumen",
       },
       {

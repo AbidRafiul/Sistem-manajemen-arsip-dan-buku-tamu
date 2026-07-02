@@ -31,6 +31,7 @@ const Page = () => {
     const [detailData, setDetailData] = useState<DetailData | null>(null);
     const [newVersionFile, setNewVersionFile] = useState<File | null>(null);
     const [changeNotes, setChangeNotes] = useState('');
+    const [approveDialogVisible, setApproveDialogVisible] = useState(false);
     const [rejectDialogVisible, setRejectDialogVisible] = useState(false);
     const [rejectNotes, setRejectNotes] = useState('');
     const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
@@ -129,8 +130,6 @@ const Page = () => {
     };
 
     const approveVersion = async (versionId: number, status: 'approved' | 'rejected', notes?: string) => {
-        if (status === 'approved' && !confirm('Apakah Anda yakin ingin menyetujui versi dokumen ini?')) return;
-
         setLoad(true);
         try {
             const res = await postData(apiEndpointVersionApprove, {
@@ -211,6 +210,8 @@ const Page = () => {
                 setNewVersionFile={setNewVersionFile}
                 changeNotes={changeNotes}
                 setChangeNotes={setChangeNotes}
+                approveDialogVisible={approveDialogVisible}
+                setApproveDialogVisible={setApproveDialogVisible}
                 rejectDialogVisible={rejectDialogVisible}
                 setRejectDialogVisible={setRejectDialogVisible}
                 rejectNotes={rejectNotes}

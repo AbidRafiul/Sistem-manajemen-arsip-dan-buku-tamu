@@ -26,7 +26,6 @@ export const mapIncomingLetterPayload = (input: initValue, isEdit: boolean) => {
     const nullableNumber = (value: number | null) => value || null;
 
     const payload: Record<string, any> = {
-        nomor_agenda: input.nomor_agenda,
         nomor_surat: input.nomor_surat,
         tanggal_surat: input.tanggal_surat,
         tanggal_diterima: input.tanggal_diterima,
@@ -43,6 +42,7 @@ export const mapIncomingLetterPayload = (input: initValue, isEdit: boolean) => {
 
     if (isEdit) {
         payload.surat_masuk_id = input.surat_masuk_id;
+        payload.nomor_agenda = input.nomor_agenda;
         payload.status = input.status;
     } else {
         payload.created_by = nullableNumber(input.created_by);

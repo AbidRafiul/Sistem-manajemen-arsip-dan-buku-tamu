@@ -2,17 +2,22 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import DB from "../../../core/config/knex.js";
+import { downloadFileFromMinio } from "../../../core/components/tools/minio_helper.js";
 
 const router = express.Router();
 
 const incomingLetterFileDownload = async (req, res) => {
   try {
-    const nFileId = req.query.incoming_letter_file_id || req.body?.incoming_letter_file_id;
+    const nFileId =
+      req.query.file_surat_masuk_id ||
+      req.query.incoming_letter_file_id ||
+      req.body?.file_surat_masuk_id ||
+      req.body?.incoming_letter_file_id;
 
     if (!nFileId) {
       return res.status(400).json({
         status: false,
-        message: "fle_surat_masuk_id wajib diisi",
+        message: "file_surat_masuk_id wajib diisi",
       });
     }
 
@@ -28,27 +33,46 @@ const incomingLetterFileDownload = async (req, res) => {
       });
     }
 
-    const cUploadRoot = path.resolve(process.cwd(), "uploads", "surat_masuk");
-    const cAbsolutePath = path.resolve(process.cwd(), oFile.file_path);
+    const cFilePath = oFile.path_file;
+    const cFileName = oFile.nama_file || path.basename(cFilePath);
+    const cMimeType = oFile.tipe_mime_file || "application/octet-stream";
+    const cBucketName = process.env.MINIO_BUCKET_NAME || "arsip-bucket";
+    const cObjectName = cFilePath
+      .replace(/\\/g, "/")
+      .replace(/^\/+/, "")
+      .replace(/^uploads\//, "");
 
-    if (!cAbsolutePath.startsWith(cUploadRoot)) {
-      return res.status(400).json({
-        status: false,
-        message: "Path file tidak valid",
-      });
+    try {
+      const oStream = await downloadFileFromMinio(cBucketName, cObjectName);
+
+      res.setHeader("Content-Type", cMimeType);
+      res.setHeader("Content-Disposition", `inline; filename="${cFileName}"`);
+
+      return oStream.pipe(res);
+    } catch (minioError) {
+      console.log(
+        "File tidak ditemukan di MinIO atau koneksi gagal, fallback ke disk lokal:",
+        minioError.message,
+      );
     }
 
-    if (!fs.existsSync(cAbsolutePath)) {
+    const cUploadRoot = path.resolve(process.cwd(), "uploads", "surat_masuk");
+    const cAbsolutePath = path.resolve(process.cwd(), cFilePath);
+    const cRelativePath = path.relative(cUploadRoot, cAbsolutePath);
+    const bIsLocalUploadPath =
+      cRelativePath !== "" &&
+      !cRelativePath.startsWith("..") &&
+      !path.isAbsolute(cRelativePath);
+
+    if (!bIsLocalUploadPath || !fs.existsSync(cAbsolutePath)) {
       return res.status(404).json({
         status: false,
-        message: "File fisik tidak ditemukan di server",
+        message: "File tidak ditemukan di MinIO maupun server lokal",
       });
     }
 
-    const cFileName = oFile.file_name || path.basename(cAbsolutePath);
-    res.setHeader("Content-Type", oFile.file_mime_type || "application/octet-stream");
+    res.setHeader("Content-Type", cMimeType);
     res.setHeader("Content-Disposition", `inline; filename="${cFileName}"`);
-
     return res.sendFile(cAbsolutePath);
   } catch (error) {
     console.log(error);

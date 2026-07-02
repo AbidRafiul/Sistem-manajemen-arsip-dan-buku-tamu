@@ -11,7 +11,7 @@ const router = express.Router();
 
 const deleteConfidentialityLevel = async (req, res) => {
   const cIdTingkatKerahasiaan = req.params.id_tingkat_kerahasiaan;
-  const nama_pengguna = req?.auth?.username || "";
+  const nama_pengguna = req?.auth?.nama_pengguna || "";
   const oPayload = { id: cIdTingkatKerahasiaan };
 
 

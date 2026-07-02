@@ -4,13 +4,48 @@ import DB from "../../../core/config/knex.js";
 import { validatePayload } from "../components/tools/servertool.js";
 
 const router = express.Router();
+const AGENDA_PREFIX = "AGD";
+const AGENDA_SEQUENCE_LENGTH = 4;
+
+const getAgendaYear = () =>
+  new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+  }).format(new Date());
+
+const generateAgendaNumber = async (trx) => {
+  const cYear = getAgendaYear();
+  const cPrefix = `${AGENDA_PREFIX}-${cYear}-`;
+  const oLastAgenda = await trx("trs_surat_masuk")
+    .select("nomor_agenda")
+    .where("nomor_agenda", "like", `${cPrefix}%`)
+    .orderBy("nomor_agenda", "desc")
+    .forUpdate()
+    .first();
+
+  const cLastSequence = String(oLastAgenda?.nomor_agenda || "").slice(
+    cPrefix.length
+  );
+  const nLastSequence = /^\d+$/.test(cLastSequence)
+    ? Number(cLastSequence)
+    : 0;
+  const cNextSequence = String(nLastSequence + 1).padStart(
+    AGENDA_SEQUENCE_LENGTH,
+    "0"
+  );
+
+  return `${cPrefix}${cNextSequence}`;
+};
 
 const incomingLetterCreate = async (req, res) => {
   try {
     const oPayload = req.body || {};
+    if (!oPayload.nomor_agenda) {
+      delete oPayload.nomor_agenda;
+    }
 
     const oValidation = {
-      nomor_agenda: Joi.string().max(100).required(),
+      nomor_agenda: Joi.string().max(100).optional(),
       nomor_surat: Joi.string().max(100).required(),
       tanggal_surat: Joi.date().required(),
       tanggal_diterima: Joi.date().required(),
@@ -27,7 +62,6 @@ const incomingLetterCreate = async (req, res) => {
     };
 
     const oMessage = {
-      "nomor_agenda.required": "Nomor agenda wajib diisi",
       "nomor_surat.required": "Nomor surat wajib diisi",
       "tanggal_surat.required": "Tanggal surat wajib diisi",
       "tanggal_diterima.required": "Tanggal diterima wajib diisi",
@@ -59,7 +93,7 @@ const incomingLetterCreate = async (req, res) => {
       {
         field: "jenis_dokumen_id",
         table: "mst_jenis_dokumen",
-        key: "DocumentTypeId",
+        key: "id_jenis_dokumen",
         label: "Tipe dokumen",
       },
       {
@@ -110,8 +144,10 @@ const incomingLetterCreate = async (req, res) => {
     const dNow = new Date();
 
     const nIncomingLetterId = await DB.transaction(async (trx) => {
+      const cNomorAgenda =
+        oPayload.nomor_agenda || (await generateAgendaNumber(trx));
       const vaInserted = await trx("trs_surat_masuk").insert({
-        nomor_agenda: oPayload.nomor_agenda,
+        nomor_agenda: cNomorAgenda,
         nomor_surat: oPayload.nomor_surat,
         tanggal_surat: oPayload.tanggal_surat,
         tanggal_diterima: oPayload.tanggal_diterima,

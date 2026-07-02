@@ -112,7 +112,21 @@ router.post("/", async (req, res) => {
     }
 
     // 2. Cari Data User di Database
-    const oUser = await getUserByUsernameForReset(oPayload.nama_pengguna);
+    const oUser = await DB("mst_pengguna")
+      .leftJoin(
+        "mst_pengguna_peran",
+        "mst_pengguna.id_pengguna",
+        "mst_pengguna_peran.id_pengguna",
+      )
+      .leftJoin("mst_peran", "mst_pengguna_peran.id_peran", "mst_peran.id_peran")
+      .select(
+        "mst_pengguna.id_pengguna",
+        "mst_pengguna.nama_pengguna",
+        "mst_pengguna.kata_sandi",
+        "mst_peran.nama_peran as peran",
+      )
+      .where("mst_pengguna.nama_pengguna", oPayload.nama_pengguna)
+      .first();
 
     if (!oUser) {
       return res.status(400).json({

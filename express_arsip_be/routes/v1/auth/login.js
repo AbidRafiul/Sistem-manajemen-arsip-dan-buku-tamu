@@ -15,15 +15,6 @@ import { recordAuditTrail } from "../components/tools/audit_tool.js";
 
 const router = express.Router();
 
-const getColumns = async (tableName) => {
-  const [columns] = await DB.raw("SHOW COLUMNS FROM ??", [tableName]);
-  return columns.map((column) => column.Field);
-};
-
-const pickColumn = (columns, candidates) => {
-  return candidates.find((candidate) => columns.includes(candidate));
-};
-
 const getUserByUsername = async (namaPengguna) => {
   const columns = await getColumns("mst_pengguna");
   const idColumn = pickColumn(columns, [
@@ -51,15 +42,13 @@ const getUserByUsername = async (namaPengguna) => {
   if (!idColumn || !usernameColumn || !passwordColumn) return null;
 
   return await DB("mst_pengguna")
-    .where(usernameColumn, namaPengguna)
+    .where("nama_pengguna", namaPengguna)
     .select(
-      `${idColumn} as id_pengguna`,
-      `${usernameColumn} as nama_pengguna`,
-      `${passwordColumn} as kata_sandi`,
-      fullnameColumn
-        ? `${fullnameColumn} as nama_lengkap`
-        : DB.raw("NULL as nama_lengkap"),
-      statusColumn ? `${statusColumn} as status` : DB.raw("'active' as status"),
+      "id_pengguna",
+      "nama_pengguna",
+      "kata_sandi",
+      "nama_lengkap",
+      "status",
     )
     .first();
 };
@@ -136,34 +125,23 @@ const getUserRole = async (user) => {
 
   const query = DB(`${cfg.userRole} as user_role`)
     .leftJoin(
-      `${cfg.role} as role`,
-      `user_role.${roleJoinColumn}`,
-      `role.${roleIdColumn}`,
+      "mst_peran as peran",
+      "pengguna_peran.id_peran",
+      "peran.id_peran",
     )
     .select(
-      `user_role.${roleJoinColumn} as id_peran`,
-      roleCodeColumn
-        ? `role.${roleCodeColumn} as kode_peran`
-        : DB.raw("NULL as kode_peran"),
-      roleNameColumn
-        ? `role.${roleNameColumn} as nama_peran`
-        : DB.raw("NULL as nama_peran"),
+      "pengguna_peran.id_peran",
+      "peran.kode_peran",
+      "peran.nama_peran",
     )
-    .where(`user_role.${userJoinColumn}`, userValue);
-
-  if (statusColumn) {
-    query.where((builder) => {
+    .where("pengguna_peran.id_pengguna", user.id_pengguna)
+    .where((builder) => {
       builder
-        .where(`user_role.${statusColumn}`, "active")
-        .orWhereNull(`user_role.${statusColumn}`);
-    });
-  }
-
-  if (primaryColumn) {
-    query.orderBy(`user_role.${primaryColumn}`, "desc");
-  }
-
-  return await query.first();
+        .where("pengguna_peran.status", "active")
+        .orWhereNull("pengguna_peran.status");
+    })
+    .orderBy("pengguna_peran.peran_utama", "desc")
+    .first();
 };
 
 router.post("/", async (req, res) => {
