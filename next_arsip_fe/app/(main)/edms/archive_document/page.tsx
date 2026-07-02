@@ -397,7 +397,7 @@ const Page = () => {
             ]);
             setState(p => ({
                 ...p,
-                documentTypes: resTypes.data.data || [],
+                documentTypes: (resTypes.data.data || []).filter((item: any) => item.kode_jenis_dokumen !== 'SURAT'),
                 classifications: resClassifications.data.data || [],
                 categories: resCategories.data.data || [],
                 confidentialities: resConfidentialities.data.data || []
