@@ -132,7 +132,6 @@ const incomingLetterArchive = async (req, res) => {
           "Sekretariat",
         lokasi_fisik: oPayload.lokasi_fisik || null,
         qr_code: `DOC-${uuidv4()}`,
-        tags: `surat-masuk,${oLetter.nomor_agenda},${oLetter.nomor_surat}`,
         status: "active",
         created_at: dNow,
         updated_at: dNow,
