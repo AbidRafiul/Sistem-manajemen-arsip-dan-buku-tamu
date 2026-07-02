@@ -304,7 +304,17 @@ const Table = ({
                         </div>
                         <div className="col-12 md:col-4">
                             <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Tgl. Kembali</div>
-                            <div className="font-semibold text-sm text-primary">{selectedDetail.tanggal_kembali ? formatDateOnly(selectedDetail.tanggal_kembali) : <span className="text-orange-500">Belum Dikembalikan</span>}</div>
+                            <div className="font-semibold text-sm text-primary">
+                                {selectedDetail.tanggal_kembali ? (
+                                    formatDateOnly(selectedDetail.tanggal_kembali)
+                                ) : selectedDetail.status === 'borrowed' ? (
+                                    <span className="text-orange-500">Belum Dikembalikan</span>
+                                ) : selectedDetail.status === 'rejected' ? (
+                                    <span className="text-red-500">Peminjaman Ditolak</span>
+                                ) : (
+                                    <span className="text-color-secondary">Belum Dipinjam (Pending)</span>
+                                )}
+                            </div>
                         </div>
                         <div className="col-12"><Divider className="my-2" /></div>
                         <div className="col-12">

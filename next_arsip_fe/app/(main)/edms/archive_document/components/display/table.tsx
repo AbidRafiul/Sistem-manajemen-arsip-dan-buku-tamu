@@ -116,6 +116,8 @@ const Table = ({
                         kode_klasifikasi: rowData.kode_klasifikasi || '',
                         kode_kategori_dokumen: rowData.kode_kategori_dokumen || '',
                         kode_tingkat_kerahasiaan: rowData.kode_tingkat_kerahasiaan || '',
+                        tanggal_transaksi: formatDateInput(rowData.tanggal_transaksi || undefined),
+                        lokasi_fisik: rowData.lokasi_fisik || '',
                     });
                     setState((p) => ({ ...p, add: false, edit: true, delete: false, selectedDocuments: [rowData] }));
                 }}
@@ -222,6 +224,8 @@ const Table = ({
                                 kode_klasifikasi: '',
                                 kode_kategori_dokumen: '',
                                 kode_tingkat_kerahasiaan: '',
+                                tanggal_transaksi: '',
+                                lokasi_fisik: '',
                             }
                         });
                         setState(p => ({ ...p, add: true, edit: false, delete: false }));
@@ -285,8 +289,8 @@ const Table = ({
                 <Column field="nama_kategori_dokumen" header="Kategori" sortable style={{ minWidth: '110px' }} />
                 <Column field="nama_tingkat_kerahasiaan" header="Kerahasiaan" sortable style={{ minWidth: '120px' }} />
                 <Column header="PIC" body={picTemplate} sortable sortField="nama_pic" style={{ minWidth: '150px' }} />
-                <Column field="tanggal" header="Tgl. Dokumen" sortable body={rowData => formatDateCalendar(rowData.tanggal)} style={{ width: '130px' }} />
-                <Column field="tanggal_kedaluwarsa" header="Tgl. Kedaluwarsa" sortable body={rowData => formatDateCalendar(rowData.tanggal_kedaluwarsa)} style={{ width: '140px' }} />
+                <Column field="tanggal" header="Tgl. Dokumen" sortable body={rowData => formatDateCalendar(rowData.tanggal, 'yyyy-MM-dd')} style={{ width: '130px' }} />
+                <Column field="tanggal_kedaluwarsa" header="Tgl. Kedaluwarsa" sortable body={rowData => formatDateCalendar(rowData.tanggal_kedaluwarsa, 'yyyy-MM-dd')} style={{ width: '140px' }} />
                 <Column body={statusTemplate} header="Status" style={{ width: '110px', textAlign: 'center' }} />
                 <Column header="Preview" body={previewTemplate} style={{ width: '90px', textAlign: 'center' }} />
                 <Column header="Aksi" body={actionTemplate} style={{ width: '150px', textAlign: 'center' }} />
@@ -325,11 +329,19 @@ const Table = ({
                     </div>
                     <div className="col-12 md:col-4">
                         <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Tanggal Dokumen</div>
-                        <div className="text-900">{state.detailData?.document?.tanggal ? formatDateCalendar(state.detailData.document.tanggal) : '-'}</div>
+                        <div className="text-900">{state.detailData?.document?.tanggal ? formatDateCalendar(state.detailData.document.tanggal, 'yyyy-MM-dd') : '-'}</div>
                     </div>
                     <div className="col-12 md:col-4">
                         <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Tanggal Kedaluwarsa</div>
-                        <div className="text-900">{state.detailData?.document?.tanggal_kedaluwarsa ? formatDateCalendar(state.detailData.document.tanggal_kedaluwarsa) : '-'}</div>
+                        <div className="text-900">{state.detailData?.document?.tanggal_kedaluwarsa ? formatDateCalendar(state.detailData.document.tanggal_kedaluwarsa, 'yyyy-MM-dd') : '-'}</div>
+                    </div>
+                    <div className="col-12 md:col-4">
+                        <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Tanggal Transaksi</div>
+                        <div className="text-900">{state.detailData?.document?.tanggal_transaksi ? formatDateCalendar(state.detailData.document.tanggal_transaksi, 'yyyy-MM-dd') : '-'}</div>
+                    </div>
+                    <div className="col-12 md:col-4">
+                        <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Lokasi Fisik</div>
+                        <div className="text-900">{state.detailData?.document?.lokasi_fisik || '-'}</div>
                     </div>
                 </div>
 
@@ -355,7 +367,7 @@ const Table = ({
                     >
                         <Column field="nama_peminjam" header="Peminjam" sortable />
                         <Column field="tanggal_pinjam" header="Tgl. Pinjam" body={(rowData: LoanData) => formatDateCalendar(rowData.tanggal_pinjam)} />
-                        <Column field="tanggal_kembali" header="Tgl. Kembali" body={(rowData: LoanData) => rowData.tanggal_kembali ? formatDateCalendar(rowData.tanggal_kembali) : <span className="text-orange-500 font-medium">Belum Kembali</span>} />
+                        <Column field="tanggal_kembali" header="Tgl. Kembali" body={(rowData: LoanData) => rowData.tanggal_kembali ? formatDateCalendar(rowData.tanggal_kembali) : rowData.status === 'borrowed' ? <span className="text-orange-500 font-medium">Belum Kembali</span> : '-'} />
                         <Column field="keperluan" header="Keperluan" />
                         <Column field="status" header="Status" body={(rowData: LoanData) => (
                             <Tag

@@ -22,10 +22,14 @@ const Form = ({
             : <small className="p-error">&nbsp;</small>;
     };
 
-    const documentOptions = state.documents.map(doc => ({
-        label: `${doc.nomor_dokumen} — ${doc.nama_dokumen}`,
-        value: doc.kode_dokumen
-    }));
+    const documentOptions = state.documents.map(doc => {
+        const isBorrowed = state.data.some(loan => loan.kode_dokumen === doc.kode_dokumen && loan.status === 'borrowed');
+        return {
+            label: isBorrowed ? `${doc.nomor_dokumen} — ${doc.nama_dokumen} (Sedang Dipinjam)` : `${doc.nomor_dokumen} — ${doc.nama_dokumen}`,
+            value: doc.kode_dokumen,
+            disabled: isBorrowed
+        };
+    });
 
     return (
         <Dialog

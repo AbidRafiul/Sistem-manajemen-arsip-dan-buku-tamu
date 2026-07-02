@@ -177,6 +177,37 @@ const Form = ({
                     </div>
                 </div>
 
+                <div className="grid mb-2">
+                    <div className="col-12 md:col-6 flex flex-column gap-1">
+                        <label htmlFor="tanggal_transaksi" className="font-semibold text-sm text-900">
+                            Tanggal Transaksi <span className="text-color-secondary font-normal">(Opsional)</span>
+                        </label>
+                        <InputText
+                            id="tanggal_transaksi"
+                            type="date"
+                            value={formik.values.tanggal_transaksi}
+                            onChange={(e) => formik.setFieldValue('tanggal_transaksi', e.target.value)}
+                            className="w-full"
+                        />
+                        {getFormErrorMessage('tanggal_transaksi')}
+                    </div>
+                    <div className="col-12 md:col-6 flex flex-column gap-1">
+                        <label htmlFor="lokasi_fisik" className="font-semibold text-sm text-900">
+                            Lokasi Fisik <span className="text-color-secondary font-normal">(Opsional)</span>
+                        </label>
+                        <InputText
+                            id="lokasi_fisik"
+                            value={formik.values.lokasi_fisik}
+                            onChange={(e) => formik.setFieldValue('lokasi_fisik', e.target.value)}
+                            placeholder="Contoh: Rak A, Baris 2"
+                            className="w-full"
+                        />
+                        {getFormErrorMessage('lokasi_fisik')}
+                    </div>
+                </div>
+
+
+
                 <div className="flex flex-column gap-1 mb-3">
                     <label htmlFor="nama_pic" className="font-semibold text-sm text-900">
                         Nama PIC <span className="text-red-500">*</span>

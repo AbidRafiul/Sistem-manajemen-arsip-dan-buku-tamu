@@ -76,6 +76,8 @@ const Page = () => {
             kode_klasifikasi: '',
             kode_kategori_dokumen: '',
             kode_tingkat_kerahasiaan: '',
+            tanggal_transaksi: '',
+            lokasi_fisik: '',
         },
         validate: (data: initValue) => {
             const errors = {} as any;
@@ -169,12 +171,15 @@ const Page = () => {
                 kode_klasifikasi: input.kode_klasifikasi,
                 kode_kategori_dokumen: input.kode_kategori_dokumen,
                 kode_tingkat_kerahasiaan: input.kode_tingkat_kerahasiaan,
+                tanggal_transaksi: input.tanggal_transaksi || null,
+                lokasi_fisik: input.lokasi_fisik || null,
             });
 
             showSuccess(toast, res.data?.message || 'Document berhasil disimpan');
             formik.resetForm();
             setState((p) => ({ ...p, add: false, edit: false, submittedData: null }));
             await getDocuments();
+            await getDropdownOptions();
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || 'Terjadi Kesalahan');

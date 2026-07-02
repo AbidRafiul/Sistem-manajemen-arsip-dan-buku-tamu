@@ -15,6 +15,8 @@ export interface initValue {
     kode_klasifikasi: string
     kode_kategori_dokumen: string
     kode_tingkat_kerahasiaan: string
+    tanggal_transaksi: string
+    lokasi_fisik: string
 }
 
 export interface DocumentData {
@@ -23,10 +25,10 @@ export interface DocumentData {
     nama_dokumen: string
     nomor_dokumen: string
     tanggal: string
+    tanggal_transaksi?: string | null
     tanggal_kedaluwarsa: string
     nama_pic: string
     lokasi_fisik?: string | null
-    tags?: string | null
     status: string
     created_at: string
     updated_at: string

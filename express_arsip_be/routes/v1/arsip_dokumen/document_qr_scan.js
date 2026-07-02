@@ -23,11 +23,11 @@ const scanDocumentQR = async (req, res) => {
         "d.nama_dokumen",
         "d.nomor_dokumen",
         "d.tanggal",
+        "d.tanggal_transaksi",
         "d.tanggal_kedaluwarsa",
         "d.nama_pic",
         "d.lokasi_fisik",
         "d.qr_code",
-        "d.tags",
         "d.status",
         // Master data
         "dt.nama_jenis_dokumen",
