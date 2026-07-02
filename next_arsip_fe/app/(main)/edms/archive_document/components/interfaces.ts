@@ -11,6 +11,10 @@ export interface initValue {
     tanggal: string
     tanggal_kedaluwarsa: string
     nama_pic: string
+    kode_jenis_dokumen: string
+    kode_klasifikasi: string
+    kode_kategori_dokumen: string
+    kode_tingkat_kerahasiaan: string
 }
 
 export interface DocumentData {
@@ -100,6 +104,27 @@ export interface State {
     submittedData: initValue | null
     previewUrl: string
     isPreviewVisible: boolean
+    documentTypes: any[]
+    classifications: any[]
+    categories: any[]
+    confidentialities: any[]
+    
+    // QR & Tracking States
+    qrDialog: boolean
+    qrData: {
+        id_dokumen: number
+        nomor_dokumen: string
+        nama_dokumen: string
+        qr_code: string
+        qr_base64: string
+    } | null
+    qrLoad: boolean
+
+    trackingDialog: boolean
+    trackingCode: string
+    trackingResult: any | null
+    trackingLoad: boolean
+    updatingLocation: boolean
 }
 
 export interface TableProps {
@@ -108,13 +133,16 @@ export interface TableProps {
     formik: FormikProps<initValue>
     getDocuments: () => Promise<void>;
     getDocumentDetail: (idDokumen: number) => Promise<void>;
-    deleteDocuments: () => Promise<void>;
+    deleteDocuments: () => void;
     uploadVersion: (idDokumen: number, changeNotes: string, file: File) => Promise<void>;
     downloadVersion: (idVersi: number, fileName: string) => Promise<void>;
     rollbackVersion: (idDokumen: number, idVersi: number) => Promise<void>;
     approveVersion: (idVersi: number, status: 'approved' | 'rejected', notes?: string) => Promise<void>;
-    handleFetchPreviewUrl: (fileName: string) => Promise<void>;
-    toast: RefObject<Toast>
+    handleFetchPreviewUrl: (filePath: string) => void;
+    handleGenerateQR: (id: number) => void;
+    handleScanQR: (qrCode: string) => void;
+    handleUpdateLocation: (id: number, location: string) => void;
+    toast: React.RefObject<Toast>;
 }
 
 export interface FormProps {

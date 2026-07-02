@@ -24,6 +24,9 @@ const Table = ({
     getDocumentDetail,
     deleteDocuments,
     handleFetchPreviewUrl,
+    handleGenerateQR,
+    handleScanQR,
+    handleUpdateLocation,
     toast
 }: TableProps) => {
     const permissions = usePermissions();
@@ -84,6 +87,16 @@ const Table = ({
                 onClick={() => router.push(`/edms/archive_document/${rowData.id_dokumen}/versions`)}
             />
             <Button
+                icon="pi pi-qrcode"
+                rounded
+                text
+                severity="warning"
+                size="small"
+                tooltip="QR Code"
+                tooltipOptions={{ position: 'top' }}
+                onClick={() => handleGenerateQR(rowData.id_dokumen)}
+            />
+            <Button
                 icon="pi pi-pencil"
                 rounded
                 text
@@ -99,6 +112,10 @@ const Table = ({
                         tanggal: formatDateInput(rowData.tanggal),
                         tanggal_kedaluwarsa: formatDateInput(rowData.tanggal_kedaluwarsa),
                         nama_pic: rowData.nama_pic,
+                        kode_jenis_dokumen: rowData.kode_jenis_dokumen || '',
+                        kode_klasifikasi: rowData.kode_klasifikasi || '',
+                        kode_kategori_dokumen: rowData.kode_kategori_dokumen || '',
+                        kode_tingkat_kerahasiaan: rowData.kode_tingkat_kerahasiaan || '',
                     });
                     setState((p) => ({ ...p, add: false, edit: true, delete: false, selectedDocuments: [rowData] }));
                 }}
@@ -191,7 +208,33 @@ const Table = ({
                     icon="pi pi-plus"
                     outlined
                     severity="success"
-                    onClick={() => { formik.resetForm(); setState(p => ({ ...p, add: true, edit: false, delete: false })); }}
+                    onClick={() => {
+                        const name = (state.session?.user as any)?.name || (state.session?.user as any)?.nama_pengguna || '';
+                        formik.resetForm({
+                            values: {
+                                id_dokumen: null,
+                                nama_dokumen: '',
+                                nomor_dokumen: '',
+                                tanggal: '',
+                                tanggal_kedaluwarsa: '',
+                                nama_pic: name,
+                                kode_jenis_dokumen: '',
+                                kode_klasifikasi: '',
+                                kode_kategori_dokumen: '',
+                                kode_tingkat_kerahasiaan: '',
+                            }
+                        });
+                        setState(p => ({ ...p, add: true, edit: false, delete: false }));
+                    }}
+                />
+                <Divider layout="vertical" />
+                <Button
+                    size="small"
+                    label="Scan & Track QR"
+                    icon="pi pi-qrcode"
+                    outlined
+                    severity="info"
+                    onClick={() => setState(p => ({ ...p, trackingDialog: true, trackingCode: '', trackingResult: null }))}
                 />
                 <Divider layout="vertical" />
                 <Button
@@ -385,6 +428,241 @@ const Table = ({
                     <div className="flex flex-column align-items-center justify-content-center py-5 text-color-secondary">
                         <i className="pi pi-spin pi-spinner text-3xl mb-3" />
                         <span>Memuat dokumen...</span>
+                    </div>
+                )}
+            </div>
+        </Dialog>
+
+        {/* QR Code Dialog */}
+        <Dialog
+            visible={state.qrDialog}
+            header={
+                <div className="flex align-items-center gap-2">
+                    <i className="pi pi-qrcode text-primary" />
+                    <span className="font-bold text-900">QR Code Arsip</span>
+                </div>
+            }
+            modal
+            style={{ width: '24rem', maxWidth: '95vw' }}
+            onHide={() => setState(p => ({ ...p, qrDialog: false, qrData: null }))}
+            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
+        >
+            <div className="flex flex-column align-items-center justify-content-center pt-4 pb-2 text-sm">
+                {state.qrLoad ? (
+                    <div className="flex flex-column align-items-center py-5">
+                        <i className="pi pi-spin pi-spinner text-3xl text-primary mb-3" />
+                        <span className="text-color-secondary text-sm">Membuat QR Code...</span>
+                    </div>
+                ) : state.qrData ? (
+                    <>
+                        <div id="printable-qr" className="p-3 border-1 border-200 border-round-xl bg-white shadow-1 flex flex-column align-items-center text-center">
+                            <img src={state.qrData.qr_base64} alt="QR Code" className="w-12rem h-12rem mb-3" />
+                            <span className="font-bold text-900 block text-base">{state.qrData.nomor_dokumen}</span>
+                            <span className="text-xs text-color-secondary block mt-1 max-w-15rem overflow-hidden text-overflow-ellipsis white-space-nowrap">{state.qrData.nama_dokumen}</span>
+                            <span className="text-xs text-primary font-mono block mt-2 p-1 bg-blue-50 border-round">{state.qrData.qr_code}</span>
+                        </div>
+                        <Button
+                            label="Cetak QR Code"
+                            icon="pi pi-print"
+                            className="mt-4 w-full"
+                            severity="success"
+                            onClick={() => {
+                                const printContent = document.getElementById('printable-qr')?.innerHTML;
+                                if (state.qrData) {
+                                    const windowPrint = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
+                                    windowPrint?.document.write(`
+                                        <html>
+                                            <head>
+                                                <title>Cetak QR Code</title>
+                                                <style>
+                                                    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #fff; }
+                                                    .qr-container { text-align: center; border: 2px dashed #94a3b8; padding: 20px; border-radius: 12px; }
+                                                    img { width: 200px; height: 200px; }
+                                                    h3 { margin: 10px 0 5px 0; font-size: 18px; }
+                                                    p { margin: 0; font-size: 12px; color: #64748b; }
+                                                    .code { font-family: monospace; font-size: 11px; margin-top: 8px; color: #3b82f6; }
+                                                </style>
+                                            </head>
+                                            <body>
+                                                <div class="qr-container">
+                                                    <img src="${state.qrData.qr_base64}" />
+                                                    <h3>${state.qrData.nomor_dokumen}</h3>
+                                                    <p>${state.qrData.nama_dokumen}</p>
+                                                    <div class="code">${state.qrData.qr_code}</div>
+                                                </div>
+                                                <script>
+                                                    window.onload = function() { window.print(); window.close(); }
+                                                </script>
+                                            </body>
+                                        </html>
+                                    `);
+                                    windowPrint?.document.close();
+                                }
+                            }}
+                        />
+                    </>
+                ) : (
+                    <span className="text-red-500">Gagal memuat QR Code</span>
+                )}
+            </div>
+        </Dialog>
+
+        {/* Scan & Track QR Dialog */}
+        <Dialog
+            visible={state.trackingDialog}
+            header={
+                <div className="flex align-items-center gap-2">
+                    <i className="pi pi-search text-primary" />
+                    <span className="font-bold text-900">Tracking Dokumen & Scan QR</span>
+                </div>
+            }
+            modal
+            style={{ width: '45rem', maxWidth: '95vw' }}
+            onHide={() => setState(p => ({ ...p, trackingDialog: false, trackingCode: '', trackingResult: null }))}
+            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
+        >
+            <div className="flex flex-column gap-4 pt-3">
+                <div className="flex flex-column gap-2 text-sm">
+                    <label htmlFor="qr_input" className="font-bold text-sm text-900">
+                        Scan QR Code / Masukkan Kode Pelacakan <span className="text-red-500">*</span>
+                    </label>
+                    <div className="p-inputgroup">
+                        <InputText
+                            id="qr_input"
+                            value={state.trackingCode}
+                            onChange={(e) => setState(p => ({ ...p, trackingCode: e.target.value }))}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    handleScanQR(state.trackingCode);
+                                }
+                            }}
+                            placeholder="Arahkan kursor ke sini lalu scan QR atau tempel Kode UUID Dokumen..."
+                            className="text-sm"
+                            autoFocus
+                        />
+                        <Button
+                            icon="pi pi-search"
+                            label="Track"
+                            loading={state.trackingLoad}
+                            onClick={() => handleScanQR(state.trackingCode)}
+                        />
+                    </div>
+                    <small className="text-color-secondary">Gunakan alat pemindai (scanner) USB atau masukkan kode manual dan tekan Enter.</small>
+                </div>
+
+                {state.trackingLoad && (
+                    <div className="flex flex-column align-items-center py-5">
+                        <i className="pi pi-spin pi-spinner text-3xl text-primary mb-3" />
+                        <span className="text-sm text-color-secondary">Mencari data pelacakan...</span>
+                    </div>
+                )}
+
+                {!state.trackingLoad && state.trackingResult && (
+                    <div className="surface-card border-1 border-200 border-round-xl p-4 flex flex-column gap-3 text-sm shadow-1">
+                        <div className="flex justify-content-between align-items-center pb-2 border-bottom-1 surface-border">
+                            <div>
+                                <span className="font-extrabold text-lg text-900 block">{state.trackingResult.document.nomor_dokumen}</span>
+                                <span className="text-xs text-color-secondary block mt-1">{state.trackingResult.document.kode_dokumen}</span>
+                            </div>
+                            <Tag
+                                value={state.trackingResult.is_currently_borrowed ? 'SEDANG DIPINJAM' : 'TERSEDIA'}
+                                severity={state.trackingResult.is_currently_borrowed ? 'warning' : 'success'}
+                                icon={state.trackingResult.is_currently_borrowed ? 'pi pi-exclamation-circle' : 'pi pi-check-circle'}
+                                className="px-3 py-1 font-semibold text-xs border-round-md"
+                            />
+                        </div>
+
+                        <div className="grid">
+                            <div className="col-12 md:col-6 flex flex-column gap-1">
+                                <span className="text-color-secondary font-bold text-xs uppercase" style={{ letterSpacing: '0.05em' }}>Nama Dokumen</span>
+                                <span className="text-900 font-medium">{state.trackingResult.document.nama_dokumen}</span>
+                            </div>
+                            <div className="col-12 md:col-6 flex flex-column gap-1">
+                                <span className="text-color-secondary font-bold text-xs uppercase" style={{ letterSpacing: '0.05em' }}>Kategori & Kerahasiaan</span>
+                                <span className="text-900 font-medium">
+                                    {state.trackingResult.document.nama_kategori_dokumen || '-'} ({state.trackingResult.document.nama_tingkat_kerahasiaan || '-'})
+                                </span>
+                            </div>
+                            <div className="col-12 md:col-6 flex flex-column gap-1 mt-2">
+                                <span className="text-color-secondary font-bold text-xs uppercase" style={{ letterSpacing: '0.05em' }}>PIC Dokumen</span>
+                                <span className="text-900 font-medium">{state.trackingResult.document.nama_pic}</span>
+                            </div>
+                            <div className="col-12 md:col-6 flex flex-column gap-1 mt-2">
+                                <span className="text-color-secondary font-bold text-xs uppercase" style={{ letterSpacing: '0.05em' }}>Berkas Elektronik (PDF)</span>
+                                {state.trackingResult.latest_version ? (
+                                    <div className="flex align-items-center gap-2 mt-1">
+                                        <i className="pi pi-file-pdf text-red-500 text-lg" />
+                                        <a
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                handleFetchPreviewUrl(state.trackingResult.latest_version.file_path);
+                                            }}
+                                            className="text-primary font-semibold hover:underline"
+                                        >
+                                            Versi {state.trackingResult.latest_version.nomor_versi} (Pratinjau)
+                                        </a>
+                                    </div>
+                                ) : (
+                                    <span className="text-color-secondary">Belum mengunggah berkas</span>
+                                )}
+                            </div>
+                        </div>
+
+                        {state.trackingResult.is_currently_borrowed && state.trackingResult.active_loan && (
+                            <div className="bg-orange-50 border-round-xl p-3 border-1 border-orange-200 mt-2">
+                                <div className="font-bold text-orange-800 mb-2 flex align-items-center gap-2">
+                                    <i className="pi pi-info-circle" />
+                                    Informasi Peminjaman Aktif
+                                </div>
+                                <div className="grid text-xs text-orange-900">
+                                    <div className="col-6">
+                                        <span className="font-semibold block">Nama Peminjam:</span>
+                                        <span>{state.trackingResult.active_loan.nama_peminjam}</span>
+                                    </div>
+                                    <div className="col-6">
+                                        <span className="font-semibold block">Tanggal Pinjam:</span>
+                                        <span>{formatDateCalendar(state.trackingResult.active_loan.tanggal_pinjam)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <Divider className="my-2" />
+
+                        {/* Update Physical Location Panel */}
+                        <div className="flex flex-column gap-2">
+                            <span className="font-bold text-900 text-sm flex align-items-center gap-2">
+                                <i className="pi pi-map-marker text-primary" />
+                                Pembaruan Lokasi Penyimpanan Fisik (Rak / Lemari)
+                            </span>
+                            <div className="p-inputgroup mt-1">
+                                <InputText
+                                    id="lokasi_fisik_update"
+                                    defaultValue={state.trackingResult.document.lokasi_fisik || ''}
+                                    placeholder="Contoh: Lemari A, Rak 3, Baris 2"
+                                    className="text-sm"
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            const val = (e.target as HTMLInputElement).value;
+                                            handleUpdateLocation(state.trackingResult.document.id_dokumen, val);
+                                        }
+                                    }}
+                                />
+                                <Button
+                                    icon="pi pi-save"
+                                    label="Simpan Lokasi"
+                                    severity="success"
+                                    loading={state.updatingLocation}
+                                    onClick={() => {
+                                        const el = document.getElementById('lokasi_fisik_update') as HTMLInputElement;
+                                        if (el) {
+                                            handleUpdateLocation(state.trackingResult.document.id_dokumen, el.value);
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
