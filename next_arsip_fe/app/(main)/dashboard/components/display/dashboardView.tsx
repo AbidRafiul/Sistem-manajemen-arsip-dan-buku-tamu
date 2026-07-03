@@ -3,29 +3,22 @@ import { Button } from 'primereact/button';
 import MetricCards from './metricCard';
 import AnalyticsChart from './analyticsChart';
 import AuditTimeline from './auditTimeline';
-
-interface SummaryData {
-    arsipAktif: number;
-    tamuHariIni: number;
-    menungguDisposisi: number;
-    retensiExpired: number;
-}
-
-interface AuditLog {
-    id: number;
-    user: string;
-    action: string;
-    time: string;
-    color: string;
-}
+import { SummaryData, ChartData, AuditLog } from '../interfaces';
 
 interface DashboardViewProps {
     data: SummaryData;
+    chartData: ChartData;
     auditLogs: AuditLog[];
     isLoading: boolean;
 }
 
-export default function DashboardView({ data, auditLogs, isLoading }: DashboardViewProps) {
+export default function DashboardView({ data, chartData, auditLogs, isLoading }: DashboardViewProps) {
+    const cTanggalHariIni = new Date().toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    });
+
     return (
         <div className="flex flex-column gap-4">
             {/* Page Header */}
@@ -44,7 +37,7 @@ export default function DashboardView({ data, auditLogs, isLoading }: DashboardV
                 <Button
                     type="button"
                     icon="pi pi-calendar"
-                    label="17 Jun 2026"
+                    label={cTanggalHariIni}
                     outlined
                     severity="secondary"
                     className="bg-white border-300 text-700 font-semibold shadow-1"
@@ -58,7 +51,7 @@ export default function DashboardView({ data, auditLogs, isLoading }: DashboardV
             {/* Bottom Grid: Chart + Audit Trail */}
             <div className="grid">
                 <div className="col-12 xl:col-8">
-                    <AnalyticsChart isLoading={isLoading} />
+                    <AnalyticsChart chartData={chartData} isLoading={isLoading} />
                 </div>
                 <div className="col-12 xl:col-4">
                     <AuditTimeline logs={auditLogs} isLoading={isLoading} />
