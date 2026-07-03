@@ -10,7 +10,6 @@ const getDocuments = async (req, res) => {
     const cDocumentCategoryCode = req.query.kode_kategori_dokumen || req.query.document_category_id;
     const cConfidentialityLevelCode = req.query.kode_tingkat_kerahasiaan || req.query.confidentiality_level_id;
     const cArchiveClassificationCode = req.query.kode_klasifikasi || req.query.archive_classification_id;
-    const cTags = req.query.tags;
     const dDateFrom = req.query.date_from || req.query.tanggal_dari;
     const dDateTo = req.query.date_to || req.query.tanggal_sampai;
     const bExpiredOnly = req.query.expired_only === "true";
@@ -22,14 +21,17 @@ const getDocuments = async (req, res) => {
         "d.nama_dokumen",
         "d.nomor_dokumen",
         "d.tanggal",
+        "d.tanggal_transaksi",
         "d.tanggal_kedaluwarsa",
         "d.nama_pic",
         "d.lokasi_fisik",
         "d.qr_code",
-        "d.tags",
         "d.status",
         "d.created_at",
         "d.updated_at",
+        DB.raw(
+          "(SELECT file_path FROM trs_versi_dokumen WHERE trs_versi_dokumen.kode_dokumen = d.kode_dokumen AND status_persetujuan = 'approved' ORDER BY nomor_versi DESC LIMIT 1) as file_path"
+        ),
         // Master joins
         "dt.id_jenis_dokumen as id_jenis_dokumen",
         "dt.kode_jenis_dokumen as kode_jenis_dokumen",
@@ -88,19 +90,13 @@ const getDocuments = async (req, res) => {
         oBuilder
           .where("d.nama_dokumen", "like", `%${cSearch}%`)
           .orWhere("d.nomor_dokumen", "like", `%${cSearch}%`)
-          .orWhere("d.nama_pic", "like", `%${cSearch}%`)
-          .orWhere("d.tags", "like", `%${cSearch}%`);
+          .orWhere("d.nama_pic", "like", `%${cSearch}%`);
       });
     }
 
     // Filter: PIC
     if (cPicName) {
       oQuery.andWhere("d.nama_pic", "like", `%${cPicName}%`);
-    }
-
-    // Filter: tags
-    if (cTags) {
-      oQuery.andWhere("d.tags", "like", `%${cTags}%`);
     }
 
     // Filter: jenis dokumen (bisa ID atau Code)

@@ -16,6 +16,31 @@ import { recordAuditTrail } from "../components/tools/audit_tool.js";
 const router = express.Router();
 
 const getUserByUsername = async (namaPengguna) => {
+  const columns = await getColumns("mst_pengguna");
+  const idColumn = pickColumn(columns, [
+    "id_pengguna",
+    "user_id",
+    "UserId",
+  ]);
+  const usernameColumn = pickColumn(columns, [
+    "nama_pengguna",
+    "username",
+    "Username",
+  ]);
+  const passwordColumn = pickColumn(columns, [
+    "kata_sandi",
+    "password",
+    "Password",
+  ]);
+  const fullnameColumn = pickColumn(columns, [
+    "nama_lengkap",
+    "fullname",
+    "Fullname",
+  ]);
+  const statusColumn = pickColumn(columns, ["status", "Status"]);
+
+  if (!idColumn || !usernameColumn || !passwordColumn) return null;
+
   return await DB("mst_pengguna")
     .where("nama_pengguna", namaPengguna)
     .select(
@@ -29,7 +54,76 @@ const getUserByUsername = async (namaPengguna) => {
 };
 
 const getUserRole = async (user) => {
-  return await DB("mst_pengguna_peran as pengguna_peran")
+  const oldTables = {
+    userRole: "mst_pengguna_peran",
+    role: "mst_peran",
+    userId: "id_pengguna",
+    roleId: "role_id",
+    primary: "is_primary",
+    roleCode: "role_code",
+    roleName: "role_name",
+  };
+  const newTables = {
+    userRole: "mst_pengguna_perans",
+    role: "mst_perans",
+    userId: "nama_pengguna",
+    roleId: "id_peran",
+    primary: "peran_utama",
+    roleCode: "kode_peran",
+    roleName: "nama_peran",
+  };
+
+  const hasOld = await DB.schema.hasTable(oldTables.userRole);
+  const cfg = hasOld ? oldTables : newTables;
+  if (
+    !(await DB.schema.hasTable(cfg.userRole)) ||
+    !(await DB.schema.hasTable(cfg.role))
+  ) {
+    return null;
+  }
+
+  const userRoleColumns = await getColumns(cfg.userRole);
+  const roleColumns = await getColumns(cfg.role);
+  const userJoinColumn = pickColumn(userRoleColumns, [
+    cfg.userId,
+    "id_pengguna",
+    "user_id",
+    "nama_pengguna",
+  ]);
+  const roleJoinColumn = pickColumn(userRoleColumns, [
+    cfg.roleId,
+    "id_peran",
+    "role_id",
+  ]);
+  const roleIdColumn = pickColumn(roleColumns, [
+    cfg.roleId,
+    "id_peran",
+    "role_id",
+  ]);
+  const roleCodeColumn = pickColumn(roleColumns, [
+    cfg.roleCode,
+    "kode_peran",
+    "role_code",
+  ]);
+  const roleNameColumn = pickColumn(roleColumns, [
+    cfg.roleName,
+    "nama_peran",
+    "role_name",
+  ]);
+  const primaryColumn = pickColumn(userRoleColumns, [
+    cfg.primary,
+    "peran_utama",
+    "is_primary",
+  ]);
+  const statusColumn = pickColumn(userRoleColumns, ["status", "Status"]);
+
+  if (!userJoinColumn || !roleJoinColumn || !roleIdColumn) return null;
+
+  const userValue = ["nama_pengguna", "username"].includes(userJoinColumn)
+    ? user.nama_pengguna
+    : user.id_pengguna;
+
+  const query = DB(`${cfg.userRole} as user_role`)
     .leftJoin(
       "mst_peran as peran",
       "pengguna_peran.id_peran",

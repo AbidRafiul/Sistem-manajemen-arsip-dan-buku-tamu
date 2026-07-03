@@ -53,6 +53,22 @@ const approveArchiveLoan = async (req, res) => {
       return res.status(422).json(oResult);
     }
 
+    // Jika approved, check apakah dokumen sedang dipinjam
+    if (cStatus === "approved") {
+      const oActiveLoan = await Knex("trs_peminjaman_arsip")
+        .where("kode_dokumen", oLoan.kode_dokumen)
+        .where("status", "borrowed")
+        .first();
+
+      if (oActiveLoan) {
+        const oResult = {
+          status: "error",
+          message: `Dokumen sedang dipinjam oleh ${oActiveLoan.nama_peminjam} sejak ${oActiveLoan.tanggal_pinjam}. Tidak dapat menyetujui peminjaman baru.`,
+        };
+        return res.status(422).json(oResult);
+      }
+    }
+
     // Jika approved, ubah status jadi 'borrowed' (langsung bisa dipinjam)
     const cNewStatus = cStatus === "approved" ? "borrowed" : "rejected";
 

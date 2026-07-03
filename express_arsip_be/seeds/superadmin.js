@@ -5,13 +5,11 @@ const hmac = (data, key, algorithm = "sha512") => {
 };
 
 export async function seed(knex) {
-  const username = "superadmin@admin.com";
-  const dNow = new Date();
-  const password = hmac(
-    `${process.env.USER_KEY}${username}Superadmin321!`,
-    process.env.USER_SECRET,
-    "sha512",
-  );
+  await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
+  const id_pengguna = "1";
+  const nama_lengkap = "Superadmin";
+  const telepon = "08100000000";
+  const kata_sandi = "Superadmin321!";
 
   const existingUser = await knex("mst_pengguna")
     .where("nama_pengguna", username)
@@ -73,21 +71,5 @@ export async function seed(knex) {
     });
   }
 
-  const navigation = await knex("mst_navigasi")
-    .where("peran", "master")
-    .first();
-  if (navigation) {
-    await knex("user_navigation")
-      .insert({
-        id_pengguna: userId,
-        menu: navigation.menu,
-        created_at: dNow,
-        updated_at: dNow,
-      })
-      .onConflict("id_pengguna")
-      .merge({
-        menu: navigation.menu,
-        updated_at: dNow,
-      });
-  }
+  await knex.raw("SET FOREIGN_KEY_CHECKS = 1;");
 }

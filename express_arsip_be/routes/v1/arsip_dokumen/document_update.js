@@ -10,6 +10,7 @@ const updateDocument = async (req, res) => {
     const cDocumentNumber = oPayload.nomor_dokumen;
     const dDocumentDate = oPayload.tanggal;
     const dExpiredDate = oPayload.tanggal_kedaluwarsa || null;
+    const dTransactionDate = oPayload.tanggal_transaksi || null;
     const cPicName = oPayload.nama_pic;
     const cDocumentTypeCode = oPayload.kode_jenis_dokumen || null;
     const cDocumentCategoryCode = oPayload.kode_kategori_dokumen || null;
@@ -17,7 +18,6 @@ const updateDocument = async (req, res) => {
     const cConfidentialityLevelCode = oPayload.kode_tingkat_kerahasiaan || null;
     const cRetentionCode = oPayload.kode_retensi || null;
     const cPhysicalLocation = oPayload.lokasi_fisik || null;
-    const cTags = oPayload.tags || null;
     const dNow = new Date();
 
     if (!nDocumentId) {
@@ -63,10 +63,10 @@ const updateDocument = async (req, res) => {
       nama_dokumen: cDocumentName,
       nomor_dokumen: cDocumentNumber,
       tanggal: dDocumentDate,
+      tanggal_transaksi: dTransactionDate,
       tanggal_kedaluwarsa: dExpiredDate,
       nama_pic: cPicName,
       lokasi_fisik: cPhysicalLocation,
-      tags: cTags,
       updated_at: dNow,
     };
 

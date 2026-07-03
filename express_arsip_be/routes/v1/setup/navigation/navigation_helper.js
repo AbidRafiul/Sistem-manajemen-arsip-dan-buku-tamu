@@ -410,19 +410,19 @@ const getNavigationMenu = async (DB, uniqueId) => {
   const vaCombinedMenu = [...(vaRbacMenu || [])];
 
   let oSetupGroup = vaCombinedMenu.find(m => m.label && (m.label.toUpperCase() === 'SETUP' || m.label.toUpperCase() === 'SET UP'));
-  
+
   // Pindahkan Management Menu ke dalam Setup (buat grup jika belum ada)
   const nManagementMenuIdx = vaCombinedMenu.findIndex(m => m.label && m.label.toUpperCase() === 'MANAGEMENT MENU');
   if (nManagementMenuIdx !== -1) {
-     const oMm = vaCombinedMenu.splice(nManagementMenuIdx, 1)[0];
-     if (!oSetupGroup) {
-         oSetupGroup = { label: 'SETUP', items: [] };
-         // Sisipkan setelah HOME jika ada, atau di indeks 0
-         const nHomeIdx = vaCombinedMenu.findIndex(m => m.label && (m.label.toUpperCase() === 'HOME' || m.label.toUpperCase() === 'BERANDA'));
-         vaCombinedMenu.splice(nHomeIdx !== -1 ? nHomeIdx + 1 : 0, 0, oSetupGroup);
-     }
-     oSetupGroup.items = oSetupGroup.items || [];
-     oSetupGroup.items.push(oMm);
+    const oMm = vaCombinedMenu.splice(nManagementMenuIdx, 1)[0];
+    if (!oSetupGroup) {
+      oSetupGroup = { label: 'SETUP', items: [] };
+      // Sisipkan setelah HOME jika ada, atau di indeks 0
+      const nHomeIdx = vaCombinedMenu.findIndex(m => m.label && (m.label.toUpperCase() === 'HOME' || m.label.toUpperCase() === 'BERANDA'));
+      vaCombinedMenu.splice(nHomeIdx !== -1 ? nHomeIdx + 1 : 0, 0, oSetupGroup);
+    }
+    oSetupGroup.items = oSetupGroup.items || [];
+    oSetupGroup.items.push(oMm);
   }
 
   const removeEmptyItems = (vaMenuArray) => {
@@ -446,12 +446,12 @@ const getNavigationMenu = async (DB, uniqueId) => {
     // Reorder: Letakkan "Master Organisasi" tepat di bawah "SETUP"
     const nMasterOrgIdx = vaCombinedMenu.findIndex(m => m.label && m.label.toUpperCase() === 'MASTER ORGANISASI');
     const nSetupIdx = vaCombinedMenu.findIndex(m => m.label && (m.label.toUpperCase() === 'SETUP' || m.label.toUpperCase() === 'SET UP'));
-    
+
     if (nMasterOrgIdx !== -1 && nSetupIdx !== -1 && nMasterOrgIdx !== nSetupIdx + 1) {
-       const oMo = vaCombinedMenu.splice(nMasterOrgIdx, 1)[0];
-       // Karena nMasterOrgIdx bisa saja di depan atau di belakang nSetupIdx, kita cari lagi nSetupIdx yang baru
-       const nNewSetupIdx = vaCombinedMenu.findIndex(m => m.label && (m.label.toUpperCase() === 'SETUP' || m.label.toUpperCase() === 'SET UP'));
-       vaCombinedMenu.splice(nNewSetupIdx + 1, 0, oMo);
+      const oMo = vaCombinedMenu.splice(nMasterOrgIdx, 1)[0];
+      // Karena nMasterOrgIdx bisa saja di depan atau di belakang nSetupIdx, kita cari lagi nSetupIdx yang baru
+      const nNewSetupIdx = vaCombinedMenu.findIndex(m => m.label && (m.label.toUpperCase() === 'SETUP' || m.label.toUpperCase() === 'SET UP'));
+      vaCombinedMenu.splice(nNewSetupIdx + 1, 0, oMo);
     }
 
     return {

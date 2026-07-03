@@ -93,13 +93,7 @@ const incomingLetterArchive = async (req, res) => {
     const dNow = new Date();
 
     const oResult = await DB.transaction(async (trx) => {
-      const cDocumentTypeCode = await getCodeById(
-        trx,
-        "mst_jenis_dokumen",
-        "id_jenis_dokumen",
-        "kode_jenis_dokumen",
-        oLetter.jenis_dokumen_id,
-      );
+      const cDocumentTypeCode = "SURAT";
       const cClassificationCode = await getCodeById(
         trx,
         "mst_klasifikasi_arsip",
@@ -132,7 +126,6 @@ const incomingLetterArchive = async (req, res) => {
           "Sekretariat",
         lokasi_fisik: oPayload.lokasi_fisik || null,
         qr_code: `DOC-${uuidv4()}`,
-        tags: `surat-masuk,${oLetter.nomor_agenda},${oLetter.nomor_surat}`,
         status: "active",
         created_at: dNow,
         updated_at: dNow,

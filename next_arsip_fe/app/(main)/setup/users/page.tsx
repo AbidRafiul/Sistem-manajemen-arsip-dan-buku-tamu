@@ -91,24 +91,22 @@ const Page = () => {
             }
 
             if (!data.nama_pengguna) {
-                errors.nama_pengguna = 'nama_pengguna wajib diisi';
+                errors.nama_pengguna = 'Username/email wajib diisi';
             }
 
             if (!data.kata_sandi && !state.edit) {
-                errors.kata_sandi = 'kata_sandi wajib diisi';
-            }
-
-            if (data.kata_sandi) {
+                errors.kata_sandi = 'Kata sandi wajib diisi';
+            } else if (data.kata_sandi) {
                 if (data.kata_sandi.length < 8) {
-                    errors.kata_sandi = 'kata_sandi harus terdiri dari minimal 8 karakter';
+                    errors.kata_sandi = 'Kata sandi harus terdiri dari minimal 8 karakter';
                 } else if (!/[A-Z]/.test(data.kata_sandi)) {
-                    errors.kata_sandi = 'kata_sandi harus mengandung huruf besar';
+                    errors.kata_sandi = 'Kata sandi harus mengandung huruf besar';
                 } else if (!/[a-z]/.test(data.kata_sandi)) {
-                    errors.kata_sandi = 'kata_sandi harus mengandung huruf kecil';
+                    errors.kata_sandi = 'Kata sandi harus mengandung huruf kecil';
                 } else if (!/[0-9]/.test(data.kata_sandi)) {
-                    errors.kata_sandi = 'kata_sandi harus mengandung angka';
+                    errors.kata_sandi = 'Kata sandi harus mengandung angka';
                 } else if (!/[\W_]/.test(data.kata_sandi)) {
-                    errors.kata_sandi = 'kata_sandi harus mengandung simbol';
+                    errors.kata_sandi = 'Kata sandi harus mengandung simbol';
                 }
             }
 
@@ -116,8 +114,30 @@ const Page = () => {
                 errors.telepon = 'Nomor HP wajib diisi';
             } else if (!/^(08|(\+62))\d{8,13}$/.test(data.telepon)) {
                 errors.telepon = 'Nomor HP harus dimulai dengan 08 dan panjang 9-13 digit';
-            } else if (!data.id_peran) {
+            }
+
+            if (!data.id_peran) {
                 errors.id_peran = 'Role wajib dipilih';
+            }
+
+            if (!data.id_cabang) {
+                errors.id_cabang = 'Cabang wajib dipilih';
+            }
+
+            if (!data.id_jabatan) {
+                errors.id_jabatan = 'Posisi wajib dipilih';
+            }
+
+            if (!data.id_divisi) {
+                errors.id_divisi = 'Divisi wajib dipilih';
+            }
+
+            if (!data.id_departemen) {
+                errors.id_departemen = 'Departemen wajib dipilih';
+            }
+
+            if (!data.id_unit_kerja) {
+                errors.id_unit_kerja = 'Unit Kerja wajib dipilih';
             }
 
             return errors;

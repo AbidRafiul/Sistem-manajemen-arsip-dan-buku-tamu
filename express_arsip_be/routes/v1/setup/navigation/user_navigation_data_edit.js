@@ -66,7 +66,7 @@ router.post("/", async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    let oNavigation = await DB("user_navigation")
+    let oNavigation = await DB("navigasi_pengguna")
       .select("menu")
       .where("id_pengguna", oPayload.NamaPengguna)
       .first();

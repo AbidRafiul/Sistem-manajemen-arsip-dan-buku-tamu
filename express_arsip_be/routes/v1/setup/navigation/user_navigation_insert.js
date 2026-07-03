@@ -56,7 +56,7 @@ router.post("/", async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    await DB("user_navigation")
+    await DB("navigasi_pengguna")
       .insert({
         id_pengguna: oPayload.NamaPengguna,
         menu: oPayload.Menu,
