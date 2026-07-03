@@ -34,6 +34,7 @@ const updateDocumentCategory = async (req, res) => {
         kode_kategori_dokumen: Joi.string().max(255).required().label("Kode Kategori"),
         nama_kategori_dokumen: Joi.string().max(255).required().label("Nama Kategori"),
         deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
+        status: Joi.string().optional().allow(null, "").label("Status"),
 
       },
       {
@@ -61,13 +62,25 @@ const updateDocumentCategory = async (req, res) => {
       return res.status(422).json(oResult);
     }
 
+    const existing = await DB("mst_kategori_dokumen")
+      .where("kode_kategori_dokumen", oPayload.kode_kategori_dokumen)
+      .whereNot("id_kategori_dokumen", cIdKategoriDokumen)
+      .first();
+
+    if (existing) {
+      return res.status(400).json({
+        status: status.BAD_REQUEST,
+        message: `Kode Kategori '${oPayload.kode_kategori_dokumen}' sudah digunakan oleh kategori lain.`,
+        datetime: formatDateSystem(),
+      });
+    }
+
     const nUpdated = await DB("mst_kategori_dokumen")
       .where("id_kategori_dokumen", cIdKategoriDokumen)
       .update({
         kode_klasifikasi: oPayload.kode_klasifikasi,
         kode_kategori_dokumen: oPayload.kode_kategori_dokumen,
         nama_kategori_dokumen: oPayload.nama_kategori_dokumen,
-
         deskripsi: oPayload.deskripsi || null,
         updated_at: new Date(),
       });
