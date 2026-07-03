@@ -8,6 +8,7 @@ import ResetPassword from "./auth/reset_password.js";
 import ArsipDokumen from "./arsip_dokumen/index.js";
 import SuratMasuk from "./correspondence/index.js"
 import BukuTamu from "./buku_tamu/index.js"
+import Dashboard from "./dashboard/index.js"
 
 import {
   contextMiddleware,
@@ -60,6 +61,13 @@ router.use(
   "/correspondence",
   [validateAccessToken, validateSignature, contextMiddleware],
   SuratMasuk
+);
+
+// Dashboard
+router.use(
+  "/dashboard",
+  [validateAccessToken, validateSignature, contextMiddleware],
+  Dashboard
 );
 
 export default router;

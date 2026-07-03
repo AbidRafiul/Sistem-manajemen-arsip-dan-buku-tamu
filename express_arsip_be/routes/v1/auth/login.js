@@ -15,6 +15,15 @@ import { recordAuditTrail } from "../components/tools/audit_tool.js";
 
 const router = express.Router();
 
+const getColumns = async (tableName) => {
+  const [columns] = await DB.raw("SHOW COLUMNS FROM ??", [tableName]);
+  return columns.map((column) => column.Field);
+};
+
+const pickColumn = (columns, candidates) => {
+  return candidates.find((candidate) => columns.includes(candidate));
+};
+
 const getUserByUsername = async (namaPengguna) => {
   const columns = await getColumns("mst_pengguna");
   const idColumn = pickColumn(columns, [
@@ -123,7 +132,7 @@ const getUserRole = async (user) => {
     ? user.nama_pengguna
     : user.id_pengguna;
 
-  const query = DB(`${cfg.userRole} as user_role`)
+  const query = DB(`${cfg.userRole} as pengguna_peran`)
     .leftJoin(
       "mst_peran as peran",
       "pengguna_peran.id_peran",
@@ -142,6 +151,8 @@ const getUserRole = async (user) => {
     })
     .orderBy("pengguna_peran.peran_utama", "desc")
     .first();
+
+  return query;
 };
 
 router.post("/", async (req, res) => {
