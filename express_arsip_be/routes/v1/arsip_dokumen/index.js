@@ -46,6 +46,10 @@ import documentQrScan from "./document_qr_scan.js";
 import documentLocationUpdate from "./document_location_update.js";
 
 import { uploadDocument } from "../../../middleware/upload_document.js";
+import dashboardSummary from "./dashboard_summary.js";
+
+// Mount dashboard routes
+router.use("/dashboard", dashboardSummary);
 
 // ════════════════════════════════════════════════════════════════════════════
 // DOCUMENT CRUD
