@@ -10,6 +10,7 @@ import {
 } from "../components/tools/servertool.js";
 import DB from "../../../core/config/knex.js";
 import { uploadFileToMinio } from "../../../core/components/tools/minio_helper.js";
+import { sendMailNotification } from "../../../core/components/tools/mail_helper.js";
 
 const router = express.Router();
 const upload = multer({
@@ -150,6 +151,18 @@ router.post(
       const QRToken =
         Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
+      let resolvedHostUserId = HostUserId;
+      if (!resolvedHostUserId && HostName) {
+        const matchedUser = await DB("mst_pengguna")
+          .where("nama_lengkap", HostName)
+          .orWhere("nama_pengguna", HostName)
+          .orWhere("surel", HostName)
+          .first();
+        if (matchedUser) {
+          resolvedHostUserId = matchedUser.id_pengguna;
+        }
+      }
+
       const oData = {
         nama_tamu: GuestName,
         nomor_telepon: PhoneNumber,
@@ -159,7 +172,7 @@ router.post(
         jenis_identitas: IdentityType,
         nomor_identitas: IdentityNumber,
         id_tujuan_kunjungan: VisitPurposeId,
-        id_user_host: HostUserId,
+        id_user_host: resolvedHostUserId || null,
         nama_host: HostName,
         catatan_kunjungan: VisitNotes,
         foto_wajah: PhotoFace,
@@ -177,9 +190,11 @@ router.post(
       await setLastFaktur("TAMU");
 
       try {
-        if (HostUserId) {
+        if (resolvedHostUserId) {
+          // NOTIFIKASI DI WEB DINONAKTIFKAN (KARENA FITUR LONCENG DI FRONTEND MASIH TEMPLATE STATIS)
+          /*
           await DB("notifications").insert({
-            id_pengguna: HostUserId,
+            id_pengguna: resolvedHostUserId,
             title: "Booking Tamu",
             body: `Anda memiliki booking tamu dari ${GuestName}`,
             data: JSON.stringify({
@@ -187,6 +202,25 @@ router.post(
               kode_kunjungan: VisitCode,
             }),
             created_at: formatDateSystem(),
+          });
+          */
+
+          // Kirim email notifikasi booking baru ke pegawai secara asinkron
+          let purposeName = "Kunjungan";
+          if (VisitPurposeId) {
+            const purposeObj = await DB("mst_tujuan_kunjungan").where("id_tujuan_kunjungan", VisitPurposeId).first();
+            if (purposeObj) {
+              purposeName = purposeObj.nama_tujuan_kunjungan;
+            }
+          }
+
+          sendMailNotification(resolvedHostUserId, "booking", {
+            nama_tamu: GuestName,
+            instansi_tamu: GuestCompany || "-",
+            VisitPurposeName: purposeName,
+            waktu_masuk: CheckInTime,
+            kode_kunjungan: VisitCode,
+            catatan_kunjungan: VisitNotes || "-"
           });
         }
       } catch (e) {

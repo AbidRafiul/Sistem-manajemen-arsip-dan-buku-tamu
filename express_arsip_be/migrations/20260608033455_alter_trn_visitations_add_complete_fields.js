@@ -19,7 +19,7 @@ export async function up(knex) {
     table.datetime("check_out_time").nullable();
     table.string("photo_face", 255).nullable();
     table.string("photo_identity", 255).nullable();
-    table.enu("status", ["in", "out"]).notNullable().defaultTo("in");
+    table.enu("status", ["Rencana", "in", "out"]).notNullable().defaultTo("in");
 
     table.string("host_nama_pengguna", 36).nullable();
     table.string("host_name", 100).nullable();

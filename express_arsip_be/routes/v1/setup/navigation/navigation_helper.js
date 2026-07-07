@@ -455,7 +455,7 @@ const getNavigationMenu = async (DB, uniqueId) => {
     }
 
     return {
-      menu: removeEmptyItems(ensureArchiveDocumentMenu(vaCombinedMenu)),
+      menu: removeEmptyItems(vaCombinedMenu),
       source: "merged",
       user: oUser,
     };

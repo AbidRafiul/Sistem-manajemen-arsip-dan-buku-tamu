@@ -6,6 +6,7 @@ import { formatDateSystem } from "../components/tools/general.js";
 import { Logging, validatePayload } from "../components/tools/servertool.js";
 import DB from "../../../core/config/knex.js";
 import { uploadFileToMinio } from "../../../core/components/tools/minio_helper.js";
+import { sendMailNotification } from "../../../core/components/tools/mail_helper.js";
 
 const router = express.Router();
 const storage = multer.memoryStorage();
@@ -148,6 +149,18 @@ router.post(
       const cleanHostUserId = HostUserId && HostUserId !== "" && HostUserId !== "null" && HostUserId !== "undefined" ? HostUserId : null;
       const cleanVisitPurposeId = VisitPurposeId && VisitPurposeId !== "" ? Number(VisitPurposeId) : null;
 
+      let resolvedHostUserId = cleanHostUserId;
+      if (!resolvedHostUserId && HostName) {
+        const matchedUser = await DB("mst_pengguna")
+          .where("nama_lengkap", HostName)
+          .orWhere("nama_pengguna", HostName)
+          .orWhere("surel", HostName)
+          .first();
+        if (matchedUser) {
+          resolvedHostUserId = matchedUser.id_pengguna;
+        }
+      }
+
       const oData = {
         nama_tamu: GuestName || null,
         nomor_telepon: PhoneNumber || null,
@@ -157,7 +170,7 @@ router.post(
         jenis_identitas: IdentityType && IdentityType !== "" ? IdentityType : null,
         nomor_identitas: IdentityNumber && IdentityNumber !== "" ? IdentityNumber : null,
         id_tujuan_kunjungan: cleanVisitPurposeId,
-        id_user_host: cleanHostUserId,
+        id_user_host: resolvedHostUserId,
         nama_host: HostName && HostName !== "" ? HostName : null,
         catatan_kunjungan: VisitNotes && VisitNotes !== "" ? VisitNotes : null,
         foto_wajah: PhotoFace,
@@ -172,6 +185,21 @@ router.post(
       };
 
       const [idKunjungan] = await DB("trs_kunjungan").insert(oData);
+
+      // Kirim email notifikasi ke pegawai secara asinkron
+      if (resolvedHostUserId) {
+        const purpose = await DB("mst_tujuan_kunjungan").where("id_tujuan_kunjungan", cleanVisitPurposeId).first();
+        const visitPurposeName = purpose ? purpose.nama_tujuan_kunjungan : "Kunjungan";
+
+        sendMailNotification(resolvedHostUserId, "checkin", {
+          nama_tamu: GuestName,
+          instansi_tamu: GuestCompany || "-",
+          VisitPurposeName: visitPurposeName,
+          waktu_masuk: currentDateTime,
+          kode_kunjungan: VisitCode,
+          catatan_kunjungan: VisitNotes || "-"
+        });
+      }
 
       return res.status(200).json({
         status: "00",
@@ -241,6 +269,21 @@ router.put("/:id", async (req, res) => {
         waktu_masuk: currentDateTime,
         updated_at: currentDateTime
       });
+
+    // Kirim email notifikasi ke pegawai secara asinkron
+    if (checkKunjungan.id_user_host) {
+      const purpose = await DB("mst_tujuan_kunjungan").where("id_tujuan_kunjungan", checkKunjungan.id_tujuan_kunjungan).first();
+      const visitPurposeName = purpose ? purpose.nama_tujuan_kunjungan : "Kunjungan";
+
+      sendMailNotification(checkKunjungan.id_user_host, "checkin", {
+        nama_tamu: checkKunjungan.nama_tamu,
+        instansi_tamu: checkKunjungan.instansi_tamu || "-",
+        VisitPurposeName: visitPurposeName,
+        waktu_masuk: currentDateTime,
+        kode_kunjungan: checkKunjungan.kode_kunjungan,
+        catatan_kunjungan: checkKunjungan.catatan_kunjungan || "-"
+      });
+    }
 
     return res.status(200).json({
       status: "00",

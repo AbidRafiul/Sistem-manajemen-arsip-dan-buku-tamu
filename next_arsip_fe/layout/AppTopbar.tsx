@@ -38,8 +38,17 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
         return () => clearInterval(timer);
     }, [session]);
 
-    const handleLogout = () => {
-        signOut({ callbackUrl: '/auth/login' });
+    const handleLogout = async () => {
+        // Hapus cookie kustom
+        document.cookie = '_A2R=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        document.cookie = '_A2F=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        
+        // Bersihkan storage
+        sessionStorage.clear();
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        
+        await signOut({ callbackUrl: '/auth/login' });
     };
 
     return (
