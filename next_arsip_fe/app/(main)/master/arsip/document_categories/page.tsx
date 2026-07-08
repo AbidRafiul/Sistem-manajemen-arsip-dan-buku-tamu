@@ -1,0 +1,150 @@
+"use client";
+import postData from '@/lib/axios/postData';
+import getDataInterceptor from '@/lib/axios/getData';
+import putData from '@/lib/axios/putData';
+import deleteData from '@/lib/axios/deleteData';
+import { Toast } from 'primereact/toast';
+import { useEffect, useRef, useState } from 'react';
+import { showError, showSuccess } from '@/lib/tools/generalTools';
+import { useFormik } from 'formik';
+import { initValue, State } from './components/interfaces';
+import Table from './components/display/table';
+import { FilterMatchMode } from 'primereact/api';
+import Form from './components/display/form';
+import { useSession } from 'next-auth/react';
+import { apiEndpointCreate, apiEndpointUpdate, apiEndpointDelete, apiEndpointGet, apiEndpointGetClassifications } from './components/endpoints';
+
+const Page = () => {
+    const toast = useRef<Toast>(null);
+    const { data: session } = useSession();
+
+    const [state, setState] = useState<State>({
+        load: false,
+        data: [],
+        classifications: [],
+        add: false,
+        edit: false,
+        delete: false,
+        selectedData: [],
+        searchVal: '',
+        filters: { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
+        session: null
+    });
+
+    const formik = useFormik({
+        initialValues: {
+            id_kategori_dokumen: '',
+            kode_klasifikasi: '',
+            kode_kategori_dokumen: '',
+            nama_kategori_dokumen: '',
+            deskripsi: '',
+            status: 'active'
+        },
+        validate: (data: initValue) => {
+            let errors = {} as any;
+            if (!data.kode_klasifikasi) {
+                errors.kode_klasifikasi = 'Klasifikasi arsip wajib dipilih';
+            }
+            if (!data.kode_kategori_dokumen) {
+                errors.kode_kategori_dokumen = 'Kode kategori wajib diisi';
+            }
+            if (!data.nama_kategori_dokumen) {
+                errors.nama_kategori_dokumen = 'Nama kategori wajib diisi';
+            }
+            return errors;
+        },
+        onSubmit: async (data) => {
+            await handleSave(data);
+        }
+    });
+
+    const handleSave = async (input: initValue) => {
+        setState((p) => ({ ...p, load: true }));
+        try {
+            const isEdit = Boolean(input.id_kategori_dokumen);
+            if (isEdit) {
+                const cEndPoint = `${apiEndpointUpdate}/${input.id_kategori_dokumen}`;
+                const oBody = {
+                    kode_klasifikasi: input.kode_klasifikasi,
+                    kode_kategori_dokumen: input.kode_kategori_dokumen,
+                    nama_kategori_dokumen: input.nama_kategori_dokumen,
+                    deskripsi: input.deskripsi
+                };
+                const res = await putData(cEndPoint, oBody);
+                showSuccess(toast, res.data?.message || 'Berhasil Memperbarui Data');
+            } else {
+                const oBody = {
+                    kode_klasifikasi: input.kode_klasifikasi,
+                    kode_kategori_dokumen: input.kode_kategori_dokumen,
+                    nama_kategori_dokumen: input.nama_kategori_dokumen,
+                    deskripsi: input.deskripsi
+                };
+                const res = await postData(apiEndpointCreate, oBody);
+                showSuccess(toast, res.data?.message || 'Berhasil Menyimpan Data');
+            }
+            formik.resetForm();
+            setState((p) => ({ ...p, add: false, edit: false }));
+            getData(apiEndpointGet);
+        } catch (error: any) {
+            showError(toast, error?.response?.data?.message || 'Terjadi Kesalahan');
+        } finally {
+            setState((p) => ({ ...p, load: false }));
+        }
+    };
+
+    const handleDelete = async () => {
+        setState((p) => ({ ...p, load: true }));
+        try {
+            if (state.selectedData.length < 1) return;
+            for (const item of state.selectedData) {
+                const cEndPoint = `${apiEndpointDelete}/${item.id_kategori_dokumen}`;
+                await deleteData(cEndPoint);
+            }
+            showSuccess(toast, 'Berhasil Menghapus Data');
+            setState((p) => ({ ...p, selectedData: [], delete: false }));
+            getData(apiEndpointGet);
+        } catch (error: any) {
+            showError(toast, error?.response?.data?.message || 'Terjadi Kesalahan');
+        } finally {
+            setState((p) => ({ ...p, load: false }));
+        }
+    };
+
+    const getData = async (apiEndpoint: string) => {
+        setState((p) => ({ ...p, load: true }));
+        try {
+            const res = await getDataInterceptor(apiEndpoint);
+            setState((p) => ({ ...p, data: res.data.data || [] }));
+        } catch (error: any) {
+            showError(toast, error?.response?.data?.message || 'Terjadi Kesalahan');
+        } finally {
+            setState((p) => ({ ...p, load: false }));
+        }
+    };
+
+    const getClassifications = async () => {
+        try {
+            const res = await getDataInterceptor(apiEndpointGetClassifications);
+            setState((p) => ({ ...p, classifications: res.data.data || [] }));
+        } catch (error: any) {
+            console.error('Gagal mengambil data klasifikasi:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (session) {
+            setState((prev) => ({ ...prev, session: session }));
+            getClassifications();
+        }
+    }, [session]);
+
+    return (
+        <div className="p-4">
+            <Toast ref={toast} position="top-right" />
+            <Table state={state} toast={toast} setState={setState} formik={formik} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />
+            <Form formik={formik} state={state} setState={setState} toast={toast} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />
+        </div>
+    );
+};
+
+export default Page;

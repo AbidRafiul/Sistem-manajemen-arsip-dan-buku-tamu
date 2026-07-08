@@ -8,7 +8,7 @@ const createDestructionProposal = async (req, res) => {
     const cKodeDokumen = oPayload.kode_dokumen || oPayload.document_code;
     const nIdDokumen = oPayload.id_dokumen || oPayload.document_id;
     const cProposalReason = oPayload.alasan_usulan || oPayload.proposal_reason;
-    const cProposedBy = req?.context?.Username || oPayload.diusulkan_oleh || oPayload.proposed_by || "system";
+    const cProposedBy = req?.auth?.nama_pengguna || req?.context?.nama_pengguna || oPayload.diusulkan_oleh || oPayload.proposed_by || "system";
     const dNow = new Date();
 
     if ((!cKodeDokumen && !nIdDokumen) || !cProposalReason) {

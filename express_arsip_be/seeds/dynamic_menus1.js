@@ -312,9 +312,21 @@ export async function seed(knex) {
     }
   ];
 
+  // Hapus menu lama yang memiliki id_menu atau kode_menu yang berkonflik agar tidak memicu error unique constraint
+  const targetMenuIds = vaMenus.map(m => m.id_menu);
+  const targetMenuCodes = vaMenus.map(m => m.kode_menu);
+
+  await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
+  await knex("mst_menu")
+    .whereIn("id_menu", targetMenuIds)
+    .orWhereIn("kode_menu", targetMenuCodes)
+    .del();
+
   await knex("mst_menu").insert(vaMenus).onConflict("id_menu").merge();
+  await knex.raw("SET FOREIGN_KEY_CHECKS = 1;");
 
   // Perbaiki tanggal created_at/updated_at untuk menu bawaan 1-12 yang masih "0000-00-00"
+  await knex.raw("SET SESSION sql_mode = '';");
   await knex("mst_menu")
     .where("id_menu", "<=", 12)
     .whereRaw("created_at = '0000-00-00 00:00:00' OR created_at IS NULL")

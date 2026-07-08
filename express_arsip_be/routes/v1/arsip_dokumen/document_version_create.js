@@ -15,6 +15,7 @@ const createDocumentVersion = async (req, res) => {
       nomor_versi: nVersionNumber,
       catatan_perubahan: cChangeNotes,
       file_path: cFilePath,
+      diunggah_oleh: req?.auth?.nama_pengguna || req?.context?.nama_pengguna || oPayload.diunggah_oleh || oPayload.uploaded_by || "system",
       tanggal_transaksi: dNow,
       created_at: dNow,
       updated_at: dNow,

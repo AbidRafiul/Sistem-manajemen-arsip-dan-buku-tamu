@@ -305,3 +305,181 @@ async function getCRUD(request: NextRequest, token: any, a2fCookie: string) {
         return NextResponse.json(err?.response?.data || { error: 'Internal server error' }, { status: err?.response?.status || 500 });
     }
 }
+
+export const PUT = async (request: NextRequest) => {
+    try {
+        const session = await auth();
+        const bridgeCookie = getBridgeCookie(request);
+
+        if (!(await hasBridgeAuth(request, session))) {
+            return NextResponse.json({ status: 99, message: 'Unauthenticated', datetime: formatDateCalendar(new Date()) }, { status: 401 });
+        }
+        if (!bridgeCookie) {
+            return NextResponse.json({ status: 99, message: 'Unauthenticated', datetime: formatDateCalendar(new Date()) }, { status: 401 });
+        }
+
+        const dNow = new Date();
+        const tokenResponse = await axios.get(`${process.env.API_URL}/auth/token`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Timestamp': formatDateCalendar(dNow)
+            }
+        });
+
+        const token = tokenResponse.data;
+        if (!token?.access_token) {
+            return NextResponse.json({ status: '99', message: 'Token not found', datetime: formatDateCalendar(new Date()) }, { status: 400 });
+        }
+
+        return await putCRUD(request, token, bridgeCookie);
+    } catch (error: any) {
+        console.error('Bridge error PUT:', error);
+        return NextResponse.json({
+            status: '99',
+            message: error?.response?.data?.message || error?.message || 'Internal server error',
+            datetime: formatDateCalendar(new Date()),
+            data: error.response?.data || null
+        }, { status: 400 });
+    }
+};
+
+export const DELETE = async (request: NextRequest) => {
+    try {
+        const session = await auth();
+        const bridgeCookie = getBridgeCookie(request);
+
+        if (!(await hasBridgeAuth(request, session))) {
+            return NextResponse.json({ status: 99, message: 'Unauthenticated', datetime: formatDateCalendar(new Date()) }, { status: 401 });
+        }
+        if (!bridgeCookie) {
+            return NextResponse.json({ status: 99, message: 'Unauthenticated', datetime: formatDateCalendar(new Date()) }, { status: 401 });
+        }
+
+        const dNow = new Date();
+        const tokenResponse = await axios.get(`${process.env.API_URL}/auth/token`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Timestamp': formatDateCalendar(dNow)
+            }
+        });
+
+        const token = tokenResponse.data;
+        if (!token?.access_token) {
+            return NextResponse.json({ status: '99', message: 'Token not found', datetime: formatDateCalendar(new Date()) }, { status: 400 });
+        }
+
+        return await deleteCRUD(request, token, bridgeCookie);
+    } catch (error: any) {
+        console.error('Bridge error DELETE:', error);
+        return NextResponse.json({
+            status: '99',
+            message: error?.response?.data?.message || error?.message || 'Internal server error',
+            datetime: formatDateCalendar(new Date()),
+            data: error.response?.data || null
+        }, { status: 400 });
+    }
+};
+
+async function putCRUD(request: NextRequest, token: any, a2fCookie: string) {
+    try {
+        const headers: CustomHeaders = {};
+        request.headers.forEach((value, key) => {
+            if (key.toLowerCase().startsWith('x-')) {
+                headers[key.toLowerCase() as keyof CustomHeaders] = value;
+            }
+        });
+
+        const endpoint = headers['x-endpoint'];
+        if (!endpoint) {
+            return NextResponse.json({ error: 'Endpoint not specified' }, { status: 400 });
+        }
+
+        let body = {};
+        try {
+            body = await request.json();
+        } catch {
+            // Empty body
+        }
+
+        let customHeader: Record<string, any> = {};
+        if (headers['x-custom-header']) {
+            try {
+                customHeader = JSON.parse(headers['x-custom-header']);
+            } catch (e) {
+                console.error('Failed to parse x-custom-header:', e);
+            }
+        }
+
+        let requestHeaders: Record<string, string> = {
+            'Content-Type': 'application/json',
+            'X-Timestamp': formatDateCalendar(new Date()) as string,
+            Authorization: `Bearer ${token.access_token}`,
+            ...customHeader
+        };
+
+        const uid = await resolveUniqueId(request, a2fCookie);
+        if (uid) {
+            requestHeaders['x-uniqueid'] = uid;
+        }
+
+        delete requestHeaders['X-Level'];
+        const targetUrl = `${process.env.API_URL}/${endpoint.replace(/^\/+/, '')}`;
+        const result = await axios.put(targetUrl, body, { headers: requestHeaders });
+
+        return NextResponse.json(result.data);
+    } catch (err: any) {
+        if (err?.response?.status === 401) {
+            return NextResponse.json(err?.response?.data || { error: 'Unauthorized' }, { status: 401 });
+        }
+        return NextResponse.json(err?.response?.data || { error: 'Internal server error' }, { status: err?.response?.status || 500 });
+    }
+}
+
+async function deleteCRUD(request: NextRequest, token: any, a2fCookie: string) {
+    try {
+        const headers: CustomHeaders = {};
+        request.headers.forEach((value, key) => {
+            if (key.toLowerCase().startsWith('x-')) {
+                headers[key.toLowerCase() as keyof CustomHeaders] = value;
+            }
+        });
+
+        const endpoint = headers['x-endpoint'];
+        if (!endpoint) {
+            return NextResponse.json({ error: 'Endpoint not specified' }, { status: 400 });
+        }
+
+        let customHeader: Record<string, any> = {};
+        if (headers['x-custom-header']) {
+            try {
+                customHeader = JSON.parse(headers['x-custom-header']);
+            } catch (e) {
+                console.error('Failed to parse x-custom-header:', e);
+            }
+        }
+
+        let requestHeaders: Record<string, string> = {
+            'Content-Type': 'application/json',
+            'X-Timestamp': formatDateCalendar(new Date()) as string,
+            Authorization: `Bearer ${token.access_token}`,
+            ...customHeader
+        };
+
+        const uid = await resolveUniqueId(request, a2fCookie);
+        if (uid) {
+            requestHeaders['x-uniqueid'] = uid;
+        }
+
+        delete requestHeaders['X-Level'];
+        const targetUrl = `${process.env.API_URL}/${endpoint.replace(/^\/+/, '')}`;
+        const result = await axios.delete(targetUrl, { headers: requestHeaders });
+
+        return NextResponse.json(result.data);
+    } catch (err: any) {
+        if (err?.response?.status === 401) {
+            return NextResponse.json(err?.response?.data || { error: 'Unauthorized' }, { status: 401 });
+        }
+        return NextResponse.json(err?.response?.data || { error: 'Internal server error' }, { status: err?.response?.status || 500 });
+    }
+}
+

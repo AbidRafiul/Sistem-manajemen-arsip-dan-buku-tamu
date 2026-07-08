@@ -2,8 +2,14 @@ import React from 'react';
 import { Chart } from 'primereact/chart';
 import { Skeleton } from 'primereact/skeleton';
 import { Card } from 'primereact/card';
+import { ChartData } from '../interfaces';
 
-export default function AnalyticsChart({ isLoading }: { isLoading: boolean }) {
+interface AnalyticsChartProps {
+    chartData: ChartData;
+    isLoading: boolean;
+}
+
+export default function AnalyticsChart({ chartData, isLoading }: AnalyticsChartProps) {
     if (isLoading) {
         return (
             <Card className="shadow-1 border-round-2xl border-none h-full">
@@ -12,12 +18,12 @@ export default function AnalyticsChart({ isLoading }: { isLoading: boolean }) {
         );
     }
 
-    const chartData = {
-        labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+    const oChartData = {
+        labels: chartData.labels,
         datasets: [
             {
                 label: 'Dokumen Diunggah',
-                data: [65, 59, 80, 81, 56, 55, 40],
+                data: chartData.data,
                 fill: true,
                 borderColor: '#4F46E5', // Indigo 600
                 tension: 0.4,
@@ -58,7 +64,7 @@ export default function AnalyticsChart({ isLoading }: { isLoading: boolean }) {
                 </div>
             </div>
             <div style={{ height: '350px' }}>
-                <Chart type="line" data={chartData} options={chartOptions} style={{ height: '100%' }} />
+                <Chart type="line" data={oChartData} options={chartOptions} style={{ height: '100%' }} />
             </div>
         </Card>
     );

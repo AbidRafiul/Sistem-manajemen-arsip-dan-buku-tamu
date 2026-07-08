@@ -8,6 +8,7 @@ import documentUpdate from "./document_update.js";
 import documentDelete from "./document_delete.js";
 import documentGet from "./document_get.js";
 import documentDetail from "./document_detail.js";
+import documentPreview from "./document_preview.js";
 
 import documentVersionCreate from "./document_version_create.js";
 import documentVersionUpload from "./document_version_upload.js";
@@ -45,6 +46,10 @@ import documentQrScan from "./document_qr_scan.js";
 import documentLocationUpdate from "./document_location_update.js";
 
 import { uploadDocument } from "../../../middleware/upload_document.js";
+import dashboardSummary from "./dashboard_summary.js";
+
+// Mount dashboard routes
+router.use("/dashboard", dashboardSummary);
 
 // ════════════════════════════════════════════════════════════════════════════
 // DOCUMENT CRUD
@@ -67,6 +72,9 @@ router.get("/get", documentGet);
 
 // GET /detail — Document detail + versions + loans + proposal
 router.get("/detail", documentDetail);
+
+// GET /preview — Document preview url generator
+router.get("/preview", documentPreview);
 
 // ════════════════════════════════════════════════════════════════════════════
 // MASTER DATA (Dropdown data untuk FE)

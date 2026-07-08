@@ -28,6 +28,14 @@ router.post("/", async (req, res) => {
           .try(Joi.string(), Joi.number())
           .optional()
           .label("nama_pengguna"),
+        id_pengguna: Joi.alternatives()
+          .try(Joi.string(), Joi.number())
+          .optional()
+          .label("id_pengguna"),
+        user_id: Joi.alternatives()
+          .try(Joi.string(), Joi.number())
+          .optional()
+          .label("id_pengguna"),
         user_id: Joi.alternatives()
           .try(Joi.string(), Joi.number())
           .optional()
@@ -51,14 +59,15 @@ router.post("/", async (req, res) => {
 
     const cUserLookup = String(
       oPayload.id_pengguna ||
-        oPayload.user_id ||
-        oPayload.IdPengguna ||
-        oPayload.nama_pengguna ||
-        req?.auth?.IdPengguna ||
-        req?.auth?.id_pengguna ||
-        req?.auth?.user_id ||
-        req?.auth?.nama_pengguna ||
-        "",
+      oPayload.id_pengguna ||
+      oPayload.user_id ||
+      oPayload.IdPengguna ||
+      oPayload.nama_pengguna ||
+      req?.auth?.IdPengguna ||
+      req?.auth?.id_pengguna ||
+      req?.auth?.user_id ||
+      req?.auth?.nama_pengguna ||
+      "",
     ).trim();
 
     if (cValidation || !cUserLookup) {

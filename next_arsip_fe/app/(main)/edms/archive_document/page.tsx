@@ -20,7 +20,13 @@ import {
     apiEndpointVersionUpload,
     apiEndpointVersionDownload,
     apiEndpointVersionRollback,
-    apiEndpointVersionApprove
+    apiEndpointVersionApprove,
+    apiEndpointDocumentPreview,
+    apiEndpointCategoryGet,
+    apiEndpointConfidentialityGet,
+    apiEndpointQrGenerate,
+    apiEndpointQrScan,
+    apiEndpointLocationUpdate
 } from "./components/endpoints";
 import { initValue, State } from "./components/interfaces";
 
@@ -42,6 +48,20 @@ const Page = () => {
         filters: { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
         session: null,
         submittedData: null,
+        previewUrl: '',
+        isPreviewVisible: false,
+        documentTypes: [],
+        classifications: [],
+        categories: [],
+        confidentialities: [],
+        qrDialog: false,
+        qrData: null,
+        qrLoad: false,
+        trackingDialog: false,
+        trackingCode: '',
+        trackingResult: null,
+        trackingLoad: false,
+        updatingLocation: false,
     });
 
     const formik = useFormik<initValue>({
@@ -52,6 +72,12 @@ const Page = () => {
             tanggal: '',
             tanggal_kedaluwarsa: '',
             nama_pic: '',
+            kode_jenis_dokumen: '',
+            kode_klasifikasi: '',
+            kode_kategori_dokumen: '',
+            kode_tingkat_kerahasiaan: '',
+            tanggal_transaksi: '',
+            lokasi_fisik: '',
         },
         validate: (data: initValue) => {
             const errors = {} as any;
@@ -70,6 +96,22 @@ const Page = () => {
 
             if (!data.nama_pic) {
                 errors.nama_pic = 'PIC wajib diisi';
+            }
+
+            if (!data.kode_jenis_dokumen) {
+                errors.kode_jenis_dokumen = 'Jenis dokumen wajib diisi';
+            }
+
+            if (!data.kode_klasifikasi) {
+                errors.kode_klasifikasi = 'Klasifikasi wajib diisi';
+            }
+
+            if (!data.kode_kategori_dokumen) {
+                errors.kode_kategori_dokumen = 'Kategori dokumen wajib diisi';
+            }
+
+            if (!data.kode_tingkat_kerahasiaan) {
+                errors.kode_tingkat_kerahasiaan = 'Kerahasiaan dokumen wajib diisi';
             }
 
             return errors;
@@ -125,12 +167,19 @@ const Page = () => {
                 tanggal: input.tanggal,
                 tanggal_kedaluwarsa: input.tanggal_kedaluwarsa,
                 nama_pic: input.nama_pic,
+                kode_jenis_dokumen: input.kode_jenis_dokumen,
+                kode_klasifikasi: input.kode_klasifikasi,
+                kode_kategori_dokumen: input.kode_kategori_dokumen,
+                kode_tingkat_kerahasiaan: input.kode_tingkat_kerahasiaan,
+                tanggal_transaksi: input.tanggal_transaksi || null,
+                lokasi_fisik: input.lokasi_fisik || null,
             });
 
             showSuccess(toast, res.data?.message || 'Document berhasil disimpan');
             formik.resetForm();
             setState((p) => ({ ...p, add: false, edit: false, submittedData: null }));
             await getDocuments();
+            await getDropdownOptions();
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || 'Terjadi Kesalahan');
@@ -241,12 +290,137 @@ const Page = () => {
         }
     };
 
+    const handleFetchPreviewUrl = async (fileName: string) => {
+        if (!fileName) {
+            showError(toast, 'Berkas dokumen belum diunggah untuk versi ini');
+            return;
+        }
+        setState((p) => ({ ...p, load: true }));
+        try {
+            const res = await getData(apiEndpointDocumentPreview, { file_name: fileName });
+            if (res.data?.status === 'success') {
+                setState((p) => ({
+                    ...p,
+                    previewUrl: res.data.preview_url,
+                    isPreviewVisible: true,
+                }));
+            } else {
+                showError(toast, res.data?.message || 'Gagal mengambil URL preview');
+            }
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || 'Gagal memproses pratinjau dokumen');
+        } finally {
+            setState((p) => ({ ...p, load: false }));
+        }
+    };
+
+    const handleGenerateQR = async (id: number) => {
+        setState(prev => ({ ...prev, qrDialog: true, qrLoad: true, qrData: null }));
+        try {
+            const res = await postData(apiEndpointQrGenerate, { id_dokumen: id });
+            if (res.data?.status === 'success') {
+                setState(prev => ({
+                    ...prev,
+                    qrData: res.data.data,
+                    qrLoad: false
+                }));
+            } else {
+                showError(toast, res.data?.message || 'Gagal membuat QR Code');
+                setState(prev => ({ ...prev, qrLoad: false, qrDialog: false }));
+            }
+        } catch (error: any) {
+            showError(toast, error.response?.data?.message || error.message || 'Terjadi kesalahan sistem');
+            setState(prev => ({ ...prev, qrLoad: false, qrDialog: false }));
+        }
+    };
+
+    const handleScanQR = async (qrCode: string) => {
+        if (!qrCode.trim()) {
+            showError(toast, 'Harap isi QR Code terlebih dahulu');
+            return;
+        }
+        setState(prev => ({ ...prev, trackingLoad: true, trackingResult: null }));
+        try {
+            const res = await getData(`${apiEndpointQrScan}?qr_code=${encodeURIComponent(qrCode.trim())}`);
+            if (res.data?.status === 'success') {
+                setState(prev => ({
+                    ...prev,
+                    trackingResult: res.data.data,
+                    trackingLoad: false
+                }));
+            } else {
+                showError(toast, res.data?.message || 'QR Code tidak ditemukan');
+                setState(prev => ({ ...prev, trackingLoad: false }));
+            }
+        } catch (error: any) {
+            showError(toast, error.response?.data?.message || error.message || 'QR Code tidak terdaftar');
+            setState(prev => ({ ...prev, trackingLoad: false }));
+        }
+    };
+
+    const handleUpdateLocation = async (id: number, location: string) => {
+        setState(prev => ({ ...prev, updatingLocation: true }));
+        try {
+            const res = await postData(apiEndpointLocationUpdate, { id_dokumen: id, lokasi_fisik: location });
+            if (res.data?.status === 'success') {
+                showSuccess(toast, 'Lokasi fisik dokumen berhasil diperbarui');
+                setState(prev => ({
+                    ...prev,
+                    updatingLocation: false,
+                    trackingResult: prev.trackingResult ? {
+                        ...prev.trackingResult,
+                        document: {
+                            ...prev.trackingResult.document,
+                            lokasi_fisik: location
+                        }
+                    } : null
+                }));
+                getDocuments();
+            } else {
+                showError(toast, res.data?.message || 'Gagal memperbarui lokasi fisik');
+                setState(prev => ({ ...prev, updatingLocation: false }));
+            }
+        } catch (error: any) {
+            showError(toast, error.response?.data?.message || error.message || 'Terjadi kesalahan sistem');
+            setState(prev => ({ ...prev, updatingLocation: false }));
+        }
+    };
+
+    const getDropdownOptions = async () => {
+        try {
+            const [resTypes, resClassifications, resCategories, resConfidentialities] = await Promise.all([
+                getData('/master/arsip/document-types'),
+                getData('/master/arsip/archive-classifications'),
+                getData(apiEndpointCategoryGet),
+                getData(apiEndpointConfidentialityGet)
+            ]);
+            setState(p => ({
+                ...p,
+                documentTypes: (resTypes.data.data || []).filter((item: any) => item.kode_jenis_dokumen !== 'SURAT'),
+                classifications: resClassifications.data.data || [],
+                categories: resCategories.data.data || [],
+                confidentialities: resConfidentialities.data.data || []
+            }));
+        } catch (error) {
+            console.error("Gagal mengambil opsi dropdown:", error);
+        }
+    };
+
+    useEffect(() => {
+        getDropdownOptions();
+    }, []);
+
     useEffect(() => {
         if (session) {
             setState((prev) => ({
                 ...prev,
                 session: session
             }));
+            const name = (session?.user as any)?.name || (session?.user as any)?.nama_pengguna || '';
+            if (name && !formik.values.nama_pic) {
+                formik.setFieldValue('nama_pic', name);
+            }
         }
     }, [session]);
 
@@ -267,6 +441,10 @@ const Page = () => {
                 downloadVersion={downloadVersion}
                 rollbackVersion={rollbackVersion}
                 approveVersion={approveVersion}
+                handleFetchPreviewUrl={handleFetchPreviewUrl}
+                handleGenerateQR={handleGenerateQR}
+                handleScanQR={handleScanQR}
+                handleUpdateLocation={handleUpdateLocation}
                 state={state}
                 setState={setState}
                 formik={formik}

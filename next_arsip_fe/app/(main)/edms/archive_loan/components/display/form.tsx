@@ -6,13 +6,57 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
 import { Divider } from "primereact/divider";
+import { useState } from "react";
+import getData from "@/lib/axios/getData";
+import { showError, showSuccess } from "@/lib/tools/generalTools";
 import { FormProps, initValue } from "../interfaces";
 
 const Form = ({
     state,
     setState,
     formik,
+    toast,
 }: FormProps) => {
+
+    const [qrScanInput, setQrScanInput] = useState('');
+    const [qrScanLoading, setQrScanLoading] = useState(false);
+
+    const handleScan = async (codeStr: string) => {
+        const cleanCode = codeStr.trim();
+        if (!cleanCode) return;
+
+        setQrScanLoading(true);
+        try {
+            const res = await getData(`/arsip-dokumen/qr/scan?qr_code=${encodeURIComponent(cleanCode)}`);
+            if (res.data?.status === 'success' && res.data?.data?.document) {
+                const doc = res.data.data.document;
+                
+                // Cek apakah dokumen sedang dipinjam
+                const isBorrowed = state.data.some(loan => loan.kode_dokumen === doc.kode_dokumen && loan.status === 'borrowed');
+                if (isBorrowed) {
+                    showError(toast, `Dokumen ${doc.nomor_dokumen} sedang dipinjam dan tidak dapat dipilih`);
+                } else {
+                    formik?.setFieldValue('kode_dokumen', doc.kode_dokumen);
+                    showSuccess(toast, `Dokumen ${doc.nomor_dokumen} terpilih`);
+                    setQrScanInput('');
+                }
+            } else {
+                showError(toast, res.data?.message || 'Dokumen tidak ditemukan');
+            }
+        } catch (error: any) {
+            const msg = error.response?.data?.message || error.message || 'QR Code tidak terdaftar';
+            showError(toast, msg);
+        } finally {
+            setQrScanLoading(false);
+        }
+    };
+
+    const handleQrScanKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleScan(qrScanInput);
+        }
+    };
 
     const isFormFieldInvalid = (name: keyof initValue) => !!(formik?.touched[name] && formik?.errors[name]);
 
@@ -22,10 +66,14 @@ const Form = ({
             : <small className="p-error">&nbsp;</small>;
     };
 
-    const documentOptions = state.documents.map(doc => ({
-        label: `${doc.nomor_dokumen} — ${doc.nama_dokumen}`,
-        value: doc.kode_dokumen
-    }));
+    const documentOptions = state.documents.map(doc => {
+        const isBorrowed = state.data.some(loan => loan.kode_dokumen === doc.kode_dokumen && loan.status === 'borrowed');
+        return {
+            label: isBorrowed ? `${doc.nomor_dokumen} — ${doc.nama_dokumen} (Sedang Dipinjam)` : `${doc.nomor_dokumen} — ${doc.nama_dokumen}`,
+            value: doc.kode_dokumen,
+            disabled: isBorrowed
+        };
+    });
 
     return (
         <Dialog
@@ -42,6 +90,32 @@ const Form = ({
             pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
         >
             <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-1 pt-3">
+
+                <div className="flex flex-column gap-1 mb-3">
+                    <label htmlFor="qr_scan" className="font-semibold text-sm text-900">
+                        Scan QR Code Dokumen <span className="text-color-secondary font-normal">(Opsional - Untuk Auto Select)</span>
+                    </label>
+                    <div className="p-inputgroup">
+                        <span className="p-inputgroup-addon">
+                            <i className="pi pi-qrcode" />
+                        </span>
+                        <InputText
+                            id="qr_scan"
+                            value={qrScanInput}
+                            onChange={(e) => setQrScanInput(e.target.value)}
+                            onKeyDown={handleQrScanKeyDown}
+                            placeholder="Arahkan kursor ke sini lalu scan QR atau tempel UUID Dokumen..."
+                            className="w-full text-sm"
+                            disabled={qrScanLoading}
+                        />
+                        {qrScanLoading ? (
+                            <Button type="button" icon="pi pi-spin pi-spinner" disabled />
+                        ) : (
+                            <Button type="button" icon="pi pi-qrcode" onClick={() => handleScan(qrScanInput)} />
+                        )}
+                    </div>
+                    <small className="text-xs text-color-secondary">Gunakan alat pemindai (scanner) USB atau masukkan kode manual dan tekan Enter.</small>
+                </div>
 
                 <div className="flex flex-column gap-1 mb-3">
                     <label htmlFor="kode_dokumen" className="font-semibold text-sm text-900">
