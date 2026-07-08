@@ -50,14 +50,12 @@ const Page = () => {
     
     // Fetch master data
     useEffect(() => {
-        if (state.add || state.edit) {
-            const token = (session as any)?.accessToken || localStorage.getItem('token');
-            const headers = { Authorization: `Bearer ${token}` };
-            postData('/master/organisasi/department/get_data', {}, headers).then(res => {
-                setState(prev => ({ ...prev, masterData: res.data.data || [] }));
-            }).catch(e => console.error(e));
-        }
-    }, [state.add, state.edit, session]);
+        const token = (session as any)?.accessToken || localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+        postData('/master/organisasi/department/get_data', {}, headers).then(res => {
+            setState(prev => ({ ...prev, masterData: res.data.data || [] }));
+        }).catch(e => console.error(e));
+    }, [session]);
 
     const handleSave = async (input: initValue) => {
         setState((p) => ({ ...p, load: true }));
