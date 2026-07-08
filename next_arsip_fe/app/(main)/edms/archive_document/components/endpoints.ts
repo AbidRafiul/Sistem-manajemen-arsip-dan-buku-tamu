@@ -15,3 +15,5 @@ export const apiEndpointConfidentialityGet = '/arsip-dokumen/master/confidential
 export const apiEndpointQrGenerate = '/arsip-dokumen/qr/generate'
 export const apiEndpointQrScan = '/arsip-dokumen/qr/scan'
 export const apiEndpointLocationUpdate = '/arsip-dokumen/location/update'
+export const apiEndpointRetentionGet = '/arsip-dokumen/master/retention'
+

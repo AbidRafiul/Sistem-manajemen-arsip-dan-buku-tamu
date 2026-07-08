@@ -165,7 +165,7 @@ router.post("/", async (req, res) => {
         : null;
 
       if (navigation?.menu) {
-        await trx("user_navigation")
+        await trx("navigasi_pengguna")
           .insert({
             id_pengguna: userId,
             menu: navigation.menu,

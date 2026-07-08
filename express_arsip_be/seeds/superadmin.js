@@ -11,6 +11,12 @@ export async function seed(knex) {
   const telepon = "08100000000";
   const kata_sandi = "Superadmin321!";
 
+  const username = "superadmin@admin.com";
+  const dNow = new Date();
+  const ckata_sandi = (process.env.USER_KEY || "random") + username + kata_sandi;
+  const secret = process.env.USER_SECRET || "random";
+  const password = hmac(ckata_sandi, secret, "sha512");
+
   const existingUser = await knex("mst_pengguna")
     .where("nama_pengguna", username)
     .first();

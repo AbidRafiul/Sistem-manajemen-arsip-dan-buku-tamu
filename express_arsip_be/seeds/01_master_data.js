@@ -6,11 +6,11 @@ export async function seed(knex) {
   await knex("mst_departemen").truncate();
   await knex("mst_divisi").truncate();
   await knex("mst_cabang").truncate();
-  await knex("mst_positions").truncate();
+  await knex("mst_jabatan").truncate();
   await knex("mst_unit_kerja").truncate();
   await knex("mst_pengguna").truncate(); // Kosongin user juga biar bersih total
   await knex("mst_pengguna_peran").truncate();
-  await knex("user_navigation").truncate();
+  await knex("navigasi_pengguna").truncate();
   await knex("user_credential").truncate();
 
   // 3. HIDUPKAN kembali Foreign Key Check
@@ -83,7 +83,7 @@ export async function seed(knex) {
   ]);
 
   // D. POSITION (Jabatan)
-  await knex("mst_positions").insert([
+  await knex("mst_jabatan").insert([
     {
       id_jabatan: 1,
       kode_jabatan: "POS-DIR",

@@ -118,6 +118,7 @@ const Table = ({
                         kode_tingkat_kerahasiaan: rowData.kode_tingkat_kerahasiaan || '',
                         tanggal_transaksi: formatDateInput(rowData.tanggal_transaksi || undefined),
                         lokasi_fisik: rowData.lokasi_fisik || '',
+                        kode_retensi: rowData.kode_retensi || '',
                     });
                     setState((p) => ({ ...p, add: false, edit: true, delete: false, selectedDocuments: [rowData] }));
                 }}
@@ -226,6 +227,7 @@ const Table = ({
                                 kode_tingkat_kerahasiaan: '',
                                 tanggal_transaksi: '',
                                 lokasi_fisik: '',
+                                kode_retensi: '',
                             }
                         });
                         setState(p => ({ ...p, add: true, edit: false, delete: false }));
@@ -287,6 +289,7 @@ const Table = ({
                 <Column header="Nomor & Nama Dokumen" body={documentTemplate} sortable sortField="nomor_dokumen" style={{ minWidth: '200px' }} />
                 <Column field="nama_jenis_dokumen" header="Tipe" sortable style={{ minWidth: '110px' }} />
                 <Column field="nama_kategori_dokumen" header="Kategori" sortable style={{ minWidth: '110px' }} />
+                <Column field="nama_retensi" header="Jadwal Retensi" sortable body={rowData => rowData.nama_retensi ? `${rowData.nama_retensi} (${rowData.tahun_retensi} Thn)` : '-'} style={{ minWidth: '135px' }} />
                 <Column field="nama_tingkat_kerahasiaan" header="Kerahasiaan" sortable style={{ minWidth: '120px' }} />
                 <Column header="PIC" body={picTemplate} sortable sortField="nama_pic" style={{ minWidth: '150px' }} />
                 <Column field="tanggal" header="Tgl. Dokumen" sortable body={rowData => formatDateCalendar(rowData.tanggal, 'yyyy-MM-dd')} style={{ width: '130px' }} />
@@ -342,6 +345,10 @@ const Table = ({
                     <div className="col-12 md:col-4">
                         <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Lokasi Fisik</div>
                         <div className="text-900">{state.detailData?.document?.lokasi_fisik || '-'}</div>
+                    </div>
+                    <div className="col-12 md:col-4">
+                        <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Jadwal Retensi</div>
+                        <div className="text-900">{state.detailData?.document?.nama_retensi ? `${state.detailData.document.nama_retensi} (${state.detailData.document.tahun_retensi} Tahun)` : '-'}</div>
                     </div>
                 </div>
 

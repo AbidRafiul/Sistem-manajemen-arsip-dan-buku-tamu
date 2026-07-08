@@ -15,7 +15,7 @@ const router = express.Router();
 
 const updateRetentionSchedule = async (req, res) => {
   const { body: oPayload } = req;
-  const cRetentionScheduleId = req.params.RetentionScheduleId;
+  const cIdJadwalRetensi = req.params.id_jadwal_retensi;
   const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
@@ -59,6 +59,21 @@ const updateRetentionSchedule = async (req, res) => {
       });
 
       return res.status(422).json(oResult);
+    }
+
+    // Cek duplikasi kode_retensi untuk data lain
+    const oExisting = await DB("mst_jadwal_retensi")
+      .where("kode_retensi", oPayload.kode_retensi)
+      .where("status", "active")
+      .whereNot("id_jadwal_retensi", cIdJadwalRetensi)
+      .first();
+
+    if (oExisting) {
+      return res.status(422).json({
+        status: status.BAD_REQUEST,
+        message: `Kode retensi '${oPayload.kode_retensi}' sudah digunakan oleh jadwal lain`,
+        datetime: formatDateSystem(),
+      });
     }
 
     const nUpdated = await DB("mst_jadwal_retensi")

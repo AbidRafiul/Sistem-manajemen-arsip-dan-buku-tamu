@@ -120,6 +120,31 @@ const Form = ({
                     </div>
                 </div>
 
+                <div className="grid mb-2">
+                    <div className="col-12 md:col-6 flex flex-column gap-1">
+                        <label htmlFor="kode_retensi" className="font-semibold text-sm text-900">
+                            Jadwal Retensi <span className="text-color-secondary font-normal">(Opsional)</span>
+                        </label>
+                        <Dropdown
+                            id="kode_retensi"
+                            value={formik.values.kode_retensi}
+                            options={state.retentions
+                                .filter((item: any) => item.kode_kategori_dokumen === formik.values.kode_kategori_dokumen)
+                                .map((item: any) => ({
+                                    label: `${item.nama_retensi} (${item.tahun_retensi} Thn - ${item.tindakan_retensi === 'destroy' ? 'Musnahkan' : 'Tinjau'})`,
+                                    value: item.kode_retensi
+                                }))}
+                            onChange={(e) => formik.setFieldValue('kode_retensi', e.value)}
+                            placeholder={formik.values.kode_kategori_dokumen ? "Pilih Jadwal Retensi" : "Pilih Kategori Terlebih Dahulu"}
+                            disabled={!formik.values.kode_kategori_dokumen}
+                            className="w-full"
+                            filter
+                            showClear
+                        />
+                        {getFormErrorMessage('kode_retensi')}
+                    </div>
+                </div>
+
                 <div className="flex flex-column gap-1 mb-3">
                     <label htmlFor="nomor_dokumen" className="font-semibold text-sm text-900">
                         Nomor Dokumen <span className="text-red-500">*</span>

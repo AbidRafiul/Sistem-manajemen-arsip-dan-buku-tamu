@@ -26,7 +26,8 @@ import {
     apiEndpointConfidentialityGet,
     apiEndpointQrGenerate,
     apiEndpointQrScan,
-    apiEndpointLocationUpdate
+    apiEndpointLocationUpdate,
+    apiEndpointRetentionGet
 } from "./components/endpoints";
 import { initValue, State } from "./components/interfaces";
 
@@ -54,6 +55,7 @@ const Page = () => {
         classifications: [],
         categories: [],
         confidentialities: [],
+        retentions: [],
         qrDialog: false,
         qrData: null,
         qrLoad: false,
@@ -78,6 +80,7 @@ const Page = () => {
             kode_tingkat_kerahasiaan: '',
             tanggal_transaksi: '',
             lokasi_fisik: '',
+            kode_retensi: '',
         },
         validate: (data: initValue) => {
             const errors = {} as any;
@@ -173,6 +176,7 @@ const Page = () => {
                 kode_tingkat_kerahasiaan: input.kode_tingkat_kerahasiaan,
                 tanggal_transaksi: input.tanggal_transaksi || null,
                 lokasi_fisik: input.lokasi_fisik || null,
+                kode_retensi: input.kode_retensi || null,
             });
 
             showSuccess(toast, res.data?.message || 'Document berhasil disimpan');
@@ -389,18 +393,20 @@ const Page = () => {
 
     const getDropdownOptions = async () => {
         try {
-            const [resTypes, resClassifications, resCategories, resConfidentialities] = await Promise.all([
+            const [resTypes, resClassifications, resCategories, resConfidentialities, resRetentions] = await Promise.all([
                 getData('/master/arsip/document-types'),
                 getData('/master/arsip/archive-classifications'),
                 getData(apiEndpointCategoryGet),
-                getData(apiEndpointConfidentialityGet)
+                getData(apiEndpointConfidentialityGet),
+                getData(apiEndpointRetentionGet)
             ]);
             setState(p => ({
                 ...p,
                 documentTypes: (resTypes.data.data || []).filter((item: any) => item.kode_jenis_dokumen !== 'SURAT'),
                 classifications: resClassifications.data.data || [],
                 categories: resCategories.data.data || [],
-                confidentialities: resConfidentialities.data.data || []
+                confidentialities: resConfidentialities.data.data || [],
+                retentions: resRetentions.data.data || []
             }));
         } catch (error) {
             console.error("Gagal mengambil opsi dropdown:", error);

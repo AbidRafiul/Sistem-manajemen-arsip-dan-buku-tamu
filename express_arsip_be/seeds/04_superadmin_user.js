@@ -23,7 +23,7 @@ export async function seed(knex) {
     .onConflict("id_departemen")
     .ignore();
 
-  await knex("mst_positions")
+  await knex("mst_jabatan")
     .insert([
       {
         id_jabatan: 1,
@@ -108,7 +108,7 @@ export async function seed(knex) {
     .where("peran", "master")
     .first();
   if (oNavigation) {
-    await knex("user_navigation")
+    await knex("navigasi_pengguna")
       .insert({
         id_pengguna: 1,
         menu: oNavigation.menu,

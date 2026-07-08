@@ -158,7 +158,7 @@ export async function seed(knex) {
     .where("kode_departemen", "DEP-ARSIP")
     .first();
 
-  await upsertRows(knex, "mst_positions", "kode_jabatan", [
+  await upsertRows(knex, "mst_jabatan", "kode_jabatan", [
     {
       kode_jabatan: "POS-STF",
       nama_jabatan: "Staff",
@@ -169,7 +169,7 @@ export async function seed(knex) {
       updated_at: dNow,
     },
   ]);
-  const position = await knex("mst_positions")
+  const position = await knex("mst_jabatan")
     .where("kode_jabatan", "POS-STF")
     .first();
 
@@ -392,7 +392,7 @@ export async function seed(knex) {
     menu,
     created_at: dNow,
   });
-  await insertIfMissing(knex, "user_navigation", "id_pengguna", {
+  await insertIfMissing(knex, "navigasi_pengguna", "id_pengguna", {
     id_pengguna: staff.id_pengguna,
     menu,
     created_at: dNow,
