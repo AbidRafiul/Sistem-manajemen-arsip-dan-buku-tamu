@@ -351,17 +351,17 @@ export async function seed(knex) {
   // also let's make sure id_menu 1 to 12 are mapped to superadmin if they are not
   const vaExistingMenus = await knex("mst_menu").where("id_menu", "<", 13).select("id_menu");
   for (const oRow of vaExistingMenus) {
-      vaPeranMenus.push({
-          id_peran: adminRole.id_peran,
-          id_menu: oRow.id_menu,
-          hak_lihat: 1,
-          hak_buat: 1,
-          hak_ubah: 1,
-          hak_hapus: 1,
-          hak_setuju: 1,
-          created_at: dNow,
-          updated_at: dNow
-      });
+    vaPeranMenus.push({
+      id_peran: adminRole.id_peran,
+      id_menu: oRow.id_menu,
+      hak_lihat: 1,
+      hak_buat: 1,
+      hak_ubah: 1,
+      hak_hapus: 1,
+      hak_setuju: 1,
+      created_at: dNow,
+      updated_at: dNow
+    });
   }
 
   const uniquePeranMenus = Array.from(
@@ -370,4 +370,5 @@ export async function seed(knex) {
 
   await knex("mst_peran_menu").where("id_peran", adminRole.id_peran).del();
   await knex("mst_peran_menu").insert(uniquePeranMenus);
+}
 }

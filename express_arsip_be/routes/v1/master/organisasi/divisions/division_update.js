@@ -18,7 +18,7 @@ router.post("/update", async (req, res) => {
     const cValidation = await validatePayload(
       {
         id_divisi: Joi.number().required().label("ID"),
-        id_cabang: Joi.number().required().label("ID Cabang"),
+        id_departemen: Joi.number().required().label("ID Departemen"),
         kode_divisi: Joi.string().required().label("Kode Divisi"),
         nama_divisi: Joi.string().required().label("Nama Divisi"),
         deskripsi: Joi.string().optional().allow(null, "").label("Deskripsi")
@@ -37,7 +37,7 @@ router.post("/update", async (req, res) => {
     const nUpdated = await DB("mst_divisi")
       .where("id_divisi", oPayload.id_divisi)
       .update({
-        id_cabang: oPayload.id_cabang || null,
+        id_departemen: oPayload.id_departemen || null,
         kode_divisi: oPayload.kode_divisi ? (oPayload.kode_divisi.toUpperCase().startsWith("DV-") ? `DV-${oPayload.kode_divisi.substring(3)}` : `DV-${oPayload.kode_divisi}`) : null,
         nama_divisi: oPayload.nama_divisi || null,
         deskripsi: oPayload.deskripsi || null,
