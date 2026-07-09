@@ -12,7 +12,7 @@ export async function seed(knex) {
     .insert([
       {
         id_departemen: 1,
-        id_divisi: 1,
+        id_cabang: 1,
         kode_departemen: "DEPT-IT",
         nama_departemen: "IT Department",
         status: "active",
@@ -23,7 +23,7 @@ export async function seed(knex) {
     .onConflict("id_departemen")
     .ignore();
 
-  await knex("mst_positions")
+  await knex("mst_jabatan")
     .insert([
       {
         id_jabatan: 1,
@@ -41,7 +41,7 @@ export async function seed(knex) {
     .insert([
       {
         id_unit_kerja: 1,
-        id_departemen: 1,
+        id_divisi: 1,
         kode_unit_kerja: "WU-DIR",
         nama_unit_kerja: "Direktorat Utama",
         status: "active",
@@ -108,7 +108,7 @@ export async function seed(knex) {
     .where("peran", "master")
     .first();
   if (oNavigation) {
-    await knex("user_navigation")
+    await knex("navigasi_pengguna")
       .insert({
         id_pengguna: 1,
         menu: oNavigation.menu,
