@@ -32,7 +32,7 @@ const Page = () => {
     const formik = useFormik({
         initialValues: {
             id_unit_kerja: '',
-            id_departemen: '',
+            id_divisi: '',
             kode_unit_kerja: '',
             nama_unit_kerja: '',
             deskripsi: '',
@@ -47,15 +47,17 @@ const Page = () => {
         }
     });
 
-    
+
     // Fetch master data
     useEffect(() => {
-        const token = (session as any)?.accessToken || localStorage.getItem('token');
-        const headers = { Authorization: `Bearer ${token}` };
-        postData('/master/organisasi/department/get_data', {}, headers).then(res => {
-            setState(prev => ({ ...prev, masterData: res.data.data || [] }));
-        }).catch(e => console.error(e));
-    }, [session]);
+        if (state.add || state.edit) {
+            const token = (session as any)?.accessToken || localStorage.getItem('token');
+            const headers = { Authorization: `Bearer ${token}` };
+            postData('/master/organisasi/divisions/get_data', {}, headers).then(res => {
+                setState(prev => ({ ...prev, masterData: res.data.data || [] }));
+            }).catch(e => console.error(e));
+        }
+    }, [state.add, state.edit, session]);
 
     const handleSave = async (input: initValue) => {
         setState((p) => ({ ...p, load: true }));
@@ -63,7 +65,7 @@ const Page = () => {
             const isEdit = Boolean(input.id_unit_kerja);
             const cEndPoint = isEdit ? apiEndpointUpdate : apiEndpointCreate;
             const oBody = { ...input };
-            
+
             const vaData = await postData(cEndPoint, oBody);
             showSuccess(toast, vaData.data?.data?.message || 'Berhasil Menyimpan Data');
             formik.resetForm();

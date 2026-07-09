@@ -2,7 +2,9 @@
 :root {
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
 }
-body, .p-component {
+
+body,
+.p-component {
     font-family: var(--font-family) !important;
 }
 
@@ -10,13 +12,7 @@ body, .p-component {
 .p-input-icon-left .p-inputtext {
     padding-left: 2.75rem !important;
 }
+
 .p-input-icon-left i {
     z-index: 10;
-}
-
-/* Fix paginator dropdown text cut off */
-.p-paginator .p-dropdown .p-dropdown-label {
-    display: flex;
-    align-items: center;
-    padding: 0 0.5rem !important;
 }
