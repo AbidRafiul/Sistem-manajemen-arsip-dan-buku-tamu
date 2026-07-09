@@ -10,7 +10,7 @@ router.post("/get_data", async (req, res) => {
   const cnama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
-    const vaData = await DB("mst_positions")
+    const vaData = await DB("mst_jabatan")
       .select(
         "id_jabatan as id",
         "id_jabatan",

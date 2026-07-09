@@ -179,21 +179,29 @@
     }
 }
 
+.layout-submenu-enter {
+    opacity: 0;
+}
+
 .layout-submenu-enter-active {
     max-height: 1000px !important;
-    transition: max-height 1s ease-in-out;
+    opacity: 1;
+    transition: max-height 1s ease-in-out, opacity 0.5s ease-in-out;
 }
 
 .layout-submenu-enter-done {
     max-height: 1000px !important;
+    opacity: 1;
 }
 
 .layout-submenu-exit {
     max-height: 1000px !important;
+    opacity: 1;
 }
 
 .layout-submenu-exit-active {
     overflow: hidden;
     max-height: 0 !important;
-    transition: max-height 0.45s cubic-bezier(0, 1, 0, 1);
+    opacity: 0;
+    transition: max-height 0.45s cubic-bezier(0, 1, 0, 1), opacity 0.3s ease;
 }
