@@ -6,11 +6,11 @@ export async function seed(knex) {
   await knex("mst_departemen").truncate();
   await knex("mst_divisi").truncate();
   await knex("mst_cabang").truncate();
-  await knex("mst_positions").truncate();
+  await knex('mst_jabatan').truncate();
   await knex("mst_unit_kerja").truncate();
   await knex("mst_pengguna").truncate(); // Kosongin user juga biar bersih total
   await knex("mst_pengguna_peran").truncate();
-  await knex("user_navigation").truncate();
+  await knex("navigasi_pengguna").truncate();
   await knex("user_credential").truncate();
 
   // 3. HIDUPKAN kembali Foreign Key Check
@@ -38,33 +38,11 @@ export async function seed(knex) {
     },
   ]);
 
-  // B. DIVISION (Divisi)
-  await knex("mst_divisi").insert([
-    {
-      id_divisi: 1,
-      id_cabang: 1,
-      kode_divisi: "DIV-IT",
-      nama_divisi: "Information Technology",
-      status: "active",
-      created_at: new Date(),
-      updated_at: new Date(),
-    },
-    {
-      id_divisi: 2,
-      id_cabang: 1,
-      kode_divisi: "DIV-HR",
-      nama_divisi: "Human Resources",
-      status: "active",
-      created_at: new Date(),
-      updated_at: new Date(),
-    },
-  ]);
-
-  // C. DEPARTMENT (Departemen)
+  // B. DEPARTMENT (Departemen)
   await knex("mst_departemen").insert([
     {
       id_departemen: 1,
-      id_divisi: 1,
+      id_cabang: 1,
       kode_departemen: "DEPT-DEV",
       nama_departemen: "Software Development",
       status: "active",
@@ -73,7 +51,7 @@ export async function seed(knex) {
     },
     {
       id_departemen: 2,
-      id_divisi: 2,
+      id_cabang: 1,
       kode_departemen: "DEPT-REC",
       nama_departemen: "Recruitment",
       status: "active",
@@ -82,8 +60,30 @@ export async function seed(knex) {
     },
   ]);
 
+  // C. DIVISION (Divisi)
+  await knex("mst_divisi").insert([
+    {
+      id_divisi: 1,
+      id_departemen: 1,
+      kode_divisi: "DIV-IT",
+      nama_divisi: "Information Technology",
+      status: "active",
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
+    {
+      id_divisi: 2,
+      id_departemen: 2,
+      kode_divisi: "DIV-HR",
+      nama_divisi: "Human Resources",
+      status: "active",
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
+  ]);
+
   // D. POSITION (Jabatan)
-  await knex("mst_positions").insert([
+  await knex('mst_jabatan').insert([
     {
       id_jabatan: 1,
       kode_jabatan: "POS-DIR",
@@ -106,7 +106,7 @@ export async function seed(knex) {
   await knex("mst_unit_kerja").insert([
     {
       id_unit_kerja: 1,
-      id_departemen: 1,
+      id_divisi: 1,
       kode_unit_kerja: "WU-PST",
       nama_unit_kerja: "Unit Pusat Utama",
       status: "active",
