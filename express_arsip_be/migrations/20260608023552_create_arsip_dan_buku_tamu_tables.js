@@ -257,7 +257,7 @@ export async function up(knex) {
   await knex.schema.createTable("mst_pengguna", (table) => {
     table.increments("nama_pengguna").primary();
     table.string("nama_lengkap", 45).notNullable();
-    table.string("NamaPengguna", 45).notNullable().unique();
+    table.string("nama_pengguna", 45).notNullable().unique();
     table.string("surel", 45).nullable();
     table.string("telepon", 45).nullable();
     table.string("kata_sandi", 100).notNullable();

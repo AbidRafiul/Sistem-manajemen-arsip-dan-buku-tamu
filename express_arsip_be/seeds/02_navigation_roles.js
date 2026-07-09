@@ -28,19 +28,25 @@ export const seed = async function (knex) {
       label: "BUKU TAMU",
       items: [
         {
-          label: "Registrasi Tamu",
-          icon: "pi pi-fw pi-id-card",
-          to: "/buku_tamu/registrasi",
-        },
-        {
-          label: "Monitoring Tamu",
-          icon: "pi pi-fw pi-list",
-          to: "/buku_tamu/monitoring",
-        },
-        {
-          label: "Riwayat Tamu",
-          icon: "pi pi-fw pi-history",
-          to: "/buku_tamu/checkout",
+          label: "Buku Tamu",
+          icon: "pi pi-fw pi-book",
+          items: [
+            {
+              label: "Registrasi Tamu",
+              icon: "pi pi-fw pi-id-card",
+              to: "/buku_tamu/registrasi",
+            },
+            {
+              label: "Monitoring Tamu",
+              icon: "pi pi-fw pi-list",
+              to: "/buku_tamu/monitoring",
+            },
+            {
+              label: "Riwayat Tamu",
+              icon: "pi pi-fw pi-history",
+              to: "/buku_tamu/checkout",
+            },
+          ],
         },
       ],
     },

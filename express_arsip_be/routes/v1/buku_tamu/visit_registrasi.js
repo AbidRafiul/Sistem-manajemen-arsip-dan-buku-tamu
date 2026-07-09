@@ -25,6 +25,7 @@ router.post(
     { name: "IdentityFile", maxCount: 1 },
     { name: "PhotoFace", maxCount: 1 },
     { name: "PhotoIdentity", maxCount: 1 },
+    { name: "SignatureFile", maxCount: 1 },
   ]),
   async (req, res) => {
     const { body: oPayload } = req;
@@ -79,6 +80,21 @@ router.post(
             .allow(null, "")
             .label("VisitNotes"),
           CheckInTime: Joi.string().required().label("CheckInTime"),
+          VisitType: Joi.string()
+            .valid("personal", "group")
+            .optional()
+            .allow(null, "")
+            .label("VisitType"),
+          GuestCount: Joi.number()
+            .integer()
+            .min(1)
+            .optional()
+            .allow(null, "")
+            .label("GuestCount"),
+          SignatureData: Joi.string()
+            .optional()
+            .allow(null, "")
+            .label("SignatureData"),
         },
         {
           "string.base": "{#label} harus berupa string",
@@ -121,16 +137,21 @@ router.post(
         IdentityNumber,
         VisitNotes,
         CheckInTime,
+        VisitType,
+        GuestCount,
+        SignatureData,
       } = oPayload;
 
       const photoFaceFile =
         req.files?.SelfieFile?.[0] || req.files?.PhotoFace?.[0] || null;
       const photoIdentityFile =
         req.files?.IdentityFile?.[0] || req.files?.PhotoIdentity?.[0] || null;
+      const signatureFile = req.files?.SignatureFile?.[0] || null;
       const todayPath = formatDateSystem(new Date(), "yyyyMMdd");
 
       let PhotoFace = null;
       let PhotoIdentity = null;
+      let TandaTangan = null;
 
       if (photoFaceFile) {
         PhotoFace = await uploadFileToMinio(
@@ -144,6 +165,32 @@ router.post(
           "buku-tamu",
           photoIdentityFile,
           `photos/${todayPath}`,
+        );
+      }
+
+      if (SignatureData && SignatureData.startsWith("data:image/")) {
+        const matches = SignatureData.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+        if (matches && matches.length === 3) {
+          const type = matches[1];
+          const buffer = Buffer.from(matches[2], "base64");
+          const ext = type.split("/")[1] || "png";
+          const fileObj = {
+            originalname: `signature_${Date.now()}.${ext}`,
+            mimetype: type,
+            buffer: buffer,
+            size: buffer.length,
+          };
+          TandaTangan = await uploadFileToMinio(
+            "buku-tamu",
+            fileObj,
+            `signatures/${todayPath}`,
+          );
+        }
+      } else if (signatureFile) {
+        TandaTangan = await uploadFileToMinio(
+          "buku-tamu",
+          signatureFile,
+          `signatures/${todayPath}`,
         );
       }
 
@@ -177,6 +224,9 @@ router.post(
         catatan_kunjungan: VisitNotes,
         foto_wajah: PhotoFace,
         foto_identitas: PhotoIdentity,
+        tanda_tangan: TandaTangan,
+        tipe_kunjungan: VisitType || "personal",
+        jumlah_tamu: GuestCount ? Number(GuestCount) : 1,
         kode_kunjungan: VisitCode,
         token_qr: QRToken,
         waktu_masuk: CheckInTime,

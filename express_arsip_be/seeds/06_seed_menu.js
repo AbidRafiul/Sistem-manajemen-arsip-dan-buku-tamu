@@ -289,7 +289,7 @@ export async function seed(knex) {
       kode_menu: "MENU_CHECKOUT_TAMU",
       nama_menu: "Riwayat Tamu",
       jalur_menu: "/buku_tamu/checkout",
-      ikon_menu: "pi pi-fw pi-sign-out",
+      ikon_menu: "pi pi-fw pi-history",
       urutan: 3,
       status_aktif: 1,
       created_at: dNow,

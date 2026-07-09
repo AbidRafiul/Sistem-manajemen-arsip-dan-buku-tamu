@@ -11,6 +11,9 @@ export interface RegistrasiFormData {
     host_name: string;
     visit_notes: string;
     check_in_time: Date | null;
+    visit_type?: 'personal' | 'group';
+    guest_count?: number;
+    signature_data?: string | null;
 }
 
 export interface GeneratedCardData {
