@@ -159,9 +159,9 @@ router.post("/", async (req, res) => {
       );
       const navigation = roleAliases.length
         ? await trx("mst_navigasi")
-            .select("menu")
-            .whereIn("peran", roleAliases)
-            .first()
+          .select("menu")
+          .whereIn("peran", roleAliases)
+          .first()
         : null;
 
       if (navigation?.menu) {

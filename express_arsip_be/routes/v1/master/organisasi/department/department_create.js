@@ -17,7 +17,7 @@ router.post("/create", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        id_divisi: Joi.number().required().label("ID Divisi"),
+        id_cabang: Joi.number().required().label("ID Cabang"),
         kode_departemen: Joi.string().required().label("Kode Departemen"),
         nama_departemen: Joi.string().required().label("Nama Departemen"),
         deskripsi: Joi.string().optional().allow(null, "").label("Deskripsi")
@@ -35,7 +35,7 @@ router.post("/create", async (req, res) => {
 
     const dNow = new Date();
     await DB("mst_departemen").insert({
-      id_divisi: oPayload.id_divisi || null,
+      id_cabang: oPayload.id_cabang || null,
       kode_departemen: oPayload.kode_departemen ? (oPayload.kode_departemen.toUpperCase().startsWith("DP-") ? `DP-${oPayload.kode_departemen.substring(3)}` : `DP-${oPayload.kode_departemen}`) : null,
       nama_departemen: oPayload.nama_departemen || null,
       deskripsi: oPayload.deskripsi || null,

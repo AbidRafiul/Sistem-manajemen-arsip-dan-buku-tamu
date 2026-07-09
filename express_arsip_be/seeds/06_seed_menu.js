@@ -235,15 +235,15 @@ export async function seed(knex) {
     // Sync navigasi_pengguna for superadmin user (id_pengguna: 1)
     const menuTree = await buildAndCacheMenu(idAdm);
     await knex("navigasi_pengguna")
-      .insert({
-        id_pengguna: 1,
-        menu: JSON.stringify(menuTree),
-        created_at: dNow,
-        updated_at: dNow
-      })
-      .onConflict("id_pengguna")
-      .merge({
-        menu: JSON.stringify(menuTree),
-        updated_at: dNow
-      });
+        .insert({
+            id_pengguna: 1,
+            menu: JSON.stringify(menuTree),
+            created_at: dNow,
+            updated_at: dNow
+        })
+        .onConflict("id_pengguna")
+        .merge({
+            menu: JSON.stringify(menuTree),
+            updated_at: dNow
+        });
 }

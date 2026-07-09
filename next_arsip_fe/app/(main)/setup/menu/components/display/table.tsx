@@ -22,7 +22,7 @@ interface TableProps {
 const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) => {
     const permissions = usePermissions();
     const { canCreate, canUpdate, canDelete } = usePermissions();
-    
+
     // Header tabel hanya untuk search
     const renderHeader = () => {
         return (
@@ -31,8 +31,8 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                 <div className="flex gap-2">
                     <span className="p-input-icon-left">
                         <i className="pi pi-search" />
-                        <InputText 
-                            value={state.searchVal} 
+                        <InputText
+                            value={state.searchVal}
                             onChange={(e) => {
                                 const value = e.target.value;
                                 let _filters = { ...state.filters };
@@ -40,8 +40,8 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                                     _filters['global'].value = value;
                                 }
                                 setState(p => ({ ...p, searchVal: value, filters: _filters }));
-                            }} 
-                            placeholder="Cari menu..." 
+                            }}
+                            placeholder="Cari menu..."
                         />
                     </span>
                 </div>
@@ -54,10 +54,10 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
         return (
             <div className="flex gap-2 justify-content-center">
                 {canUpdate && (
-                    <Button 
-                        icon="pi pi-pencil" 
-                        rounded 
-                        outlined 
+                    <Button
+                        icon="pi pi-pencil"
+                        rounded
+                        outlined
                         severity="warning"
                         className="p-button-sm"
                         onClick={() => {
@@ -72,20 +72,20 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                                 status_aktif: rowData.status_aktif,
                                 id_menu_induk: rowData.id_menu_induk || '',
                                 // Kalau backend ngirim array id_peran, taruh di sini
-                                id_peran: rowData.id_peran || [] 
+                                id_peran: rowData.id_peran || []
                             });
                             setState(p => ({ ...p, edit: true }));
-                        }} 
+                        }}
                     />
                 )}
                 {canDelete && (
-                    <Button 
-                        icon="pi pi-trash" 
-                        rounded 
-                        outlined 
-                        severity="danger" 
+                    <Button
+                        icon="pi pi-trash"
+                        rounded
+                        outlined
+                        severity="danger"
                         className="p-button-sm"
-                        onClick={() => setState((p) => ({ ...p, selectedData: [rowData], delete: true }))} 
+                        onClick={() => setState((p) => ({ ...p, selectedData: [rowData], delete: true }))}
                     />
                 )}
             </div>
@@ -114,51 +114,51 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
             <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
                 {canCreate && (
                     <>
-                        <Button 
+                        <Button
                             size="small"
-                            label="Baru" 
-                            icon="pi pi-plus" 
+                            label="Baru"
+                            icon="pi pi-plus"
                             outlined
-                            severity="success" 
+                            severity="success"
                             onClick={() => {
                                 formik.resetForm();
                                 setState(p => ({ ...p, add: true, selectedData: [] }));
-                            }} 
+                            }}
                         />
                         <Divider layout="vertical" />
                     </>
                 )}
                 {canDelete && (
                     <>
-                        <Button 
+                        <Button
                             size="small"
                             label={`Hapus${state.selectedData.length > 0 ? ` (${state.selectedData.length})` : ''}`}
-                            icon="pi pi-trash" 
+                            icon="pi pi-trash"
                             outlined
-                            severity="danger" 
-                            onClick={() => setState(p => ({ ...p, delete: true }))} 
-                            disabled={!state.selectedData || state.selectedData.length === 0} 
+                            severity="danger"
+                            onClick={() => setState(p => ({ ...p, delete: true }))}
+                            disabled={!state.selectedData || state.selectedData.length === 0}
                         />
                         <Divider layout="vertical" />
                     </>
                 )}
-                <Button 
-                    size="small" 
-                    label="Muat Ulang" 
-                    icon="pi pi-refresh" 
-                    outlined 
-                    onClick={() => getData('/setup/menu/data')} 
-                    loading={state.load} 
+                <Button
+                    size="small"
+                    label="Muat Ulang"
+                    icon="pi pi-refresh"
+                    outlined
+                    onClick={() => getData('/setup/menu/data')}
+                    loading={state.load}
                 />
             </div>
 
-            <DataTable 
-                value={state.data} 
-                selection={state.selectedData} 
+            <DataTable
+                value={state.data}
+                selection={state.selectedData}
                 onSelectionChange={(e) => setState(p => ({ ...p, selectedData: e.value }))}
-                dataKey="id_menu" 
-                paginator 
-                rows={10} 
+                dataKey="id_menu"
+                paginator
+                rows={10}
                 rowsPerPageOptions={[5, 10, 25]}
                 filters={state.filters}
                 globalFilterFields={["kode_menu", "nama_menu", "jalur_menu"]}

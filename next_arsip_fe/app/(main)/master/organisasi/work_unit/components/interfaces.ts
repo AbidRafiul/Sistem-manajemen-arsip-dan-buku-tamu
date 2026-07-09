@@ -1,7 +1,7 @@
 import { FilterMatchMode } from 'primereact/api';
 export interface initValue {
     id_unit_kerja: string | number;
-    id_departemen: string | number;
+    id_divisi: string | number;
     kode_unit_kerja: string | number;
     nama_unit_kerja: string | number;
     deskripsi: string | number;
