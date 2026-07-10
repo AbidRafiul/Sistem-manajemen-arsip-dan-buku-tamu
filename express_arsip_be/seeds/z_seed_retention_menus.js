@@ -3,6 +3,12 @@ import { buildAndCacheMenu } from "../routes/v1/components/tools/menu_builder.js
 export async function seed(knex) {
   const dNow = new Date();
 
+  // Dapatkan parent menu "MASTER DATA"
+  const parentMasterData = await knex("mst_menu")
+    .where("kode_menu", "MASTER_DATA")
+    .first();
+  const idMasterData = parentMasterData ? parentMasterData.id_menu : null;
+
   // 1. Dapatkan/Buat parent menu "Master Arsip"
   let parentMasterArsip = await knex("mst_menu")
     .where("kode_menu", "MN_MASTER_ARSIP")
@@ -11,13 +17,24 @@ export async function seed(knex) {
 
   if (!idMasterArsip) {
     [idMasterArsip] = await knex("mst_menu").insert({
+      id_menu_induk: idMasterData,
       kode_menu: "MN_MASTER_ARSIP",
       nama_menu: "Master Arsip",
-      urutan: 6,
+      ikon_menu: "pi pi-fw pi-folder",
+      urutan: 3,
       status_aktif: 1,
       created_at: dNow,
       updated_at: dNow
     });
+  } else {
+    await knex("mst_menu")
+      .where("id_menu", idMasterArsip)
+      .update({
+        id_menu_induk: idMasterData,
+        ikon_menu: "pi pi-fw pi-folder",
+        urutan: 3,
+        updated_at: dNow
+      });
   }
 
   // 2. Dapatkan parent menu "ARSIP DOKUMEN"
