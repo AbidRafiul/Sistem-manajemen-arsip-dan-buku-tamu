@@ -32,7 +32,10 @@ export default function VisitorBookingPage() {
         id_tujuan_kunjungan: null,
         nama_host: '',
         catatan_kunjungan: '',
-        waktu_masuk: undefined
+        waktu_masuk: undefined,
+        visit_type: 'personal',
+        guest_count: 1,
+        signature_data: null
     });
 
     useEffect(() => {
@@ -69,7 +72,10 @@ export default function VisitorBookingPage() {
             id_tujuan_kunjungan: null,
             nama_host: '',
             catatan_kunjungan: '',
-            waktu_masuk: undefined
+            waktu_masuk: undefined,
+            visit_type: 'personal',
+            guest_count: 1,
+            signature_data: null
         });
         setIdentityFile(null);
         setSelfieFile(null);
@@ -95,6 +101,11 @@ export default function VisitorBookingPage() {
             formData.append('IdentityType', form.jenis_identitas || '');
             formData.append('IdentityNumber', form.nomor_identitas || '');
             formData.append('HostName', form.nama_host || '');
+            formData.append('VisitType', form.visit_type || 'personal');
+            formData.append('GuestCount', String(form.guest_count || 1));
+            if (form.signature_data) {
+                formData.append('SignatureData', form.signature_data);
+            }
 
             if (identityFile) formData.append('IdentityFile', identityFile);
             if (selfieFile) formData.append('SelfieFile', selfieFile);

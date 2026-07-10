@@ -9,4 +9,7 @@ export interface VisitorBookingFormData {
     nama_host: string;
     catatan_kunjungan: string;
     waktu_masuk: Date | null | undefined;
+    visit_type?: 'personal' | 'group';
+    guest_count?: number;
+    signature_data?: string | null;
 }

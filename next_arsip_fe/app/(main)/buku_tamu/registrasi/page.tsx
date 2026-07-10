@@ -24,7 +24,10 @@ const initialFormState: RegistrasiFormData = {
     host_user_id: null,
     host_name: '',
     visit_notes: '',
-    check_in_time: null
+    check_in_time: null,
+    visit_type: 'personal',
+    guest_count: 1,
+    signature_data: null
 };
 
 export default function RegistrasiKunjunganPage() {
@@ -90,6 +93,11 @@ export default function RegistrasiKunjunganPage() {
             submitData.append('VisitNotes', formData.visit_notes || '');
             if (formData.check_in_time instanceof Date) {
                 submitData.append('CheckInTime', formData.check_in_time.toISOString());
+            }
+            submitData.append('VisitType', formData.visit_type || 'personal');
+            submitData.append('GuestCount', String(formData.guest_count || 1));
+            if (formData.signature_data) {
+                submitData.append('SignatureData', formData.signature_data);
             }
 
             if (identityFile) submitData.append('IdentityFile', identityFile);

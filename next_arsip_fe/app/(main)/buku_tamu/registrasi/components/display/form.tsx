@@ -9,6 +9,7 @@ import { FileUpload } from 'primereact/fileupload';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { RegistrasiFormData } from '@/app/(main)/buku_tamu/registrasi/components/interfaces';
+import SignaturePad from './SignaturePad';
 
 interface FormProps {
     formData: RegistrasiFormData;
@@ -79,6 +80,9 @@ export default function RegistrasiForm({ formData, handleChange, setIdentityFile
                             <label className="font-semibold block mb-2 text-sm text-800">Foto Selfie Tamu</label>
                             <FileUpload mode="basic" accept="image/*" maxFileSize={2000000} onSelect={(e) => setSelfieFile(e.files[0])} chooseLabel="Ambil/Pilih Foto Selfie" className="w-full text-sm" />
                         </div>
+                        <div className="field mt-3">
+                            <SignaturePad onChange={(val) => handleChange('signature_data', val)} />
+                        </div>
                     </div>
                 </Card>
             </div>
@@ -100,6 +104,37 @@ export default function RegistrasiForm({ formData, handleChange, setIdentityFile
                             </label>
                             <Dropdown id="visit_purpose_id" value={formData.visit_purpose_id} options={visitPurposeOptions} optionLabel="name" optionValue="id" onChange={(e) => handleChange('visit_purpose_id', e.value)} placeholder="Pilih Tujuan Kunjungan" className="p-inputtext-sm" />
                         </div>
+                        <div className="field">
+                            <label htmlFor="visit_type" className="font-semibold block mb-2 text-sm text-800">
+                                Tipe Kunjungan <span className="p-error">*</span>
+                            </label>
+                            <Dropdown 
+                                id="visit_type" 
+                                value={formData.visit_type || 'personal'} 
+                                options={[
+                                    { label: 'Personal (Individu)', value: 'personal' },
+                                    { label: 'Group (Rombongan)', value: 'group' }
+                                ]} 
+                                onChange={(e) => handleChange('visit_type', e.value)} 
+                                className="p-inputtext-sm" 
+                            />
+                        </div>
+                        {formData.visit_type === 'group' && (
+                            <div className="field">
+                                <label htmlFor="guest_count" className="font-semibold block mb-2 text-sm text-800">
+                                    Jumlah Tamu (Orang) <span className="p-error">*</span>
+                                </label>
+                                <InputText 
+                                    id="guest_count" 
+                                    type="number" 
+                                    min={1} 
+                                    value={String(formData.guest_count || 1)} 
+                                    onChange={(e) => handleChange('guest_count', parseInt(e.target.value, 10) || 1)} 
+                                    placeholder="Jumlah orang" 
+                                    className="p-inputtext-sm" 
+                                />
+                            </div>
+                        )}
                         <div className="field">
                             <label htmlFor="host_user_id" className="font-semibold block mb-2 text-sm text-800">Pegawai yang Ditemui</label>
                             <Dropdown id="host_user_id" value={formData.host_user_id} options={hostUserOptions} optionLabel="nama_lengkap" optionValue="id_pengguna" onChange={(e) => handleChange('host_user_id', e.value)} placeholder="Cari & pilih pegawai internal" filter showClear className="p-inputtext-sm" />
