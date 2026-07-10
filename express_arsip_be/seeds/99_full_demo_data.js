@@ -119,33 +119,9 @@ export async function seed(knex) {
     .where("kode_cabang", "BR-PST")
     .first();
 
-  await upsertRows(knex, "mst_divisi", "kode_divisi", [
-    {
-      id_cabang: branch.id_cabang,
-      kode_divisi: "DIV-OPS",
-      nama_divisi: "Operasional",
-      deskripsi: "Operasional kantor",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-    {
-      id_cabang: branch.id_cabang,
-      kode_divisi: "DIV-DEMO-IT",
-      nama_divisi: "Teknologi",
-      deskripsi: "Teknologi informasi",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-  ]);
-  const division = await knex("mst_divisi")
-    .where("kode_divisi", "DIV-OPS")
-    .first();
-
   await upsertRows(knex, "mst_departemen", "kode_departemen", [
     {
-      id_divisi: division.id_divisi,
+      id_cabang: branch.id_cabang,
       kode_departemen: "DEP-ARSIP",
       nama_departemen: "Arsip dan Tata Usaha",
       deskripsi: "Unit arsip dan administrasi",
@@ -158,6 +134,29 @@ export async function seed(knex) {
     .where("kode_departemen", "DEP-ARSIP")
     .first();
 
+  await upsertRows(knex, "mst_divisi", "kode_divisi", [
+    {
+      id_departemen: department.id_departemen,
+      kode_divisi: "DIV-OPS",
+      nama_divisi: "Operasional",
+      deskripsi: "Operasional kantor",
+      status: "active",
+      created_at: dNow,
+      updated_at: dNow,
+    },
+    {
+      id_departemen: department.id_departemen,
+      kode_divisi: "DIV-DEMO-IT",
+      nama_divisi: "Teknologi",
+      deskripsi: "Teknologi informasi",
+      status: "active",
+      created_at: dNow,
+      updated_at: dNow,
+    },
+  ]);
+  const division = await knex("mst_divisi")
+    .where("kode_divisi", "DIV-OPS")
+    .first();
   await upsertRows(knex, "mst_jabatan", "kode_jabatan", [
     {
       kode_jabatan: "POS-STF",
@@ -175,7 +174,7 @@ export async function seed(knex) {
 
   await upsertRows(knex, "mst_unit_kerja", "kode_unit_kerja", [
     {
-      id_departemen: department.id_departemen,
+      id_divisi: division.id_divisi,
       kode_unit_kerja: "WU-ARSIP",
       nama_unit_kerja: "Unit Arsip",
       deskripsi: "Pengelolaan arsip",

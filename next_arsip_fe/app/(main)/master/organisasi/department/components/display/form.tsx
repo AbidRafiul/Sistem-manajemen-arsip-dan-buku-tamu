@@ -30,11 +30,11 @@ const Form = ({ state, setState, formik, handleDelete, handleSave }: any) => {
                 <form onSubmit={formik?.handleSubmit} className="flex gap-2 flex-column mt-2">
                     <div className="flex md:flex-row flex-column gap-2 w-full">
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="id_divisi" className="font-bold">Divisi</label>
-                            <div className="p-inputgroup">
-                                <Dropdown id="id_divisi" name="id_divisi" value={formik?.values.id_divisi} options={state?.masterData || []} optionLabel="nama_divisi" optionValue="id_divisi" onChange={formik?.handleChange} placeholder="Pilih Divisi" filter showClear className={isFormFieldInvalid('id_divisi') ? 'p-invalid w-full' : 'w-full'} />
-                            </div>
-                            {getFormErrorMessage('id_divisi')}
+                            <label htmlFor="id_cabang" className="font-bold">Cabang</label>
+                            <span className="p-input-icon-left w-full">
+                                <Dropdown id="id_cabang" name="id_cabang" value={formik?.values.id_cabang} options={state?.masterData || []} optionLabel="nama_cabang" optionValue="id_cabang" onChange={formik?.handleChange} placeholder="Pilih Cabang" filter showClear className={isFormFieldInvalid('id_cabang') ? 'p-invalid w-full' : 'w-full'} />
+                            </span>
+                            {getFormErrorMessage('id_cabang')}
                         </div>
                         <div className="flex flex-column gap-2 w-full">
                             <label htmlFor="kode_departemen" className="font-bold">Kode Departemen</label>

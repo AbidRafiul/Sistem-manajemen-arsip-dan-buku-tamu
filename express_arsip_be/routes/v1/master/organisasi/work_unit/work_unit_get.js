@@ -14,7 +14,7 @@ router.post("/get_data", async (req, res) => {
       .select(
         "id_unit_kerja as id",
         "id_unit_kerja",
-        "id_departemen",
+        "id_divisi",
         "kode_unit_kerja",
         "nama_unit_kerja",
         "deskripsi",

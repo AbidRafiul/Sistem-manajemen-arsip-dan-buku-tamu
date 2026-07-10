@@ -53,9 +53,9 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
         getData(apiEndpointGet);
     }, []);
 
-    const parentBodyTemplate = (rowData: any) => {
-        const parent = state.masterData?.find((d: any) => d.id_departemen === rowData.id_departemen);
-        return parent ? parent.nama_departemen : rowData.id_departemen;
+    const renderInduk = (rowData: any) => {
+        const parent = state.masterData?.find((d: any) => d.id_divisi === rowData.id_divisi);
+        return parent ? parent.nama_divisi : rowData.id_divisi;
     };
 
     return (
@@ -82,9 +82,9 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                 <Button size="small" label="Muat Ulang" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
             </div>
 
-            <DataTable value={state.data} selection={state.selectedData} onSelectionChange={(e) => setState(p => ({ ...p, selectedData: e.value }))} dataKey="id_unit_kerja" paginator rows={10} rowsPerPageOptions={[5, 10, 25]} globalFilterFields={["id_departemen","kode_unit_kerja","nama_unit_kerja","deskripsi","status"]} filters={state.filters} header={renderHeader()} emptyMessage="Tidak ada data ditemukan." loading={state.load} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
+            <DataTable value={state.data} selection={state.selectedData} onSelectionChange={(e) => setState(p => ({ ...p, selectedData: e.value }))} dataKey="id_unit_kerja" paginator rows={10} rowsPerPageOptions={[5, 10, 25]} globalFilterFields={["id_divisi","kode_unit_kerja","nama_unit_kerja","deskripsi","status"]} filters={state.filters} header={renderHeader()} emptyMessage="Tidak ada data ditemukan." loading={state.load} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
-                <Column body={parentBodyTemplate} header="Departemen" sortable></Column>
+                <Column body={renderInduk} header="Divisi" sortable></Column>
                 <Column field="kode_unit_kerja" header="Kode" sortable></Column>
                 <Column field="nama_unit_kerja" header="Nama Unit Kerja" sortable></Column>
                 <Column field="deskripsi" header="Deskripsi" sortable></Column>

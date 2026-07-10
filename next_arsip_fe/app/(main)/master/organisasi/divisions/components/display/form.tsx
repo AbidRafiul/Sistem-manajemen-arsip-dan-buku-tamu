@@ -8,12 +8,12 @@ import { TableProps } from '../interfaces';
 
 const Form = ({ state, setState, formik, handleDelete, handleSave }: any) => {
     const isDialogVisible = state.add || state.edit;
-        const isFormFieldInvalid = (name: string) => !!(formik?.touched && formik.touched[name] && formik?.errors && formik.errors[name]);
+    const isFormFieldInvalid = (name: string) => !!(formik?.touched && formik.touched[name] && formik?.errors && formik.errors[name]);
     const getFormErrorMessage = (name: string) => {
         return isFormFieldInvalid(name) ? <small className="p-error">{formik.errors[name] as string}</small> : <small className="p-error">&nbsp;</small>;
     };
 
-        const hideDialog = () => {
+    const hideDialog = () => {
         setState((p: any) => ({ ...p, add: false, edit: false, delete: false }));
         formik.resetForm();
     };
@@ -24,17 +24,17 @@ const Form = ({ state, setState, formik, handleDelete, handleSave }: any) => {
             <Button type="button" label="Hapus" icon="pi pi-check" severity="danger" loading={state?.load} disabled={state?.load} onClick={handleDelete} />
         </div>
     );
-            return (
+    return (
         <>
             <Dialog visible={isDialogVisible} style={{ width: '70%' }} header={state.add ? 'Tambah Data' : 'Ubah Data'} modal onHide={hideDialog}>
                 <form onSubmit={formik?.handleSubmit} className="flex gap-2 flex-column mt-2">
                     <div className="flex md:flex-row flex-column gap-2 w-full">
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="id_cabang" className="font-bold">Cabang</label>
+                            <label htmlFor="id_departemen" className="font-bold">Departemen</label>
                             <div className="p-inputgroup">
-                                <Dropdown id="id_cabang" name="id_cabang" value={formik?.values.id_cabang} options={state?.masterData || []} optionLabel="nama_cabang" optionValue="id_cabang" onChange={formik?.handleChange} placeholder="Pilih Cabang" filter showClear className={isFormFieldInvalid('id_cabang') ? 'p-invalid w-full' : 'w-full'} />
+                                <Dropdown id="id_departemen" name="id_departemen" value={formik?.values.id_departemen} options={state?.masterData || []} optionLabel="nama_departemen" optionValue="id_departemen" onChange={formik?.handleChange} placeholder="Pilih Departemen" filter showClear className={isFormFieldInvalid('id_departemen') ? 'p-invalid w-full' : 'w-full'} />
                             </div>
-                            {getFormErrorMessage('id_cabang')}
+                            {getFormErrorMessage('id_departemen')}
                         </div>
                         <div className="flex flex-column gap-2 w-full">
                             <label htmlFor="kode_divisi" className="font-bold">Kode Divisi</label>
@@ -64,12 +64,20 @@ const Form = ({ state, setState, formik, handleDelete, handleSave }: any) => {
                         <div className="flex flex-column gap-2 w-full md:w-6">
                             <label htmlFor="status" className="font-bold">Status</label>
                             <div className="p-inputgroup">
-                                <Dropdown id="status" name="status" value={formik?.values.status} options={[{label: "Aktif", value: "active"}, {label: "Tidak Aktif", value: "nonactive"}]} onChange={formik?.handleChange} className={isFormFieldInvalid('status') ? 'p-invalid w-full' : 'w-full'} />
+                                <Dropdown id="status" name="status" value={formik?.values.status} options={[{ label: "Aktif", value: "active" }, { label: "Tidak Aktif", value: "nonactive" }]} onChange={formik?.handleChange} className={isFormFieldInvalid('status') ? 'p-invalid w-full' : 'w-full'} />
                             </div>
                             {getFormErrorMessage('status')}
                         </div>
                     </div>
-
+                    <div className="flex md:flex-row flex-column gap-2 w-full">
+                        <div className="flex flex-column gap-2 w-full md:w-6">
+                            <label htmlFor="status" className="font-bold">Status</label>
+                            <div className="p-inputgroup">
+                                <Dropdown id="status" name="status" value={formik?.values.status} options={[{ label: "Aktif", value: "active" }, { label: "Tidak Aktif", value: "nonactive" }]} onChange={formik?.handleChange} className={isFormFieldInvalid('status') ? 'p-invalid w-full' : 'w-full'} />
+                            </div>
+                            {getFormErrorMessage('status')}
+                        </div>
+                    </div>
                     <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} className="mt-2" loading={state?.load} disabled={state?.load} />
                 </form>
             </Dialog>

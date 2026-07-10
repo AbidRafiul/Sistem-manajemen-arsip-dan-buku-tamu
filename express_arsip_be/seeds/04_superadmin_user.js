@@ -12,7 +12,7 @@ export async function seed(knex) {
     .insert([
       {
         id_departemen: 1,
-        id_divisi: 1,
+        id_cabang: 1,
         kode_departemen: "DEPT-IT",
         nama_departemen: "IT Department",
         status: "active",
@@ -41,7 +41,7 @@ export async function seed(knex) {
     .insert([
       {
         id_unit_kerja: 1,
-        id_departemen: 1,
+        id_divisi: 1,
         kode_unit_kerja: "WU-DIR",
         nama_unit_kerja: "Direktorat Utama",
         status: "active",
