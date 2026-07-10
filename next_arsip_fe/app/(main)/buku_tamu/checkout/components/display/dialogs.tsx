@@ -179,7 +179,7 @@ export function DetailVisitorDialog({
                 </div>
                 <div className="col-12 md:col-6 mb-3">
                     <span className="text-xs uppercase text-500 font-bold tracking-wider block mb-1">Pegawai Internal (Host)</span>
-                    <span className="font-semibold text-800">{record.HostFullname || record.host_name || '-'}</span>
+                    <span className="font-semibold text-800">{record.HostFullname || record.nama_host || '-'}</span>
                 </div>
 
                 <div className="col-12">
