@@ -40,12 +40,12 @@ const MENU_CATALOG = {
   arsip_masuk: {
     label: "Surat Masuk",
     icon: "pi pi-fw pi-inbox",
-    to: "/correspondence/mail-in",
+    to: "/correspondence/mail_in",
   },
   arsip_keluar: {
     label: "Surat Keluar",
     icon: "pi pi-fw pi-send",
-    to: "/correspondence/mail-out",
+    to: "/correspondence/outgoing_letter",
   },
   report_arsip: {
     label: "Laporan Arsip",
