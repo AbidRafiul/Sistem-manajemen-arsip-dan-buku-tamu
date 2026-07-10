@@ -72,4 +72,24 @@ const removeFileFromMinio = async (bucketName, objectName) => {
     }
 };
 
-export { uploadFileToMinio, downloadFileFromMinio, removeFileFromMinio };
+/**
+ * Helper untuk mendapatkan presigned URL dari MinIO.
+ * @param {string} bucketName - Nama bucket
+ * @param {string} objectName - Nama objek/file di MinIO
+ * @param {number} [expiry=3600] - Expiry dalam detik (default 1 jam)
+ * @returns {Promise<string>} - Presigned URL
+ */
+const getPresignedUrlFromMinio = (bucketName, objectName, expiry = 3600) => {
+    return new Promise((resolve) => {
+        minioClient.presignedGetObject(bucketName, objectName, expiry, (err, url) => {
+            if (err) {
+                console.error("Gagal mendapatkan presigned URL dari MinIO:", err);
+                resolve(null);
+            } else {
+                resolve(url);
+            }
+        });
+    });
+};
+
+export { uploadFileToMinio, downloadFileFromMinio, removeFileFromMinio, getPresignedUrlFromMinio };
