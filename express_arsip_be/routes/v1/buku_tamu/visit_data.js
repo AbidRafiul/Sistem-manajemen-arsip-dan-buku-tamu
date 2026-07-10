@@ -62,6 +62,12 @@ router.post("/", async (req, res) => {
       } else {
         r.PhotoIdentityUrl = null;
       }
+
+      if (r.tanda_tangan) {
+        r.SignatureUrl = r.tanda_tangan.startsWith('http') ? r.tanda_tangan : `${cBaseUrl}/uploads/${r.tanda_tangan}`;
+      } else {
+        r.SignatureUrl = null;
+      }
     }
 
     return res.status(200).json({
