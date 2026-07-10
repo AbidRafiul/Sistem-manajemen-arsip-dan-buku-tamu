@@ -52,6 +52,7 @@ const Form = ({
                             onChange={(e) => {
                                 formik.setFieldValue('kode_klasifikasi', e.value);
                                 formik.setFieldValue('kode_kategori_dokumen', '');
+                                formik.setFieldValue('kode_retensi', '');
                             }}
                             placeholder="Pilih Klasifikasi"
                             className={`w-full ${isFormFieldInvalid('kode_klasifikasi') ? 'p-invalid' : ''}`}
@@ -93,13 +94,30 @@ const Form = ({
                                     label: `${item.kode_kategori_dokumen} - ${item.nama_kategori_dokumen}`,
                                     value: item.kode_kategori_dokumen
                                 }))}
-                            onChange={(e) => formik.setFieldValue('kode_kategori_dokumen', e.value)}
+                            onChange={(e) => {
+                                formik.setFieldValue('kode_kategori_dokumen', e.value);
+                                const matched = state.retentions?.find((item: any) => item.kode_kategori_dokumen === e.value);
+                                if (matched) {
+                                    formik.setFieldValue('kode_retensi', matched.kode_retensi);
+                                } else {
+                                    formik.setFieldValue('kode_retensi', '');
+                                }
+                            }}
                             placeholder={formik.values.kode_klasifikasi ? "Pilih Kategori" : "Pilih Klasifikasi Terlebih Dahulu"}
                             disabled={!formik.values.kode_klasifikasi}
                             className={`w-full ${isFormFieldInvalid('kode_kategori_dokumen') ? 'p-invalid' : ''}`}
                             filter
                         />
                         {getFormErrorMessage('kode_kategori_dokumen')}
+                        {state.retentions?.find((item: any) => item.kode_kategori_dokumen === formik.values.kode_kategori_dokumen) && (
+                            <div className="text-xs text-primary mt-1 flex align-items-center gap-1 font-semibold">
+                                <i className="pi pi-info-circle text-xs" />
+                                <span>Retensi: {(() => {
+                                    const ret = state.retentions.find((item: any) => item.kode_kategori_dokumen === formik.values.kode_kategori_dokumen);
+                                    return `${ret.nama_retensi} (${ret.tahun_retensi} Thn - ${ret.tindakan_retensi === 'destroy' ? 'Musnahkan' : 'Tinjau'})`;
+                                })()}</span>
+                            </div>
+                        )}
                     </div>
                     <div className="col-12 md:col-6 flex flex-column gap-1">
                         <label htmlFor="kode_tingkat_kerahasiaan" className="font-semibold text-sm text-900">
@@ -120,30 +138,7 @@ const Form = ({
                     </div>
                 </div>
 
-                <div className="grid mb-2">
-                    <div className="col-12 md:col-6 flex flex-column gap-1">
-                        <label htmlFor="kode_retensi" className="font-semibold text-sm text-900">
-                            Jadwal Retensi <span className="text-color-secondary font-normal">(Opsional)</span>
-                        </label>
-                        <Dropdown
-                            id="kode_retensi"
-                            value={formik.values.kode_retensi}
-                            options={state.retentions
-                                .filter((item: any) => item.kode_kategori_dokumen === formik.values.kode_kategori_dokumen)
-                                .map((item: any) => ({
-                                    label: `${item.nama_retensi} (${item.tahun_retensi} Thn - ${item.tindakan_retensi === 'destroy' ? 'Musnahkan' : 'Tinjau'})`,
-                                    value: item.kode_retensi
-                                }))}
-                            onChange={(e) => formik.setFieldValue('kode_retensi', e.value)}
-                            placeholder={formik.values.kode_kategori_dokumen ? "Pilih Jadwal Retensi" : "Pilih Kategori Terlebih Dahulu"}
-                            disabled={!formik.values.kode_kategori_dokumen}
-                            className="w-full"
-                            filter
-                            showClear
-                        />
-                        {getFormErrorMessage('kode_retensi')}
-                    </div>
-                </div>
+
 
                 <div className="flex flex-column gap-1 mb-3">
                     <label htmlFor="nomor_dokumen" className="font-semibold text-sm text-900">
@@ -173,65 +168,52 @@ const Form = ({
                     {getFormErrorMessage('nama_dokumen')}
                 </div>
 
-                <div className="grid mb-2">
-                    <div className="col-12 md:col-6 flex flex-column gap-1">
-                        <label htmlFor="tanggal" className="font-semibold text-sm text-900">
-                            Tanggal Dokumen <span className="text-red-500">*</span>
-                        </label>
-                        <InputText
-                            id="tanggal"
-                            type="date"
-                            value={formik.values.tanggal}
-                            onChange={(e) => formik.setFieldValue('tanggal', e.target.value)}
-                            className={`w-full ${isFormFieldInvalid('tanggal') ? 'p-invalid' : ''}`}
-                        />
-                        {getFormErrorMessage('tanggal')}
-                    </div>
-                    <div className="col-12 md:col-6 flex flex-column gap-1">
-                        <label htmlFor="tanggal_kedaluwarsa" className="font-semibold text-sm text-900">
-                            Tanggal Kedaluwarsa <span className="text-color-secondary font-normal">(Opsional)</span>
-                        </label>
-                        <InputText
-                            id="tanggal_kedaluwarsa"
-                            type="date"
-                            value={formik.values.tanggal_kedaluwarsa}
-                            onChange={(e) => formik.setFieldValue('tanggal_kedaluwarsa', e.target.value)}
-                            className="w-full"
-                        />
-                        {getFormErrorMessage('tanggal_kedaluwarsa')}
-                    </div>
+                <div className="flex flex-column gap-1 mb-3">
+                    <label htmlFor="tanggal" className="font-semibold text-sm text-900">
+                        Tanggal Dokumen <span className="text-red-500">*</span>
+                    </label>
+                    <InputText
+                        id="tanggal"
+                        type="date"
+                        value={formik.values.tanggal}
+                        onChange={(e) => formik.setFieldValue('tanggal', e.target.value)}
+                        className={`w-full ${isFormFieldInvalid('tanggal') ? 'p-invalid' : ''}`}
+                    />
+                    {getFormErrorMessage('tanggal')}
                 </div>
 
-                <div className="grid mb-2">
-                    <div className="col-12 md:col-6 flex flex-column gap-1">
-                        <label htmlFor="tanggal_transaksi" className="font-semibold text-sm text-900">
-                            Tanggal Transaksi <span className="text-color-secondary font-normal">(Opsional)</span>
-                        </label>
-                        <InputText
-                            id="tanggal_transaksi"
-                            type="date"
-                            value={formik.values.tanggal_transaksi}
-                            onChange={(e) => formik.setFieldValue('tanggal_transaksi', e.target.value)}
-                            className="w-full"
-                        />
-                        {getFormErrorMessage('tanggal_transaksi')}
-                    </div>
-                    <div className="col-12 md:col-6 flex flex-column gap-1">
-                        <label htmlFor="lokasi_fisik" className="font-semibold text-sm text-900">
-                            Lokasi Fisik <span className="text-color-secondary font-normal">(Opsional)</span>
-                        </label>
-                        <InputText
-                            id="lokasi_fisik"
-                            value={formik.values.lokasi_fisik}
-                            onChange={(e) => formik.setFieldValue('lokasi_fisik', e.target.value)}
-                            placeholder="Contoh: Rak A, Baris 2"
-                            className="w-full"
-                        />
-                        {getFormErrorMessage('lokasi_fisik')}
-                    </div>
+                <div className="flex flex-column gap-1 mb-3">
+                    <label htmlFor="lokasi_fisik" className="font-semibold text-sm text-900">
+                        Lokasi Fisik <span className="text-color-secondary font-normal">(Opsional)</span>
+                    </label>
+                    <InputText
+                        id="lokasi_fisik"
+                        value={formik.values.lokasi_fisik}
+                        onChange={(e) => formik.setFieldValue('lokasi_fisik', e.target.value)}
+                        placeholder="Contoh: Rak A, Baris 2"
+                        className="w-full"
+                    />
+                    {getFormErrorMessage('lokasi_fisik')}
                 </div>
 
-
+                {!state.edit && (
+                    <div className="flex flex-column gap-1 mb-3">
+                        <label htmlFor="file" className="font-semibold text-sm text-900">
+                            Upload Dokumen (PDF/Word) <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            id="file"
+                            type="file"
+                            accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            className="p-inputtext w-full text-sm"
+                            onChange={(e) => {
+                                const selectedFile = e.target.files?.[0] || null;
+                                formik.setFieldValue('file', selectedFile);
+                            }}
+                        />
+                        {getFormErrorMessage('file')}
+                    </div>
+                )}
 
                 <div className="flex flex-column gap-1 mb-3">
                     <label htmlFor="nama_pic" className="font-semibold text-sm text-900">

@@ -9,6 +9,7 @@ import { Dialog } from "primereact/dialog";
 import { Divider } from "primereact/divider";
 import { Card } from "primereact/card";
 import { Avatar } from "primereact/avatar";
+import { Dropdown } from "primereact/dropdown";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DocumentData, LoanData, TableProps } from "../interfaces";
@@ -193,8 +194,6 @@ const Table = ({
         </div>
     );
 
-    useEffect(() => { getDocuments(); }, []);
-
     return <>
         <Card className="shadow-1 border-round-2xl border-none">
             {/* Page Header */}
@@ -261,6 +260,106 @@ const Table = ({
                     loading={state.load}
                     onClick={getDocuments}
                 />
+            </div>
+
+            {/* Filter Panel */}
+            <div className="card border-1 surface-border border-round-xl p-3 mb-4 surface-card flex flex-column gap-3">
+                <div className="flex align-items-center justify-content-between">
+                    <div className="flex align-items-center gap-2 font-bold text-sm text-800">
+                        <i className="pi pi-filter text-primary" />
+                        <span>Filter Dokumen</span>
+                    </div>
+                    {(state.filterClassification || state.filterCategory || state.filterType || state.filterConfidentiality) && (
+                        <Button
+                            label="Bersihkan Filter"
+                            icon="pi pi-filter-slash"
+                            className="p-button-text p-button-sm text-xs p-0 text-primary"
+                            onClick={() => setState(p => ({
+                                ...p,
+                                filterClassification: '',
+                                filterCategory: '',
+                                filterType: '',
+                                filterConfidentiality: ''
+                            }))}
+                        />
+                    )}
+                </div>
+                <div className="grid">
+                    <div className="col-12 md:col-3 flex flex-column gap-1">
+                        <label className="text-xs font-semibold text-color-secondary">Klasifikasi</label>
+                        <Dropdown
+                            value={state.filterClassification}
+                            options={[
+                                { label: 'Semua Klasifikasi', value: '' },
+                                ...state.classifications.map((item: any) => ({
+                                    label: `${item.kode_klasifikasi} - ${item.nama_klasifikasi}`,
+                                    value: item.kode_klasifikasi
+                                }))
+                            ]}
+                            onChange={(e) => setState(p => ({ ...p, filterClassification: e.value || '', filterCategory: '' }))}
+                            placeholder="Pilih Klasifikasi"
+                            className="w-full text-xs p-inputtext-sm"
+                            filter
+                            showClear
+                        />
+                    </div>
+                    <div className="col-12 md:col-3 flex flex-column gap-1">
+                        <label className="text-xs font-semibold text-color-secondary">Kategori</label>
+                        <Dropdown
+                            value={state.filterCategory}
+                            options={[
+                                { label: 'Semua Kategori', value: '' },
+                                ...state.categories
+                                    .filter((item: any) => !state.filterClassification || item.kode_klasifikasi === state.filterClassification)
+                                    .map((item: any) => ({
+                                        label: `${item.kode_kategori_dokumen} - ${item.nama_kategori_dokumen}`,
+                                        value: item.kode_kategori_dokumen
+                                    }))
+                            ]}
+                            onChange={(e) => setState(p => ({ ...p, filterCategory: e.value || '' }))}
+                            placeholder="Pilih Kategori"
+                            className="w-full text-xs p-inputtext-sm"
+                            filter
+                            showClear
+                            disabled={!state.filterClassification}
+                        />
+                    </div>
+                    <div className="col-12 md:col-3 flex flex-column gap-1">
+                        <label className="text-xs font-semibold text-color-secondary">Tipe Dokumen</label>
+                        <Dropdown
+                            value={state.filterType}
+                            options={[
+                                { label: 'Semua Tipe', value: '' },
+                                ...state.documentTypes.map((item: any) => ({
+                                    label: `${item.kode_jenis_dokumen} - ${item.nama_jenis_dokumen}`,
+                                    value: item.kode_jenis_dokumen
+                                }))
+                            ]}
+                            onChange={(e) => setState(p => ({ ...p, filterType: e.value || '' }))}
+                            placeholder="Pilih Tipe"
+                            className="w-full text-xs p-inputtext-sm"
+                            filter
+                            showClear
+                        />
+                    </div>
+                    <div className="col-12 md:col-3 flex flex-column gap-1">
+                        <label className="text-xs font-semibold text-color-secondary">Tingkat Kerahasiaan</label>
+                        <Dropdown
+                            value={state.filterConfidentiality}
+                            options={[
+                                { label: 'Semua Kerahasiaan', value: '' },
+                                ...state.confidentialities.map((item: any) => ({
+                                    label: item.nama_tingkat_kerahasiaan,
+                                    value: item.kode_tingkat_kerahasiaan
+                                }))
+                            ]}
+                            onChange={(e) => setState(p => ({ ...p, filterConfidentiality: e.value || '' }))}
+                            placeholder="Pilih Kerahasiaan"
+                            className="w-full text-xs p-inputtext-sm"
+                            showClear
+                        />
+                    </div>
+                </div>
             </div>
 
             <DataTable
