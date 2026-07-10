@@ -29,6 +29,9 @@ import dispositionReferenceData from "./disposition_reference_data.js";
 //Endpoint POST - letter-type-data
 import letterTypeData from "./letter_type_data.js";
 
+//Endpoint - letter-type-management
+import letterTypeManagement from "./letter_type_management.js";
+
 //Endpoint - letter-diposition-create
 import letterDispositionCreate from "./letter_disposition_create.js";
 
@@ -44,6 +47,21 @@ import letterDispositionProcess from "./letter_disposition_process.js"
 //Endpoint - letter-disposition-complete
 import letterDispositionComplete from "./letter_disposition_complete.js"
 
+//Endpoint GET - outgoing-letter-data
+import outgoingLetterData from "./outgoing_letter_data.js";
+
+//Endpoint POST - outgoing-letter-create
+import outgoingLetterCreate from "./outgoing_letter_create.js";
+
+//Endpoint GET - outgoing-letter-detail
+import outgoingLetterDetail from "./outgoing_letter_detail.js";
+
+//Endpoint PUT - outgoing-letter-update
+import outgoingLetterUpdate from "./outgoing_letter_update.js";
+
+//Endpoint DELETE - outgoing-letter-delete
+import outgoingLetterDelete from "./outgoing_letter_delete.js";
+
 
 const router = express.Router();
 
@@ -57,10 +75,16 @@ router.use("/incoming-file-download", incomingLetterFileDownload);
 router.use("/incoming-letter-archive", incomingLetterArchive);
 router.use("/disposition-reference-data", dispositionReferenceData);
 router.use("/letter-type-data", letterTypeData);
+router.use("/letter-type-management", letterTypeManagement);
 router.use("/letter-disposition-create", letterDispositionCreate)
 router.use("/incoming-letter-tracking-data", incomingLetterTrackingData)
 router.use("/letter-disposition-data", letterDispositionData)
 router.use("/letter-disposition-process", letterDispositionProcess)
 router.use("/letter-disposition-complete", letterDispositionComplete)
+router.use("/outgoing-letter-data", outgoingLetterData);
+router.use("/outgoing-letter-create", outgoingLetterCreate);
+router.use("/outgoing-letter-detail", outgoingLetterDetail);
+router.use("/outgoing-letter-update", outgoingLetterUpdate);
+router.use("/outgoing-letter-delete", outgoingLetterDelete);
 
 export default router;
