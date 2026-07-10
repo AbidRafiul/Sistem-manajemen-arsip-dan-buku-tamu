@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
+import { Toast } from 'primereact/toast';
+import { showError } from '@/lib/tools/generalTools';
 import Link from 'next/link';
 import axios from 'axios';
 import VisitorBookingForm from './components/display/form';
@@ -14,6 +16,7 @@ interface PurposeOption {
 }
 
 export default function VisitorBookingPage() {
+    const toast = useRef<Toast>(null);
     const [loading, setLoading] = useState(false);
     const [bookingSuccess, setBookingSuccess] = useState(false);
     const [visitCode, setVisitCode] = useState('');
@@ -78,7 +81,7 @@ export default function VisitorBookingPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!form.nama_tamu || !form.nomor_telepon || !form.waktu_masuk || !form.id_tujuan_kunjungan) {
-            alert('Mohon isi semua field wajib (Nama, No. Telepon, Tujuan Kunjungan, dan Rencana Kunjungan)');
+            showError(toast, 'Mohon isi semua field wajib (Nama, No. Telepon, Tujuan Kunjungan, dan Rencana Kunjungan)');
             return;
         }
 
@@ -109,10 +112,10 @@ export default function VisitorBookingPage() {
                 setVisitCode(response.data?.data?.kode_kunjungan || 'SUCCESS-QR');
                 setBookingSuccess(true);
             } else {
-                alert(response.data?.message || 'Gagal melakukan pendaftaran');
+                showError(toast, response.data?.message || 'Gagal melakukan pendaftaran');
             }
         } catch (error: any) {
-            alert(error?.response?.data?.message || 'Sistem sedang maintenance, silakan coba lagi nanti.');
+            showError(toast, error?.response?.data?.message || 'Sistem sedang maintenance, silakan coba lagi nanti.');
         } finally {
             setLoading(false);
         }
@@ -120,7 +123,9 @@ export default function VisitorBookingPage() {
 
     if (bookingSuccess) {
         return (
-            <div className="flex align-items-center justify-content-center min-h-screen py-5 px-3" style={{ background: 'linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%)' }}>
+            <>
+                <Toast ref={toast} />
+                <div className="flex align-items-center justify-content-center min-h-screen py-5 px-3" style={{ background: 'linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%)' }}>
                 <style jsx>{`
                     .ticket-card {
                         background: #ffffff;
@@ -266,12 +271,14 @@ export default function VisitorBookingPage() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </>
         );
     }
 
     return (
-        <div className="min-h-screen flex flex-column lg:flex-row bg-50">
+        <>
+            <Toast ref={toast} />
+            <div className="min-h-screen flex flex-column lg:flex-row bg-50">
             {/* PANEL KIRI: Banner Selamat Datang (Sticky pada Desktop) */}
             <div className="col-12 lg:col-5 flex flex-column justify-content-between p-5 md:p-6 lg:h-screen lg:sticky top-0 overflow-y-auto text-white" style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)' }}>
                 <div className="flex align-items-center gap-3">
@@ -351,6 +358,6 @@ export default function VisitorBookingPage() {
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }
