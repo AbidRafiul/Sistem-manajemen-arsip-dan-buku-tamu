@@ -57,4 +57,26 @@ app.use((req, res, next) => {
   });
 });
 
+// Global Error Handler
+app.use((err, req, res, next) => {
+  if (err.name === "MulterError") {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(400).json({
+        status: "error",
+        message: "Ukuran file terlalu besar. Melebihi batas yang diizinkan.",
+      });
+    }
+    return res.status(400).json({
+      status: "error",
+      message: `Gagal mengunggah file: ${err.message}`,
+    });
+  }
+
+  console.error("Unhandled Server Error:", err);
+  return res.status(500).json({
+    status: "error",
+    message: err.message || "Terjadi kesalahan internal pada server",
+  });
+});
+
 export default app;
