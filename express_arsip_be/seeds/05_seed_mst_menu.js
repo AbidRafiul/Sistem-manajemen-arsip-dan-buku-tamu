@@ -99,8 +99,18 @@ export async function seed(knex) {
   });
 
   // Buku Tamu
-  const idRegTamu = await insertMenu({
+  const idBukuTamuParent = await insertMenu({
     id_menu_induk: idBukuTamu,
+    kode_menu: "MN_BUKU_TAMU_PARENT",
+    nama_menu: "Buku Tamu",
+    jalur_menu: "",
+    ikon_menu: "pi pi-fw pi-book",
+    urutan: 1,
+    status_aktif: 1
+  });
+
+  const idRegTamu = await insertMenu({
+    id_menu_induk: idBukuTamuParent,
     kode_menu: "MN_REGISTRASI_TAMU",
     nama_menu: "Registrasi Tamu",
     jalur_menu: "/buku_tamu/registrasi",
@@ -110,7 +120,7 @@ export async function seed(knex) {
   });
 
   const idMonTamu = await insertMenu({
-    id_menu_induk: idBukuTamu,
+    id_menu_induk: idBukuTamuParent,
     kode_menu: "MN_MONITORING_TAMU",
     nama_menu: "Monitoring Tamu",
     jalur_menu: "/buku_tamu/monitoring",
@@ -120,11 +130,11 @@ export async function seed(knex) {
   });
 
   const idCheckTamu = await insertMenu({
-    id_menu_induk: idBukuTamu,
+    id_menu_induk: idBukuTamuParent,
     kode_menu: "MN_CHECKOUT_TAMU",
-    nama_menu: "Checkout Tamu",
+    nama_menu: "Riwayat Tamu",
     jalur_menu: "/buku_tamu/checkout",
-    ikon_menu: "pi pi-fw pi-sign-out",
+    ikon_menu: "pi pi-fw pi-history",
     urutan: 3,
     status_aktif: 1
   });
@@ -206,7 +216,7 @@ export async function seed(knex) {
   const allMenuIds = [
     idBeranda, idSetup, idBukuTamu, idPersuratan, idArsipDokumen,
     idDashboard, idUsers, idConfig, idMenuNav,
-    idRegTamu, idMonTamu, idCheckTamu,
+    idBukuTamuParent, idRegTamu, idMonTamu, idCheckTamu,
     idSuratMasuk, idDataSurat, idDispSurat,
     idDocArsip, idPemArsip
   ];
@@ -220,7 +230,7 @@ export async function seed(knex) {
   // 1. Pimpinan (PMN)
   const pmnMenus = [
     { id: idBeranda }, { id: idDashboard },
-    { id: idBukuTamu }, { id: idMonTamu },
+    { id: idBukuTamu }, { id: idBukuTamuParent }, { id: idMonTamu },
     { id: idArsipDokumen }, { id: idDocArsip }
   ];
   for (const item of pmnMenus) {
@@ -248,7 +258,7 @@ export async function seed(knex) {
   // 4. Staff Umum (STF_UMM)
   const stfUmmMenus = [
     { id: idBeranda }, { id: idDashboard },
-    { id: idBukuTamu }, { id: idMonTamu }
+    { id: idBukuTamu }, { id: idBukuTamuParent }, { id: idMonTamu }
   ];
   for (const item of stfUmmMenus) {
     await grantAccess("STF_UMM", item.id, { view: 1, create: 0, update: 0, delete: 0, approve: 0 });
@@ -257,7 +267,7 @@ export async function seed(knex) {
   // 5. Resepsionis (RSP)
   const rspMenus = [
     { id: idBeranda }, { id: idDashboard },
-    { id: idBukuTamu }, { id: idRegTamu }, { id: idMonTamu }, { id: idCheckTamu }
+    { id: idBukuTamu }, { id: idBukuTamuParent }, { id: idRegTamu }, { id: idMonTamu }, { id: idCheckTamu }
   ];
   for (const item of rspMenus) {
     await grantAccess("RSP", item.id);
