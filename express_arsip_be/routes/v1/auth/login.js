@@ -215,10 +215,10 @@ router.post("/", async (req, res) => {
       });
     }
 
-    let nama_cabang = null;
+    let cNamaCabang = null;
     if (oUser.id_cabang) {
       const oCabang = await DB("mst_cabang").where("id_cabang", oUser.id_cabang).first();
-      if (oCabang) nama_cabang = oCabang.nama_cabang;
+      if (oCabang) cNamaCabang = oCabang.nama_cabang;
     }
 
     const secret = process.env.USER_SECRET;
@@ -252,7 +252,7 @@ router.post("/", async (req, res) => {
       nama_lengkap: oUser.nama_lengkap,
       name: oUser.nama_lengkap,
       id_cabang: oUser.id_cabang || null,
-      nama_cabang: nama_cabang,
+      nama_cabang: cNamaCabang,
       id_departemen: oUser.id_departemen || null,
       id_divisi: oUser.id_divisi || null,
       id_jabatan: oUser.id_jabatan || null,

@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { body: oPayload } = req;
-  const nama_pengguna = req?.auth?.nama_pengguna || "";
+  const cNamaPengguna = req?.auth?.nama_pengguna || "";
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
@@ -75,7 +75,7 @@ router.post("/", async (req, res) => {
         func: "create",
         request: oPayload,
         response: oResult,
-        user: nama_pengguna,
+        user: cNamaPengguna,
       });
       return res.status(422).json(oResult);
     }
@@ -98,22 +98,22 @@ router.post("/", async (req, res) => {
     }
 
     // HASH kata_sandi PAKAI nama_pengguna SEBAGAI SALT
-    let hashedKataSandi = "";
+    let cHashedKataSandi = "";
     if (oPayload.kata_sandi) {
       const cKataSandi =
         process.env.USER_KEY + oPayload.nama_pengguna + oPayload.kata_sandi;
-      const secret = process.env.USER_SECRET;
-      hashedKataSandi = hmac(cKataSandi, secret, "sha512");
+      const cSecret = process.env.USER_SECRET;
+      cHashedKataSandi = hmac(cKataSandi, cSecret, "sha512");
     }
 
     // 1. SIAPKAN INPUT peran
-    let inputPeran = oPayload.id_peran;
+    let cInputPeran = oPayload.id_peran;
 
     // 2. CARI peran DATA TERLEBIH DAHULU SEBELUM TRANSAKSI
     const peranData = await DB("mst_peran")
-      .where("id_peran", inputPeran)
-      .orWhere("nama_peran", inputPeran)
-      .orWhere("kode_peran", inputPeran)
+      .where("id_peran", cInputPeran)
+      .orWhere("nama_peran", cInputPeran)
+      .orWhere("kode_peran", cInputPeran)
       .first();
 
     if (!peranData) {
@@ -124,8 +124,8 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const peranCode = req?.auth?.peranCode;
-    if (peranCode !== "SA") {
+    const cPeranCode = req?.auth?.peranCode;
+    if (cPeranCode !== "SA") {
       // Cegah pembuatan user dengan role SUPERADMIN jika bukan SA
       if (peranData.kode_peran === "SUPERADMIN" || peranData.kode_peran === "SA") {
         return res.status(403).json({
@@ -166,7 +166,7 @@ router.post("/", async (req, res) => {
         nama_pengguna: oPayload.nama_pengguna,
         surel: oPayload.surel || oPayload.nama_pengguna,
         telepon: oPayload.telepon,
-        kata_sandi: hashedKataSandi,
+        kata_sandi: cHashedKataSandi || undefined,
         status:
           oPayload.status == "1" || oPayload.status == "active"
             ? "active"

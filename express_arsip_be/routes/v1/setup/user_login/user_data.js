@@ -12,7 +12,7 @@ const router = express.Router();
 router.post("/", async (req, res) => {
   const { body } = req;
   const oPayload = body;
-  const nama_pengguna = req?.auth?.nama_pengguna || "";
+  const cNamaPengguna = req?.auth?.nama_pengguna || "";
 
   try {
     // DB aktif memakai nama kolom Inggris; response tetap pakai alias lama
@@ -74,7 +74,7 @@ router.post("/", async (req, res) => {
       func: "get",
       request: oPayload,
       response: oResult,
-      user: nama_pengguna,
+      user: cNamaPengguna,
     });
     return res.status(500).json(oResult);
   }
