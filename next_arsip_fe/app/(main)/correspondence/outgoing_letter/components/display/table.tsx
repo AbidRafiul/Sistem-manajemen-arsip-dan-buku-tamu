@@ -15,13 +15,16 @@ import { Divider } from "primereact/divider";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { Tag } from "primereact/tag";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
     apiEndpointDelete,
     apiEndpointDetail,
     apiEndpointGet,
     apiEndpointLetterTypeData,
+    apiEndpointUpload,
+    apiEndpointArchive,
 } from "../endpoints";
+import formUpload from "@/lib/axios/formData";
 import { TableData, TableProps } from "../interfaces";
 import Form from "./form";
 
@@ -57,8 +60,108 @@ const formatDate = (date?: string | null) => {
     return formatDateCalendar(date, "dd MMM yyyy", null, "id") || "-";
 };
 
+const getTimelineIcon = (aktivitas: string) => {
+    switch (aktivitas) {
+        case "surat_dibuat": return "pi pi-file-edit text-blue-500 bg-blue-100 p-2 border-round-circle";
+        case "surat_diupdate": return "pi pi-pencil text-yellow-500 bg-yellow-100 p-2 border-round-circle";
+        case "surat_disetujui": return "pi pi-check text-green-500 bg-green-100 p-2 border-round-circle";
+        case "surat_ditolak": return "pi pi-times text-red-500 bg-red-100 p-2 border-round-circle";
+        case "file_surat_diupload": return "pi pi-upload text-purple-500 bg-purple-100 p-2 border-round-circle";
+        case "surat_diarsipkan": return "pi pi-bookmark text-green-500 bg-green-100 p-2 border-round-circle";
+        default: return "pi pi-info-circle text-gray-500 bg-gray-100 p-2 border-round-circle";
+    }
+};
+
+const getTimelineLabel = (aktivitas: string, status: string) => {
+    switch (aktivitas) {
+        case "surat_dibuat": return "Surat Keluar Dibuat";
+        case "surat_diupdate": return `Diperbarui (Status: ${statusConfig[status]?.label || status})`;
+        case "surat_disetujui": return "Surat Keluar Disetujui";
+        case "surat_ditolak": return "Surat Keluar Ditolak";
+        case "file_surat_diupload": return "File Surat Keluar Diunggah";
+        case "surat_diarsipkan": return "Surat Keluar Diarsipkan ke EDMS";
+        default: return aktivitas;
+    }
+};
+
 const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
     const [letterTypeOptions, setLetterTypeOptions] = useState<LetterTypeOption[]>([]);
+    const [uploading, setUploading] = useState(false);
+    const [archiving, setArchiving] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        const detailLetter = state.detailData?.surat;
+        if (!file || !detailLetter) return;
+
+        setUploading(true);
+        const formData = new FormData();
+        formData.append("id_surat_keluar", String(detailLetter.id_surat_keluar));
+        formData.append("File", file);
+        const uploadedBy = getUserId(state);
+        if (uploadedBy) formData.append("uploaded_by", String(uploadedBy));
+
+        try {
+            await formUpload(apiEndpointUpload, formData, {});
+            showSuccess(toast, "File berhasil diunggah");
+            // Reload details
+            const res = await getDataRequest(`${apiEndpointDetail}/${detailLetter.id_surat_keluar}`);
+            setState((p) => ({ ...p, detailData: res.data?.data || null }));
+            await refreshData();
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "File gagal diunggah");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const executeArchiveLetter = async () => {
+        const detailLetter = state.detailData?.surat;
+        if (!detailLetter?.id_surat_keluar) return;
+
+        setArchiving(true);
+        try {
+            const res = await postData(apiEndpointArchive, {
+                id_surat_keluar: detailLetter.id_surat_keluar,
+                nama_pic: state.session?.user?.name || "Sekretariat",
+                created_by: getUserId(state),
+            });
+            showSuccess(toast, res.data?.message || "Surat keluar berhasil diarsipkan");
+            // Reload details
+            const resDetail = await getDataRequest(`${apiEndpointDetail}/${detailLetter.id_surat_keluar}`);
+            setState((p) => ({ ...p, detailData: resDetail.data?.data || null }));
+            await refreshData();
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Surat keluar gagal diarsipkan");
+        } finally {
+            setArchiving(false);
+        }
+    };
+
+    const confirmArchiveLetter = () => {
+        const detailLetter = state.detailData?.surat;
+        const detailFiles = state.detailData?.files || [];
+        if (!detailLetter?.id_surat_keluar) return;
+
+        if (detailFiles.length < 1) {
+            showError(toast, "Unggah file surat terlebih dahulu sebelum diarsipkan");
+            return;
+        }
+
+        confirmDialog({
+            header: "Konfirmasi Arsip",
+            message: `Arsipkan surat keluar ${detailLetter.nomor_agenda || detailLetter.nomor_surat} ke dalam Arsip Dokumen (EDMS)?`,
+            icon: "pi pi-archive",
+            acceptLabel: "Arsipkan",
+            rejectLabel: "Batal",
+            acceptClassName: "p-button-success",
+            rejectClassName: "p-button-secondary p-button-outlined",
+            accept: executeArchiveLetter,
+        });
+    };
 
     const buildPayload = () => ({
         keyword: state.searchVal || "",
@@ -301,6 +404,7 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
 
     const detailLetter = state.detailData?.surat || null;
     const detailFiles = state.detailData?.files || [];
+    const detailTrackings = state.detailData?.trackings || [];
 
     return (
         <>
@@ -418,7 +522,37 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
                                     <span>No. Surat: <strong>{detailLetter?.nomor_surat || "-"}</strong></span>
                                 </div>
                             </div>
-                            {detailLetter?.status && statusTemplate({ status: detailLetter.status } as TableData)}
+                            <div className="flex align-items-center gap-2">
+                                {(() => {
+                                    const isArchived = detailTrackings.some((t: any) => t.aktivitas === "surat_diarsipkan");
+                                    const canArchive = detailFiles.length > 0 && ["disetujui", "selesai", "terkirim"].includes(String(detailLetter?.status).toLowerCase());
+
+                                    if (isArchived) {
+                                        return (
+                                            <Tag 
+                                                value="Sudah Diarsipkan" 
+                                                severity="success" 
+                                                icon="pi pi-bookmark-fill" 
+                                                style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }} 
+                                            />
+                                        );
+                                    } else if (canArchive) {
+                                        return (
+                                            <Button
+                                                label="Arsipkan ke EDMS"
+                                                icon="pi pi-archive"
+                                                severity="success"
+                                                size="small"
+                                                loading={archiving}
+                                                onClick={confirmArchiveLetter}
+                                                style={{ fontSize: "0.75rem", padding: "0.3rem 0.65rem" }}
+                                            />
+                                        );
+                                    }
+                                    return null;
+                                })()}
+                                {detailLetter?.status && statusTemplate({ status: detailLetter.status } as TableData)}
+                            </div>
                         </div>
 
                         <div className="grid text-sm">
@@ -447,18 +581,59 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
                                     <i className="pi pi-paperclip text-primary" />
                                     Dokumen Terlampir
                                 </div>
-                                <Tag value={`${detailFiles.length} file`} severity="info" />
+                                <div className="flex align-items-center gap-2">
+                                    {(() => {
+                                        const isArchived = detailTrackings.some((t: any) => t.aktivitas === "surat_diarsipkan");
+                                        if (!isArchived) {
+                                            return (
+                                                <>
+                                                    <input
+                                                        type="file"
+                                                        ref={fileInputRef}
+                                                        style={{ display: "none" }}
+                                                        onChange={handleFileUpload}
+                                                        accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/jpeg,image/png"
+                                                    />
+                                                    <Button
+                                                        type="button"
+                                                        icon="pi pi-upload"
+                                                        label="Unggah File"
+                                                        outlined
+                                                        size="small"
+                                                        loading={uploading}
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                        style={{ fontSize: "0.75rem", padding: "0.3rem 0.65rem" }}
+                                                    />
+                                                </>
+                                            );
+                                        }
+                                        return null;
+                                    })()}
+                                    <Tag value={`${detailFiles.length} file`} severity="info" />
+                                </div>
                             </div>
 
                             {detailFiles.length > 0 ? (
                                 <div className="flex flex-column gap-2">
                                     {detailFiles.map((file, idx) => (
-                                        <div key={file.id_file_surat_keluar || idx} className="p-3 surface-50 border-round-lg border-1 surface-border flex align-items-center gap-3">
-                                            <i className="pi pi-file text-primary" />
-                                            <div>
-                                                <div className="font-semibold text-sm text-900">{file.nama_file || "Dokumen"}</div>
-                                                <div className="text-xs text-color-secondary">{file.mime_type || "-"}</div>
+                                        <div key={file.id_file_surat_keluar || idx} className="p-3 surface-50 border-round-lg border-1 surface-border flex align-items-center justify-content-between gap-3">
+                                            <div className="flex align-items-center gap-3">
+                                                <i className="pi pi-file text-primary" />
+                                                <div>
+                                                    <div className="font-semibold text-sm text-900">{file.nama_file || "Dokumen"}</div>
+                                                    <div className="text-xs text-color-secondary">{file.mime_type || "-"}</div>
+                                                </div>
                                             </div>
+                                            {file.path_file && (
+                                                <a 
+                                                    href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/${file.path_file}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="no-underline"
+                                                >
+                                                    <Button icon="pi pi-download" rounded text size="small" tooltip="Download File" />
+                                                </a>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -466,6 +641,51 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
                                 <div className="flex flex-column align-items-center py-4 gap-2 text-color-secondary surface-50 border-round-lg">
                                     <i className="pi pi-file text-3xl text-300" />
                                     <span className="text-sm font-medium">Belum ada dokumen terlampir</span>
+                                </div>
+                            )}
+                        </div>
+
+                        <Divider className="my-0" />
+
+                        {/* Beautiful Timeline Alur Approval */}
+                        <div>
+                            <div className="font-bold text-900 flex align-items-center gap-2 mb-3">
+                                <i className="pi pi-history text-primary" />
+                                Alur & Histori Approval
+                            </div>
+
+                            {detailTrackings.length > 0 ? (
+                                <div className="flex flex-column gap-4 pl-3 py-2 relative" style={{ borderLeft: "2px solid var(--surface-200)" }}>
+                                    {detailTrackings.map((tracking: any, idx: number) => (
+                                        <div key={tracking.id_tracking || idx} className="relative flex align-items-start gap-3">
+                                            {/* Custom Icon Pin */}
+                                            <div className="absolute" style={{ left: "-27px", top: "0" }}>
+                                                <i className={`${getTimelineIcon(tracking.aktivitas)} shadow-1`} style={{ fontSize: "0.85rem", padding: "0.4rem" }} />
+                                            </div>
+                                            <div className="flex-1 pl-2">
+                                                <div className="flex align-items-center justify-content-between gap-3 flex-wrap">
+                                                    <span className="font-bold text-sm text-900">
+                                                        {getTimelineLabel(tracking.aktivitas, tracking.status)}
+                                                    </span>
+                                                    <span className="text-xs text-color-secondary">
+                                                        {formatDateCalendar(tracking.tanggal, "dd MMM yyyy HH:mm", null, "id")}
+                                                    </span>
+                                                </div>
+                                                <div className="text-xs font-semibold text-primary mt-1">
+                                                    Oleh: {tracking.nama_pembuat || "Sistem"}
+                                                </div>
+                                                {tracking.catatan && (
+                                                    <div className="text-sm text-color-secondary bg-surface-50 border-round p-2 mt-2 border-1 surface-border border-left-3 border-left-primary">
+                                                        {tracking.catatan}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-4 text-color-secondary text-sm">
+                                    Belum ada catatan riwayat tracking untuk surat ini.
                                 </div>
                             )}
                         </div>

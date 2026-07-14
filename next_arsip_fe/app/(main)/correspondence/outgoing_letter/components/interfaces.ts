@@ -66,6 +66,7 @@ export interface OutgoingLetterFile {
 export interface OutgoingLetterDetailData {
     surat: Record<string, any> | null;
     files: OutgoingLetterFile[];
+    trackings?: any[];
 }
 
 export interface State {

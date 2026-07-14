@@ -139,19 +139,21 @@ router.post(
       let PhotoIdentity = null;
       let TandaTangan = null;
 
+      const cBucket = process.env.MINIO_BUCKET_NAME || "arsip-bucket";
+
       if (photoFaceFile) {
         PhotoFace = await uploadFileToMinio(
-          "buku-tamu",
+          cBucket,
           photoFaceFile,
-          `photos/${todayPath}`,
+          `buku_tamu/photos/${todayPath}`,
         );
       }
 
       if (photoIdentityFile) {
         PhotoIdentity = await uploadFileToMinio(
-          "buku-tamu",
+          cBucket,
           photoIdentityFile,
-          `photos/${todayPath}`,
+          `buku_tamu/photos/${todayPath}`,
         );
       }
 
@@ -168,16 +170,16 @@ router.post(
             size: buffer.length,
           };
           TandaTangan = await uploadFileToMinio(
-            "buku-tamu",
+            cBucket,
             fileObj,
-            `signatures/${todayPath}`,
+            `buku_tamu/signatures/${todayPath}`,
           );
         }
       } else if (signatureFile) {
         TandaTangan = await uploadFileToMinio(
-          "buku-tamu",
+          cBucket,
           signatureFile,
-          `signatures/${todayPath}`,
+          `buku_tamu/signatures/${todayPath}`,
         );
       }
 

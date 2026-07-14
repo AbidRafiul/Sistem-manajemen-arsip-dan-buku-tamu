@@ -62,6 +62,24 @@ import outgoingLetterUpdate from "./outgoing_letter_update.js";
 //Endpoint DELETE - outgoing-letter-delete
 import outgoingLetterDelete from "./outgoing_letter_delete.js";
 
+//Endpoint GET/POST - outgoing-letter-approval-data
+import outgoingLetterApprovalData from "./outgoing_letter_approval_data.js";
+
+//Endpoint POST - outgoing-letter-approve
+import outgoingLetterApprove from "./outgoing_letter_approve.js";
+
+//Endpoint POST - outgoing-letter-reject
+import outgoingLetterReject from "./outgoing_letter_reject.js";
+
+//Endpoint GET/POST - outgoing-letter-dashboard-stats
+import outgoingLetterDashboard from "./outgoing_letter_dashboard.js";
+
+//Endpoint POST - outgoing-file-upload
+import outgoingLetterUpload from "./outgoing_letter_upload.js";
+
+//Endpoint POST - outgoing-letter-archive
+import outgoingLetterArchive from "./outgoing_letter_archive.js";
+
 
 const router = express.Router();
 
@@ -86,5 +104,11 @@ router.use("/outgoing-letter-create", outgoingLetterCreate);
 router.use("/outgoing-letter-detail", outgoingLetterDetail);
 router.use("/outgoing-letter-update", outgoingLetterUpdate);
 router.use("/outgoing-letter-delete", outgoingLetterDelete);
+router.use("/outgoing-letter-approval-data", outgoingLetterApprovalData);
+router.use("/outgoing-letter-approve", outgoingLetterApprove);
+router.use("/outgoing-letter-reject", outgoingLetterReject);
+router.use("/outgoing-letter-dashboard-stats", outgoingLetterDashboard);
+router.use("/outgoing-file-upload", outgoingLetterUpload);
+router.use("/outgoing-letter-archive", outgoingLetterArchive);
 
 export default router;
