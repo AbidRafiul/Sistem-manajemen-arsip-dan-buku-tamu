@@ -1,6 +1,7 @@
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { formatDateSystem } from "../components/tools/general.js";
+import { applyMultiTenantFilter } from "../components/tools/filterHelper.js";
 
 /**
  * GET /dashboard/summary
@@ -9,47 +10,72 @@ import { formatDateSystem } from "../components/tools/general.js";
 const getDashboardSummary = async (req, res) => {
   try {
     // ── 1. Query semua metric secara paralel ──────────────────────────────────
+    // Metric 1: Arsip Aktif
+    const qArsipAktif = DB("trs_dokumen as d")
+      .leftJoin("mst_pengguna as u", function () {
+        this.on(DB.raw("d.nama_pic COLLATE utf8mb4_unicode_ci = u.nama_lengkap COLLATE utf8mb4_unicode_ci"));
+      })
+      .count("* as total")
+      .where("d.status", "active")
+      .first();
+    applyMultiTenantFilter(qArsipAktif, req, 'u');
+
+    // Metric 2: Tamu Berkunjung Hari Ini
+    const qTamuHariIni = DB("trs_kunjungan as t")
+      .leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna")
+      .count("* as total")
+      .whereRaw("DATE(t.created_at) = CURDATE()")
+      .first();
+    applyMultiTenantFilter(qTamuHariIni, req, 'u');
+
+    // Metric 3: Surat Disposisi Menunggu Tindak Lanjut
+    const qDisposisi = DB("trs_disposisi_surat as tld")
+      .leftJoin("mst_pengguna as u", "tld.kepada_pengguna_id", "u.id_pengguna")
+      .count("* as total")
+      .where("tld.status", "baru")
+      .first();
+    applyMultiTenantFilter(qDisposisi, req, 'u');
+
+    // Metric 4: Retensi Expired
+    const qRetensi = DB("trs_dokumen as d")
+      .join("mst_jadwal_retensi as rs", "d.kode_retensi", "rs.kode_retensi")
+      .leftJoin("mst_pengguna as u", function () {
+        this.on(DB.raw("d.nama_pic COLLATE utf8mb4_unicode_ci = u.nama_lengkap COLLATE utf8mb4_unicode_ci"));
+      })
+      .count("* as total")
+      .where("d.status", "active")
+      .whereRaw("DATE_ADD(d.tanggal, INTERVAL rs.tahun_retensi YEAR) <= NOW()")
+      .first();
+    applyMultiTenantFilter(qRetensi, req, 'u');
+
+    // Chart: Dokumen diunggah 7 hari terakhir (per hari)
+    const qChart = DB("trs_dokumen as d")
+      .leftJoin("mst_pengguna as u", function () {
+        this.on(DB.raw("d.nama_pic COLLATE utf8mb4_unicode_ci = u.nama_lengkap COLLATE utf8mb4_unicode_ci"));
+      })
+      .select(DB.raw("DATE(d.created_at) as tanggal"), DB.raw("COUNT(*) as total"))
+      .whereRaw("d.created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)")
+      .where("d.status", "active")
+      .groupByRaw("DATE(d.created_at)")
+      .orderByRaw("DATE(d.created_at) ASC");
+    applyMultiTenantFilter(qChart, req, 'u');
+
+    // Audit Log: 10 aktivitas terbaru
+    const qAudit = DB("mst_riwayat_audit as a")
+      .leftJoin("mst_pengguna as u", "a.username", "u.nama_pengguna")
+      .select("a.id", "a.username as nama_pengguna", "a.aksi", "a.status", "a.created_at")
+      .orderBy("a.created_at", "desc")
+      .limit(10);
+    applyMultiTenantFilter(qAudit, req, 'u');
+
     const [oArsipAktif, oTamuHariIni, oDisposisi, vaRetensi, vaChartRaw, vaAuditRaw] =
       await Promise.all([
-        // Metric 1: Arsip Aktif
-        DB("trs_dokumen")
-          .count("* as total")
-          .where("status", "active")
-          .first(),
-
-        // Metric 2: Tamu Berkunjung Hari Ini
-        DB("trs_kunjungan")
-          .count("* as total")
-          .whereRaw("DATE(created_at) = CURDATE()")
-          .first(),
-
-        // Metric 3: Surat Disposisi Menunggu Tindak Lanjut
-        DB("trs_disposisi_surat")
-          .count("* as total")
-          .where("status", "baru")
-          .first(),
-
-        // Metric 4: Retensi Expired
-        DB("trs_dokumen as d")
-          .count("* as total")
-          .join("mst_jadwal_retensi as rs", "d.kode_retensi", "rs.kode_retensi")
-          .where("d.status", "active")
-          .whereRaw("DATE_ADD(d.tanggal, INTERVAL rs.tahun_retensi YEAR) <= NOW()")
-          .first(),
-
-        // Chart: Dokumen diunggah 7 hari terakhir (per hari)
-        DB("trs_dokumen")
-          .select(DB.raw("DATE(created_at) as tanggal"), DB.raw("COUNT(*) as total"))
-          .whereRaw("created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)")
-          .where("status", "active")
-          .groupByRaw("DATE(created_at)")
-          .orderByRaw("DATE(created_at) ASC"),
-
-        // Audit Log: 10 aktivitas terbaru
-        DB("mst_riwayat_audit")
-          .select("id", "username as nama_pengguna", "aksi", "status", "created_at")
-          .orderBy("created_at", "desc")
-          .limit(10),
+        qArsipAktif,
+        qTamuHariIni,
+        qDisposisi,
+        qRetensi,
+        qChart,
+        qAudit
       ]);
 
     // ── 2. Format angka metric ────────────────────────────────────────────────

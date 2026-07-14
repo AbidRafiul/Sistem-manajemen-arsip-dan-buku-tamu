@@ -1,6 +1,7 @@
 import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+import { applyMultiTenantFilter } from "../components/tools/filterHelper.js";
 
 const router = express.Router();
 
@@ -9,11 +10,31 @@ const outgoingLetterDashboardStats = async (req, res) => {
   const cFunc = "outgoingLetterDashboardStats";
 
   try {
+    const qTerkirim = DB("trs_surat_keluar as tsk")
+      .leftJoin("mst_pengguna as u", "tsk.created_by", "u.id_pengguna")
+      .count("* as total").whereIn("tsk.status", ["terkirim", "selesai"]).first();
+    applyMultiTenantFilter(qTerkirim, req, 'u');
+
+    const qDisetujui = DB("trs_surat_keluar as tsk")
+      .leftJoin("mst_pengguna as u", "tsk.created_by", "u.id_pengguna")
+      .count("* as total").where("tsk.status", "disetujui").first();
+    applyMultiTenantFilter(qDisetujui, req, 'u');
+
+    const qDitolak = DB("trs_surat_keluar as tsk")
+      .leftJoin("mst_pengguna as u", "tsk.created_by", "u.id_pengguna")
+      .count("* as total").where("tsk.status", "ditolak").first();
+    applyMultiTenantFilter(qDitolak, req, 'u');
+
+    const qMenunggu = DB("trs_surat_keluar as tsk")
+      .leftJoin("mst_pengguna as u", "tsk.created_by", "u.id_pengguna")
+      .count("* as total").where("tsk.status", "menunggu_approval").first();
+    applyMultiTenantFilter(qMenunggu, req, 'u');
+
     const [oTerkirim, oDisetujui, oDitolak, oMenunggu] = await Promise.all([
-      DB("trs_surat_keluar").count("* as total").whereIn("status", ["terkirim", "selesai"]).first(),
-      DB("trs_surat_keluar").count("* as total").where("status", "disetujui").first(),
-      DB("trs_surat_keluar").count("* as total").where("status", "ditolak").first(),
-      DB("trs_surat_keluar").count("* as total").where("status", "menunggu_approval").first()
+      qTerkirim,
+      qDisetujui,
+      qDitolak,
+      qMenunggu
     ]);
 
     const nTerkirim = Number(oTerkirim?.total) || 0;
@@ -22,12 +43,16 @@ const outgoingLetterDashboardStats = async (req, res) => {
     const nMenunggu = Number(oMenunggu?.total) || 0;
 
     // Fetch trend data for last 7 days
-    const vaChartRaw = await DB("trs_surat_keluar")
-      .select(DB.raw("DATE(created_at) as tanggal"), "status", DB.raw("COUNT(*) as total"))
-      .whereRaw("created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)")
-      .whereNot("status", "dihapus")
-      .groupByRaw("DATE(created_at), status")
-      .orderByRaw("DATE(created_at) ASC");
+    const qChart = DB("trs_surat_keluar as tsk")
+      .leftJoin("mst_pengguna as u", "tsk.created_by", "u.id_pengguna")
+      .select(DB.raw("DATE(tsk.created_at) as tanggal"), "tsk.status", DB.raw("COUNT(*) as total"))
+      .whereRaw("tsk.created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)")
+      .whereNot("tsk.status", "dihapus")
+      .groupByRaw("DATE(tsk.created_at), tsk.status")
+      .orderByRaw("DATE(tsk.created_at) ASC");
+    applyMultiTenantFilter(qChart, req, 'u');
+
+    const vaChartRaw = await qChart;
 
     const vaNamaHari = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
     const vaLabels = [];

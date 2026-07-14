@@ -1,5 +1,6 @@
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+import { applyMultiTenantFilter } from "../components/tools/filterHelper.js";
 
 const getDocuments = async (req, res) => {
   try {
@@ -75,7 +76,13 @@ const getDocuments = async (req, res) => {
         "mst_jadwal_retensi as rs",
         "d.kode_retensi",
         "rs.kode_retensi"
-      );
+      )
+      .leftJoin("mst_pengguna as u", function () {
+        this.on(DB.raw("d.nama_pic COLLATE utf8mb4_unicode_ci = u.nama_lengkap COLLATE utf8mb4_unicode_ci"));
+      });
+
+    // Multi-tenancy filter
+    applyMultiTenantFilter(oQuery, req, 'u');
 
     // Filter: status (default active)
     if (cStatus) {

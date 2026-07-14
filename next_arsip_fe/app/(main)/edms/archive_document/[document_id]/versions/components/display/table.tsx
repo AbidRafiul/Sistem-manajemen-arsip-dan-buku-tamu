@@ -310,7 +310,7 @@ const Table: React.FC<TableProps> = ({
                 <Column field="disetujui_oleh" header="Disetujui/Ditolak Oleh" body={(rowData: VersionData) => rowData.disetujui_oleh || '-'} />
                 <Column field="created_at" header="Tanggal Dibuat" body={(rowData: VersionData) => formatDateCalendar(rowData.created_at)} style={{ width: '160px' }} />
                 <Column header="Preview" body={versionPreviewTemplate} style={{ width: '90px', textAlign: 'center' }} />
-                <Column headerStyle={{ textAlign: 'center' }} header="Aksi" body={versionActionTemplate} style={{ width: '130px', textAlign: 'center' }} />
+                <Column headerStyle={{ textAlign: 'center' }} align="center" header="Aksi" body={versionActionTemplate} style={{ width: '130px', textAlign: 'center' }} />
             </DataTable>
 
             <Dialog

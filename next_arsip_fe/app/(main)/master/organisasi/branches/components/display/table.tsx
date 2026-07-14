@@ -8,16 +8,24 @@ import { InputText } from 'primereact/inputtext';
 import { Divider } from 'primereact/divider';
 import { Tag } from 'primereact/tag';
 import { TableProps } from '../interfaces';
+import { Menu } from 'primereact/menu';
+import { useRouter } from 'next/navigation';
 import { apiEndpointGet } from '../endpoints';
+import { LayoutContext } from '@/layout/context/layoutcontext';
+import { useContext } from 'react';
+import GlobalFilter from '@/layout/GlobalFilter';
 
 const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) => {
     const permissions = usePermissions();
     const { canCreate, canUpdate, canDelete, canApprove } = usePermissions();
+    const { layoutState } = useContext(LayoutContext);
+    const cabangName = (layoutState.globalFilter as any)?.nama_cabang;
+    const titleSuffix = cabangName ? ` - ${cabangName}` : (permissions?.activeRole?.toUpperCase() === 'SUPERADMIN' ? ' Pusat' : '');
     
     const renderHeader = () => {
         return (
             <div className="flex flex-wrap align-items-center justify-content-between gap-2">
-                <span className="text-xl font-bold">Manajemen Cabang</span>
+                <span className="text-xl font-bold">Manajemen Cabang{titleSuffix}</span>
                 <div className="flex gap-2">
                     <span className="p-input-icon-left">
                         <i className="pi pi-search" />
@@ -57,7 +65,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
         <div className="card">
             <div className="flex justify-content-between items-start mb-4">
                 <div>
-                    <h3 className="text-2xl font-semibold">Manajemen Cabang</h3>
+                    <h3 className="text-2xl font-semibold">Manajemen Cabang{titleSuffix}</h3>
                 </div>
             </div>
 
@@ -75,17 +83,20 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                 )}
                 <Divider layout="vertical" />
                 <Button size="small" label="Muat Ulang" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
+                <Divider layout="vertical" />
+                <GlobalFilter />
             </div>
 
             <DataTable value={state.data} selection={state.selectedData} onSelectionChange={(e) => setState(p => ({ ...p, selectedData: e.value }))} dataKey="id_cabang" paginator rows={10} rowsPerPageOptions={[5, 10, 25]} globalFilterFields={["kode_cabang","nama_cabang","alamat","telepon","surel","status"]} filters={state.filters} header={renderHeader()} emptyMessage="Tidak ada data ditemukan." loading={state.load} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
                 <Column field="kode_cabang" header="Kode" sortable></Column>
                 <Column field="nama_cabang" header="Nama Cabang" sortable></Column>
+                <Column field="nama_induk" header="Induk Cabang" sortable></Column>
                 <Column field="alamat" header="Alamat" sortable></Column>
                 <Column field="telepon" header="Telepon" sortable></Column>
                 <Column field="surel" header="Email" sortable></Column>
                 <Column body={statusBodyTemplate} header="Status"></Column>
-                <Column body={actionBodyTemplate} exportable={false} header="Aksi" style={{ minWidth: '8rem', textAlign: 'center' }}></Column>
+                <Column body={actionBodyTemplate} exportable={false} align="center" header="Aksi" style={{ minWidth: '8rem', textAlign: 'center' }}></Column>
             </DataTable>
         </div>
     );

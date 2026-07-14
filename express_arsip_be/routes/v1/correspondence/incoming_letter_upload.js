@@ -4,6 +4,7 @@ import DB from "../../../core/config/knex.js";
 import {
   removeFileFromMinio,
   uploadFileToMinio,
+  getMinioPrefix
 } from "../../../core/components/tools/minio_helper.js";
 
 const router = express.Router();
@@ -66,10 +67,25 @@ const incomingLetterUpload = async (req, res) => {
       });
     }
 
+    // Ambil id_cabang pengunggah (untuk struktur folder hirarki MinIO)
+    let uploaderIdCabang = null;
+    const uploaderId = oPayload.uploaded_by || oPayload.UploadedBy;
+    if (uploaderId) {
+      const uploader = await DB("mst_pengguna").select("id_cabang").where("id_pengguna", uploaderId).first();
+      if (uploader) uploaderIdCabang = uploader.id_cabang;
+    }
+    
+    // Fallback: Jika tidak ketemu, coba ambil id_cabang dari req.context jika ada
+    if (!uploaderIdCabang && req.context && req.context.id_cabang) {
+      uploaderIdCabang = req.context.id_cabang;
+    }
+
+    const minioPrefix = await getMinioPrefix(uploaderIdCabang);
+
     cObjectName = await uploadFileToMinio(
       cBucketName,
       oFile,
-      "correspondence/surat_masuk",
+      `${minioPrefix}/correspondence/surat_masuk`,
     );
 
     const dNow = new Date();

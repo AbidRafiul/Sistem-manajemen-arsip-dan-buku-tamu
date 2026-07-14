@@ -10,17 +10,39 @@ router.post("/get_data", async (req, res) => {
   const cnama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
-    const vaData = await DB("mst_unit_kerja")
+    let query = DB("mst_unit_kerja")
       .select(
-        "id_unit_kerja as id",
-        "id_unit_kerja",
-        "id_divisi",
-        "kode_unit_kerja",
-        "nama_unit_kerja",
-        "deskripsi",
-        "status"
+        "mst_unit_kerja.id_unit_kerja as id",
+        "mst_unit_kerja.id_unit_kerja",
+        "mst_unit_kerja.id_divisi",
+        "mst_unit_kerja.kode_unit_kerja",
+        "mst_unit_kerja.nama_unit_kerja",
+        "mst_unit_kerja.deskripsi",
+        "mst_unit_kerja.status"
       )
-      .whereNot("status", "deleted");
+      .whereNot("mst_unit_kerja.status", "deleted");
+
+    if (req.headers["x-filter-cabang"]) {
+      query = query
+        .join("mst_divisi", "mst_unit_kerja.id_divisi", "mst_divisi.id_divisi")
+        .join("mst_departemen", "mst_divisi.id_departemen", "mst_departemen.id_departemen")
+        .whereIn("mst_departemen.id_cabang", req.headers["x-filter-cabang"].split(","));
+    }
+    if (req.headers["x-filter-departemen"]) {
+      // Jika join mst_divisi belum ada (karena x-filter-cabang kosong), kita butuh join
+      if (!req.headers["x-filter-cabang"]) {
+        query = query.join("mst_divisi", "mst_unit_kerja.id_divisi", "mst_divisi.id_divisi");
+      }
+      query = query.where("mst_divisi.id_departemen", req.headers["x-filter-departemen"]);
+    }
+    if (req.headers["x-filter-divisi"]) {
+      query = query.where("mst_unit_kerja.id_divisi", req.headers["x-filter-divisi"]);
+    }
+    if (req.headers["x-filter-unit-kerja"]) {
+      query = query.where("mst_unit_kerja.id_unit_kerja", req.headers["x-filter-unit-kerja"]);
+    }
+
+    const vaData = await query;
 
     return res.status(200).json({
       status: status.SUKSES,

@@ -10,7 +10,7 @@ import { FilterMatchMode } from 'primereact/api';
 import Form from './components/display/form';
 import PermissionsModal from './components/display/permissions_modal';
 import { useSession } from 'next-auth/react';
-import { apiEndpointCreate, apiEndpointUpdate, apiEndpointDelete, apiEndpointGet } from './components/endpoints';
+import { apiEndpointCreate, apiEndpointUpdate, apiEndpointDelete, apiEndpointGet, apiEndpointPermissionsGet, apiEndpointPermissionsUpdate } from './components/endpoints';
 
 const Page = () => {
     const toast = useRef<Toast>(null);
@@ -25,7 +25,12 @@ const Page = () => {
         selectedData: [],
         searchVal: '',
         filters: { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
-        session: null
+        session: null,
+        permissionsVisible: false,
+        activeRoleForPermissions: null,
+        permissionsNodes: [],
+        permissionsLoading: false,
+        permissionsSaving: false
     });
 
     const formik = useFormik({
@@ -51,7 +56,7 @@ const Page = () => {
             const isEdit = Boolean(input.id_peran);
             const cEndPoint = isEdit ? apiEndpointUpdate : apiEndpointCreate;
             const oBody = { ...input };
-            
+
             const vaData = await postData(cEndPoint, oBody);
             showSuccess(toast, vaData.data?.data?.message || 'Berhasil Menyimpan Data');
             formik.resetForm();
@@ -103,12 +108,60 @@ const Page = () => {
         }
     }, [session]);
 
+    useEffect(() => {
+        if (state.permissionsVisible && state.activeRoleForPermissions) {
+            loadPermissions();
+        } else {
+            setState(p => ({ ...p, permissionsNodes: [] }));
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [state.permissionsVisible, state.activeRoleForPermissions]);
+
+    const loadPermissions = async () => {
+        setState(p => ({ ...p, permissionsLoading: true }));
+        try {
+            const res = await postData(apiEndpointPermissionsGet, { id_peran: state.activeRoleForPermissions.id_peran });
+            setState(p => ({ ...p, permissionsNodes: res.data.data || [] }));
+        } catch (error: any) {
+            showError(toast, error?.response?.data?.message || 'Gagal memuat hak akses');
+        } finally {
+            setState(p => ({ ...p, permissionsLoading: false }));
+        }
+    };
+
+    const collectPermissions = (nodesList: any[], flatList: any[] = []) => {
+        nodesList.forEach(node => {
+            flatList.push(node.data);
+            if (node.children && node.children.length > 0) {
+                collectPermissions(node.children, flatList);
+            }
+        });
+        return flatList;
+    };
+
+    const handleSavePermissions = async () => {
+        setState(p => ({ ...p, permissionsSaving: true }));
+        try {
+            const allPermissions = collectPermissions(state.permissionsNodes || []);
+            await postData(apiEndpointPermissionsUpdate, { 
+                id_peran: state.activeRoleForPermissions.id_peran,
+                permissions: allPermissions
+            });
+            showSuccess(toast, 'Hak akses berhasil disimpan');
+            setState((prev: any) => ({ ...prev, permissionsVisible: false, activeRoleForPermissions: null }));
+        } catch (error: any) {
+            showError(toast, error?.response?.data?.message || 'Gagal menyimpan hak akses');
+        } finally {
+            setState(p => ({ ...p, permissionsSaving: false }));
+        }
+    };
+
     return (
         <div className="p-4">
             <Toast ref={toast} position="top-right" />
             <Table state={state} toast={toast} setState={setState} formik={formik} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />
             <Form formik={formik} state={state} setState={setState} toast={toast} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />
-            <PermissionsModal state={state} setState={setState} toast={toast} />
+            <PermissionsModal state={state} setState={setState} toast={toast} handleSavePermissions={handleSavePermissions} />
         </div>
     );
 };

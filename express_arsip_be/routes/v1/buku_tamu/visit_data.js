@@ -2,6 +2,7 @@ import express from "express";
 import DB from "../../../core/config/knex.js";
 import { formatDateSystem } from "../components/tools/general.js";
 import { getPresignedUrlFromMinio } from "../../../core/components/tools/minio_helper.js";
+import { applyMultiTenantFilter } from "../components/tools/filterHelper.js";
 
 const router = express.Router();
 
@@ -21,7 +22,13 @@ router.post("/", async (req, res) => {
       .leftJoin("mst_tujuan_kunjungan as mp", "t.id_tujuan_kunjungan", "mp.id_tujuan_kunjungan")
       .leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna");
 
-    const qCount = DB("trs_kunjungan as t").count({ total: '*' });
+    const qCount = DB("trs_kunjungan as t")
+      .leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna")
+      .count({ total: '*' });
+
+    // Multi-tenancy: isolasi data berdasarkan cabang host
+    applyMultiTenantFilter(q, req, 'u');
+    applyMultiTenantFilter(qCount, req, 'u');
 
     if (oPayload.Status) {
       q.where("t.status", oPayload.Status);

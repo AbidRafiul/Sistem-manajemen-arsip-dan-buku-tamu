@@ -9,15 +9,19 @@ import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
 import { Divider } from 'primereact/divider';
 import { apiEndpointGet } from '../endpoints';
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import Form from './form';
 import { usePermissions } from '@/hooks/usePermissions';
+import { LayoutContext } from '@/layout/context/layoutcontext';
 
 const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBar, navBar, getNav, handleSave, handleDelete }: TableProps) => {
     const permissions = usePermissions();
+    const { layoutState } = useContext(LayoutContext);
+    const cabangName = (layoutState.globalFilter as any)?.nama_cabang;
+    const titleSuffix = cabangName ? ` - ${cabangName}` : (permissions?.activeRole?.toUpperCase() === 'SUPERADMIN' ? ' Pusat' : '');
     const headerTemplate = (
         <div className="flex flex-wrap align-items-center justify-content-between gap-2">
-            <span className="text-xl font-bold">Manajemen Pengguna</span>
+            <span className="text-xl font-bold">Manajemen Pengguna{titleSuffix}</span>
 
             <div className="flex gap-2">
                 <span className="p-input-icon-left">
@@ -193,7 +197,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                         header="Status"
                     ></Column>
                     <Column field="created_at" sortable body={(rowData) => formatDateCalendar(rowData.created_at)} header="Tanggal & Waktu"></Column>
-                    <Column headerStyle={{ textAlign: 'center' }} header="Aksi" body={actionBodyTemplate}></Column>
+                    <Column headerStyle={{ textAlign: 'center' }} align="center" header="Aksi" body={actionBodyTemplate}></Column>
                 </DataTable>
             </div>
 

@@ -3,6 +3,8 @@ export interface initValue {
     id_cabang: string | number;
     kode_cabang: string | number;
     nama_cabang: string | number;
+    id_induk?: number | null;
+    nama_induk?: string | null;
     alamat: string | number;
     telepon: string | number;
     surel: string | number;

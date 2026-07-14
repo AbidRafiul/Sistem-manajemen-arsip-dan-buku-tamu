@@ -1,4 +1,7 @@
 import minioClient from '../../config/minio.js';
+import DB from '../../config/knex.js';
+
+const MINIO_BUCKET_NAME = process.env.MINIO_BUCKET_NAME || 'arsip-bucket';
 
 /**
  * Helper untuk upload file ke MinIO.
@@ -32,10 +35,10 @@ const uploadFileToMinio = async (bucketName, file, folderPath = "") => {
         );
 
         console.log(`Berhasil upload ${objectName} ke bucket ${bucketName}`);
-        
+
         // 4. Kembalikan nama/path objeknya
         return objectName;
-        
+
     } catch (error) {
         console.error("Gagal upload ke MinIO:", error);
         throw error;
@@ -73,23 +76,53 @@ const removeFileFromMinio = async (bucketName, objectName) => {
 };
 
 /**
- * Helper untuk mendapatkan presigned URL dari MinIO.
- * @param {string} bucketName - Nama bucket
- * @param {string} objectName - Nama objek/file di MinIO
- * @param {number} [expiry=3600] - Expiry dalam detik (default 1 jam)
- * @returns {Promise<string>} - Presigned URL
+ * Helper untuk menyusun hirarki prefix folder MinIO berdasarkan silsilah cabang
+ * @param {number|string} idCabang - ID Cabang milik uploader
+ * @returns {Promise<string>} - Prefix hirarki (contoh: "BR-001/BR-002/BR-003")
  */
-const getPresignedUrlFromMinio = (bucketName, objectName, expiry = 3600) => {
-    return new Promise((resolve) => {
-        minioClient.presignedGetObject(bucketName, objectName, expiry, (err, url) => {
-            if (err) {
-                console.error("Gagal mendapatkan presigned URL dari MinIO:", err);
-                resolve(null);
-            } else {
-                resolve(url);
-            }
-        });
-    });
+const getMinioPrefix = async (idCabang) => {
+    if (!idCabang) return 'GLOBAL';
+
+    let currentId = idCabang;
+    const hierarchy = [];
+
+    try {
+        while (currentId) {
+            const branch = await DB("mst_cabang")
+                .select("id_cabang", "kode_cabang", "id_induk")
+                .where("id_cabang", currentId)
+                .first();
+
+            if (!branch) break;
+
+            hierarchy.unshift(branch.kode_cabang || `CAB-${branch.id_cabang}`);
+
+            // Naik ke parent
+            currentId = branch.id_induk;
+        }
+    } catch (e) {
+        console.error("Gagal getMinioPrefix:", e);
+    }
+
+    if (hierarchy.length === 0) return 'GLOBAL';
+    return hierarchy.join('/');
 };
 
-export { uploadFileToMinio, downloadFileFromMinio, removeFileFromMinio, getPresignedUrlFromMinio };
+/**
+ * Helper untuk menghasilkan pre-signed URL dari MinIO (akses sementara).
+ * @param {string} bucketName - Nama bucket
+ * @param {string} objectName - Nama objek/file di MinIO
+ * @param {number} [expiry=3600] - Masa berlaku URL dalam detik (default: 1 jam)
+ * @returns {Promise<string>} - Pre-signed URL
+ */
+const getPresignedUrlFromMinio = async (bucketName, objectName, expiry = 3600) => {
+    try {
+        const url = await minioClient.presignedGetObject(bucketName, objectName, expiry);
+        return url;
+    } catch (error) {
+        console.error("Gagal generate presigned URL dari MinIO:", error);
+        return null;
+    }
+};
+
+export { uploadFileToMinio, downloadFileFromMinio, removeFileFromMinio, getMinioPrefix, getPresignedUrlFromMinio, MINIO_BUCKET_NAME };

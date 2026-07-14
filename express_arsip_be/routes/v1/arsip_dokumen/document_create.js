@@ -57,7 +57,7 @@ const createDocument = async (req, res) => {
       cPic = cPic.trim();
     }
     if (!cPic) {
-      cPic = req.user?.name || "System Fallback (User Master Pending)";
+      cPic = req.auth?.nama_lengkap || "System Fallback (User Master Pending)";
     }
 
     // Cek duplikat nomor dokumen

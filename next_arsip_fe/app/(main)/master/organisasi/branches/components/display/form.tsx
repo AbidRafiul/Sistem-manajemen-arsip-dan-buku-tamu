@@ -44,6 +44,23 @@ const Form = ({ state, setState, formik, handleDelete, handleSave }: any) => {
                             {getFormErrorMessage('nama_cabang')}
                         </div>
                     </div>
+                    <div className="flex flex-column gap-2 w-full mt-2 mb-2">
+                        <label htmlFor="id_induk" className="font-bold">Induk Cabang (Opsional)</label>
+                        <Dropdown 
+                            id="id_induk" 
+                            name="id_induk" 
+                            value={formik?.values.id_induk} 
+                            options={state.data.filter((b: any) => b.id_cabang !== formik?.values.id_cabang)} 
+                            optionLabel="nama_cabang" 
+                            optionValue="id_cabang" 
+                            onChange={formik?.handleChange} 
+                            placeholder="Pilih Induk Cabang (Kosongkan jika Cabang Utama)" 
+                            showClear 
+                            filter 
+                            className="w-full" 
+                        />
+                        {getFormErrorMessage('id_induk')}
+                    </div>
                     <div className="flex md:flex-row flex-column gap-2 w-full">
                         <div className="flex flex-column gap-2 w-full">
                             <label htmlFor="alamat" className="font-bold">alamat</label>

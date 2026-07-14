@@ -123,6 +123,10 @@ export const validateSignature = async (req, res, next) => {
         "pengguna.nama_lengkap",
         "pengguna.telepon",
         "pengguna.nama_pengguna as UniqueId",
+        "pengguna.id_cabang",
+        "pengguna.id_departemen",
+        "pengguna.id_divisi",
+        "pengguna.id_unit_kerja",
         "peran.id_peran as peranId",
         "peran.kode_peran",
         "peran.nama_peran as peran",
@@ -160,6 +164,55 @@ export const validateSignature = async (req, res, next) => {
     };
 
     req.context = oUser;
+
+    // RBAC: Data Isolation by Cabang (Hierarchical)
+    let allowedCabangIds = null;
+    const allCabangs = await DB("mst_cabang").select("id_cabang", "id_induk").whereNot("status", "deleted");
+
+    if (oUser.kode_peran !== 'SUPERADMIN' && oUser.kode_peran !== 'SA') {
+      if (oUser.id_cabang) {
+        allowedCabangIds = new Set([oUser.id_cabang]);
+        // Hanya ambil anak langsung (1 level ke bawah), bukan cucu/cicit
+        for (const c of allCabangs) {
+          if (c.id_induk === oUser.id_cabang) {
+            allowedCabangIds.add(c.id_cabang);
+          }
+        }
+      }
+    }
+
+    const reqCabang = req.headers['x-filter-cabang'];
+    
+    if (reqCabang && reqCabang !== 'null' && reqCabang !== 'undefined') {
+      // Jika ada request filter (dari siapapun, termasuk SA), kembangkan filter tersebut 1 level ke bawah
+      const requestedIds = String(reqCabang).split(",").map(id => parseInt(id, 10));
+      const expandedRequestedIds = new Set(requestedIds);
+      
+      for (const id of requestedIds) {
+         for (const c of allCabangs) {
+            if (c.id_induk === id) expandedRequestedIds.add(c.id_cabang);
+         }
+      }
+      
+      if (allowedCabangIds) {
+        // Jika Admin Daerah, pastikan filter tidak melebihi wilayah kekuasaannya (Intersect)
+        const validIds = Array.from(expandedRequestedIds).filter(id => allowedCabangIds.has(id));
+        if (validIds.length > 0) {
+          req.headers['x-filter-cabang'] = validIds.join(",");
+        } else {
+          req.headers['x-filter-cabang'] = Array.from(allowedCabangIds).join(",");
+        }
+      } else {
+        // Jika Superadmin, terapkan langsung filter yang sudah dikembangkan
+        req.headers['x-filter-cabang'] = Array.from(expandedRequestedIds).join(",");
+      }
+    } else {
+      if (allowedCabangIds) {
+        // Jika tidak ada request filter, paksa tampilkan hanya wilayah kekuasaannya
+        req.headers['x-filter-cabang'] = Array.from(allowedCabangIds).join(",");
+      }
+    }
+
     next();
   } catch (error) {
     Logging(error);

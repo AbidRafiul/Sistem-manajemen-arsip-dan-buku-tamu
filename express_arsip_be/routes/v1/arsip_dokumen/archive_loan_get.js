@@ -1,5 +1,6 @@
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+import { applyMultiTenantFilter } from "../components/tools/filterHelper.js";
 
 const getArchiveLoans = async (req, res) => {
   const oQuery = req.query;
@@ -28,6 +29,9 @@ const getArchiveLoans = async (req, res) => {
 
     const oData = DB("trs_peminjaman_arsip as l")
       .leftJoin("trs_dokumen as d", "l.kode_dokumen", "d.kode_dokumen")
+      .leftJoin("mst_pengguna as u", function () {
+        this.on(DB.raw("d.nama_pic COLLATE utf8mb4_unicode_ci = u.nama_lengkap COLLATE utf8mb4_unicode_ci"));
+      })
       .select(
         "l.id_peminjaman",
         "l.kode_dokumen",
@@ -64,6 +68,9 @@ const getArchiveLoans = async (req, res) => {
     if (cStatus) {
       oData.where("l.status", cStatus);
     }
+
+    // Multi-tenancy filter
+    applyMultiTenantFilter(oData, req, 'u');
 
     const vaData = await oData;
 

@@ -86,9 +86,9 @@ export async function seed(knex) {
   ]);
 
   // 5. Masukkan peran Superadmin ke `mst_pengguna_perans`
-  // Asumsi peranId 1 adalah ADM dari 03_mst_perans.js
+  // Gunakan peran SUPERADMIN (id_peran 1)
   const peranAdmin = await knex("mst_peran")
-    .where("kode_peran", "ADM")
+    .where("kode_peran", "SUPERADMIN")
     .first();
   if (peranAdmin) {
     await knex("mst_pengguna_peran").insert([
