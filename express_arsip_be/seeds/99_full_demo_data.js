@@ -157,7 +157,6 @@ export async function seed(knex) {
   const division = await knex("mst_divisi")
     .where("kode_divisi", "DIV-OPS")
     .first();
-
   await upsertRows(knex, "mst_jabatan", "kode_jabatan", [
     {
       kode_jabatan: "POS-STF",

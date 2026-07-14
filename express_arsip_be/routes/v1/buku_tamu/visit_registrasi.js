@@ -9,8 +9,10 @@ import {
   validatePayload,
 } from "../components/tools/servertool.js";
 import DB from "../../../core/config/knex.js";
-import { uploadFileToMinio, getMinioPrefix } from "../../../core/components/tools/minio_helper.js";
+import { uploadFileToMinio, getMinioPrefix, MINIO_BUCKET_NAME } from "../../../core/components/tools/minio_helper.js";
 import { sendMailNotification } from "../../../core/components/tools/mail_helper.js";
+
+const cBucket = MINIO_BUCKET_NAME;
 
 const router = express.Router();
 const upload = multer({
@@ -162,14 +164,14 @@ router.post(
 
       if (photoFaceFile) {
         PhotoFace = await uploadFileToMinio(
-          "buku-tamu",
+          cBucket,
           photoFaceFile,
           `${minioPrefix}/photos/${todayPath}`,
         );
       }
       if (photoIdentityFile) {
         PhotoIdentity = await uploadFileToMinio(
-          "buku-tamu",
+          cBucket,
           photoIdentityFile,
           `${minioPrefix}/photos/${todayPath}`,
         );
@@ -188,16 +190,16 @@ router.post(
             size: buffer.length,
           };
           TandaTangan = await uploadFileToMinio(
-            "buku-tamu",
+            cBucket,
             fileObj,
-            `signatures/${todayPath}`,
+            `buku_tamu/signatures/${todayPath}`,
           );
         }
       } else if (signatureFile) {
         TandaTangan = await uploadFileToMinio(
-          "buku-tamu",
+          cBucket,
           signatureFile,
-          `signatures/${todayPath}`,
+          `buku_tamu/signatures/${todayPath}`,
         );
       }
 

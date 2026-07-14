@@ -22,7 +22,7 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 30 * 1024 * 1024, // 30MB limit
+    fileSize: 50 * 1024 * 1024, // 50MB limit
   },
 }).single("file");
 
@@ -31,7 +31,7 @@ export const uploadDocument = (req, res, next) => {
     if (err) {
       return res.status(400).json({
         status: "error",
-        message: err.code === "LIMIT_FILE_SIZE" ? "Ukuran file melebihi batas 30MB" : err.message,
+        message: err.code === "LIMIT_FILE_SIZE" ? "Ukuran file melebihi batas 50MB" : err.message,
       });
     }
 

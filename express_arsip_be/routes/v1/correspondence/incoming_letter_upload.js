@@ -12,7 +12,7 @@ const router = express.Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024,
+    fileSize: 50 * 1024 * 1024,
   },
   fileFilter: (req, file, cb) => {
     const vaAllowedMimeTypes = [
@@ -75,9 +75,9 @@ const incomingLetterUpload = async (req, res) => {
       if (uploader) uploaderIdCabang = uploader.id_cabang;
     }
     
-    // Fallback: Jika tidak ketemu, coba ambil id_cabang dari req.user jika ada
-    if (!uploaderIdCabang && req.user && req.user.id_cabang) {
-      uploaderIdCabang = req.user.id_cabang;
+    // Fallback: Jika tidak ketemu, coba ambil id_cabang dari req.context jika ada
+    if (!uploaderIdCabang && req.context && req.context.id_cabang) {
+      uploaderIdCabang = req.context.id_cabang;
     }
 
     const minioPrefix = await getMinioPrefix(uploaderIdCabang);

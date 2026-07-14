@@ -1,6 +1,8 @@
 import minioClient from '../../config/minio.js';
 import DB from '../../config/knex.js';
 
+const MINIO_BUCKET_NAME = process.env.MINIO_BUCKET_NAME || 'arsip-bucket';
+
 /**
  * Helper untuk upload file ke MinIO.
  * @param {string} bucketName - Nama bucket (contoh: 'berkas-bukutamu')
@@ -33,10 +35,10 @@ const uploadFileToMinio = async (bucketName, file, folderPath = "") => {
         );
 
         console.log(`Berhasil upload ${objectName} ke bucket ${bucketName}`);
-        
+
         // 4. Kembalikan nama/path objeknya
         return objectName;
-        
+
     } catch (error) {
         console.error("Gagal upload ke MinIO:", error);
         throw error;
@@ -94,7 +96,7 @@ const getMinioPrefix = async (idCabang) => {
             if (!branch) break;
 
             hierarchy.unshift(branch.kode_cabang || `CAB-${branch.id_cabang}`);
-            
+
             // Naik ke parent
             currentId = branch.id_induk;
         }
@@ -106,4 +108,21 @@ const getMinioPrefix = async (idCabang) => {
     return hierarchy.join('/');
 };
 
-export { uploadFileToMinio, downloadFileFromMinio, removeFileFromMinio, getMinioPrefix };
+/**
+ * Helper untuk menghasilkan pre-signed URL dari MinIO (akses sementara).
+ * @param {string} bucketName - Nama bucket
+ * @param {string} objectName - Nama objek/file di MinIO
+ * @param {number} [expiry=3600] - Masa berlaku URL dalam detik (default: 1 jam)
+ * @returns {Promise<string>} - Pre-signed URL
+ */
+const getPresignedUrlFromMinio = async (bucketName, objectName, expiry = 3600) => {
+    try {
+        const url = await minioClient.presignedGetObject(bucketName, objectName, expiry);
+        return url;
+    } catch (error) {
+        console.error("Gagal generate presigned URL dari MinIO:", error);
+        return null;
+    }
+};
+
+export { uploadFileToMinio, downloadFileFromMinio, removeFileFromMinio, getMinioPrefix, getPresignedUrlFromMinio, MINIO_BUCKET_NAME };

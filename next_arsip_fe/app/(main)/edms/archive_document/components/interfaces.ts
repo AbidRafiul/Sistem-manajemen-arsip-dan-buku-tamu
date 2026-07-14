@@ -17,6 +17,8 @@ export interface initValue {
     kode_tingkat_kerahasiaan: string
     tanggal_transaksi: string
     lokasi_fisik: string
+    kode_retensi: string
+    file?: File | null
 }
 
 export interface DocumentData {
@@ -110,7 +112,14 @@ export interface State {
     classifications: any[]
     categories: any[]
     confidentialities: any[]
+    retentions: any[]
     
+    // Filters
+    filterClassification?: string
+    filterType?: string
+    filterCategory?: string
+    filterConfidentiality?: string
+
     // QR & Tracking States
     qrDialog: boolean
     qrData: {

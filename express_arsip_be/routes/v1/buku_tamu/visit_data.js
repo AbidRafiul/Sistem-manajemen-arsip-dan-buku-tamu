@@ -1,6 +1,8 @@
 import express from "express";
 import DB from "../../../core/config/knex.js";
 import { formatDateSystem } from "../components/tools/general.js";
+import { getPresignedUrlFromMinio } from "../../../core/components/tools/minio_helper.js";
+import { applyMultiTenantFilter } from "../components/tools/filterHelper.js";
 
 const router = express.Router();
 
@@ -20,7 +22,13 @@ router.post("/", async (req, res) => {
       .leftJoin("mst_tujuan_kunjungan as mp", "t.id_tujuan_kunjungan", "mp.id_tujuan_kunjungan")
       .leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna");
 
-    const qCount = DB("trs_kunjungan as t").count({ total: '*' });
+    const qCount = DB("trs_kunjungan as t")
+      .leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna")
+      .count({ total: '*' });
+
+    // Multi-tenancy: isolasi data berdasarkan cabang host
+    applyMultiTenantFilter(q, req, 'u');
+    applyMultiTenantFilter(qCount, req, 'u');
 
     if (oPayload.Status) {
       q.where("t.status", oPayload.Status);
@@ -49,22 +57,21 @@ router.post("/", async (req, res) => {
     const totalObj = await qCount.first();
     const rows = await q.orderBy("t.created_at", "desc").limit(limit).offset(offset);
 
-    const cBaseUrl = `${process.env.APP_SERVER || "http://localhost"}:${process.env.APP_PORT || "8000"}`;
     for (const r of rows) {
       if (r.foto_wajah) {
-        r.PhotoFaceUrl = r.foto_wajah.startsWith('http') ? r.foto_wajah : `${cBaseUrl}/uploads/${r.foto_wajah}`;
+        r.PhotoFaceUrl = r.foto_wajah.startsWith('http') ? r.foto_wajah : await getPresignedUrlFromMinio("buku-tamu", r.foto_wajah);
       } else {
         r.PhotoFaceUrl = null;
       }
 
       if (r.foto_identitas) {
-        r.PhotoIdentityUrl = r.foto_identitas.startsWith('http') ? r.foto_identitas : `${cBaseUrl}/uploads/${r.foto_identitas}`;
+        r.PhotoIdentityUrl = r.foto_identitas.startsWith('http') ? r.foto_identitas : await getPresignedUrlFromMinio("buku-tamu", r.foto_identitas);
       } else {
         r.PhotoIdentityUrl = null;
       }
 
       if (r.tanda_tangan) {
-        r.SignatureUrl = r.tanda_tangan.startsWith('http') ? r.tanda_tangan : `${cBaseUrl}/uploads/${r.tanda_tangan}`;
+        r.SignatureUrl = r.tanda_tangan.startsWith('http') ? r.tanda_tangan : await getPresignedUrlFromMinio("buku-tamu", r.tanda_tangan);
       } else {
         r.SignatureUrl = null;
       }

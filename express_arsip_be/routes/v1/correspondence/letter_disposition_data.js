@@ -2,6 +2,7 @@ import express from "express";
 import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { validatePayload } from "../components/tools/servertool.js";
+import { applyMultiTenantFilter } from "../components/tools/filterHelper.js";
 
 const router = express.Router();
 
@@ -124,6 +125,9 @@ const letterDispositionData = async (req, res) => {
           .orWhere("tld.catatan_disposisi", "like", `%${oPayload.keyword}%`);
       });
     }
+
+    // Multi-tenancy filter: filter berdasarkan cabang penerima disposisi
+    applyMultiTenantFilter(oQuery, req, 'kepada_pengguna');
 
     const vaData = await oQuery;
 

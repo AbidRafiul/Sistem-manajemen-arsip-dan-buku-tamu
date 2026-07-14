@@ -63,6 +63,20 @@ const createRetentionSchedule = async (req, res) => {
       return res.status(422).json(oResult);
     }
 
+    // Cek duplikasi kode_retensi
+    const oExisting = await DB("mst_jadwal_retensi")
+      .where("kode_retensi", oPayload.kode_retensi)
+      .where("status", "active")
+      .first();
+
+    if (oExisting) {
+      return res.status(422).json({
+        status: status.BAD_REQUEST,
+        message: `Kode retensi '${oPayload.kode_retensi}' sudah terdaftar`,
+        datetime: formatDateSystem(),
+      });
+    }
+
     const dNow = new Date();
     await DB("mst_jadwal_retensi").insert({
       kode_kategori_dokumen: oPayload.kode_kategori_dokumen,

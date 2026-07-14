@@ -56,7 +56,7 @@ router.use("/dashboard", dashboardSummary);
 // ════════════════════════════════════════════════════════════════════════════
 
 // POST /create — Create new document (with full metadata + auto QR)
-router.post("/create", documentCreate);
+router.post("/create", uploadDocument, documentCreate);
 
 // POST /upload — Upload dokumen file (standalone, tanpa auto-version)
 router.post("/upload", uploadDocument, documentUpload);

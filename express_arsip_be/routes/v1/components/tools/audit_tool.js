@@ -4,6 +4,8 @@ import { formatDateSystem } from "./general.js";
 /**
  * Fungsi untuk mencatat aktivitas ke tabel mst_riwayat_audit
  * Bisa dipanggil dari file mana aja (Login, Update User, Delete User, dll)
+ *
+ * Kolom aktual di DB: id, username, role, aksi, alamat_ip, agen_pengguna, status, created_at
  */
 export const recordAuditTrail = async (
   nama_pengguna,
@@ -18,8 +20,8 @@ export const recordAuditTrail = async (
       : req?.ip || req?.connection?.remoteAddress || "Unknown";
 
     await DB("mst_riwayat_audit").insert({
-      nama_pengguna,
-      peran,
+      username: nama_pengguna,
+      role: peran,
       aksi: action,
       alamat_ip: cIp,
       agen_pengguna: req?.headers?.["user-agent"] || "Unknown",

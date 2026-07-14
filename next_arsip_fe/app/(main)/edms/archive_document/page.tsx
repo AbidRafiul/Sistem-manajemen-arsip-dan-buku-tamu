@@ -26,7 +26,8 @@ import {
     apiEndpointConfidentialityGet,
     apiEndpointQrGenerate,
     apiEndpointQrScan,
-    apiEndpointLocationUpdate
+    apiEndpointLocationUpdate,
+    apiEndpointRetentionGet
 } from "./components/endpoints";
 import { initValue, State } from "./components/interfaces";
 
@@ -54,6 +55,11 @@ const Page = () => {
         classifications: [],
         categories: [],
         confidentialities: [],
+        retentions: [],
+        filterClassification: '',
+        filterType: '',
+        filterCategory: '',
+        filterConfidentiality: '',
         qrDialog: false,
         qrData: null,
         qrLoad: false,
@@ -78,6 +84,8 @@ const Page = () => {
             kode_tingkat_kerahasiaan: '',
             tanggal_transaksi: '',
             lokasi_fisik: '',
+            kode_retensi: '',
+            file: null,
         },
         validate: (data: initValue) => {
             const errors = {} as any;
@@ -114,6 +122,10 @@ const Page = () => {
                 errors.kode_tingkat_kerahasiaan = 'Kerahasiaan dokumen wajib diisi';
             }
 
+            if (!state.edit && !data.file) {
+                errors.file = 'File dokumen PDF wajib diunggah';
+            }
+
             return errors;
         },
         onSubmit: (data) => {
@@ -124,7 +136,14 @@ const Page = () => {
     const getDocuments = async () => {
         setState((p) => ({ ...p, load: true }));
         try {
-            const res = await getData(apiEndpointDocumentGet);
+            const params: any = {};
+            if (state.searchVal) params.search = state.searchVal;
+            if (state.filterClassification) params.kode_klasifikasi = state.filterClassification;
+            if (state.filterType) params.kode_jenis_dokumen = state.filterType;
+            if (state.filterCategory) params.kode_kategori_dokumen = state.filterCategory;
+            if (state.filterConfidentiality) params.kode_tingkat_kerahasiaan = state.filterConfidentiality;
+
+            const res = await getData(apiEndpointDocumentGet, params);
             setState((p) => ({
                 ...p,
                 data: res.data.data || []
@@ -160,20 +179,43 @@ const Page = () => {
             const isEdit = Boolean(state.edit);
             const cEndpoint = isEdit ? apiEndpointDocumentUpdate : apiEndpointDocumentCreate;
 
-            const res = await postData(cEndpoint, {
-                id_dokumen: input.id_dokumen,
-                nama_dokumen: input.nama_dokumen,
-                nomor_dokumen: input.nomor_dokumen,
-                tanggal: input.tanggal,
-                tanggal_kedaluwarsa: input.tanggal_kedaluwarsa,
-                nama_pic: input.nama_pic,
-                kode_jenis_dokumen: input.kode_jenis_dokumen,
-                kode_klasifikasi: input.kode_klasifikasi,
-                kode_kategori_dokumen: input.kode_kategori_dokumen,
-                kode_tingkat_kerahasiaan: input.kode_tingkat_kerahasiaan,
-                tanggal_transaksi: input.tanggal_transaksi || null,
-                lokasi_fisik: input.lokasi_fisik || null,
-            });
+            let res;
+            if (isEdit) {
+                res = await postData(cEndpoint, {
+                    id_dokumen: input.id_dokumen,
+                    nama_dokumen: input.nama_dokumen,
+                    nomor_dokumen: input.nomor_dokumen,
+                    tanggal: input.tanggal,
+                    nama_pic: input.nama_pic,
+                    kode_jenis_dokumen: input.kode_jenis_dokumen,
+                    kode_klasifikasi: input.kode_klasifikasi,
+                    kode_kategori_dokumen: input.kode_kategori_dokumen,
+                    kode_tingkat_kerahasiaan: input.kode_tingkat_kerahasiaan,
+                    lokasi_fisik: input.lokasi_fisik || null,
+                    kode_retensi: input.kode_retensi || null,
+                });
+            } else {
+                const formData = new FormData();
+                formData.append('nama_dokumen', input.nama_dokumen);
+                formData.append('nomor_dokumen', input.nomor_dokumen);
+                formData.append('tanggal', input.tanggal);
+                formData.append('nama_pic', input.nama_pic);
+                formData.append('kode_jenis_dokumen', input.kode_jenis_dokumen);
+                formData.append('kode_klasifikasi', input.kode_klasifikasi);
+                formData.append('kode_kategori_dokumen', input.kode_kategori_dokumen);
+                formData.append('kode_tingkat_kerahasiaan', input.kode_tingkat_kerahasiaan);
+                if (input.lokasi_fisik) {
+                    formData.append('lokasi_fisik', input.lokasi_fisik);
+                }
+                if (input.kode_retensi) {
+                    formData.append('kode_retensi', input.kode_retensi);
+                }
+                if (input.file) {
+                    formData.append('file', input.file);
+                }
+
+                res = await formUpload(cEndpoint, formData, {});
+            }
 
             showSuccess(toast, res.data?.message || 'Document berhasil disimpan');
             formik.resetForm();
@@ -389,18 +431,20 @@ const Page = () => {
 
     const getDropdownOptions = async () => {
         try {
-            const [resTypes, resClassifications, resCategories, resConfidentialities] = await Promise.all([
+            const [resTypes, resClassifications, resCategories, resConfidentialities, resRetentions] = await Promise.all([
                 getData('/master/arsip/document-types'),
                 getData('/master/arsip/archive-classifications'),
                 getData(apiEndpointCategoryGet),
-                getData(apiEndpointConfidentialityGet)
+                getData(apiEndpointConfidentialityGet),
+                getData(apiEndpointRetentionGet)
             ]);
             setState(p => ({
                 ...p,
                 documentTypes: (resTypes.data.data || []).filter((item: any) => item.kode_jenis_dokumen !== 'SURAT'),
                 classifications: resClassifications.data.data || [],
                 categories: resCategories.data.data || [],
-                confidentialities: resConfidentialities.data.data || []
+                confidentialities: resConfidentialities.data.data || [],
+                retentions: resRetentions.data.data || []
             }));
         } catch (error) {
             console.error("Gagal mengambil opsi dropdown:", error);
@@ -429,6 +473,10 @@ const Page = () => {
             saveDocument(state.submittedData);
         }
     }, [state.submittedData]);
+
+    useEffect(() => {
+        getDocuments();
+    }, [state.searchVal, state.filterClassification, state.filterType, state.filterCategory, state.filterConfidentiality]);
 
     return <>
         <div className="p-4">

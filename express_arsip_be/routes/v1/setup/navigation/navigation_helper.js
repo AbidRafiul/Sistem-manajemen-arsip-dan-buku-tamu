@@ -454,6 +454,16 @@ const getNavigationMenu = async (DB, uniqueId) => {
       vaCombinedMenu.splice(nNewSetupIdx + 1, 0, oMo);
     }
 
+    // Reorder: Letakkan "Master Arsip" tepat di bawah "Master Organisasi"
+    const nMasterArsipIdx = vaCombinedMenu.findIndex(m => m.label && m.label.toUpperCase() === 'MASTER ARSIP');
+    const nNewMasterOrgIdx = vaCombinedMenu.findIndex(m => m.label && m.label.toUpperCase() === 'MASTER ORGANISASI');
+
+    if (nMasterArsipIdx !== -1 && nNewMasterOrgIdx !== -1 && nMasterArsipIdx !== nNewMasterOrgIdx + 1) {
+      const oMa = vaCombinedMenu.splice(nMasterArsipIdx, 1)[0];
+      const nLatestMasterOrgIdx = vaCombinedMenu.findIndex(m => m.label && m.label.toUpperCase() === 'MASTER ORGANISASI');
+      vaCombinedMenu.splice(nLatestMasterOrgIdx + 1, 0, oMa);
+    }
+
     return {
       menu: removeEmptyItems(vaCombinedMenu),
       source: "merged",

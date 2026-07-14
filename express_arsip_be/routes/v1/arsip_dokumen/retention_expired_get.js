@@ -1,5 +1,6 @@
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+import { applyMultiTenantFilter } from "../components/tools/filterHelper.js";
 
 const getRetentionExpiredDocuments = async (req, res) => {
   try {
@@ -52,11 +53,17 @@ const getRetentionExpiredDocuments = async (req, res) => {
         "d.kode_kategori_dokumen",
         "dc.kode_kategori_dokumen"
       )
+      .leftJoin("mst_pengguna as u", function () {
+        this.on(DB.raw("d.nama_pic COLLATE utf8mb4_unicode_ci = u.nama_lengkap COLLATE utf8mb4_unicode_ci"));
+      })
       .where("d.status", cStatus)
       // Kondisi utama: masa retensi sudah lewat
       .whereRaw(
         "DATE_ADD(d.tanggal, INTERVAL rs.tahun_retensi YEAR) <= NOW()"
       );
+
+    // Multi-tenancy filter
+    applyMultiTenantFilter(oQuery, req, 'u');
 
     if (cKodeKategoriDokumen) {
       oQuery.andWhere("d.kode_kategori_dokumen", cKodeKategoriDokumen);

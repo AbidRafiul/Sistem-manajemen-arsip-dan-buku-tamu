@@ -1,6 +1,7 @@
 import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+import { applyMultiTenantFilter } from "../components/tools/filterHelper.js";
 
 const router = express.Router();
 
@@ -13,6 +14,7 @@ const incomingLetterData = async (req, res) => {
 
     const oQuery = DB("trs_surat_masuk as til")
       .leftJoin("mst_jenis_surat as mlt", "til.jenis_surat_id", "mlt.jenis_surat_id")
+      .leftJoin("mst_pengguna as u", "til.created_by", "u.id_pengguna")
       .select(
         "til.surat_masuk_id",
         "til.nomor_agenda",
@@ -35,6 +37,9 @@ const incomingLetterData = async (req, res) => {
         "til.updated_at",
       )
       .orderBy("til.created_at", "desc");
+
+    // Multi-tenancy: isolasi data berdasarkan cabang pembuat surat
+    applyMultiTenantFilter(oQuery, req, 'u');
 
     if (oPayload.keyword) {
       oQuery.where((oBuilder) => {

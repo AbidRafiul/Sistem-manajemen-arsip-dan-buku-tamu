@@ -92,12 +92,30 @@ const outgoingLetterDetail = async (req, res) => {
       .where("status", "active")
       .orderBy("tanggal_upload", "desc");
 
+    const vaTrackings = await DB("trs_tracking_surat_keluar as tsk")
+      .leftJoin("mst_pengguna as mp", "tsk.dibuat_oleh", "mp.id_pengguna")
+      .select(
+        "tsk.id_tracking",
+        "tsk.id_surat_keluar",
+        "tsk.status",
+        "tsk.aktivitas",
+        "tsk.catatan",
+        "tsk.tanggal",
+        "tsk.dibuat_oleh",
+        "mp.nama_lengkap as nama_pembuat",
+        "tsk.created_at",
+        "tsk.updated_at"
+      )
+      .where("tsk.id_surat_keluar", oPayload.id_surat_keluar)
+      .orderBy("tsk.tanggal", "asc");
+
     return res.status(200).json({
       status: true,
       message: "Detail surat keluar berhasil diambil",
       data: {
         surat: oLetter,
         files: vaFiles,
+        trackings: vaTrackings,
       },
     });
   } catch (error) {

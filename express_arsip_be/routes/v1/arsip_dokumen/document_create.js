@@ -10,15 +10,37 @@ const createDocument = async (req, res) => {
     const cDocumentName = oPayload.nama_dokumen;
     const cDocumentNumber = oPayload.nomor_dokumen;
     const dDocumentDate = oPayload.tanggal;
-    const dExpiredDate = oPayload.tanggal_kedaluwarsa || null;
-    const dTransactionDate = oPayload.tanggal_transaksi || null;
     const cDocumentTypeCode = oPayload.kode_jenis_dokumen || null;
     const cDocumentCategoryCode = oPayload.kode_kategori_dokumen || null;
     const cClassificationCode = oPayload.kode_klasifikasi || null;
     const cConfidentialityLevelCode = oPayload.kode_tingkat_kerahasiaan || null;
-    const cRetentionCode = oPayload.kode_retensi || null;
+    let cRetentionCode = oPayload.kode_retensi || null;
     const cPhysicalLocation = oPayload.lokasi_fisik || null;
     const dNow = new Date();
+
+    // Auto-assign JRA code and get retention years
+    let nTahunRetensi = null;
+    if (cDocumentCategoryCode) {
+      const oRetention = await DB("mst_jadwal_retensi")
+        .where("kode_kategori_dokumen", cDocumentCategoryCode)
+        .where("status", "active")
+        .first();
+      if (oRetention) {
+        cRetentionCode = oRetention.kode_retensi;
+        nTahunRetensi = oRetention.tahun_retensi;
+      }
+    }
+
+    // Auto-map transaction date to document date
+    const dTransactionDate = dDocumentDate ? new Date(dDocumentDate) : null;
+
+    // Auto-calculate expiration date based on document date and JRA
+    let dExpiredDate = null;
+    if (dDocumentDate && nTahunRetensi !== null) {
+      const dExp = new Date(dDocumentDate);
+      dExp.setFullYear(dExp.getFullYear() + nTahunRetensi);
+      dExpiredDate = dExp;
+    }
 
     // Validasi wajib
     if (!cDocumentName || !cDocumentNumber || !dDocumentDate) {
@@ -35,7 +57,7 @@ const createDocument = async (req, res) => {
       cPic = cPic.trim();
     }
     if (!cPic) {
-      cPic = req.user?.name || "System Fallback (User Master Pending)";
+      cPic = req.auth?.nama_lengkap || "System Fallback (User Master Pending)";
     }
 
     // Cek duplikat nomor dokumen
@@ -103,6 +125,25 @@ const createDocument = async (req, res) => {
         ...oData,
         kode_dokumen: cKodeDokumen
       });
+
+      // Automatically insert version v1 if a file is uploaded
+      if (req.file) {
+        const cFilePath = `/uploads/documents/${req.file.filename}`;
+        await trx("trs_versi_dokumen").insert({
+          kode_dokumen: cKodeDokumen,
+          nomor_versi: 1,
+          catatan_perubahan: "Versi Awal (Unggahan Perdana)",
+          file_path: cFilePath,
+          diunggah_oleh: cPic,
+          status_persetujuan: "approved", // Auto-approved for first version
+          disetujui_oleh: cPic,
+          disetujui_pada: dNow,
+          tanggal_transaksi: dNow,
+          created_at: dNow,
+          updated_at: dNow
+        });
+      }
+
       return nId;
     });
 

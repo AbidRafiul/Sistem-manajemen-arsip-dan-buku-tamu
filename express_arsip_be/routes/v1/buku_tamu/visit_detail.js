@@ -1,6 +1,7 @@
 import express from "express";
 import DB from "../../../core/config/knex.js";
 import { formatDateSystem } from "../components/tools/general.js";
+import { getPresignedUrlFromMinio } from "../../../core/components/tools/minio_helper.js";
 
 const router = express.Router();
 
@@ -30,12 +31,10 @@ router.post("/", async (req, res) => {
         .json({ status: "01", message: "Data tidak ditemukan" });
     }
 
-    const cBaseUrl = `${process.env.APP_SERVER || "http://localhost"}:${process.env.APP_PORT || "8000"}`;
-
     if (row.foto_wajah) {
       row.PhotoFaceUrl = row.foto_wajah.startsWith("http")
         ? row.foto_wajah
-        : `${cBaseUrl}/uploads/${row.foto_wajah}`;
+        : await getPresignedUrlFromMinio("buku-tamu", row.foto_wajah);
     } else {
       row.PhotoFaceUrl = null;
     }
@@ -43,7 +42,7 @@ router.post("/", async (req, res) => {
     if (row.foto_identitas) {
       row.PhotoIdentityUrl = row.foto_identitas.startsWith("http")
         ? row.foto_identitas
-        : `${cBaseUrl}/uploads/${row.foto_identitas}`;
+        : await getPresignedUrlFromMinio("buku-tamu", row.foto_identitas);
     } else {
       row.PhotoIdentityUrl = null;
     }
@@ -51,7 +50,7 @@ router.post("/", async (req, res) => {
     if (row.tanda_tangan) {
       row.SignatureUrl = row.tanda_tangan.startsWith("http")
         ? row.tanda_tangan
-        : `${cBaseUrl}/uploads/${row.tanda_tangan}`;
+        : await getPresignedUrlFromMinio("buku-tamu", row.tanda_tangan);
     } else {
       row.SignatureUrl = null;
     }
