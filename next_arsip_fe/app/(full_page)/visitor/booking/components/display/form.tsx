@@ -8,6 +8,7 @@ import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import Link from 'next/link';
 import { VisitorBookingFormData } from '../interfaces';
+import SignaturePad from '@/app/(main)/buku_tamu/registrasi/components/display/SignaturePad';
 
 interface FormProps {
     form: VisitorBookingFormData;
@@ -196,6 +197,10 @@ export default function VisitorBookingForm({
                             )}
                         </div>
                     </div>
+                    {/* CANVAS SIGNATURE */}
+                    <div className="col-12 field flex flex-column gap-2 mb-0 mt-2">
+                        <SignaturePad onChange={(val) => handleChange('signature_data', val)} />
+                    </div>
                 </div>
             </div>
 
@@ -220,6 +225,35 @@ export default function VisitorBookingForm({
                             className="w-full"
                         />
                     </div>
+
+                    <div className="col-12 md:col-6 field flex flex-column gap-2 mb-0">
+                        <label htmlFor="visit_type" className="font-semibold text-xs text-700">Tipe Kunjungan *</label>
+                        <Dropdown 
+                            id="visit_type" 
+                            value={form.visit_type || 'personal'} 
+                            options={[
+                                { label: 'Personal (Individu)', value: 'personal' },
+                                { label: 'Group (Rombongan)', value: 'group' }
+                            ]} 
+                            onChange={(e) => handleChange('visit_type', e.value)} 
+                            className="w-full" 
+                        />
+                    </div>
+
+                    {form.visit_type === 'group' && (
+                        <div className="col-12 md:col-6 field flex flex-column gap-2 mb-0">
+                            <label htmlFor="guest_count" className="font-semibold text-xs text-700">Jumlah Tamu (Orang) *</label>
+                            <InputText 
+                                id="guest_count" 
+                                type="number" 
+                                min={1} 
+                                value={String(form.guest_count || 1)} 
+                                onChange={(e) => handleChange('guest_count', parseInt(e.target.value, 10) || 1)} 
+                                placeholder="Jumlah orang" 
+                                className="w-full" 
+                            />
+                        </div>
+                    )}
 
                     <div className="col-12 field flex flex-column gap-2 mb-0">
                         <label htmlFor="nama_host" className="font-semibold text-xs text-700">Pegawai yang Ingin Ditemui</label>

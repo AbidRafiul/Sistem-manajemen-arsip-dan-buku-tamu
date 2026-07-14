@@ -162,6 +162,12 @@ export function DetailVisitorDialog({
                         />
                     </div>
                 </div>
+                <div className="col-12 md:col-6 mb-3">
+                    <span className="text-xs uppercase text-500 font-bold tracking-wider block mb-1">Tipe Kunjungan</span>
+                    <span className="font-semibold text-900 text-base uppercase">
+                        {record.tipe_kunjungan === 'group' ? `Group (${record.jumlah_tamu} Orang)` : 'Personal'}
+                    </span>
+                </div>
 
                 <div className="col-12">
                     <Divider className="my-2" style={{ borderColor: '#F1F5F9' }} />
@@ -191,6 +197,45 @@ export function DetailVisitorDialog({
                     <span className="font-semibold text-800">
                         {record.check_out_time || record.waktu_keluar ? formatDateCalendar(record.check_out_time || record.waktu_keluar, 'HH:mm dd MMM yyyy') + ' WIB' : '-'}
                     </span>
+                </div>
+
+                <div className="col-12">
+                    <Divider className="my-2" style={{ borderColor: '#F1F5F9' }} />
+                </div>
+
+                <div className="col-12 mb-3">
+                    <span className="text-xs uppercase text-500 font-bold tracking-wider block mb-2">Dokumentasi & Tanda Tangan</span>
+                    <div className="flex gap-2 justify-content-between mt-2" style={{ gap: '10px' }}>
+                        {/* Foto Wajah */}
+                        <div className="flex-1 flex flex-column align-items-center p-2 border-round-lg" style={{ background: '#F8FAFC', border: '1px solid #EFF6FF', maxWidth: '32%' }}>
+                            <span className="text-xs font-bold text-600 mb-2">Foto Wajah</span>
+                            {record.PhotoFaceUrl ? (
+                                <img src={record.PhotoFaceUrl} alt="Foto Wajah" className="border-round object-cover" style={{ width: '100%', height: '100px' }} />
+                            ) : (
+                                <div className="flex align-items-center justify-content-center border-round bg-100 text-500 text-xs text-center" style={{ width: '100%', height: '100px' }}>Tidak Ada Foto</div>
+                            )}
+                        </div>
+
+                        {/* Foto Identitas */}
+                        <div className="flex-1 flex flex-column align-items-center p-2 border-round-lg" style={{ background: '#F8FAFC', border: '1px solid #EFF6FF', maxWidth: '32%' }}>
+                            <span className="text-xs font-bold text-600 mb-2">Foto Identitas</span>
+                            {record.PhotoIdentityUrl ? (
+                                <img src={record.PhotoIdentityUrl} alt="Foto ID" className="border-round object-cover" style={{ width: '100%', height: '100px' }} />
+                            ) : (
+                                <div className="flex align-items-center justify-content-center border-round bg-100 text-500 text-xs text-center" style={{ width: '100%', height: '100px' }}>Tidak Ada ID</div>
+                            )}
+                        </div>
+
+                        {/* Tanda Tangan */}
+                        <div className="flex-1 flex flex-column align-items-center p-2 border-round-lg" style={{ background: '#F8FAFC', border: '1px solid #EFF6FF', maxWidth: '32%' }}>
+                            <span className="text-xs font-bold text-600 mb-2">Tanda Tangan</span>
+                            {record.SignatureUrl ? (
+                                <img src={record.SignatureUrl} alt="Tanda Tangan" className="border-round" style={{ width: '100%', height: '100px', objectFit: 'contain', background: '#ffffff' }} />
+                            ) : (
+                                <div className="flex align-items-center justify-content-center border-round bg-100 text-500 text-xs text-center" style={{ width: '100%', height: '100px' }}>Belum TTD</div>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 <div className="col-12">

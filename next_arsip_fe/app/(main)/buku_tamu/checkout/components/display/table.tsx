@@ -95,6 +95,27 @@ export default function GuestDataTable({
         return <Tag severity={severity} value={statusLabel} />;
     };
 
+    const visitTypeBodyTemplate = (rowData: any) => {
+        const type = rowData.tipe_kunjungan || 'personal';
+        const count = rowData.jumlah_tamu || 1;
+        
+        if (type === 'group') {
+            return (
+                <Tag 
+                    value={`Group (${count} Orang)`} 
+                    style={{ background: '#f5d0fe', color: '#701a75', border: '1px solid #f0abfc' }}
+                />
+            );
+        }
+        
+        return (
+            <Tag 
+                value="Personal" 
+                style={{ background: '#e0f2fe', color: '#0369a1', border: '1px solid #bae6fd' }}
+            />
+        );
+    };
+
     const header = (
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
             <h5 className="m-0 font-bold">Riwayat Kunjungan Tamu</h5>
@@ -135,6 +156,7 @@ export default function GuestDataTable({
                 <Column field="nomor_telepon" header="No. Telepon" />
                 <Column field="instansi_tamu" header="Instansi" sortable />
                 <Column field="VisitPurposeName" header="Tujuan" />
+                <Column field="tipe_kunjungan" header="Tipe" body={visitTypeBodyTemplate} sortable />
                 <Column field="waktu_masuk" header="Check In" body={(r) => r.waktu_masuk && r.waktu_masuk !== '0000-00-00 00:00:00' ? formatDateCalendar(r.waktu_masuk, 'HH:mm dd/MM/yyyy') : '-'} sortable />
                 <Column field="waktu_keluar" header="Check Out" body={(r) => r.waktu_keluar && r.waktu_keluar !== '0000-00-00 00:00:00' ? formatDateCalendar(r.waktu_keluar, 'HH:mm dd/MM/yyyy') : '-'} />
                 <Column field="status_persetujuan" header="Persetujuan" body={approvalBodyTemplate} sortable />
