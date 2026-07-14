@@ -19,6 +19,7 @@ router.post("/create", async (req, res) => {
       {
         kode_cabang: Joi.string().required().label("Kode Cabang"),
         nama_cabang: Joi.string().required().label("Nama Cabang"),
+        id_induk: Joi.number().optional().allow(null, "").label("Induk Cabang"),
         alamat: Joi.string().optional().allow(null, "").label("Alamat"),
         telepon: Joi.string().optional().allow(null, "").label("Telepon"),
         surel: Joi.string().optional().allow(null, "").label("Surel")
@@ -38,6 +39,7 @@ router.post("/create", async (req, res) => {
     await DB("mst_cabang").insert({
       kode_cabang: oPayload.kode_cabang ? (oPayload.kode_cabang.toUpperCase().startsWith("CB-") ? `CB-${oPayload.kode_cabang.substring(3)}` : `CB-${oPayload.kode_cabang}`) : null,
       nama_cabang: oPayload.nama_cabang || null,
+      id_induk: oPayload.id_induk || null,
       alamat: oPayload.alamat || null,
       telepon: oPayload.telepon || null,
       surel: oPayload.surel || null,

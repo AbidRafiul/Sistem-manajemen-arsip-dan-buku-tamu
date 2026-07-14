@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { body: oPayload } = req;
-  const nama_pengguna = req?.auth?.nama_pengguna || "";
+  const cNamaPengguna = req?.auth?.nama_pengguna || "";
 
   try {
     if (
@@ -75,7 +75,7 @@ router.post("/", async (req, res) => {
       file: "user_delete.js",
       func: "delete",
       request: oPayload,
-      user: nama_pengguna,
+      user: cNamaPengguna,
     });
     return res.status(500).json({
       status: status.BAD_REQUEST,

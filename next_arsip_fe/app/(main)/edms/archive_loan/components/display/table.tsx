@@ -253,7 +253,7 @@ const Table = ({
                 <Column field="tanggal_pengembalian" header="Tgl. Jatuh Tempo" sortable body={rowData => formatDateOnly(rowData.tanggal_pengembalian)} style={{ width: '140px' }} />
                 <Column field="tanggal_kembali" header="Tgl. Kembali" sortable body={rowData => formatDateOnly(rowData.tanggal_kembali)} style={{ width: '120px' }} />
                 <Column body={statusTemplate} header="Status" style={{ width: '130px', textAlign: 'center' }} />
-                <Column header="Aksi" body={actionTemplate} style={{ width: '130px', textAlign: 'center' }} />
+                <Column align="center" header="Aksi" body={actionTemplate} style={{ width: '130px', textAlign: 'center' }} />
             </DataTable>
         </Card>
 

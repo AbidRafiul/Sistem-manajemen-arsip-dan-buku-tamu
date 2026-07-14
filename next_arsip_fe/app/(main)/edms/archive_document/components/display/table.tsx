@@ -293,7 +293,7 @@ const Table = ({
                 <Column field="tanggal_kedaluwarsa" header="Tgl. Kedaluwarsa" sortable body={rowData => formatDateCalendar(rowData.tanggal_kedaluwarsa, 'yyyy-MM-dd')} style={{ width: '140px' }} />
                 <Column body={statusTemplate} header="Status" style={{ width: '110px', textAlign: 'center' }} />
                 <Column header="Preview" body={previewTemplate} style={{ width: '90px', textAlign: 'center' }} />
-                <Column header="Aksi" body={actionTemplate} style={{ width: '150px', textAlign: 'center' }} />
+                <Column align="center" header="Aksi" body={actionTemplate} style={{ width: '150px', textAlign: 'center' }} />
             </DataTable>
         </Card>
 

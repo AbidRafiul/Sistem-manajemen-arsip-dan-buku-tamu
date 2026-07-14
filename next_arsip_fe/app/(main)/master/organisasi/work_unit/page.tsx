@@ -51,9 +51,7 @@ const Page = () => {
     // Fetch master data
     useEffect(() => {
         if (session) {
-            const token = (session as any)?.accessToken || localStorage.getItem('token');
-            const headers = { Authorization: `Bearer ${token}` };
-            postData('/master/organisasi/divisions/get_data', {}, headers).then(res => {
+            postData('/master/organisasi/divisions/get_data', {}).then(res => {
                 setState(prev => ({ ...prev, masterData: res.data.data || [] }));
             }).catch(e => console.error(e));
         }

@@ -18,6 +18,9 @@ export interface State {
     session: any;
     permissionsVisible?: boolean;
     activeRoleForPermissions?: any;
+    permissionsNodes?: any[];
+    permissionsLoading?: boolean;
+    permissionsSaving?: boolean;
 }
 export interface TableProps {
     state: State;

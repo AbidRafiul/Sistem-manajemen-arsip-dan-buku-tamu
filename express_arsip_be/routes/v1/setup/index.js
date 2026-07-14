@@ -18,13 +18,21 @@ import configData from "./config/config_data.js";
 
 import menuData from "./menu/menu.js";
 
+import {
+  contextMiddleware,
+  validateAccessToken,
+  validateSignature,
+} from "../../../middleware/validate_header.js";
+
 // master
 // user
-router.use("/user-login/user-data", user);
-router.use("/user-login/user-create", userCreate);
-router.use("/user-login/user-update", userUpdate);
-router.use("/user-login/user-delete", userDelete);
-router.use("/user-login/user-dropdown", userDropdown);
+const authMiddleware = [validateAccessToken, validateSignature, contextMiddleware];
+
+router.use("/user-login/user-data", authMiddleware, user);
+router.use("/user-login/user-create", authMiddleware, userCreate);
+router.use("/user-login/user-update", authMiddleware, userUpdate);
+router.use("/user-login/user-delete", authMiddleware, userDelete);
+router.use("/user-login/user-dropdown", authMiddleware, userDropdown);
 // user
 router.use("/config-data", configData);
 router.use("/config-create", configCreate);

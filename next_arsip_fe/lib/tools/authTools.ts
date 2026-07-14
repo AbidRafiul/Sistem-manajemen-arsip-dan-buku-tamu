@@ -25,6 +25,8 @@ const authOptions = {
                         uniqueId: activeId,
                         name: userData.nama_lengkap || userData.name,
                         nama_pengguna: userData.nama_pengguna,
+                        id_cabang: userData.id_cabang,
+                        nama_cabang: userData.nama_cabang,
                         role: userData.role || userData.roleCode,
                         roleCode: userData.roleCode,
                         roleId: userData.roleId,
@@ -65,6 +67,8 @@ const authOptions = {
                 token.nama_pengguna = anyUser.nama_pengguna;
                 token.remember_me = anyUser.remember_me;
                 token.userCredential = anyUser.credential;
+                token.id_cabang = anyUser.id_cabang;
+                token.nama_cabang = anyUser.nama_cabang;
 
                 const now = Math.floor(Date.now() / 1000);
                 const expireDuration = user.remember_me ? 24 * 60 * 60 : 7 * 60 * 60;
@@ -98,6 +102,8 @@ const authOptions = {
                 (session.user as any).roleId = (token as any).roleId;
                 session.user.name = token.name as string;
                 (session.user as any).nama_pengguna = token.nama_pengguna as string;
+                (session.user as any).id_cabang = token.id_cabang;
+                (session.user as any).nama_cabang = token.nama_cabang;
                 console.log('NextAuth Callback - session: set session user role:', session.user.role, 'name:', session.user.name);
             }
 

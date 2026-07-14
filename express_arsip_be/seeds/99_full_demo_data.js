@@ -332,7 +332,7 @@ export async function seed(knex) {
   ]);
 
   const adminRole = await knex("mst_peran")
-    .where("kode_peran", "ADM")
+    .where("kode_peran", "SUPERADMIN")
     .first();
   const staffRole = await knex("mst_peran")
     .where("kode_peran", "STF_ARS")

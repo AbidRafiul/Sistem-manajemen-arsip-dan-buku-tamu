@@ -9,15 +9,20 @@ import { Divider } from 'primereact/divider';
 import { Tag } from 'primereact/tag';
 import { TableProps } from '../interfaces';
 import { apiEndpointGet } from '../endpoints';
+import { LayoutContext } from '@/layout/context/layoutcontext';
+import { useContext } from 'react';
 
 const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) => {
     const permissions = usePermissions();
     const { canCreate, canUpdate, canDelete, canApprove } = usePermissions();
+    const { layoutState } = useContext(LayoutContext);
+    const cabangName = (layoutState.globalFilter as any)?.nama_cabang;
+    const titleSuffix = cabangName ? ` - ${cabangName}` : (permissions?.activeRole?.toUpperCase() === 'SUPERADMIN' ? ' Pusat' : '');
 
     const renderHeader = () => {
         return (
             <div className="flex flex-wrap align-items-center justify-content-between gap-2">
-                <span className="text-xl font-bold">Manajemen Departemen</span>
+                <span className="text-xl font-bold">Manajemen Departemen{titleSuffix}</span>
                 <div className="flex gap-2">
                     <span className="p-input-icon-left">
                         <i className="pi pi-search" />
@@ -62,7 +67,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
         <div className="card">
             <div className="flex justify-content-between items-start mb-4">
                 <div>
-                    <h3 className="text-2xl font-semibold">Manajemen Departemen</h3>
+                    <h3 className="text-2xl font-semibold">Manajemen Departemen{titleSuffix}</h3>
                 </div>
             </div>
 
@@ -89,7 +94,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                 <Column field="nama_departemen" header="Nama Departemen" sortable></Column>
                 <Column field="deskripsi" header="Deskripsi" sortable></Column>
                 <Column body={statusBodyTemplate} header="Status"></Column>
-                <Column body={actionBodyTemplate} exportable={false} header="Aksi" style={{ minWidth: '8rem', textAlign: 'center' }}></Column>
+                <Column body={actionBodyTemplate} exportable={false} align="center" header="Aksi" style={{ minWidth: '8rem', textAlign: 'center' }}></Column>
             </DataTable>
         </div>
     );

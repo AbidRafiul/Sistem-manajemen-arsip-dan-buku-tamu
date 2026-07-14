@@ -1,4 +1,5 @@
 import minioClient from '../../config/minio.js';
+import DB from '../../config/knex.js';
 
 /**
  * Helper untuk upload file ke MinIO.
@@ -72,4 +73,37 @@ const removeFileFromMinio = async (bucketName, objectName) => {
     }
 };
 
-export { uploadFileToMinio, downloadFileFromMinio, removeFileFromMinio };
+/**
+ * Helper untuk menyusun hirarki prefix folder MinIO berdasarkan silsilah cabang
+ * @param {number|string} idCabang - ID Cabang milik uploader
+ * @returns {Promise<string>} - Prefix hirarki (contoh: "BR-001/BR-002/BR-003")
+ */
+const getMinioPrefix = async (idCabang) => {
+    if (!idCabang) return 'GLOBAL';
+
+    let currentId = idCabang;
+    const hierarchy = [];
+
+    try {
+        while (currentId) {
+            const branch = await DB("mst_cabang")
+                .select("id_cabang", "kode_cabang", "id_induk")
+                .where("id_cabang", currentId)
+                .first();
+
+            if (!branch) break;
+
+            hierarchy.unshift(branch.kode_cabang || `CAB-${branch.id_cabang}`);
+            
+            // Naik ke parent
+            currentId = branch.id_induk;
+        }
+    } catch (e) {
+        console.error("Gagal getMinioPrefix:", e);
+    }
+
+    if (hierarchy.length === 0) return 'GLOBAL';
+    return hierarchy.join('/');
+};
+
+export { uploadFileToMinio, downloadFileFromMinio, removeFileFromMinio, getMinioPrefix };

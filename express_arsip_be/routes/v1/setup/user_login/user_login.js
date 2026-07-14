@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { body: oPayload } = req;
-  const nama_pengguna = req?.auth?.nama_pengguna || "";
+  const cNamaPengguna = req?.auth?.nama_pengguna || "";
 
   try {
     if (!oPayload || Object.keys(oPayload).length < 1) {
@@ -65,7 +65,7 @@ router.post("/", async (req, res) => {
         func: "create",
         request: oPayload,
         response: oResult,
-        user: nama_pengguna,
+        user: cNamaPengguna,
       });
       return res.status(422).json(oResult);
     }
@@ -197,7 +197,7 @@ router.post("/", async (req, res) => {
       func: "create",
       request: oPayload,
       response: oResult,
-      user: nama_pengguna,
+      user: cNamaPengguna,
     });
     return res.status(500).json(oResult);
   }
@@ -206,7 +206,7 @@ router.post("/", async (req, res) => {
 router.post("/", async (req, res) => {
   const { body } = req;
   const oPayload = body;
-  const nama_pengguna = req?.auth?.nama_pengguna || "";
+  const cNamaPengguna = req?.auth?.nama_pengguna || "";
 
   try {
     // DB aktif memakai nama kolom Inggris; response tetap pakai alias lama
@@ -254,7 +254,7 @@ router.post("/", async (req, res) => {
       func: "get",
       request: oPayload,
       response: oResult,
-      user: nama_pengguna,
+      user: cNamaPengguna,
     });
     return res.status(500).json(oResult);
   }
@@ -262,7 +262,7 @@ router.post("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   const { body: oPayload } = req;
-  const nama_pengguna = req?.auth?.nama_pengguna || "";
+  const cNamaPengguna = req?.auth?.nama_pengguna || "";
 
   try {
     if (
@@ -325,7 +325,7 @@ router.post("/", async (req, res) => {
       file: "user_delete.js",
       func: "delete",
       request: oPayload,
-      user: nama_pengguna,
+      user: cNamaPengguna,
     });
     return res.status(500).json({
       status: status.BAD_REQUEST,

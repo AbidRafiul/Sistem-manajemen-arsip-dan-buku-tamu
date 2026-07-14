@@ -20,9 +20,24 @@ Axios.interceptors.response.use(
 
 async function postData(endpoint: string, data = {}, customHeader = {}) {
     try {
+        let filterHeaders: Record<string, string> = {};
+        if (typeof window !== 'undefined') {
+            try {
+                const savedFilter = localStorage.getItem('globalFilter');
+                if (savedFilter) {
+                    const parsed = JSON.parse(savedFilter);
+                    if (parsed.id_cabang) filterHeaders['x-filter-cabang'] = String(parsed.id_cabang);
+                    if (parsed.id_departemen) filterHeaders['x-filter-departemen'] = String(parsed.id_departemen);
+                    if (parsed.id_divisi) filterHeaders['x-filter-divisi'] = String(parsed.id_divisi);
+                    if (parsed.id_unit_kerja) filterHeaders['x-filter-unit-kerja'] = String(parsed.id_unit_kerja);
+                }
+            } catch (e) {}
+        }
+
         // 1. Gabungkan X-Level dengan customHeader (kalau misalnya ada tambahan lain dari luar)
         const mergedCustomHeaders = {
             'X-Level': '1',
+            ...filterHeaders,
             ...customHeader,
         };
 

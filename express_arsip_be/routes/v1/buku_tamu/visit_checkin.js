@@ -5,7 +5,7 @@ import Joi from "joi";
 import { formatDateSystem } from "../components/tools/general.js";
 import { Logging, validatePayload } from "../components/tools/servertool.js";
 import DB from "../../../core/config/knex.js";
-import { uploadFileToMinio } from "../../../core/components/tools/minio_helper.js";
+import { uploadFileToMinio, getMinioPrefix } from "../../../core/components/tools/minio_helper.js";
 import { sendMailNotification } from "../../../core/components/tools/mail_helper.js";
 
 const router = express.Router();
@@ -139,11 +139,18 @@ router.post(
       let PhotoIdentity = null;
       let TandaTangan = null;
 
+      let hostIdCabang = null;
+      if (HostUserId) {
+        const host = await DB("mst_pengguna").select("id_cabang").where("id_pengguna", HostUserId).first();
+        if (host) hostIdCabang = host.id_cabang;
+      }
+      const minioPrefix = await getMinioPrefix(hostIdCabang);
+
       if (photoFaceFile) {
         PhotoFace = await uploadFileToMinio(
           "buku-tamu",
           photoFaceFile,
-          `photos/${todayPath}`,
+          `${minioPrefix}/photos/${todayPath}`,
         );
       }
 
@@ -151,7 +158,7 @@ router.post(
         PhotoIdentity = await uploadFileToMinio(
           "buku-tamu",
           photoIdentityFile,
-          `photos/${todayPath}`,
+          `${minioPrefix}/photos/${todayPath}`,
         );
       }
 

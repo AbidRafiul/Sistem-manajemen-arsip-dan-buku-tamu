@@ -214,13 +214,15 @@ const AppMenu = () => {
             <div
                 style={{
                     display: 'flex',
+                    flexDirection: 'column',
                     width: '100%',
                     justifyContent: 'center',
                     alignItems: 'center',
                     position: 'sticky',
                     top: '0',
                     padding: '10px 0',
-                    zIndex: '9999'
+                    zIndex: '9999',
+                    backgroundColor: 'var(--surface-overlay)'
                 }}
             >
                 <span className="block w-full p-input-icon-left">

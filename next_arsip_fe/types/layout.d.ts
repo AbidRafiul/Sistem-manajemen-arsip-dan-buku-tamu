@@ -28,6 +28,13 @@ export type LayoutState = {
     configSidebarVisible: boolean;
     staticMenuMobileActive: boolean;
     menuHoverActive: boolean;
+    globalFilter?: {
+        id_cabang?: number | null | string | undefined;
+        id_departemen?: number | null | string | undefined;
+        id_divisi?: number | null | string | undefined;
+        id_unit_kerja?: number | null | string | undefined;
+        nama_cabang?: string | null;
+    };
 };
 
 export type LayoutConfig = {

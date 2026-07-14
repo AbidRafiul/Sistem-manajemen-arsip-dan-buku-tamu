@@ -371,7 +371,7 @@ const Table = ({
                     <Column field="nama_jenis_surat" header="Jenis Surat" style={{ width: "120px" }} />
                     <Column body={statusTemplate} header="Status" style={{ width: "130px", textAlign: "center" }} />
                     <Column field="created_at" header="Dibuat" sortable body={(r) => formatDateCalendar(r.created_at)} style={{ width: "120px" }} />
-                    <Column header="Aksi" body={actionTemplate} style={{ width: "130px", textAlign: "center" }} />
+                    <Column align="center" header="Aksi" body={actionTemplate} style={{ width: "130px", textAlign: "center" }} />
                 </DataTable>
             </Card>
 
