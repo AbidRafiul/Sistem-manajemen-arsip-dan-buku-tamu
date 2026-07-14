@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.post("/data", async (req, res) => {
   try {
-    const data = await DB("mst_menu")
+    const rawData = await DB("mst_menu")
       .select(
         "id_menu as id",
         "id_menu as id_menu",
@@ -22,6 +22,19 @@ router.post("/data", async (req, res) => {
         "status_aktif as status_aktif",
       )
       .orderBy("urutan", "asc");
+
+    // Flatten hierarchical tree to array
+    const buildFlatTree = (parentId = null) => {
+      let result = [];
+      const children = rawData.filter((item) => item.id_menu_induk === parentId);
+      for (const child of children) {
+        result.push(child);
+        result = result.concat(buildFlatTree(child.id));
+      }
+      return result;
+    };
+
+    const data = buildFlatTree(null);
 
     return res.status(200).json({ status: "SUKSES", data });
   } catch (error) {

@@ -10,7 +10,7 @@ router.post("/get_data", async (req, res) => {
   const cnama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
-    const vaData = await DB("mst_departemen")
+    let query = DB("mst_departemen")
       .select(
         "id_departemen as id",
         "id_departemen",
@@ -21,6 +21,15 @@ router.post("/get_data", async (req, res) => {
         "status"
       )
       .where("status", "active");
+
+    if (req.headers["x-filter-cabang"]) {
+      query = query.whereIn("id_cabang", req.headers["x-filter-cabang"].split(","));
+    }
+    if (req.headers["x-filter-departemen"]) {
+      query = query.where("id_departemen", req.headers["x-filter-departemen"]);
+    }
+
+    const vaData = await query;
 
     return res.status(200).json({
       status: status.SUKSES,

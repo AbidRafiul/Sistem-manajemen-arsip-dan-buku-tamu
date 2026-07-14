@@ -17,7 +17,7 @@ router.post("/", async (req, res) => {
   try {
     // DB aktif memakai nama kolom Inggris; response tetap pakai alias lama
     // supaya frontend setup/users tidak perlu berubah.
-    const vaData = await DB("mst_pengguna as mu")
+    let query = DB("mst_pengguna as mu")
       .leftJoin(
         "mst_pengguna_peran as mur",
         "mu.id_pengguna",
@@ -39,8 +39,22 @@ router.post("/", async (req, res) => {
         "mu.created_at",
         "mr.id_peran",
         "mr.nama_peran as role",
-      )
-      .orderBy("mu.created_at", "desc");
+      );
+
+    if (req.headers["x-filter-cabang"]) {
+      query = query.whereIn("mu.id_cabang", req.headers["x-filter-cabang"].split(","));
+    }
+    if (req.headers["x-filter-departemen"]) {
+      query = query.where("mu.id_departemen", req.headers["x-filter-departemen"]);
+    }
+    if (req.headers["x-filter-divisi"]) {
+      query = query.where("mu.id_divisi", req.headers["x-filter-divisi"]);
+    }
+    if (req.headers["x-filter-unit-kerja"]) {
+      query = query.where("mu.id_unit_kerja", req.headers["x-filter-unit-kerja"]);
+    }
+
+    const vaData = await query.orderBy("mu.id_pengguna", "asc");
 
     return res.status(200).json({
       status: status.SUKSES,

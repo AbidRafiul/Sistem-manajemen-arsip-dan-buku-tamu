@@ -119,9 +119,27 @@ router.post("/", async (req, res) => {
     if (!peranData) {
       return res.status(400).json({
         status: status.BAD_REQUEST,
-        message: "Peran tidak ditemukan di sistem",
-        datetime: formatDateSystem(),
+        message: "Peran tidak valid",
+        datetime: datetime(),
       });
+    }
+
+    const peranCode = req?.auth?.peranCode;
+    if (peranCode !== "SA") {
+      // Cegah pembuatan user dengan role SUPERADMIN jika bukan SA
+      if (peranData.kode_peran === "SUPERADMIN" || peranData.kode_peran === "SA") {
+        return res.status(403).json({
+          status: status.FORBIDDEN,
+          message: "Anda tidak memiliki izin untuk memberikan peran Superadmin",
+          datetime: datetime(),
+        });
+      }
+
+      // Paksa cabang/organisasi sesuai dengan token admin saat ini
+      if (req?.auth?.id_cabang) oPayload.id_cabang = req.auth.id_cabang;
+      if (req?.auth?.id_departemen) oPayload.id_departemen = req.auth.id_departemen;
+      if (req?.auth?.id_divisi) oPayload.id_divisi = req.auth.id_divisi;
+      if (req?.auth?.id_unit_kerja) oPayload.id_unit_kerja = req.auth.id_unit_kerja;
     }
 
     // 3. CARI NAVIGASI BERDASARKAN PERAN
@@ -173,7 +191,7 @@ router.post("/", async (req, res) => {
       });
 
       // 3. Masuk ke navigasi_pengguna (Menu Spesifik)
-      await trx("user_navigation")
+      await trx("navigasi_pengguna")
         .insert({
           id_pengguna: newUserId,
           menu: oNavigation.menu,

@@ -10,18 +10,34 @@ router.post("/get_data", async (req, res) => {
   const cnama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
-    const vaData = await DB("mst_cabang")
+    let query = DB("mst_cabang as c")
+      .leftJoin("mst_cabang as induk", "c.id_induk", "induk.id_cabang")
       .select(
-        "id_cabang as id",
-        "id_cabang",
-        "kode_cabang",
-        "nama_cabang",
-        "alamat",
-        "telepon",
-        "surel",
-        "status"
+        "c.id_cabang as id",
+        "c.id_cabang",
+        "c.id_induk",
+        "induk.nama_cabang as nama_induk",
+        "c.kode_cabang",
+        "c.nama_cabang",
+        "c.alamat",
+        "c.telepon",
+        "c.surel",
+        "c.status"
       )
-      .whereNot("status", "deleted");
+      .whereNot("c.status", "deleted");
+
+    if (req.headers["x-filter-cabang"]) {
+      query = query.whereIn("c.id_cabang", req.headers["x-filter-cabang"].split(","));
+    }
+
+    // Urutkan berdasarkan hierarki: Pusat (null) -> Cabang Daerah -> Unit Kecamatan
+    // Khusus untuk BR-PST (Kantor Pusat Demo) ditaruh paling bawah
+    query = query
+      .orderByRaw("CASE WHEN c.kode_cabang = 'BR-PST' THEN 1 ELSE 0 END ASC")
+      .orderBy("c.id_induk", "asc")
+      .orderBy("c.id_cabang", "asc");
+
+    const vaData = await query;
 
     return res.status(200).json({
       status: status.SUKSES,

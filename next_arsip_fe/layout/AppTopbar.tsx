@@ -13,6 +13,7 @@ import { Badge } from 'primereact/badge';
 import { Divider } from 'primereact/divider';
 import { Tag } from 'primereact/tag';
 import { formatDateCalendar } from '@/lib/tools/dateTools';
+import GlobalFilter from './GlobalFilter';
 
 const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     const { data: session } = useSession();
@@ -42,12 +43,12 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
         // Hapus cookie kustom
         document.cookie = '_A2R=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
         document.cookie = '_A2F=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-        
+
         // Bersihkan storage
         sessionStorage.clear();
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        
+
         await signOut({ callbackUrl: '/auth/login' });
     };
 
@@ -98,9 +99,9 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                             severity="secondary"
                             onClick={(e) => notificationOp.current?.toggle(e)}
                             className="p-button-secondary mr-2"
-                            style={{ 
-                                width: '2.35rem', 
-                                height: '2.35rem', 
+                            style={{
+                                width: '2.35rem',
+                                height: '2.35rem',
                                 position: 'relative',
                                 background: 'transparent',
                                 border: 'none',
@@ -108,26 +109,26 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                             }}
                             aria-label="Notifikasi"
                         >
-                            <Badge 
-                                severity="danger" 
-                                style={{ 
-                                    position: 'absolute', 
-                                    top: '4px', 
-                                    right: '4px', 
-                                    minWidth: '8px', 
-                                    height: '8px', 
-                                    padding: 0 
-                                }} 
+                            <Badge
+                                severity="danger"
+                                style={{
+                                    position: 'absolute',
+                                    top: '4px',
+                                    right: '4px',
+                                    minWidth: '8px',
+                                    height: '8px',
+                                    padding: 0
+                                }}
                             />
                         </Button>
-                        
+
                         {/* Notification OverlayPanel */}
-                        <OverlayPanel 
-                            ref={notificationOp} 
-                            style={{ 
-                                width: '320px', 
-                                borderRadius: '12px', 
-                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' 
+                        <OverlayPanel
+                            ref={notificationOp}
+                            style={{
+                                width: '320px',
+                                borderRadius: '12px',
+                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
                             }}
                         >
                             <div className="flex flex-column p-1">
@@ -135,20 +136,20 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                                     <span className="font-bold text-base text-900">Notifikasi</span>
                                     <Tag value="2 Baru" severity="danger" rounded style={{ fontSize: '0.65rem', padding: '0.15rem 0.4rem', fontWeight: 700 }} />
                                 </div>
-                                
+
                                 <div className="flex flex-column gap-1">
                                     {/* Notification Item 1 */}
                                     <div className="flex align-items-start gap-3 p-2 hover:surface-hover border-round cursor-pointer transition-colors transition-duration-150">
-                                        <Avatar 
-                                            icon="pi pi-envelope" 
-                                            shape="circle" 
-                                            style={{ 
-                                                background: 'rgba(79, 70, 229, 0.08)', 
-                                                color: '#4F46E5', 
-                                                minWidth: '2.25rem', 
+                                        <Avatar
+                                            icon="pi pi-envelope"
+                                            shape="circle"
+                                            style={{
+                                                background: 'rgba(79, 70, 229, 0.08)',
+                                                color: '#4F46E5',
+                                                minWidth: '2.25rem',
                                                 height: '2.25rem',
                                                 fontSize: '0.9rem'
-                                            }} 
+                                            }}
                                         />
                                         <div className="flex flex-column gap-1 flex-1">
                                             <span className="text-sm font-semibold text-900">Surat Masuk Baru</span>
@@ -159,16 +160,16 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
 
                                     {/* Notification Item 2 */}
                                     <div className="flex align-items-start gap-3 p-2 hover:surface-hover border-round cursor-pointer transition-colors transition-duration-150">
-                                        <Avatar 
-                                            icon="pi pi-user-plus" 
-                                            shape="circle" 
-                                            style={{ 
-                                                background: 'rgba(34, 197, 94, 0.08)', 
-                                                color: '#22C55E', 
-                                                minWidth: '2.25rem', 
+                                        <Avatar
+                                            icon="pi pi-user-plus"
+                                            shape="circle"
+                                            style={{
+                                                background: 'rgba(34, 197, 94, 0.08)',
+                                                color: '#22C55E',
+                                                minWidth: '2.25rem',
                                                 height: '2.25rem',
                                                 fontSize: '0.9rem'
-                                            }} 
+                                            }}
                                         />
                                         <div className="flex flex-column gap-1 flex-1">
                                             <span className="text-sm font-semibold text-900">Registrasi Tamu Baru</span>
@@ -179,10 +180,10 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                                 </div>
 
                                 <Divider className="my-2" style={{ borderColor: '#F3F4F6' }} />
-                                
-                                <Button 
-                                    label="Tandai Semua Dibaca" 
-                                    text 
+
+                                <Button
+                                    label="Tandai Semua Dibaca"
+                                    text
                                     className="w-full text-center text-xs font-semibold py-2 text-indigo-600 hover:bg-indigo-50 border-none"
                                     style={{ borderRadius: '6px', color: '#4F46E5' }}
                                 />

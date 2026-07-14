@@ -1,16 +1,20 @@
 'use client'
 import React, { useState, createContext } from 'react';
 import { LayoutState, ChildContainerProps, LayoutConfig, LayoutContextProps } from '@/types';
-export const LayoutContext = createContext({} as LayoutContextProps);
+import { useSession } from 'next-auth/react';
+
+export const LayoutContext = React.createContext({} as LayoutContextProps);
 
 export const LayoutProvider = ({ children }: ChildContainerProps) => {
+    const { data: session } = useSession();
+
     const [layoutConfig, setLayoutConfig] = useState<LayoutConfig>({
         ripple: false,
         inputStyle: 'outlined',
         menuMode: 'static',
         colorScheme: 'light',
-        theme: 'lara-light-blue',
-        scale: 12
+        theme: 'lara-light-indigo',
+        scale: 14
     });
 
     const [layoutState, setLayoutState] = useState<LayoutState>({
@@ -19,7 +23,14 @@ export const LayoutProvider = ({ children }: ChildContainerProps) => {
         profileSidebarVisible: false,
         configSidebarVisible: false,
         staticMenuMobileActive: false,
-        menuHoverActive: false
+        menuHoverActive: false,
+        globalFilter: {
+            id_cabang: null,
+            id_departemen: null,
+            id_divisi: null,
+            id_unit_kerja: null,
+            nama_cabang: null
+        }
     });
 
     const onMenuToggle = () => {
@@ -34,6 +45,35 @@ export const LayoutProvider = ({ children }: ChildContainerProps) => {
             setLayoutState((prevLayoutState) => ({ ...prevLayoutState, staticMenuMobileActive: !prevLayoutState.staticMenuMobileActive }));
         }
     };
+
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    // Load filter from localStorage on mount
+    React.useEffect(() => {
+        const savedFilter = localStorage.getItem('globalFilter');
+        if (savedFilter) {
+            try {
+                setLayoutState(prev => ({ ...prev, globalFilter: JSON.parse(savedFilter) }));
+            } catch (e) {}
+        } else if ((session?.user as any)?.nama_cabang) {
+            setLayoutState(prev => ({
+                ...prev,
+                globalFilter: {
+                    ...prev.globalFilter,
+                    id_cabang: (session?.user as any).id_cabang as number,
+                    nama_cabang: (session?.user as any).nama_cabang as string
+                }
+            }));
+        }
+        setIsLoaded(true);
+    }, [(session?.user as any)?.nama_cabang, (session?.user as any)?.id_cabang]);
+
+    // Save filter to localStorage on change
+    React.useEffect(() => {
+        if (isLoaded && layoutState.globalFilter) {
+            localStorage.setItem('globalFilter', JSON.stringify(layoutState.globalFilter));
+        }
+    }, [layoutState.globalFilter, isLoaded]);
 
     const showProfileSidebar = () => {
         setLayoutState((prevLayoutState) => ({ ...prevLayoutState, profileSidebarVisible: !prevLayoutState.profileSidebarVisible }));

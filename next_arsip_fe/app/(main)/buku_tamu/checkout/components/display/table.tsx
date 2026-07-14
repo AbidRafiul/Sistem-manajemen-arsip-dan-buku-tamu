@@ -139,7 +139,7 @@ export default function GuestDataTable({
                 <Column field="waktu_keluar" header="Check Out" body={(r) => r.waktu_keluar && r.waktu_keluar !== '0000-00-00 00:00:00' ? formatDateCalendar(r.waktu_keluar, 'HH:mm dd/MM/yyyy') : '-'} />
                 <Column field="status_persetujuan" header="Persetujuan" body={approvalBodyTemplate} sortable />
                 <Column field="status" header="Status" body={statusBodyTemplate} sortable />
-                <Column header="Aksi" body={actionBodyTemplate} style={{ minWidth: '10rem' }} />
+                <Column align="center" header="Aksi" body={actionBodyTemplate} style={{ minWidth: '10rem' }} />
             </DataTable>
         </div>
     );

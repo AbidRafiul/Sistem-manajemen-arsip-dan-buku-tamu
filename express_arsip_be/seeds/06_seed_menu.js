@@ -8,6 +8,12 @@ export async function seed(knex) {
     throw new Error("Peran ADM belum tersedia untuk seed dynamic menu");
   }
 
+  // 0. Clear existing menu records safely to remove any dummy/duplicate data
+  await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
+  await knex("mst_peran_menu").truncate();
+  await knex("mst_menu").truncate();
+  await knex.raw("SET FOREIGN_KEY_CHECKS = 1;");
+
   // 1. Insert menus into mst_menu with the exact structure the user requested
   const vaMenus = [
     // --- BERANDA ---
@@ -142,7 +148,7 @@ export async function seed(knex) {
       nama_menu: "Data Divisi",
       jalur_menu: "/master/organisasi/divisions",
       ikon_menu: "pi pi-sitemap",
-      urutan: 2,
+      urutan: 3,
       status_aktif: 1,
       created_at: dNow,
       updated_at: dNow,
@@ -154,7 +160,7 @@ export async function seed(knex) {
       nama_menu: "Data Department",
       jalur_menu: "/master/organisasi/department",
       ikon_menu: "pi pi-briefcase",
-      urutan: 3,
+      urutan: 2,
       status_aktif: 1,
       created_at: dNow,
       updated_at: dNow,
@@ -166,7 +172,7 @@ export async function seed(knex) {
       nama_menu: "Data Jabatan",
       jalur_menu: "/master/organisasi/positions",
       ikon_menu: "pi pi-id-card",
-      urutan: 4,
+      urutan: 5,
       status_aktif: 1,
       created_at: dNow,
       updated_at: dNow,
@@ -178,7 +184,7 @@ export async function seed(knex) {
       nama_menu: "Data Peran",
       jalur_menu: "/master/organisasi/roles",
       ikon_menu: "pi pi-users",
-      urutan: 5,
+      urutan: 6,
       status_aktif: 1,
       created_at: dNow,
       updated_at: dNow,
@@ -190,7 +196,7 @@ export async function seed(knex) {
       nama_menu: "Data Unit Kerja",
       jalur_menu: "/master/organisasi/work_unit",
       ikon_menu: "pi pi-desktop",
-      urutan: 6,
+      urutan: 4,
       status_aktif: 1,
       created_at: dNow,
       updated_at: dNow,

@@ -182,7 +182,7 @@ const Table = ({
                     )}
                 />
                 <Column field="CreatedAt" sortable body={rowData => formatDateCalendar(rowData.CreatedAt)} header="Tanggal & Waktu"></Column>
-                <Column headerStyle={{ textAlign: 'center' }} header="Aksi" body={actionBodyTemplate}></Column>
+                <Column headerStyle={{ textAlign: 'center' }} align="center" header="Aksi" body={actionBodyTemplate}></Column>
             </DataTable>
         </div>
 

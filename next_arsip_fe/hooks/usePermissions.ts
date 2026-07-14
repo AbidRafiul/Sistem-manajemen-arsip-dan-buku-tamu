@@ -11,6 +11,7 @@ interface Permissions {
     canUpdate: boolean;
     canDelete: boolean;
     canApprove: boolean;
+    activeRole?: string;
 }
 
 const defaultPermissions: Permissions = {
@@ -87,5 +88,8 @@ export const usePermissions = () => {
         fetchPermissions();
     }, [pathname, session]);
 
-    return permissions;
+    return {
+        ...permissions,
+        activeRole: (session?.user as any)?.role as string
+    };
 };

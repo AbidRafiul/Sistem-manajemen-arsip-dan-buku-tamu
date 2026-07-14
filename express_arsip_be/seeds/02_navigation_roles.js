@@ -247,8 +247,8 @@ export const seed = async function (knex) {
     "navigasi_pengguna",
   ))
     ? "navigasi_pengguna"
-    : (await knex.schema.hasTable("user_navigation"))
-      ? "user_navigation"
+    : (await knex.schema.hasTable("navigasi_pengguna"))
+      ? "navigasi_pengguna"
       : null;
 
   if (userNavigationTable) {

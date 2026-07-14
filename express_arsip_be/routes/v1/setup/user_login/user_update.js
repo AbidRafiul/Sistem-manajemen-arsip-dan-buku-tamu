@@ -89,6 +89,32 @@ router.post("/", async (req, res) => {
       });
     }
 
+    const peranCode = req?.auth?.peranCode;
+    if (peranCode !== "SA") {
+      // 1. Pastikan user yang diedit memang berada di cabang yang sama!
+      const userToUpdate = await DB("mst_pengguna").where("id_pengguna", userId).first();
+      if (!userToUpdate) {
+        return res.status(404).json({ status: status.NOT_FOUND, message: "Pengguna tidak ditemukan", datetime: datetime() });
+      }
+      if (req?.auth?.id_cabang && userToUpdate.id_cabang !== req.auth.id_cabang) {
+        return res.status(403).json({ status: status.FORBIDDEN, message: "Anda tidak memiliki izin mengedit pengguna dari cabang lain", datetime: datetime() });
+      }
+
+      // 2. Paksa input cabang sesuai dengan token admin saat ini
+      if (req?.auth?.id_cabang) oPayload.id_cabang = req.auth.id_cabang;
+      if (req?.auth?.id_departemen) oPayload.id_departemen = req.auth.id_departemen;
+      if (req?.auth?.id_divisi) oPayload.id_divisi = req.auth.id_divisi;
+      if (req?.auth?.id_unit_kerja) oPayload.id_unit_kerja = req.auth.id_unit_kerja;
+
+      // 3. Cegah admin cabang memberikan peran SUPERADMIN
+      if (oPayload.id_peran) {
+        const peranData = await DB("mst_peran").where("id_peran", oPayload.id_peran).first();
+        if (peranData && (peranData.kode_peran === "SUPERADMIN" || peranData.kode_peran === "SA")) {
+          return res.status(403).json({ status: status.FORBIDDEN, message: "Anda tidak memiliki izin memberikan peran Superadmin", datetime: datetime() });
+        }
+      }
+    }
+
     // Siapkan data update mst_pengguna
     const oDataUser = {
       nama_lengkap: oPayload.nama_lengkap,
@@ -165,7 +191,7 @@ router.post("/", async (req, res) => {
         : null;
 
       if (navigation?.menu) {
-        await trx("user_navigation")
+        await trx("navigasi_pengguna")
           .insert({
             id_pengguna: userId,
             menu: navigation.menu,

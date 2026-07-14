@@ -20,7 +20,7 @@ function pickColumn(columns, candidates) {
 
 router.post("/", async (req, res) => {
   try {
-    const vaData = await DB("mst_pengguna as u")
+    let query = DB("mst_pengguna as u")
       .leftJoin("mst_pengguna_peran as ur", "u.id_pengguna", "ur.id_pengguna")
       .leftJoin("mst_peran as r", "ur.id_peran", "r.id_peran")
       .select(
@@ -30,8 +30,22 @@ router.post("/", async (req, res) => {
         "u.telepon",
         "r.nama_peran as role",
       )
-      .where("u.status", "active")
-      .orderBy("u.nama_lengkap", "asc");
+      .where("u.status", "active");
+
+    if (req.headers["x-filter-cabang"]) {
+      query = query.whereIn("u.id_cabang", req.headers["x-filter-cabang"].split(","));
+    }
+    if (req.headers["x-filter-departemen"]) {
+      query = query.where("u.id_departemen", req.headers["x-filter-departemen"]);
+    }
+    if (req.headers["x-filter-divisi"]) {
+      query = query.where("u.id_divisi", req.headers["x-filter-divisi"]);
+    }
+    if (req.headers["x-filter-unit-kerja"]) {
+      query = query.where("u.id_unit_kerja", req.headers["x-filter-unit-kerja"]);
+    }
+
+    const vaData = await query.orderBy("u.nama_lengkap", "asc");
 
     return res.status(200).json({
       status: status.SUKSES,

@@ -58,6 +58,10 @@ const getUserByUsername = async (namaPengguna) => {
       "kata_sandi",
       "nama_lengkap",
       "status",
+      "id_cabang",
+      "id_departemen",
+      "id_divisi",
+      "id_unit_kerja"
     )
     .first();
 };
@@ -211,6 +215,12 @@ router.post("/", async (req, res) => {
       });
     }
 
+    let nama_cabang = null;
+    if (oUser.id_cabang) {
+      const oCabang = await DB("mst_cabang").where("id_cabang", oUser.id_cabang).first();
+      if (oCabang) nama_cabang = oCabang.nama_cabang;
+    }
+
     const secret = process.env.USER_SECRET;
     const cKataSandi =
       process.env.USER_KEY + oUser.nama_pengguna + oPayload.kata_sandi;
@@ -241,12 +251,16 @@ router.post("/", async (req, res) => {
       nama_pengguna: oUser.nama_pengguna,
       nama_lengkap: oUser.nama_lengkap,
       name: oUser.nama_lengkap,
-      peranId,
-      peran,
-      peranCode,
-      roleId: peranId,
+      id_cabang: oUser.id_cabang || null,
+      nama_cabang: nama_cabang,
+      id_departemen: oUser.id_departemen || null,
+      id_divisi: oUser.id_divisi || null,
+      id_jabatan: oUser.id_jabatan || null,
+      id_unit_kerja: oUser.id_unit_kerja || null,
       role: peran,
       roleCode: peranCode,
+      roleId: peranId,
+      status: oUser.status,
       ip_address: cIp,
     };
 

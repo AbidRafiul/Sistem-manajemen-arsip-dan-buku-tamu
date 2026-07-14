@@ -47,7 +47,7 @@ const getDashboardSummary = async (req, res) => {
 
         // Audit Log: 10 aktivitas terbaru
         DB("mst_riwayat_audit")
-          .select("id", "username as nama_pengguna", "aksi", "status", "created_at")
+          .select("id", "nama_pengguna", "aksi", "status", "created_at")
           .orderBy("created_at", "desc")
           .limit(10),
       ]);
