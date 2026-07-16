@@ -20,10 +20,11 @@ interface FormProps {
     hostUserOptions: any[];
     branchOptions?: any[];
     loading: boolean;
+    disableBranchSelect?: boolean;
     handleSubmit: (e: React.FormEvent) => void;
 }
 
-export default function RegistrasiForm({ formData, handleChange, setIdentityFile, setSelfieFile, visitPurposeOptions, hostUserOptions, branchOptions = [], loading, handleSubmit }: FormProps) {
+export default function RegistrasiForm({ formData, handleChange, setIdentityFile, setSelfieFile, visitPurposeOptions, hostUserOptions, branchOptions = [], loading, disableBranchSelect, handleSubmit }: FormProps) {
     const identityTypes = [
         { label: 'KTP', value: 'ktp' },
         { label: 'SIM', value: 'sim' },
@@ -103,7 +104,7 @@ export default function RegistrasiForm({ formData, handleChange, setIdentityFile
                             <label htmlFor="id_cabang" className="font-semibold block mb-2 text-sm text-800">
                                 Kantor / Cabang Tujuan <span className="p-error">*</span>
                             </label>
-                            <Dropdown id="id_cabang" value={formData.id_cabang} options={branchOptions} optionLabel="name" optionValue="id" onChange={(e) => handleChange('id_cabang', e.value)} placeholder="Pilih Kantor / Cabang Tujuan" className="p-inputtext-sm" />
+                            <Dropdown id="id_cabang" value={formData.id_cabang} options={branchOptions} optionLabel="name" optionValue="id" optionGroupLabel="label" optionGroupChildren="items" onChange={(e) => handleChange('id_cabang', e.value)} placeholder="Pilih Kantor / Cabang Tujuan" disabled={disableBranchSelect} className="p-inputtext-sm" />
                         </div>
                         <div className="field">
                             <label htmlFor="visit_purpose_id" className="font-semibold block mb-2 text-sm text-800">

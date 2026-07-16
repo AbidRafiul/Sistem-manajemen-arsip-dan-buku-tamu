@@ -44,7 +44,7 @@ export default function GuestDataTable({
 }: TableProps) {
     const { data: session } = useSession();
     const roleCode = (session?.user as any)?.roleCode;
-    const isSuperadmin = roleCode === 'SUPERADMIN' || roleCode === 'ADM';
+    const isSuperadmin = roleCode === 'SUPERADMIN';
     const statusOptions = [
         { label: 'Semua Status', value: '' },
         { label: 'Sedang Berkunjung', value: 'in' },
@@ -115,6 +115,8 @@ export default function GuestDataTable({
                         options={branches}
                         optionLabel="name"
                         optionValue="id"
+                        optionGroupLabel="label"
+                        optionGroupChildren="items"
                         onChange={(e) => setSelectedBranch(e.value)}
                         placeholder="Pilih Kantor/Cabang"
                         className="w-full sm:w-14rem p-inputtext-sm"

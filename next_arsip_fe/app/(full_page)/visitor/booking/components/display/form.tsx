@@ -224,6 +224,8 @@ export default function VisitorBookingForm({
                             options={branches}
                             optionLabel="name"
                             optionValue="id"
+                            optionGroupLabel="label"
+                            optionGroupChildren="items"
                             onChange={(e) => handleChange('id_cabang', e.value)}
                             placeholder="Pilih kantor / cabang yang ingin dituju"
                             className="w-full"

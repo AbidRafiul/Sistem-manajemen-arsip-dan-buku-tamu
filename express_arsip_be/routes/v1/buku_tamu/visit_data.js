@@ -34,7 +34,7 @@ router.post("/", async (req, res) => {
     applyMultiTenantFilter(qCount, req, 'u');
 
     // Filter berdasarkan cabang (Isolasi Cabang / Hirarki Perusahaan)
-    if (req.auth?.peranCode !== "SUPERADMIN" && req.auth?.peranCode !== "ADM") {
+    if (req.auth?.peranCode !== "SUPERADMIN") {
       const userBranchId = req.auth?.id_cabang || 1;
       const branchIds = await getDescendantBranchIds(DB, userBranchId);
       q.whereIn("u.id_cabang", branchIds);
@@ -128,7 +128,7 @@ router.post("/purposes", async (req, res) => {
 router.post("/branches", async (req, res) => {
   try {
     const listCabang = await DB("mst_cabang")
-      .select("id_cabang as id", "nama_cabang as name")
+      .select("id_cabang as id", "nama_cabang as name", "id_induk")
       .whereNot("status", "deleted");
 
     return res.status(200).json({
