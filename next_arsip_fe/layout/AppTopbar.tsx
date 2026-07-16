@@ -47,6 +47,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
         sessionStorage.clear();
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('globalFilter');
 
         await signOut({ callbackUrl: '/auth/login' });
     };

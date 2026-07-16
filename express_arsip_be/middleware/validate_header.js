@@ -20,8 +20,10 @@ const isBypassed = (url) => {
   const lower = url.toLowerCase();
   return (
     lower.includes("/purposes") ||
+    lower.includes("/buku_tamu/visit_data/branches") ||
     lower.includes("/visit_checkin") ||
-    lower.includes("/visit_booking")
+    lower.includes("/visit_booking") ||
+    lower.includes("/visit_data/users")
   );
 };
 
@@ -122,6 +124,7 @@ export const validateSignature = async (req, res, next) => {
         "pengguna.nama_pengguna",
         "pengguna.nama_lengkap",
         "pengguna.telepon",
+        "pengguna.id_cabang",
         "pengguna.nama_pengguna as UniqueId",
         "pengguna.id_cabang",
         "pengguna.id_departemen",
@@ -158,6 +161,7 @@ export const validateSignature = async (req, res, next) => {
       nama_pengguna: oUser.nama_pengguna,
       telepon: oUser.telepon,
       nama_lengkap: oUser.nama_lengkap,
+      id_cabang: oUser.id_cabang,
       peranId: oUser.peranId,
       peranCode: oUser.kode_peran,
       peran: oUser.peran,
@@ -182,18 +186,19 @@ export const validateSignature = async (req, res, next) => {
     }
 
     const reqCabang = req.headers['x-filter-cabang'];
-    
+
     if (reqCabang && reqCabang !== 'null' && reqCabang !== 'undefined') {
       // Jika ada request filter (dari siapapun, termasuk SA), kembangkan filter tersebut 1 level ke bawah
       const requestedIds = String(reqCabang).split(",").map(id => parseInt(id, 10));
       const expandedRequestedIds = new Set(requestedIds);
-      
+
       for (const id of requestedIds) {
-         for (const c of allCabangs) {
-            if (c.id_induk === id) expandedRequestedIds.add(c.id_cabang);
-         }
+        for (const c of allCabangs) {
+          if (c.id_induk === id) expandedRequestedIds.add(c.id_cabang);
+        }
       }
-      
+
+
       if (allowedCabangIds) {
         // Jika Admin Daerah, pastikan filter tidak melebihi wilayah kekuasaannya (Intersect)
         const validIds = Array.from(expandedRequestedIds).filter(id => allowedCabangIds.has(id));

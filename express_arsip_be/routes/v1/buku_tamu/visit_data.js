@@ -3,6 +3,7 @@ import DB from "../../../core/config/knex.js";
 import { formatDateSystem } from "../components/tools/general.js";
 import { getPresignedUrlFromMinio } from "../../../core/components/tools/minio_helper.js";
 import { applyMultiTenantFilter } from "../components/tools/filterHelper.js";
+import { getDescendantBranchIds } from "../components/tools/servertool.js";
 
 const router = express.Router();
 
@@ -17,10 +18,12 @@ router.post("/", async (req, res) => {
       .select(
         "t.*",
         "mp.nama_tujuan_kunjungan as VisitPurposeName",
-        "u.nama_lengkap as HostFullname"
+        "u.nama_lengkap as HostFullname",
+        "c.nama_cabang as BranchName"
       )
       .leftJoin("mst_tujuan_kunjungan as mp", "t.id_tujuan_kunjungan", "mp.id_tujuan_kunjungan")
-      .leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna");
+      .leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna")
+      .leftJoin("mst_cabang as c", "u.id_cabang", "c.id_cabang");
 
     const qCount = DB("trs_kunjungan as t")
       .leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna")
@@ -29,6 +32,19 @@ router.post("/", async (req, res) => {
     // Multi-tenancy: isolasi data berdasarkan cabang host
     applyMultiTenantFilter(q, req, 'u');
     applyMultiTenantFilter(qCount, req, 'u');
+
+    // Filter berdasarkan cabang (Isolasi Cabang / Hirarki Perusahaan)
+    if (req.auth?.peranCode !== "SUPERADMIN" && req.auth?.peranCode !== "ADM") {
+      const userBranchId = req.auth?.id_cabang || 1;
+      const branchIds = await getDescendantBranchIds(DB, userBranchId);
+      q.whereIn("u.id_cabang", branchIds);
+      qCount.whereIn("u.id_cabang", branchIds);
+    } else if (oPayload.BranchId || oPayload.id_cabang) {
+      const filterBranchId = oPayload.BranchId || oPayload.id_cabang;
+      const branchIds = await getDescendantBranchIds(DB, filterBranchId);
+      q.whereIn("u.id_cabang", branchIds);
+      qCount.whereIn("u.id_cabang", branchIds);
+    }
 
     if (oPayload.Status) {
       q.where("t.status", oPayload.Status);
@@ -69,7 +85,6 @@ router.post("/", async (req, res) => {
       } else {
         r.PhotoIdentityUrl = null;
       }
-
       if (r.tanda_tangan) {
         r.SignatureUrl = r.tanda_tangan.startsWith('http') ? r.tanda_tangan : await getPresignedUrlFromMinio("buku-tamu", r.tanda_tangan);
       } else {
@@ -107,6 +122,50 @@ router.post("/purposes", async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ status: "01", message: "Gagal memuat list tujuan", datetime: formatDateSystem() });
+  }
+});
+
+router.post("/branches", async (req, res) => {
+  try {
+    const listCabang = await DB("mst_cabang")
+      .select("id_cabang as id", "nama_cabang as name")
+      .whereNot("status", "deleted");
+
+    return res.status(200).json({
+      status: "00",
+      message: "OK",
+      data: listCabang,
+      datetime: formatDateSystem()
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ status: "01", message: "Gagal memuat list cabang", datetime: formatDateSystem() });
+  }
+});
+
+router.post("/users", async (req, res) => {
+  try {
+    const { id_cabang } = req.body;
+    let query = DB("mst_pengguna as u")
+      .select("u.id_pengguna as id", "u.nama_lengkap as name", "u.id_cabang")
+      .where("u.status", "active");
+
+    if (id_cabang && id_cabang !== "null" && id_cabang !== "undefined") {
+      const branchIds = await getDescendantBranchIds(DB, id_cabang);
+      query = query.whereIn("u.id_cabang", branchIds);
+    }
+
+    const listUser = await query.orderBy("u.nama_lengkap", "asc");
+
+    return res.status(200).json({
+      status: "00",
+      message: "OK",
+      data: listUser,
+      datetime: formatDateSystem()
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ status: "01", message: "Gagal memuat list pegawai", datetime: formatDateSystem() });
   }
 });
 

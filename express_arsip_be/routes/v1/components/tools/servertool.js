@@ -26,6 +26,55 @@ export const getLastKodeRegister = async (key, len) => {
   return padded;
 };
 
+export const getDescendantBranchIds = async (knex, startBranchId) => {
+  if (!startBranchId) return [];
+  const branchIds = [Number(startBranchId)];
+  let currentParentIds = [Number(startBranchId)];
+
+  while (currentParentIds.length > 0) {
+    const children = await knex("mst_cabang")
+      .select("id_cabang")
+      .whereIn("id_induk", currentParentIds)
+      .whereNot("status", "deleted");
+
+    if (children.length === 0) {
+      break;
+    }
+
+    const childIds = children.map((c) => c.id_cabang);
+    branchIds.push(...childIds);
+    currentParentIds = childIds;
+  }
+
+  return branchIds;
+};
+
+export const generateDailyVisitCode = async () => {
+  const now = new Date();
+  const pad = (num) => String(num).padStart(2, '0');
+  const dd = pad(now.getDate());
+  const mm = pad(now.getMonth() + 1);
+  const yyyy = now.getFullYear();
+
+  const datePart = `${dd}${mm}${yyyy}`;
+  const key = `BT_${datePart}`;
+
+  const seq = await DB.transaction(async (trx) => {
+    let record = await trx("nomor_faktur").where({ kode: key }).first();
+    let nextId = 1;
+
+    if (record) {
+      nextId = record.id + 1;
+      await trx("nomor_faktur").where({ kode: key }).update({ id: nextId });
+    } else {
+      await trx("nomor_faktur").insert({ kode: key, id: 1 });
+    }
+    return String(nextId).padStart(4, "0");
+  });
+
+  return `${datePart}-${seq}`;
+};
+
 export const getLastFaktur = async (key, len) => {
   const tgl = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   const tahunBulan = tgl.slice(0, 6);

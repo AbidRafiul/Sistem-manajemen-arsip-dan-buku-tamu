@@ -2,12 +2,7 @@ import express from "express";
 import multer from "multer";
 import Joi from "joi";
 import { formatDateSystem } from "../components/tools/general.js";
-import {
-  getLastFaktur,
-  setLastFaktur,
-  Logging,
-  validatePayload,
-} from "../components/tools/servertool.js";
+import { Logging, validatePayload, generateDailyVisitCode } from "../components/tools/servertool.js";
 import DB from "../../../core/config/knex.js";
 import { uploadFileToMinio, getMinioPrefix, MINIO_BUCKET_NAME } from "../../../core/components/tools/minio_helper.js";
 import { sendMailNotification } from "../../../core/components/tools/mail_helper.js";
@@ -22,13 +17,7 @@ const upload = multer({
 
 router.post(
   "/",
-  upload.fields([
-    { name: "SelfieFile", maxCount: 1 },
-    { name: "IdentityFile", maxCount: 1 },
-    { name: "PhotoFace", maxCount: 1 },
-    { name: "PhotoIdentity", maxCount: 1 },
-    { name: "SignatureFile", maxCount: 1 },
-  ]),
+  upload.any(),
   async (req, res) => {
     const { body: oPayload } = req;
     const nama_pengguna = req?.auth?.nama_pengguna || "";
@@ -97,6 +86,10 @@ router.post(
             .optional()
             .allow(null, "")
             .label("SignatureData"),
+          GroupMembers: Joi.string()
+            .optional()
+            .allow(null, "")
+            .label("GroupMembers"),
         },
         {
           "string.base": "{#label} harus berupa string",
@@ -142,38 +135,37 @@ router.post(
         VisitType,
         GuestCount,
         SignatureData,
+        GroupMembers,
       } = oPayload;
 
-      const photoFaceFile =
-        req.files?.SelfieFile?.[0] || req.files?.PhotoFace?.[0] || null;
-      const photoIdentityFile =
-        req.files?.IdentityFile?.[0] || req.files?.PhotoIdentity?.[0] || null;
-      const signatureFile = req.files?.SignatureFile?.[0] || null;
+      const targetBranchId = oPayload.BranchId || oPayload.id_cabang || req.auth?.id_cabang || 1;
+      const minioPrefix = await getMinioPrefix(targetBranchId);
+
+      const getFile = (fieldname) => {
+        return (req.files || []).find(f => f.fieldname === fieldname) || null;
+      };
+
+      const photoFaceFile = getFile("SelfieFile") || getFile("PhotoFace");
+      const photoIdentityFile = getFile("IdentityFile") || getFile("PhotoIdentity");
+      const signatureFile = getFile("SignatureFile");
       const todayPath = formatDateSystem(new Date(), "yyyyMMdd");
 
       let PhotoFace = null;
       let PhotoIdentity = null;
       let TandaTangan = null;
 
-      let hostIdCabang = null;
-      if (HostUserId) {
-        const host = await DB("mst_pengguna").select("id_cabang").where("id_pengguna", HostUserId).first();
-        if (host) hostIdCabang = host.id_cabang;
-      }
-      const minioPrefix = await getMinioPrefix(hostIdCabang);
-
       if (photoFaceFile) {
         PhotoFace = await uploadFileToMinio(
           cBucket,
           photoFaceFile,
-          `${minioPrefix}/photos/${todayPath}`,
+          `${minioPrefix}/buku-tamu/photos/${todayPath}`,
         );
       }
       if (photoIdentityFile) {
         PhotoIdentity = await uploadFileToMinio(
           cBucket,
           photoIdentityFile,
-          `${minioPrefix}/photos/${todayPath}`,
+          `${minioPrefix}/buku-tamu/photos/${todayPath}`,
         );
       }
 
@@ -192,18 +184,18 @@ router.post(
           TandaTangan = await uploadFileToMinio(
             cBucket,
             fileObj,
-            `buku_tamu/signatures/${todayPath}`,
+            `${minioPrefix}/buku-tamu/signatures/${todayPath}`,
           );
         }
       } else if (signatureFile) {
         TandaTangan = await uploadFileToMinio(
           cBucket,
           signatureFile,
-          `buku_tamu/signatures/${todayPath}`,
+          `${minioPrefix}/buku-tamu/signatures/${todayPath}`,
         );
       }
 
-      const VisitCode = await getLastFaktur("TAMU", 4);
+      const VisitCode = await generateDailyVisitCode();
       const QRToken =
         Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
@@ -220,6 +212,7 @@ router.post(
       }
 
       const oData = {
+        id_cabang: targetBranchId,
         nama_tamu: GuestName,
         nomor_telepon: PhoneNumber,
         email_tamu: GuestEmail,
@@ -246,7 +239,40 @@ router.post(
 
       const [idKunjungan] = await DB("trs_kunjungan").insert(oData);
 
-      await setLastFaktur("TAMU");
+      // Simpan anggota rombongan jika ada
+      let parsedGroupMembers = [];
+      if (GroupMembers && GroupMembers !== "") {
+        try {
+          parsedGroupMembers = JSON.parse(GroupMembers);
+        } catch (err) {
+          console.error("Gagal parsing GroupMembers:", err);
+        }
+      }
+
+      if (VisitType === "group" && Array.isArray(parsedGroupMembers) && parsedGroupMembers.length > 0) {
+        const insertPromises = parsedGroupMembers.map(async (member, index) => {
+          const memberFile = getFile(`MemberIdentityFile_${index}`);
+          let memberPhotoPath = null;
+          if (memberFile) {
+            memberPhotoPath = await uploadFileToMinio(
+              "buku-tamu",
+              memberFile,
+              `${minioPrefix}/buku-tamu/photos/${todayPath}`
+            );
+          }
+          
+          await DB("trs_kunjungan_anggota").insert({
+            id_kunjungan: idKunjungan,
+            nama_anggota: member.name || member.nama_anggota || "",
+            nomor_telepon: member.phone || member.nomor_telepon || null,
+            nomor_identitas: member.idNumber || member.nomor_identitas || null,
+            foto_identitas: memberPhotoPath,
+            created_at: formatDateSystem(),
+            updated_at: formatDateSystem()
+          });
+        });
+        await Promise.all(insertPromises);
+      }
 
       try {
         if (resolvedHostUserId) {

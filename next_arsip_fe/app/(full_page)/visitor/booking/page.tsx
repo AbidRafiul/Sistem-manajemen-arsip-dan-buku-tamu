@@ -21,6 +21,8 @@ export default function VisitorBookingPage() {
     const [bookingSuccess, setBookingSuccess] = useState(false);
     const [visitCode, setVisitCode] = useState('');
     const [purposes, setPurposes] = useState<PurposeOption[]>([]);
+    const [branches, setBranches] = useState<any[]>([]);
+    const [hosts, setHosts] = useState<any[]>([]);
 
     const [identityFile, setIdentityFile] = useState<File | null>(null);
     const [selfieFile, setSelfieFile] = useState<File | null>(null);
@@ -33,12 +35,15 @@ export default function VisitorBookingPage() {
         jenis_identitas: null,
         nomor_identitas: '',
         id_tujuan_kunjungan: null,
+        id_cabang: null,
+        id_user_host: null,
         nama_host: '',
         catatan_kunjungan: '',
         waktu_masuk: undefined,
         visit_type: 'personal',
         guest_count: 1,
-        signature_data: null
+        signature_data: null,
+        group_members: []
     });
 
     useEffect(() => {
@@ -52,11 +57,47 @@ export default function VisitorBookingPage() {
                 console.error("Gagal memuat tujuan kunjungan:", err);
             }
         };
+        const fetchBranches = async () => {
+            try {
+                const response = await axios.post("http://localhost:8000/api/v1/buku_tamu/visit_data/branches", {});
+                if (response.data?.status === '00' && Array.isArray(response.data?.data)) {
+                    setBranches(response.data.data);
+                }
+            } catch (err) {
+                console.error("Gagal memuat daftar cabang:", err);
+            }
+        };
         fetchPurposes();
+        fetchBranches();
     }, []);
 
+    const fetchHosts = async (branchId: number | null) => {
+        if (!branchId) {
+            setHosts([]);
+            return;
+        }
+        try {
+            const response = await axios.post("http://localhost:8000/api/v1/buku_tamu/visit_data/users", { id_cabang: branchId });
+            if (response.data?.status === '00' && Array.isArray(response.data?.data)) {
+                setHosts(response.data.data);
+            }
+        } catch (err) {
+            console.error("Gagal memuat daftar pegawai:", err);
+        }
+    };
+
     const handleChange = (field: string, value: any) => {
-        setForm((prev) => ({ ...prev, [field]: value }));
+        if (field === 'id_cabang') {
+            setForm((prev) => ({
+                ...prev,
+                id_cabang: value,
+                id_user_host: null,
+                nama_host: ''
+            }));
+            fetchHosts(value);
+        } else {
+            setForm((prev) => ({ ...prev, [field]: value }));
+        }
     };
 
     const formatDateForBackend = (date: Date) => {
@@ -65,6 +106,7 @@ export default function VisitorBookingPage() {
     };
 
     const handleReset = () => {
+        setHosts([]);
         setForm({
             nama_tamu: '',
             nomor_telepon: '',
@@ -73,12 +115,15 @@ export default function VisitorBookingPage() {
             jenis_identitas: null,
             nomor_identitas: '',
             id_tujuan_kunjungan: null,
+            id_cabang: null,
+            id_user_host: null,
             nama_host: '',
             catatan_kunjungan: '',
             waktu_masuk: undefined,
             visit_type: 'personal',
             guest_count: 1,
-            signature_data: null
+            signature_data: null,
+            group_members: []
         });
         setIdentityFile(null);
         setSelfieFile(null);
@@ -86,8 +131,8 @@ export default function VisitorBookingPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!form.nama_tamu || !form.nomor_telepon || !form.waktu_masuk || !form.id_tujuan_kunjungan) {
-            showError(toast, 'Mohon isi semua field wajib (Nama, No. Telepon, Tujuan Kunjungan, dan Rencana Kunjungan)');
+        if (!form.nama_tamu || !form.nomor_telepon || !form.waktu_masuk || !form.id_tujuan_kunjungan || !form.id_cabang) {
+            showError(toast, 'Mohon isi semua field wajib (Nama, No. Telepon, Kantor Tujuan, Tujuan Kunjungan, dan Rencana Kunjungan)');
             return;
         }
 
@@ -99,6 +144,8 @@ export default function VisitorBookingPage() {
             formData.append('GuestEmail', form.email_tamu || '');
             formData.append('GuestCompany', form.instansi_tamu || '-');
             formData.append('VisitPurposeId', String(form.id_tujuan_kunjungan));
+            formData.append('BranchId', String(form.id_cabang));
+            formData.append('id_cabang', String(form.id_cabang));
             formData.append('CheckInTime', form.waktu_masuk ? formatDateForBackend(form.waktu_masuk) : '');
             formData.append('VisitNotes', form.catatan_kunjungan || '');
             formData.append('IdentityType', form.jenis_identitas || '');
@@ -108,6 +155,21 @@ export default function VisitorBookingPage() {
             formData.append('GuestCount', String(form.guest_count || 1));
             if (form.signature_data) {
                 formData.append('SignatureData', form.signature_data);
+            }
+
+            if (form.visit_type === 'group' && form.group_members && form.group_members.length > 0) {
+                const membersToSend = form.group_members.map((m) => ({
+                    name: m.name,
+                    phone: m.phone,
+                    idNumber: m.idNumber,
+                }));
+                formData.append('GroupMembers', JSON.stringify(membersToSend));
+
+                form.group_members.forEach((member, index) => {
+                    if (member.identityFile) {
+                        formData.append(`MemberIdentityFile_${index}`, member.identityFile);
+                    }
+                });
             }
 
             if (identityFile) formData.append('IdentityFile', identityFile);
@@ -291,86 +353,89 @@ export default function VisitorBookingPage() {
         <>
             <Toast ref={toast} />
             <div className="min-h-screen flex flex-column lg:flex-row bg-50">
-                    {/* PANEL KIRI: Banner Selamat Datang (Sticky pada Desktop) */}
-                    <div className="col-12 lg:col-5 flex flex-column justify-content-between p-5 md:p-6 lg:h-screen lg:sticky top-0 overflow-y-auto text-white" style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)' }}>
-                        <div className="flex align-items-center gap-3">
-                            <div className="flex align-items-center justify-content-center border-circle" style={{ background: 'rgba(255, 255, 255, 0.15)', width: '45px', height: '45px' }}>
-                                <i className="pi pi-shield text-xl text-white" />
-                            </div>
-                            <span className="font-extrabold text-xl tracking-tight" style={{ color: '#ffffff' }}>Arsipku</span>
+                {/* PANEL KIRI: Banner Selamat Datang (Sticky pada Desktop) */}
+                <div className="col-12 lg:col-5 flex flex-column justify-content-between p-5 md:p-6 lg:h-screen lg:sticky top-0 overflow-y-auto text-white" style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)' }}>
+                    <div className="flex align-items-center gap-3">
+                        <div className="flex align-items-center justify-content-center border-circle" style={{ background: 'rgba(255, 255, 255, 0.15)', width: '45px', height: '45px' }}>
+                            <i className="pi pi-shield text-xl text-white" />
                         </div>
+                        <span className="font-extrabold text-xl tracking-tight" style={{ color: '#ffffff' }}>Arsipku</span>
+                    </div>
 
-                        <div className="my-5 lg:my-0">
-                            <h1 className="text-4xl lg:text-5xl font-extrabold line-height-2 mb-3" style={{ color: '#ffffff' }}>
-                                Registrasi Kunjungan Tamu
-                            </h1>
-                            <p className="text-sm lg:text-base line-height-3 mb-5 max-w-lg" style={{ color: '#cbd5e1' }}>
-                                Silakan buat janji temu / booking kedatangan Anda ke kantor kami. Proses ini cepat, aman, dan membantu kami memberikan layanan terbaik saat Anda tiba di lokasi.
-                            </p>
+                    <div className="my-5 lg:my-0">
+                        <h1 className="text-4xl lg:text-5xl font-extrabold line-height-2 mb-3" style={{ color: '#ffffff' }}>
+                            Registrasi Kunjungan Tamu
+                        </h1>
+                        <p className="text-sm lg:text-base line-height-3 mb-5 max-w-lg" style={{ color: '#cbd5e1' }}>
+                            Silakan buat janji temu / booking kedatangan Anda ke kantor kami. Proses ini cepat, aman, dan membantu kami memberikan layanan terbaik saat Anda tiba di lokasi.
+                        </p>
 
-                            {/* ALUR REGISTRASI */}
-                            <div className="flex flex-column gap-4">
-                                <div className="flex align-items-start gap-3">
-                                    <div className="flex align-items-center justify-content-center border-circle bg-indigo-500 text-white font-bold text-sm" style={{ width: '28px', height: '28px', minWidth: '28px' }}>1</div>
-                                    <div>
-                                        <h4 className="font-bold m-0 mb-1 text-sm lg:text-base" style={{ color: '#ffffff' }}>Isi Data Kunjungan</h4>
-                                        <p className="text-xs lg:text-sm m-0" style={{ color: '#94a3b8' }}>Lengkapi formulir profil dan rencana waktu kedatangan Anda.</p>
-                                    </div>
-                                </div>
-                                <div className="flex align-items-start gap-3">
-                                    <div className="flex align-items-center justify-content-center border-circle bg-indigo-500 text-white font-bold text-sm" style={{ width: '28px', height: '28px', minWidth: '28px' }}>2</div>
-                                    <div>
-                                        <h4 className="font-bold m-0 mb-1 text-sm lg:text-base" style={{ color: '#ffffff' }}>Dapatkan Kode Booking</h4>
-                                        <p className="text-xs lg:text-sm m-0" style={{ color: '#94a3b8' }}>Setelah pendaftaran berhasil, Anda akan menerima kode kunjungan unik.</p>
-                                    </div>
-                                </div>
-                                <div className="flex align-items-start gap-3">
-                                    <div className="flex align-items-center justify-content-center border-circle bg-indigo-500 text-white font-bold text-sm" style={{ width: '28px', height: '28px', minWidth: '28px' }}>3</div>
-                                    <div>
-                                        <h4 className="font-bold m-0 mb-1 text-sm lg:text-base" style={{ color: '#ffffff' }}>Tunjukkan Kode Saat Tiba</h4>
-                                        <p className="text-xs lg:text-sm m-0" style={{ color: '#94a3b8' }}>Tunjukkan kode kunjungan kepada resepsionis saat check-in di lokasi.</p>
-                                    </div>
+                        {/* ALUR REGISTRASI */}
+                        <div className="flex flex-column gap-4">
+                            <div className="flex align-items-start gap-3">
+                                <div className="flex align-items-center justify-content-center border-circle bg-indigo-500 text-white font-bold text-sm" style={{ width: '28px', height: '28px', minWidth: '28px' }}>1</div>
+                                <div>
+                                    <h4 className="font-bold m-0 mb-1 text-sm lg:text-base" style={{ color: '#ffffff' }}>Isi Data Kunjungan</h4>
+                                    <p className="text-xs lg:text-sm m-0" style={{ color: '#94a3b8' }}>Lengkapi formulir profil dan rencana waktu kedatangan Anda.</p>
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="text-xs mt-5 lg:mt-0 pt-4 border-top-1 border-white-alpha-10" style={{ color: '#64748b' }}>
-                            &copy; 2026 Arsipku. Sistem Manajemen Arsip & Buku Tamu.
+                            <div className="flex align-items-start gap-3">
+                                <div className="flex align-items-center justify-content-center border-circle bg-indigo-500 text-white font-bold text-sm" style={{ width: '28px', height: '28px', minWidth: '28px' }}>2</div>
+                                <div>
+                                    <h4 className="font-bold m-0 mb-1 text-sm lg:text-base" style={{ color: '#ffffff' }}>Dapatkan Kode Booking</h4>
+                                    <p className="text-xs lg:text-sm m-0" style={{ color: '#94a3b8' }}>Setelah pendaftaran berhasil, Anda akan menerima kode kunjungan unik.</p>
+                                </div>
+                            </div>
+                            <div className="flex align-items-start gap-3">
+                                <div className="flex align-items-center justify-content-center border-circle bg-indigo-500 text-white font-bold text-sm" style={{ width: '28px', height: '28px', minWidth: '28px' }}>3</div>
+                                <div>
+                                    <h4 className="font-bold m-0 mb-1 text-sm lg:text-base" style={{ color: '#ffffff' }}>Tunjukkan Kode Saat Tiba</h4>
+                                    <p className="text-xs lg:text-sm m-0" style={{ color: '#94a3b8' }}>Tunjukkan kode kunjungan kepada resepsionis saat check-in di lokasi.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* PANEL KANAN: Formulir Kunjungan (Scrollable secara Mandiri) */}
-                    <div className="col-12 lg:col-7 flex align-items-center justify-content-center p-4 sm:p-5 md:p-6" style={{ background: '#f8fafc' }}>
-                        <div className="w-full bg-white border-round-2xl shadow-2 p-4 sm:p-5" style={{ maxWidth: '640px' }}>
-                            <div className="mb-4">
-                                <h2 className="text-2xl font-bold text-900 mb-1">Formulir Pendaftaran</h2>
-                                <p className="text-600 text-sm m-0">Lengkapi data rencana kedatangan Anda di bawah ini.</p>
-                            </div>
+                    <div className="text-xs mt-5 lg:mt-0 pt-4 border-top-1 border-white-alpha-10" style={{ color: '#64748b' }}>
+                        &copy; 2026 Arsipku. Sistem Manajemen Arsip & Buku Tamu.
+                    </div>
+                </div>
 
-                            <VisitorBookingForm
-                                form={form}
-                                handleChange={handleChange}
-                                identityFile={identityFile}
-                                selfieFile={selfieFile}
-                                setIdentityFile={setIdentityFile}
-                                setSelfieFile={setSelfieFile}
-                                purposes={purposes}
-                                loading={loading}
-                                handleSubmit={handleSubmit}
-                                handleReset={handleReset}
-                            />
+                {/* PANEL KANAN: Formulir Kunjungan (Scrollable secara Mandiri) */}
+                <div className="col-12 lg:col-7 flex align-items-center justify-content-center p-4 sm:p-5 md:p-6" style={{ background: '#f8fafc' }}>
+                    <div className="w-full bg-white border-round-2xl shadow-2 p-4 sm:p-5" style={{ maxWidth: '640px' }}>
+                        <div className="mb-4">
+                            <h2 className="text-2xl font-bold text-900 mb-1">Formulir Pendaftaran</h2>
+                            <p className="text-600 text-sm m-0">Lengkapi data rencana kedatangan Anda di bawah ini.</p>
+                        </div>
 
-                            {/* Status Link */}
-                            <div className="text-center mt-4 pt-3 border-top-1 border-100">
-                                <Link href="/visitor/status" className="no-underline">
-                                    <span className="text-sm font-semibold text-primary hover:underline cursor-pointer block py-2 border-round hover:bg-blue-50 transition-all transition-duration-150">
-                                        Sudah punya kode kunjungan? Cek Status di Sini
-                                    </span>
-                                </Link>
-                            </div>
+                        <VisitorBookingForm
+                            form={form}
+                            handleChange={handleChange}
+                            identityFile={identityFile}
+                            selfieFile={selfieFile}
+                            setIdentityFile={setIdentityFile}
+                            setSelfieFile={setSelfieFile}
+                            purposes={purposes}
+                            branches={branches}
+                            hosts={hosts}
+                            loading={loading}
+                            handleSubmit={handleSubmit}
+                            handleReset={handleReset}
+                        />
+
+                        {/* Status Link */}
+                        <div className="text-center mt-4 pt-3 border-top-1 border-100">
+                            <Link href="/visitor/status" className="no-underline">
+                                <span className="text-sm font-semibold text-primary hover:underline cursor-pointer block py-2 border-round hover:bg-blue-50 transition-all transition-duration-150">
+                                    Sudah punya kode kunjungan? Cek Status di Sini
+                                </span>
+                            </Link>
                         </div>
                     </div>
                 </div>
-            </>
-        );
+            </div>
+        </>
+    );
 }
+

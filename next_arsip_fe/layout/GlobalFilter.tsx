@@ -89,6 +89,7 @@ const GlobalFilter = () => {
 
     let currentPusatId = null;
     let currentDaerahId = null;
+    let currentKecamatanId = null;
 
     if (isSA && selectedCabang) {
         const currentBranch = allCabangsList.find(c => c.id_cabang === selectedCabang);
@@ -100,12 +101,20 @@ const GlobalFilter = () => {
                 if (parent && (parent.id_induk === null || parent.id_induk === 1)) {
                     currentPusatId = parent.id_cabang;
                     currentDaerahId = currentBranch.id_cabang;
+                } else if (parent) {
+                    const grandParent = allCabangsList.find(c => c.id_cabang === parent.id_induk);
+                    if (grandParent && (grandParent.id_induk === null || grandParent.id_induk === 1)) {
+                        currentPusatId = grandParent.id_cabang;
+                        currentDaerahId = parent.id_cabang;
+                        currentKecamatanId = currentBranch.id_cabang;
+                    }
                 }
             }
         }
     }
 
     const daerahCabangs = currentPusatId ? allCabangsList.filter(c => c.id_induk === currentPusatId) : [];
+    const kecamatanCabangs = currentDaerahId ? allCabangsList.filter(c => c.id_induk === currentDaerahId) : [];
 
     return (
         <div className="flex flex-wrap align-items-center gap-2">
@@ -145,6 +154,28 @@ const GlobalFilter = () => {
                     optionLabel="nama_cabang"
                     optionValue="id_cabang"
                     placeholder="Pilih Cabang Daerah"
+                    showClear filter
+                    className="p-dropdown-sm w-full md:w-12rem"
+                    disabled={loading}
+                />
+            )}
+            {isSA && currentDaerahId && (
+                <Dropdown
+                    value={currentKecamatanId || null}
+                    onChange={(e) => {
+                        const selectedId = e.value || currentDaerahId;
+                        const selected = allCabangsList.find(c => c.id_cabang === selectedId);
+                        updateFilter('id_cabang', selectedId);
+                        updateFilter('nama_cabang', selected ? selected.nama_cabang : null);
+                        updateFilter('id_departemen', null);
+                        updateFilter('id_divisi', null);
+                        updateFilter('id_unit_kerja', null);
+                        triggerReload();
+                    }}
+                    options={kecamatanCabangs}
+                    optionLabel="nama_cabang"
+                    optionValue="id_cabang"
+                    placeholder="Pilih Unit Kecamatan"
                     showClear filter
                     className="p-dropdown-sm w-full md:w-12rem"
                     disabled={loading}
