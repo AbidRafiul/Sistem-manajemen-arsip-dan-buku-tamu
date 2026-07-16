@@ -61,13 +61,15 @@ export const POST = async (req: NextRequest) => {
         if (dataResponse?.credential) {
             const { payload: userDecrypted } = (await jwtVerify(dataResponse.credential, secret)) as { payload: any };
 
-            const userData = {
+             const userData = {
                 id: userDecrypted?.IdPengguna || userDecrypted?.id_pengguna || userDecrypted?.uniqueId || userDecrypted?.uid || userDecrypted?.nama_pengguna,
                 role: userDecrypted?.role || userDecrypted?.roleCode,
                 roleCode: userDecrypted?.roleCode,
                 roleId: userDecrypted?.roleId,
                 name: userDecrypted?.nama_lengkap || userDecrypted?.name,
                 nama_pengguna: userDecrypted?.nama_pengguna,
+                id_cabang: userDecrypted?.id_cabang,
+                nama_cabang: userDecrypted?.nama_cabang,
                 IdPengguna: userDecrypted?.IdPengguna || userDecrypted?.id_pengguna || userDecrypted?.uniqueId || userDecrypted?.uid,
                 id_pengguna: userDecrypted?.IdPengguna || userDecrypted?.id_pengguna || userDecrypted?.uniqueId || userDecrypted?.uid,
                 uniqueId: userDecrypted?.IdPengguna || userDecrypted?.id_pengguna || userDecrypted?.uniqueId || userDecrypted?.uid,
