@@ -10,8 +10,17 @@ router.post("/delete", async (req, res) => {
   const cnama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
-    if (!oPayload || !oPayload.id || !Array.isArray(oPayload.id)) {
-      return res.status(400).json({ status: status.BAD_REQUEST, message: "Array ID wajib diisi", datetime: formatDateSystem() });
+    const cannotDelete = await DB("mst_cabang")
+      .whereIn("id_cabang", oPayload.id)
+      .andWhere((builder) => {
+        builder.where("kode_cabang", "BR-001")
+          .orWhere("kode_cabang", "BR-PST")
+          .orWhere("nama_cabang", "like", "%Pusat%");
+      })
+      .first();
+
+    if (cannotDelete) {
+      return res.status(400).json({ status: status.BAD_REQUEST, message: `Kantor Pusat (${cannotDelete.nama_cabang}) tidak dapat dihapus!`, datetime: formatDateSystem() });
     }
 
     await DB("mst_cabang").whereIn("id_cabang", oPayload.id).update({ status: 'deleted', updated_at: new Date() });
