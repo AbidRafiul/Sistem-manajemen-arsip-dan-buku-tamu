@@ -18,10 +18,12 @@ router.post("/", async (req, res) => {
       .select(
         "t.*",
         "mp.nama_tujuan_kunjungan as VisitPurposeName",
-        "u.nama_lengkap as HostFullname"
+        "u.nama_lengkap as HostFullname",
+        "c.nama_cabang as BranchName"
       )
       .leftJoin("mst_tujuan_kunjungan as mp", "t.id_tujuan_kunjungan", "mp.id_tujuan_kunjungan")
       .leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna")
+      .leftJoin("mst_cabang as c", "t.id_cabang", "c.id_cabang")
       .where("t.id_kunjungan", oPayload.VisitationId)
       .first();
 
@@ -54,6 +56,26 @@ router.post("/", async (req, res) => {
     } else {
       row.SignatureUrl = null;
     }
+
+    // Fetch group members if visit is a group
+    let groupMembers = [];
+    if (row.tipe_kunjungan === "group") {
+      groupMembers = await DB("trs_kunjungan_anggota")
+        .where("id_kunjungan", row.id_kunjungan);
+
+      // Map file URLs for group members
+      groupMembers = groupMembers.map(m => {
+        if (m.foto_identitas) {
+          m.PhotoIdentityUrl = m.foto_identitas.startsWith("http")
+            ? m.foto_identitas
+            : `${cBaseUrl}/uploads/${m.foto_identitas}`;
+        } else {
+          m.PhotoIdentityUrl = null;
+        }
+        return m;
+      });
+    }
+    row.group_members = groupMembers;
 
     return res.status(200).json({
       status: "00",
