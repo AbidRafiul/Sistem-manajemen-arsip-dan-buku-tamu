@@ -62,8 +62,8 @@ const getDashboardSummary = async (req, res) => {
 
     // Audit Log: 10 aktivitas terbaru
     const qAudit = DB("mst_riwayat_audit as a")
-      .leftJoin("mst_pengguna as u", "a.username", "u.nama_pengguna")
-      .select("a.id", "a.username as nama_pengguna", "a.aksi", "a.status", "a.created_at")
+      .leftJoin("mst_pengguna as u", "a.nama_pengguna", "u.nama_pengguna")
+      .select("a.id", "a.nama_pengguna as nama_pengguna", "a.aksi", "a.status", "a.created_at")
       .orderBy("a.created_at", "desc")
       .limit(10);
     applyMultiTenantFilter(qAudit, req, 'u');

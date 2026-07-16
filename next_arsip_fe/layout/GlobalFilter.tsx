@@ -50,7 +50,7 @@ const GlobalFilter = () => {
             let fetchedCabangs = [...rawCabangs];
             const role = activeRole?.toUpperCase() || '';
             if (role === 'SUPERADMIN' || role === 'SUPER ADMIN' || session?.user?.name === 'Super Admin') {
-                fetchedCabangs = fetchedCabangs.filter((c: any) => c.id_induk === null || c.id_induk === 1);
+                fetchedCabangs = fetchedCabangs.filter((c: any) => (c.id_induk === null || c.id_induk === 1) && c.id_cabang !== 1);
             }
 
             setCabangList(fetchedCabangs);
