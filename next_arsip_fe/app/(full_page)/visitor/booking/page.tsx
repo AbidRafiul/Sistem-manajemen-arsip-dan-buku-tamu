@@ -15,6 +15,53 @@ interface PurposeOption {
     name: string;
 }
 
+interface BranchRaw {
+    id: number;
+    name: string;
+    id_induk: number | null;
+}
+
+const groupBranches = (list: BranchRaw[]): any[] => {
+    const pusat: any[] = [];
+    const cabang: any[] = [];
+    const unit: any[] = [];
+
+    const sortedList = [...list].sort((a, b) => a.name.localeCompare(b.name));
+
+    for (const item of sortedList) {
+        const lowerName = item.name.toLowerCase();
+        if (lowerName.includes('kecamatan') || lowerName.includes('unit')) {
+            unit.push({ id: item.id, name: item.name });
+        } else if (lowerName.includes('pusat')) {
+            pusat.push({ id: item.id, name: item.name });
+        } else {
+            cabang.push({ id: item.id, name: item.name });
+        }
+    }
+
+    const groups: any[] = [];
+    if (pusat.length > 0) {
+        groups.push({
+            label: 'Kantor Pusat',
+            items: pusat
+        });
+    }
+    if (cabang.length > 0) {
+        groups.push({
+            label: 'Kantor Cabang',
+            items: cabang
+        });
+    }
+    if (unit.length > 0) {
+        groups.push({
+            label: 'Unit / Kecamatan',
+            items: unit
+        });
+    }
+
+    return groups;
+};
+
 export default function VisitorBookingPage() {
     const toast = useRef<Toast>(null);
     const [loading, setLoading] = useState(false);
@@ -61,7 +108,8 @@ export default function VisitorBookingPage() {
             try {
                 const response = await axios.post("http://localhost:8000/api/v1/buku_tamu/visit_data/branches", {});
                 if (response.data?.status === '00' && Array.isArray(response.data?.data)) {
-                    setBranches(response.data.data);
+                    const formatted = groupBranches(response.data.data);
+                    setBranches(formatted);
                 }
             } catch (err) {
                 console.error("Gagal memuat daftar cabang:", err);
