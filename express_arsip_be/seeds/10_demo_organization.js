@@ -6,7 +6,7 @@ export async function seed(knex) {
   const dNow = new Date();
   const secret = process.env.USER_SECRET;
 
-  const peranBiasa = await knex("mst_peran").where("nama_peran", "Admin").first();
+  const peranBiasa = await knex("mst_peran").where("nama_peran", "Administrator").first();
   const oNavigation = await knex("mst_navigasi").where("peran", "master").first();
 
   const newBranches = [
