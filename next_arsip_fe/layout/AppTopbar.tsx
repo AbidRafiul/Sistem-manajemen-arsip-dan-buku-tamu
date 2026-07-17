@@ -13,6 +13,8 @@ import { Badge } from 'primereact/badge';
 import { Divider } from 'primereact/divider';
 import { Tag } from 'primereact/tag';
 import { formatDateCalendar } from '@/lib/tools/dateTools';
+import GlobalFilter from './GlobalFilter';
+import BranchSwitcher from './BranchSwitcher';
 
 const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     const { data: session } = useSession();
@@ -80,6 +82,9 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                             </span>
                         </div>
                     </Link>
+
+                    {/* Branch Switcher */}
+                    <BranchSwitcher />
                 </div>
 
                 {/* Clock & User Profile */}
@@ -89,6 +94,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                         <i className="pi pi-clock" style={{ fontSize: '0.85rem' }}></i>
                         <span className="font-semibold text-xs">{realZonedTime}</span>
                     </div>
+
 
                     {/* Notification Bell */}
                     <div className="relative flex align-items-center">
@@ -217,6 +223,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                             <span className="text-color-secondary font-medium" style={{ fontSize: '0.65rem' }}>
                                 {activeRole}
                             </span>
+
                         </div>
                     </div>
 
@@ -234,6 +241,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                                     <span className="text-xs text-color-secondary">{activeRole}</span>
                                 </div>
                             </div>
+
 
                             <Divider className="my-1" style={{ borderColor: '#F3F4F6' }} />
 
