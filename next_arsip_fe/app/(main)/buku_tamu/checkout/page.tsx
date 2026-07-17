@@ -74,7 +74,18 @@ const CheckoutPage = () => {
     });
     const [selectedId, setSelectedId] = useState<string | number>('');
     const [branches, setBranches] = useState<any[]>([]);
-    const [selectedBranch, setSelectedBranch] = useState<number | string>('');
+    const [selectedBranch, setSelectedBranch] = useState<number | string>(() => {
+        if (typeof window !== 'undefined') {
+            try {
+                const saved = localStorage.getItem('globalFilter');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    return parsed.id_cabang || '';
+                }
+            } catch (e) {}
+        }
+        return '';
+    });
 
     const getData = async (apiEndpoint: string, payload: Record<string, any> = {}) => {
         setState((p: State) => ({ ...p, load: true }));

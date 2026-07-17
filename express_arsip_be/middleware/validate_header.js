@@ -188,14 +188,20 @@ export const validateSignature = async (req, res, next) => {
     const reqCabang = req.headers['x-filter-cabang'];
 
     if (reqCabang && reqCabang !== 'null' && reqCabang !== 'undefined') {
-      // Jika ada request filter (dari siapapun, termasuk SA), kembangkan filter tersebut 1 level ke bawah
+      // Jika ada request filter (dari siapapun, termasuk SA), kembangkan filter tersebut secara rekursif ke seluruh level bawahnya
       const requestedIds = String(reqCabang).split(",").map(id => parseInt(id, 10));
       const expandedRequestedIds = new Set(requestedIds);
 
-      for (const id of requestedIds) {
+      let currentParentIds = [...requestedIds];
+      while (currentParentIds.length > 0) {
+        const nextParentIds = [];
         for (const c of allCabangs) {
-          if (c.id_induk === id) expandedRequestedIds.add(c.id_cabang);
+          if (c.id_induk && currentParentIds.includes(c.id_induk) && !expandedRequestedIds.has(c.id_cabang)) {
+            expandedRequestedIds.add(c.id_cabang);
+            nextParentIds.push(c.id_cabang);
+          }
         }
+        currentParentIds = nextParentIds;
       }
 
       if (allowedCabangIds) {

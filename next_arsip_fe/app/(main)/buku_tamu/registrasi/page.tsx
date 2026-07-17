@@ -129,6 +129,20 @@ export default function RegistrasiKunjunganPage() {
                 const branchIdNum = Number(bId);
                 setFormData((prev) => ({ ...prev, id_cabang: branchIdNum }));
                 fetchHosts(branchIdNum);
+            } else if (isSA) {
+                if (typeof window !== 'undefined') {
+                    try {
+                        const saved = localStorage.getItem('globalFilter');
+                        if (saved) {
+                            const parsed = JSON.parse(saved);
+                            if (parsed.id_cabang) {
+                                const branchIdNum = Number(parsed.id_cabang);
+                                setFormData((prev) => ({ ...prev, id_cabang: branchIdNum }));
+                                fetchHosts(branchIdNum);
+                            }
+                        }
+                    } catch (e) {}
+                }
             }
         }
     }, [session]);
