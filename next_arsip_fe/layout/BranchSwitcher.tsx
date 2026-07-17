@@ -242,7 +242,6 @@ const BranchSwitcher = () => {
                                 filter
                                 className="w-full p-dropdown-sm"
                                 disabled={loading}
-                                loading={loading}
                             />
                         </div>
 
