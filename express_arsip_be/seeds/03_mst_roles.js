@@ -8,6 +8,7 @@ export const seed = async function (knex) {
   await knex("mst_peran")
     .whereIn("kode_peran", [
       "ADM",
+      "SUPERADMIN",
       "PMN",
       "SKR",
       "STF_ARS",
@@ -20,6 +21,14 @@ export const seed = async function (knex) {
   const dNow = new Date();
 
   await knex("mst_peran").insert([
+    {
+      kode_peran: "SUPERADMIN",
+      nama_peran: "Superadmin",
+      deskripsi: "Akses tertinggi sistem",
+      status: "active",
+      created_at: dNow,
+      updated_at: dNow,
+    },
     {
       kode_peran: "ADM",
       nama_peran: "Administrator",

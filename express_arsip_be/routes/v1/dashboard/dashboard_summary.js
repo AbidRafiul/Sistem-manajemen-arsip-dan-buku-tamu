@@ -3,12 +3,32 @@ import { Logging } from "../components/tools/servertool.js";
 import { formatDateSystem } from "../components/tools/general.js";
 import { applyMultiTenantFilter } from "../components/tools/filterHelper.js";
 
+const getTableColumns = async (tableName) => {
+  try {
+    const [cols] = await DB.raw(`SHOW COLUMNS FROM \`${tableName}\``);
+    return cols.map((col) => col.Field);
+  } catch (error) {
+    return [];
+  }
+};
+
+const pickColumn = (columns, candidates) => {
+  return candidates.find((column) => columns.includes(column)) || null;
+};
+
 /**
  * GET /dashboard/summary
  * Mengambil ringkasan data dashboard: metric cards, chart mingguan, dan audit log.
  */
 const getDashboardSummary = async (req, res) => {
   try {
+    const auditColumns = await getTableColumns("mst_riwayat_audit");
+    const auditUserColumn = pickColumn(auditColumns, ["nama_pengguna", "username"]);
+    const auditActionColumn = pickColumn(auditColumns, ["aksi", "action"]);
+    if (!auditUserColumn || !auditActionColumn) {
+      throw new Error("Kolom audit log tidak lengkap pada tabel mst_riwayat_audit");
+    }
+
     // ── 1. Query semua metric secara paralel ──────────────────────────────────
     // Metric 1: Arsip Aktif
     const qArsipAktif = DB("trs_dokumen as d")
@@ -62,8 +82,14 @@ const getDashboardSummary = async (req, res) => {
 
     // Audit Log: 10 aktivitas terbaru
     const qAudit = DB("mst_riwayat_audit as a")
-      .leftJoin("mst_pengguna as u", "a.nama_pengguna", "u.nama_pengguna")
-      .select("a.id", "a.nama_pengguna", "a.aksi", "a.status", "a.created_at")
+      .leftJoin("mst_pengguna as u", `a.${auditUserColumn}`, "u.nama_pengguna")
+      .select(
+        "a.id",
+        `a.${auditUserColumn} as nama_pengguna`,
+        `a.${auditActionColumn} as aksi`,
+        "a.status",
+        "a.created_at",
+      )
       .orderBy("a.created_at", "desc")
       .limit(10);
     applyMultiTenantFilter(qAudit, req, 'u');
