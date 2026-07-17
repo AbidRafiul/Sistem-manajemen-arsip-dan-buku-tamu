@@ -71,6 +71,8 @@ export const POST = async (req: NextRequest) => {
                 IdPengguna: userDecrypted?.IdPengguna || userDecrypted?.id_pengguna || userDecrypted?.uniqueId || userDecrypted?.uid,
                 id_pengguna: userDecrypted?.IdPengguna || userDecrypted?.id_pengguna || userDecrypted?.uniqueId || userDecrypted?.uid,
                 uniqueId: userDecrypted?.IdPengguna || userDecrypted?.id_pengguna || userDecrypted?.uniqueId || userDecrypted?.uid,
+                id_cabang: userDecrypted?.id_cabang || null,
+                nama_cabang: userDecrypted?.nama_cabang || null,
                 remember_me: credentials?.remember_me === '1',
                 credential: dataResponse.credential
             };
