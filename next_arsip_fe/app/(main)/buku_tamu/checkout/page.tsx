@@ -10,6 +10,54 @@ import { State } from './components/interfaces';
 import { apiEndpointGet, apiEndpointApproval } from './components/endpoints';
 import GuestDataTable from './components/display/table';
 import { CheckoutDialog, DetailVisitorDialog } from './components/display/dialogs';
+import { useSession } from 'next-auth/react';
+
+interface BranchRaw {
+    id: number;
+    name: string;
+    id_induk: number | null;
+}
+
+const groupBranches = (list: BranchRaw[]): any[] => {
+    const pusat: any[] = [];
+    const cabang: any[] = [];
+    const unit: any[] = [];
+
+    const sortedList = [...list].sort((a, b) => a.name.localeCompare(b.name));
+
+    for (const item of sortedList) {
+        const lowerName = item.name.toLowerCase();
+        if (lowerName.includes('kecamatan') || lowerName.includes('unit')) {
+            unit.push({ id: item.id, name: item.name });
+        } else if (lowerName.includes('pusat')) {
+            pusat.push({ id: item.id, name: item.name });
+        } else {
+            cabang.push({ id: item.id, name: item.name });
+        }
+    }
+
+    const groups: any[] = [];
+    if (pusat.length > 0) {
+        groups.push({
+            label: 'Kantor Pusat',
+            items: pusat
+        });
+    }
+    if (cabang.length > 0) {
+        groups.push({
+            label: 'Kantor Cabang',
+            items: cabang
+        });
+    }
+    if (unit.length > 0) {
+        groups.push({
+            label: 'Unit / Kecamatan',
+            items: unit
+        });
+    }
+
+    return groups;
+};
 
 const CheckoutPage = () => {
     const toast = useRef<Toast>(null);
@@ -25,6 +73,8 @@ const CheckoutPage = () => {
         detailRecord: null
     });
     const [selectedId, setSelectedId] = useState<string | number>('');
+    const [branches, setBranches] = useState<any[]>([]);
+    const [selectedBranch, setSelectedBranch] = useState<number | string>('');
 
     const getData = async (apiEndpoint: string, payload: Record<string, any> = {}) => {
         setState((p: State) => ({ ...p, load: true }));
@@ -48,12 +98,36 @@ const CheckoutPage = () => {
     };
 
     const fetchAll = async () => {
-        await getData(apiEndpointGet, state.statusFilter ? { Status: state.statusFilter } : {});
+        const payload: Record<string, any> = {};
+        if (state.statusFilter) payload.Status = state.statusFilter;
+        if (selectedBranch) payload.id_cabang = selectedBranch;
+        await getData(apiEndpointGet, payload);
     };
 
     useEffect(() => {
-        fetchAll();
+        const fetchBranches = async () => {
+            try {
+                const response = await axios.post("http://localhost:8000/api/v1/buku_tamu/visit_data/branches", {});
+                if (response.data?.status === '00' && Array.isArray(response.data?.data)) {
+                    const formatted = groupBranches(response.data.data);
+                    setBranches([
+                        {
+                            label: 'Semua',
+                            items: [{ id: '', name: 'Semua Kantor' }]
+                        },
+                        ...formatted
+                    ]);
+                }
+            } catch (err) {
+                console.error("Gagal memuat daftar cabang:", err);
+            }
+        };
+        fetchBranches();
     }, []);
+
+    useEffect(() => {
+        fetchAll();
+    }, [state.statusFilter, selectedBranch]);
 
     const onCheckout = (row: any) => {
         setSelectedId(row.id_kunjungan || '');
@@ -71,7 +145,6 @@ const CheckoutPage = () => {
 
     const onFilterStatus = (value: string) => {
         setState((p: State) => ({ ...p, statusFilter: value }));
-        getData(apiEndpointGet, value ? { Status: value } : {});
     };
 
     const handleCheckout = async () => {
@@ -254,6 +327,9 @@ const CheckoutPage = () => {
                 onApprove={(row) => handleApproval(row.id_kunjungan, 'approved')}
                 onReject={(row) => handleApproval(row.id_kunjungan, 'rejected')}
                 onCheckin={(row) => handleCheckin(row.id_kunjungan)}
+                branches={branches}
+                selectedBranch={selectedBranch}
+                setSelectedBranch={setSelectedBranch}
             />
 
             <CheckoutDialog

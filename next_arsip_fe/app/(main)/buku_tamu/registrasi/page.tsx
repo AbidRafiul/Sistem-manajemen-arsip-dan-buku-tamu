@@ -9,8 +9,56 @@ import postData from '@/lib/axios/postData';
 import { showError, showSuccess } from '@/lib/tools/generalTools';
 import RegistrasiForm from './components/display/form';
 import VisitorCardModal from './components/display/table';
-import { apiEndpointGetPurpose, apiEndpointGetUser } from './components/endpoints';
+import { apiEndpointGetPurpose, apiEndpointGetUser, apiEndpointGetBranches } from './components/endpoints';
 import { RegistrasiFormData, GeneratedCardData } from './components/interfaces';
+import { useSession } from 'next-auth/react';
+
+interface BranchRaw {
+    id: number;
+    name: string;
+    id_induk: number | null;
+}
+
+const groupBranches = (list: BranchRaw[]): any[] => {
+    const pusat: any[] = [];
+    const cabang: any[] = [];
+    const unit: any[] = [];
+
+    const sortedList = [...list].sort((a, b) => a.name.localeCompare(b.name));
+
+    for (const item of sortedList) {
+        const lowerName = item.name.toLowerCase();
+        if (lowerName.includes('kecamatan') || lowerName.includes('unit')) {
+            unit.push({ id: item.id, name: item.name });
+        } else if (lowerName.includes('pusat')) {
+            pusat.push({ id: item.id, name: item.name });
+        } else {
+            cabang.push({ id: item.id, name: item.name });
+        }
+    }
+
+    const groups: any[] = [];
+    if (pusat.length > 0) {
+        groups.push({
+            label: 'Kantor Pusat',
+            items: pusat
+        });
+    }
+    if (cabang.length > 0) {
+        groups.push({
+            label: 'Kantor Cabang',
+            items: cabang
+        });
+    }
+    if (unit.length > 0) {
+        groups.push({
+            label: 'Unit / Kecamatan',
+            items: unit
+        });
+    }
+
+    return groups;
+};
 
 const initialFormState: RegistrasiFormData = {
     guest_name: '',
@@ -21,24 +69,33 @@ const initialFormState: RegistrasiFormData = {
     identity_type: null,
     identity_number: '',
     visit_purpose_id: null,
+    id_cabang: null,
     host_user_id: null,
     host_name: '',
     visit_notes: '',
     check_in_time: null,
     visit_type: 'personal',
     guest_count: 1,
-    signature_data: null
+    signature_data: null,
+    group_members: []
 };
 
 export default function RegistrasiKunjunganPage() {
     const router = useRouter();
     const toast = useRef<Toast>(null);
+    const { data: session } = useSession();
+    const roleCode = (session?.user as any)?.roleCode;
+    const isSuperadmin = roleCode === 'SUPERADMIN';
+    const userBranchId = (session?.user as any)?.id_cabang;
+    const disableBranchSelect = !isSuperadmin && !!userBranchId;
+
     const [loading, setLoading] = useState(false);
     const [showCardDialog, setShowCardDialog] = useState(false);
     const [generatedCard, setGeneratedCard] = useState<GeneratedCardData | null>(null);
 
-    const [visitPurposeOptions, setVisitPurposeOptions] = useState([]);
-    const [hostUserOptions, setHostUserOptions] = useState([]);
+    const [visitPurposeOptions, setVisitPurposeOptions] = useState<any[]>([]);
+    const [hostUserOptions, setHostUserOptions] = useState<any[]>([]);
+    const [branchOptions, setBranchOptions] = useState<any[]>([]);
 
     const [identityFile, setIdentityFile] = useState<File | null>(null);
     const [selfieFile, setSelfieFile] = useState<File | null>(null);
@@ -50,8 +107,11 @@ export default function RegistrasiKunjunganPage() {
                 const resPurpose = await postData(apiEndpointGetPurpose, {});
                 if (resPurpose?.data?.status === '00') setVisitPurposeOptions(resPurpose.data.data);
 
-                const resHost = await postData(apiEndpointGetUser, {});
-                if (resHost?.data?.status === '00') setHostUserOptions(resHost.data.data);
+                 const resBranches = await postData(apiEndpointGetBranches, {});
+                if (resBranches?.data?.status === '00' && Array.isArray(resBranches.data?.data)) {
+                    const formatted = groupBranches(resBranches.data.data);
+                    setBranchOptions(formatted);
+                }
             } catch (err) {
                 console.error(err);
             }
@@ -59,11 +119,62 @@ export default function RegistrasiKunjunganPage() {
         fetchMasterData();
     }, []);
 
+    useEffect(() => {
+        if (session?.user) {
+            const rCode = (session.user as any).roleCode;
+            const isSA = rCode === 'SUPERADMIN';
+            const bId = (session.user as any).id_cabang;
+            console.log("SESSION LOADED:", { rCode, isSA, bId, disableBranchSelect });
+            if (!isSA && bId) {
+                const branchIdNum = Number(bId);
+                setFormData((prev) => ({ ...prev, id_cabang: branchIdNum }));
+                fetchHosts(branchIdNum);
+            }
+        }
+    }, [session]);
+
+    const fetchHosts = async (branchId: number | null) => {
+        if (!branchId) {
+            setHostUserOptions([]);
+            return;
+        }
+        try {
+            const response = await axios.post("http://localhost:8000/api/v1/buku_tamu/visit_data/users", { id_cabang: branchId });
+            if (response.data?.status === '00' && Array.isArray(response.data?.data)) {
+                const mapped = response.data.data.map((h: any) => ({
+                    id_pengguna: h.id,
+                    nama_lengkap: h.name,
+                    id_cabang: h.id_cabang
+                }));
+                setHostUserOptions(mapped);
+            }
+        } catch (err) {
+            console.error("Gagal memuat daftar pegawai:", err);
+        }
+    };
+
     const handleChange = (field: string, value: any) => {
         if (field === 'reset') {
-            setFormData(initialFormState);
+            const defaultBranch = disableBranchSelect ? Number(userBranchId) : null;
+            setFormData({
+                ...initialFormState,
+                id_cabang: defaultBranch
+            });
             setIdentityFile(null);
             setSelfieFile(null);
+            if (defaultBranch) {
+                fetchHosts(defaultBranch);
+            } else {
+                setHostUserOptions([]);
+            }
+        } else if (field === 'id_cabang') {
+            setFormData((prev: RegistrasiFormData) => ({
+                ...prev,
+                id_cabang: value,
+                host_user_id: null,
+                host_name: ''
+            }));
+            fetchHosts(value);
         } else {
             setFormData((prev: RegistrasiFormData) => ({ ...prev, [field]: value }));
         }
@@ -71,8 +182,8 @@ export default function RegistrasiKunjunganPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.guest_name || !formData.phone_number || !formData.visit_purpose_id || !formData.check_in_time) {
-            showError(toast, 'Nama, No. Telepon, Tujuan Kunjungan, dan Rencana Kedatangan wajib diisi!');
+        if (!formData.guest_name || !formData.phone_number || !formData.visit_purpose_id || !formData.check_in_time || !formData.id_cabang) {
+            showError(toast, 'Nama, No. Telepon, Kantor Tujuan, Tujuan Kunjungan, dan Rencana Kedatangan wajib diisi!');
             return;
         }
 
@@ -88,6 +199,8 @@ export default function RegistrasiKunjunganPage() {
             submitData.append('IdentityType', formData.identity_type || '');
             submitData.append('IdentityNumber', formData.identity_number || '');
             submitData.append('VisitPurposeId', String(formData.visit_purpose_id));
+            submitData.append('BranchId', String(formData.id_cabang));
+            submitData.append('id_cabang', String(formData.id_cabang));
             submitData.append('HostUserId', formData.host_user_id ? String(formData.host_user_id) : '');
             submitData.append('HostName', formData.host_name || '');
             submitData.append('VisitNotes', formData.visit_notes || '');
@@ -98,6 +211,21 @@ export default function RegistrasiKunjunganPage() {
             submitData.append('GuestCount', String(formData.guest_count || 1));
             if (formData.signature_data) {
                 submitData.append('SignatureData', formData.signature_data);
+            }
+
+            if (formData.visit_type === 'group' && formData.group_members && formData.group_members.length > 0) {
+                const membersToSend = formData.group_members.map((m) => ({
+                    name: m.name,
+                    phone: m.phone,
+                    idNumber: m.idNumber,
+                }));
+                submitData.append('GroupMembers', JSON.stringify(membersToSend));
+
+                formData.group_members.forEach((member, index) => {
+                    if (member.identityFile) {
+                        submitData.append(`MemberIdentityFile_${index}`, member.identityFile);
+                    }
+                });
             }
 
             if (identityFile) submitData.append('IdentityFile', identityFile);
@@ -154,7 +282,9 @@ export default function RegistrasiKunjunganPage() {
                 setSelfieFile={setSelfieFile}
                 visitPurposeOptions={visitPurposeOptions}
                 hostUserOptions={hostUserOptions}
+                branchOptions={branchOptions}
                 loading={loading}
+                disableBranchSelect={disableBranchSelect}
                 handleSubmit={handleSubmit}
             />
 

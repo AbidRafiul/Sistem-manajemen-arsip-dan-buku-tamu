@@ -11,6 +11,7 @@ import { Tag } from 'primereact/tag';
 import { State } from "@/app/(main)/buku_tamu/checkout/components/interfaces";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
 import { usePermissions } from '@/hooks/usePermissions';
+import { useSession } from 'next-auth/react';
 
 interface TableProps {
     state: State;
@@ -22,6 +23,9 @@ interface TableProps {
     onApprove: (row: any) => void;
     onReject: (row: any) => void;
     onCheckin: (row: any) => void;
+    branches?: any[];
+    selectedBranch?: number | string;
+    setSelectedBranch?: (val: number | string) => void;
 }
 
 export default function GuestDataTable({
@@ -33,8 +37,14 @@ export default function GuestDataTable({
     onRefresh,
     onApprove,
     onReject,
-    onCheckin
+    onCheckin,
+    branches = [],
+    selectedBranch = '',
+    setSelectedBranch = () => {}
 }: TableProps) {
+    const { data: session } = useSession();
+    const roleCode = (session?.user as any)?.roleCode;
+    const isSuperadmin = roleCode === 'SUPERADMIN';
     const statusOptions = [
         { label: 'Semua Status', value: '' },
         { label: 'Sedang Berkunjung', value: 'in' },
@@ -95,31 +105,23 @@ export default function GuestDataTable({
         return <Tag severity={severity} value={statusLabel} />;
     };
 
-    const visitTypeBodyTemplate = (rowData: any) => {
-        const type = rowData.tipe_kunjungan || 'personal';
-        const count = rowData.jumlah_tamu || 1;
-        
-        if (type === 'group') {
-            return (
-                <Tag 
-                    value={`Group (${count} Orang)`} 
-                    style={{ background: '#f5d0fe', color: '#701a75', border: '1px solid #f0abfc' }}
-                />
-            );
-        }
-        
-        return (
-            <Tag 
-                value="Personal" 
-                style={{ background: '#e0f2fe', color: '#0369a1', border: '1px solid #bae6fd' }}
-            />
-        );
-    };
-
     const header = (
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
             <h5 className="m-0 font-bold">Riwayat Kunjungan Tamu</h5>
             <div className="flex flex-column sm:flex-row gap-2">
+                {isSuperadmin && branches.length > 0 && (
+                    <Dropdown
+                        value={selectedBranch}
+                        options={branches}
+                        optionLabel="name"
+                        optionValue="id"
+                        optionGroupLabel="label"
+                        optionGroupChildren="items"
+                        onChange={(e) => setSelectedBranch(e.value)}
+                        placeholder="Pilih Kantor/Cabang"
+                        className="w-full sm:w-14rem p-inputtext-sm"
+                    />
+                )}
                 <Dropdown
                     value={state.statusFilter}
                     options={statusOptions}
@@ -153,10 +155,10 @@ export default function GuestDataTable({
         <div className="card shadow-2 border-round p-4">
             <DataTable value={state.data} loading={state.load} paginator rows={10} header={header} responsiveLayout="scroll" emptyMessage="Data kunjungan tamu kosong">
                 <Column field="nama_tamu" header="Nama Tamu" sortable />
+                {isSuperadmin && <Column field="BranchName" header="Kantor Cabang" sortable />}
                 <Column field="nomor_telepon" header="No. Telepon" />
                 <Column field="instansi_tamu" header="Instansi" sortable />
                 <Column field="VisitPurposeName" header="Tujuan" />
-                <Column field="tipe_kunjungan" header="Tipe" body={visitTypeBodyTemplate} sortable />
                 <Column field="waktu_masuk" header="Check In" body={(r) => r.waktu_masuk && r.waktu_masuk !== '0000-00-00 00:00:00' ? formatDateCalendar(r.waktu_masuk, 'HH:mm dd/MM/yyyy') : '-'} sortable />
                 <Column field="waktu_keluar" header="Check Out" body={(r) => r.waktu_keluar && r.waktu_keluar !== '0000-00-00 00:00:00' ? formatDateCalendar(r.waktu_keluar, 'HH:mm dd/MM/yyyy') : '-'} />
                 <Column field="status_persetujuan" header="Persetujuan" body={approvalBodyTemplate} sortable />

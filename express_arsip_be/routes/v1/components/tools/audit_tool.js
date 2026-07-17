@@ -20,8 +20,8 @@ export const recordAuditTrail = async (
       : req?.ip || req?.connection?.remoteAddress || "Unknown";
 
     await DB("mst_riwayat_audit").insert({
-      username: nama_pengguna,
-      role: peran,
+      nama_pengguna: nama_pengguna,
+      peran: peran,
       aksi: action,
       alamat_ip: cIp,
       agen_pengguna: req?.headers?.["user-agent"] || "Unknown",

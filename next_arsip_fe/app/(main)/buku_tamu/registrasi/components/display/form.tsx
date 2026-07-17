@@ -18,11 +18,13 @@ interface FormProps {
     setSelfieFile: (file: File | null) => void;
     visitPurposeOptions: any[];
     hostUserOptions: any[];
+    branchOptions?: any[];
     loading: boolean;
+    disableBranchSelect?: boolean;
     handleSubmit: (e: React.FormEvent) => void;
 }
 
-export default function RegistrasiForm({ formData, handleChange, setIdentityFile, setSelfieFile, visitPurposeOptions, hostUserOptions, loading, handleSubmit }: FormProps) {
+export default function RegistrasiForm({ formData, handleChange, setIdentityFile, setSelfieFile, visitPurposeOptions, hostUserOptions, branchOptions = [], loading, disableBranchSelect, handleSubmit }: FormProps) {
     const identityTypes = [
         { label: 'KTP', value: 'ktp' },
         { label: 'SIM', value: 'sim' },
@@ -99,6 +101,12 @@ export default function RegistrasiForm({ formData, handleChange, setIdentityFile
                 >
                     <div className="flex flex-column gap-3 mt-2">
                         <div className="field">
+                            <label htmlFor="id_cabang" className="font-semibold block mb-2 text-sm text-800">
+                                Kantor / Cabang Tujuan <span className="p-error">*</span>
+                            </label>
+                            <Dropdown id="id_cabang" value={formData.id_cabang} options={branchOptions} optionLabel="name" optionValue="id" optionGroupLabel="label" optionGroupChildren="items" onChange={(e) => handleChange('id_cabang', e.value)} placeholder="Pilih Kantor / Cabang Tujuan" disabled={disableBranchSelect} className="p-inputtext-sm" />
+                        </div>
+                        <div className="field">
                             <label htmlFor="visit_purpose_id" className="font-semibold block mb-2 text-sm text-800">
                                 Tujuan Kunjungan <span className="p-error">*</span>
                             </label>
@@ -108,31 +116,140 @@ export default function RegistrasiForm({ formData, handleChange, setIdentityFile
                             <label htmlFor="visit_type" className="font-semibold block mb-2 text-sm text-800">
                                 Tipe Kunjungan <span className="p-error">*</span>
                             </label>
-                            <Dropdown 
-                                id="visit_type" 
-                                value={formData.visit_type || 'personal'} 
+                            <Dropdown
+                                id="visit_type"
+                                value={formData.visit_type || 'personal'}
                                 options={[
                                     { label: 'Personal (Individu)', value: 'personal' },
                                     { label: 'Group (Rombongan)', value: 'group' }
-                                ]} 
-                                onChange={(e) => handleChange('visit_type', e.value)} 
-                                className="p-inputtext-sm" 
+                                ]}
+                                onChange={(e) => handleChange('visit_type', e.value)}
+                                className="p-inputtext-sm"
                             />
                         </div>
                         {formData.visit_type === 'group' && (
-                            <div className="field">
-                                <label htmlFor="guest_count" className="font-semibold block mb-2 text-sm text-800">
-                                    Jumlah Tamu (Orang) <span className="p-error">*</span>
-                                </label>
-                                <InputText 
-                                    id="guest_count" 
-                                    type="number" 
-                                    min={1} 
-                                    value={String(formData.guest_count || 1)} 
-                                    onChange={(e) => handleChange('guest_count', parseInt(e.target.value, 10) || 1)} 
-                                    placeholder="Jumlah orang" 
-                                    className="p-inputtext-sm" 
-                                />
+                            <div className="flex flex-column gap-3 mt-2 border-top-1 border-300 pt-3">
+                                <div className="flex justify-content-between align-items-center mb-2">
+                                    <span className="font-semibold text-color text-sm">Daftar Anggota Rombongan</span>
+                                    <Button
+                                        type="button"
+                                        label="Tambah Anggota"
+                                        icon="pi pi-plus"
+                                        className="p-button-outlined p-button-sm py-1 px-2 text-xs"
+                                        onClick={() => {
+                                            const currentMembers = formData.group_members || [];
+                                            const updated = [...currentMembers, { name: '', phone: '', idNumber: '', identityFile: null }];
+                                            handleChange('group_members', updated);
+                                            handleChange('guest_count', updated.length + 1);
+                                        }}
+                                    />
+                                </div>
+
+                                {(formData.group_members || []).map((member, index) => (
+                                    <div key={index} className="p-3 surface-50 border-round-lg border-1 border-200 flex flex-column gap-2 mb-2 relative">
+                                        <Button
+                                            type="button"
+                                            icon="pi pi-times"
+                                            className="p-button-rounded p-button-text p-button-danger absolute p-1 text-xs"
+                                            style={{ top: '8px', right: '8px', width: '24px', height: '24px' }}
+                                            onClick={() => {
+                                                const currentMembers = formData.group_members || [];
+                                                const updated = currentMembers.filter((_, i) => i !== index);
+                                                handleChange('group_members', updated);
+                                                handleChange('guest_count', updated.length + 1);
+                                            }}
+                                        />
+                                        <div className="font-semibold text-xs text-600 mb-1 flex align-items-center gap-2">
+                                            <span>Anggota #{index + 1}</span>
+                                            <Button
+                                                type="button"
+                                                label="Salin dari Tamu Utama"
+                                                className="p-button-text p-button-sm p-0 text-xs font-medium text-primary hover:underline ml-2"
+                                                style={{ height: 'auto', minWidth: 'auto' }}
+                                                onClick={() => {
+                                                    const currentMembers = [...(formData.group_members || [])];
+                                                    currentMembers[index] = {
+                                                        ...currentMembers[index],
+                                                        name: formData.guest_name,
+                                                        phone: formData.phone_number,
+                                                        idNumber: formData.identity_number,
+                                                    };
+                                                    handleChange('group_members', currentMembers);
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="grid">
+                                            <div className="col-12 md:col-4 field m-0">
+                                                <label className="text-xs font-semibold mb-1 block">Nama Lengkap</label>
+                                                <InputText
+                                                    value={member.name}
+                                                    onChange={(e) => {
+                                                        const currentMembers = [...(formData.group_members || [])];
+                                                        currentMembers[index].name = e.target.value;
+                                                        handleChange('group_members', currentMembers);
+                                                    }}
+                                                    placeholder="Nama lengkap"
+                                                    className="p-inputtext-sm w-full"
+                                                />
+                                            </div>
+                                            <div className="col-12 md:col-4 field m-0">
+                                                <label className="text-xs font-semibold mb-1 block">No. HP (Opsional)</label>
+                                                <InputText
+                                                    value={member.phone}
+                                                    onChange={(e) => {
+                                                        const currentMembers = [...(formData.group_members || [])];
+                                                        currentMembers[index].phone = e.target.value;
+                                                        handleChange('group_members', currentMembers);
+                                                    }}
+                                                    placeholder="No. HP"
+                                                    className="p-inputtext-sm w-full"
+                                                />
+                                            </div>
+                                            <div className="col-12 md:col-4 field m-0">
+                                                <label className="text-xs font-semibold mb-1 block">No. ID / KTP (Opsional)</label>
+                                                <InputText
+                                                    value={member.idNumber}
+                                                    onChange={(e) => {
+                                                        const currentMembers = [...(formData.group_members || [])];
+                                                        currentMembers[index].idNumber = e.target.value;
+                                                        handleChange('group_members', currentMembers);
+                                                    }}
+                                                    placeholder="No. ID"
+                                                    className="p-inputtext-sm w-full"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="field m-0 mt-2">
+                                            <label className="text-xs font-semibold mb-1 block">Foto KTP/SIM (Opsional)</label>
+                                            <FileUpload
+                                                mode="basic"
+                                                accept="image/*"
+                                                maxFileSize={2000000}
+                                                onSelect={(e) => {
+                                                    const currentMembers = [...(formData.group_members || [])];
+                                                    currentMembers[index].identityFile = e.files[0];
+                                                    handleChange('group_members', currentMembers);
+                                                }}
+                                                chooseLabel={member.identityFile ? member.identityFile.name : "Pilih Foto KTP"}
+                                                className="w-full text-xs"
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <div className="field">
+                                    <label htmlFor="guest_count" className="font-semibold block mb-2 text-sm text-800">
+                                        Total Jumlah Tamu (Orang) <span className="p-error">*</span>
+                                    </label>
+                                    <InputText
+                                        id="guest_count"
+                                        type="number"
+                                        readOnly
+                                        disabled
+                                        value={String(formData.guest_count || 1)}
+                                        className="p-inputtext-sm bg-gray-100"
+                                    />
+                                </div>
                             </div>
                         )}
                         <div className="field">

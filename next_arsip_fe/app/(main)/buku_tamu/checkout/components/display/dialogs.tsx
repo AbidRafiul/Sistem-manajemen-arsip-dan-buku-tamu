@@ -31,16 +31,16 @@ export function CheckoutDialog({
     onConfirm
 }: CheckoutDialogProps) {
     return (
-        <Dialog 
+        <Dialog
             header={
                 <div className="flex align-items-center gap-2">
                     <i className="pi pi-sign-out text-warning text-xl" />
                     <span className="font-bold text-900">Check-Out Tamu</span>
                 </div>
-            } 
-            visible={visible} 
-            modal 
-            style={{ width: '480px' }} 
+            }
+            visible={visible}
+            modal
+            style={{ width: '480px' }}
             onHide={onHide}
             className="border-round-2xl overflow-hidden"
             pt={{
@@ -54,10 +54,10 @@ export function CheckoutDialog({
                     <label htmlFor="checkoutToken" className="font-semibold block mb-2 text-sm text-800">
                         QR Token / Kode Kunjungan <span className="p-error">*</span>
                     </label>
-                    <InputText 
-                        id="checkoutToken" 
-                        value={checkoutToken} 
-                        onChange={(e) => onTokenChange(e.target.value)} 
+                    <InputText
+                        id="checkoutToken"
+                        value={checkoutToken}
+                        onChange={(e) => onTokenChange(e.target.value)}
                         placeholder="Contoh: VIST-123456"
                         className="p-inputtext-sm"
                     />
@@ -66,10 +66,10 @@ export function CheckoutDialog({
                     <label htmlFor="checkoutNotes" className="font-semibold block mb-2 text-sm text-800">
                         Catatan Keperluan Keluar / Checkout
                     </label>
-                    <InputTextarea 
-                        id="checkoutNotes" 
-                        value={checkoutNotes} 
-                        onChange={(e) => onNotesChange(e.target.value)} 
+                    <InputTextarea
+                        id="checkoutNotes"
+                        value={checkoutNotes}
+                        onChange={(e) => onNotesChange(e.target.value)}
                         rows={4}
                         placeholder="Masukkan catatan tambahan jika diperlukan..."
                         className="p-inputtext-sm"
@@ -77,23 +77,23 @@ export function CheckoutDialog({
                     />
                 </div>
             </div>
-            
+
             <div className="flex justify-content-end gap-2 mt-4 pt-3 border-top-1 surface-border">
-                <Button 
-                    label="Batal" 
-                    severity="secondary" 
-                    outlined 
+                <Button
+                    label="Batal"
+                    severity="secondary"
+                    outlined
                     className="py-2 px-4 font-semibold text-sm border-round-lg"
-                    onClick={onHide} 
+                    onClick={onHide}
                     disabled={loading}
                 />
-                <Button 
-                    label="Konfirmasi Checkout" 
-                    icon="pi pi-check" 
+                <Button
+                    label="Konfirmasi Checkout"
+                    icon="pi pi-check"
                     loading={loading}
                     className="py-2 px-4 font-semibold text-sm border-round-lg text-white"
                     style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)', border: 'none' }}
-                    onClick={onConfirm} 
+                    onClick={onConfirm}
                 />
             </div>
         </Dialog>
@@ -121,16 +121,16 @@ export function DetailVisitorDialog({
     };
 
     return (
-        <Dialog 
+        <Dialog
             header={
                 <div className="flex align-items-center gap-2">
                     <i className="pi pi-info-circle text-primary text-xl" />
                     <span className="font-bold text-900">Detail Riwayat Kunjungan</span>
                 </div>
-            } 
-            visible={visible} 
-            modal 
-            style={{ width: '580px' }} 
+            }
+            visible={visible}
+            modal
+            style={{ width: '580px' }}
             onHide={onHide}
             className="border-round-2xl overflow-hidden"
             pt={{
@@ -155,8 +155,8 @@ export function DetailVisitorDialog({
                 <div className="col-12 md:col-6 mb-3">
                     <span className="text-xs uppercase text-500 font-bold tracking-wider block mb-1">Status Kunjungan</span>
                     <div className="mt-1">
-                        <Tag 
-                            value={record.status} 
+                        <Tag
+                            value={record.status}
                             severity={getStatusSeverity(record.status)}
                             style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
                         />
@@ -167,6 +167,9 @@ export function DetailVisitorDialog({
                     <span className="font-semibold text-900 text-base uppercase">
                         {record.tipe_kunjungan === 'group' ? `Group (${record.jumlah_tamu} Orang)` : 'Personal'}
                     </span>
+                </div>                <div className="col-12 md:col-6 mb-3">
+                    <span className="text-xs uppercase text-500 font-bold tracking-wider block mb-1">Kantor / Cabang Tujuan</span>
+                    <span className="font-semibold text-900 text-base">{record.BranchName || '-'}</span>
                 </div>
 
                 <div className="col-12">
@@ -244,21 +247,50 @@ export function DetailVisitorDialog({
 
                 <div className="col-12">
                     <span className="text-xs uppercase text-500 font-bold tracking-wider block mb-1">Catatan Tambahan</span>
-                    <div 
+                    <div
                         className="p-3 border-round-lg mt-1 text-800 leading-normal"
                         style={{ backgroundColor: '#F8FAFC', border: '1px solid #EFF6FF' }}
                     >
                         {record.visit_notes || record.catatan_kunjungan || 'Tidak ada catatan tambahan.'}
                     </div>
                 </div>
+
+                {record.tipe_kunjungan === 'group' && record.group_members && record.group_members.length > 0 && (
+                    <>
+                        <div className="col-12">
+                            <Divider className="my-2" style={{ borderColor: '#F1F5F9' }} />
+                        </div>
+                        <div className="col-12 mb-3">
+                            <span className="text-xs uppercase text-500 font-bold tracking-wider block mb-2">Anggota Rombongan ({record.group_members.length} Orang)</span>
+                            <div className="flex flex-column gap-2">
+                                {record.group_members.map((member: any, idx: number) => (
+                                    <div key={idx} className="p-2 border-round-lg flex align-items-center justify-content-between text-xs" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+                                        <div className="flex flex-column gap-1">
+                                            <span className="font-semibold text-900">{idx + 1}. {member.nama_anggota}</span>
+                                            <div className="flex gap-3 text-600">
+                                                {member.nomor_telepon && <span>No. HP: {member.nomor_telepon}</span>}
+                                                {member.nomor_identitas && <span>No. ID: {member.nomor_identitas}</span>}
+                                            </div>
+                                        </div>
+                                        {member.PhotoIdentityUrl && (
+                                            <a href={member.PhotoIdentityUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold flex align-items-center gap-1">
+                                                <i className="pi pi-image" /> Lihat KTP
+                                            </a>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
 
             <div className="flex justify-content-end mt-4 pt-3 border-top-1 surface-border">
-                <Button 
-                    label="Tutup" 
+                <Button
+                    label="Tutup"
                     className="py-2 px-4 font-semibold text-sm border-round-lg"
                     style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)', border: 'none' }}
-                    onClick={onHide} 
+                    onClick={onHide}
                 />
             </div>
         </Dialog>
