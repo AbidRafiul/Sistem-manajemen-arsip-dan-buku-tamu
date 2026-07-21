@@ -8,6 +8,7 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { Divider } from 'primereact/divider';
 import { Tag } from 'primereact/tag';
 import { formatDateCalendar } from "@/lib/tools/dateTools";
+import { Html5Qrcode } from 'html5-qrcode';
 
 interface CheckoutDialogProps {
     visible: boolean;
@@ -293,6 +294,128 @@ export function DetailVisitorDialog({
                     onClick={onHide}
                 />
             </div>
+        </Dialog>
+    );
+}
+
+interface ScanQRDialogProps {
+    visible: boolean;
+    onHide: () => void;
+    onScanSuccess: (decodedText: string) => void;
+    loading: boolean;
+}
+
+export function ScanQRDialog({
+    visible,
+    onHide,
+    onScanSuccess,
+    loading
+}: ScanQRDialogProps) {
+    const scannerRef = React.useRef<any>(null);
+
+    React.useEffect(() => {
+        if (visible) {
+            const timeoutId = setTimeout(() => {
+                const html5QrCode = new Html5Qrcode("qr-reader");
+                scannerRef.current = html5QrCode;
+
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    (decodedText) => {
+                        onScanSuccess(decodedText);
+                        // Stop after scan success
+                        if (html5QrCode.isScanning) {
+                            html5QrCode.stop().then(() => {
+                                scannerRef.current = null;
+                            }).catch((err: any) => console.error("Gagal menghentikan scanner:", err));
+                        }
+                    },
+                    () => {
+                        // ignore error
+                    }
+                ).catch((err: any) => {
+                    console.error("Gagal memulai scanner QR:", err);
+                });
+            }, 300);
+
+            return () => {
+                clearTimeout(timeoutId);
+            };
+        } else {
+            if (scannerRef.current && scannerRef.current.isScanning) {
+                scannerRef.current.stop().then(() => {
+                    scannerRef.current = null;
+                }).catch((err: any) => console.error("Gagal menghentikan scanner saat modal ditutup:", err));
+            }
+        }
+    }, [visible]);
+
+    const handleClose = async () => {
+        if (scannerRef.current && scannerRef.current.isScanning) {
+            try {
+                await scannerRef.current.stop();
+            } catch (err) {
+                console.error("Error stopping scanner on close:", err);
+            }
+        }
+        scannerRef.current = null;
+        onHide();
+    };
+
+    return (
+        <Dialog
+            header={
+                <div className="flex align-items-center gap-2">
+                    <i className="pi pi-qrcode text-primary text-xl" />
+                    <span className="font-bold text-900">Scan QR Code Check-Out</span>
+                </div>
+            }
+            visible={visible}
+            modal
+            style={{ width: '95vw', maxWidth: '450px' }}
+            onHide={handleClose}
+            className="border-round-2xl overflow-hidden"
+            pt={{
+                root: { className: 'border-round-2xl shadow-6' },
+                header: { className: 'surface-50 border-bottom-1 surface-border py-3 px-4' },
+                content: { className: 'p-4 flex flex-column align-items-center' }
+            }}
+        >
+            <div className="text-center mb-3">
+                <p className="text-sm text-600 m-0">Arahkan QR Code Kunjungan tamu ke area kamera di bawah ini</p>
+            </div>
+
+            <div className="relative w-full aspect-square border-round-xl overflow-hidden bg-black shadow-inner mb-4 flex align-items-center justify-content-center" style={{ maxWidth: '320px', minHeight: '320px' }}>
+                <div id="qr-reader" className="w-full h-full" style={{ border: 'none' }}></div>
+                {/* Visual scanner target line overlay */}
+                <div 
+                    className="absolute left-0 right-0 h-2px bg-primary opacity-75"
+                    style={{
+                        top: '50%',
+                        boxShadow: '0 0 8px var(--primary-color)',
+                        animation: 'scan-anim 2s infinite ease-in-out'
+                    }}
+                />
+            </div>
+
+            <Button
+                type="button"
+                label="Batal"
+                severity="secondary"
+                outlined
+                className="w-full py-2 font-semibold text-sm border-round-lg mt-2"
+                onClick={handleClose}
+                disabled={loading}
+            />
+
+            <style jsx>{`
+                @keyframes scan-anim {
+                    0% { top: 15%; }
+                    50% { top: 85%; }
+                    100% { top: 15%; }
+                }
+            `}</style>
         </Dialog>
     );
 }
