@@ -23,9 +23,6 @@ interface TableProps {
     onApprove: (row: any) => void;
     onReject: (row: any) => void;
     onCheckin: (row: any) => void;
-    branches?: any[];
-    selectedBranch?: number | string;
-    setSelectedBranch?: (val: number | string) => void;
 }
 
 export default function GuestDataTable({
@@ -37,10 +34,7 @@ export default function GuestDataTable({
     onRefresh,
     onApprove,
     onReject,
-    onCheckin,
-    branches = [],
-    selectedBranch = '',
-    setSelectedBranch = () => {}
+    onCheckin
 }: TableProps) {
     const { data: session } = useSession();
     const roleCode = (session?.user as any)?.roleCode;
@@ -109,19 +103,7 @@ export default function GuestDataTable({
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
             <h5 className="m-0 font-bold">Riwayat Kunjungan Tamu</h5>
             <div className="flex flex-column sm:flex-row gap-2">
-                {isSuperadmin && branches.length > 0 && (
-                    <Dropdown
-                        value={selectedBranch}
-                        options={branches}
-                        optionLabel="name"
-                        optionValue="id"
-                        optionGroupLabel="label"
-                        optionGroupChildren="items"
-                        onChange={(e) => setSelectedBranch(e.value)}
-                        placeholder="Pilih Kantor/Cabang"
-                        className="w-full sm:w-14rem p-inputtext-sm"
-                    />
-                )}
+
                 <Dropdown
                     value={state.statusFilter}
                     options={statusOptions}

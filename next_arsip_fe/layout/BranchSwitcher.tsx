@@ -94,18 +94,18 @@ const BranchSwitcher = () => {
 
     // Level 2: Pusat Daerah
     // If the user can't see Level 1, we show Level 2 directly if they exist
-    const daerahList = selectedPusat 
-        ? allBranches.filter(b => b.id_induk === selectedPusat) 
+    const daerahList = selectedPusat
+        ? allBranches.filter(b => b.id_induk === selectedPusat)
         : pusatList.length === 0 ? allBranches.filter(b => b.level === 2) : [];
 
     // Level 3: Unit Daerah
-    const unitList = selectedDaerah 
-        ? allBranches.filter(b => b.id_induk === selectedDaerah) 
+    const unitList = selectedDaerah
+        ? allBranches.filter(b => b.id_induk === selectedDaerah)
         : (pusatList.length === 0 && daerahList.length === 0) ? allBranches.filter(b => b.level === 3) : [];
 
     // Level 4: Kantor Kecamatan
-    const kecamatanList = selectedUnit 
-        ? allBranches.filter(b => b.id_induk === selectedUnit) 
+    const kecamatanList = selectedUnit
+        ? allBranches.filter(b => b.id_induk === selectedUnit)
         : (pusatList.length === 0 && daerahList.length === 0 && unitList.length === 0) ? allBranches.filter(b => b.level === 4) : [];
 
     // Visibility logic: Hide a level if it is the effective root and has only 1 option
