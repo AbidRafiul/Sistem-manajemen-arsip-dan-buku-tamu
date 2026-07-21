@@ -44,6 +44,10 @@ router.post("/", async (req, res) => {
       const branchIds = await getDescendantBranchIds(DB, filterBranchId);
       q.whereIn("t.id_cabang", branchIds);
       qCount.whereIn("t.id_cabang", branchIds);
+    } else if (req.headers["x-filter-cabang"]) {
+      const branchIds = req.headers["x-filter-cabang"].split(",").map(Number);
+      q.whereIn("t.id_cabang", branchIds);
+      qCount.whereIn("t.id_cabang", branchIds);
     }
 
     if (oPayload.Status) {
@@ -127,9 +131,15 @@ router.post("/purposes", async (req, res) => {
 
 router.post("/branches", async (req, res) => {
   try {
-    const listCabang = await DB("mst_cabang")
+    let query = DB("mst_cabang")
       .select("id_cabang as id", "nama_cabang as name", "id_induk")
       .whereNot("status", "deleted");
+
+    if (req.headers["x-filter-cabang"]) {
+      query = query.whereIn("id_cabang", req.headers["x-filter-cabang"].split(",").map(Number));
+    }
+
+    const listCabang = await query;
 
     return res.status(200).json({
       status: "00",
