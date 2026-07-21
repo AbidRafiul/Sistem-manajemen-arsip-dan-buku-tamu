@@ -622,44 +622,9 @@ export default function VisitorBookingForm({
 function styleOverrides() {
     return (
         <style jsx global>{`
-            .p-inputtext:focus, 
-            .p-dropdown:not(.p-disabled).p-focus, 
-            .p-calendar:not(.p-disabled).p-focus .p-inputtext {
-                border-color: #6366f1 !important;
-                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
-            }
-            .p-inputtext, 
-            .p-dropdown, 
-            .p-calendar .p-inputtext {
-                transition: all 0.25s ease-in-out !important;
-                border-radius: 8px !important;
-                border: 1.5px solid #cbd5e1 !important;
-                padding: 0.75rem 1rem !important;
-            }
-            .p-dropdown .p-dropdown-label {
-                padding: 0 !important;
-            }
             .p-calendar.p-inputwrapper {
                 display: flex;
                 position: relative;
-            }
-            .p-calendar.p-inputwrapper .p-inputtext {
-                border-top-right-radius: 0 !important;
-                border-bottom-right-radius: 0 !important;
-                border-right: none !important;
-            }
-            .p-calendar.p-inputwrapper .p-datepicker-trigger {
-                border-top-left-radius: 0 !important;
-                border-bottom-left-radius: 0 !important;
-                background: #6366f1 !important;
-                color: #ffffff !important;
-                border: 1.5px solid #6366f1 !important;
-                padding: 0 1.25rem !important;
-                border-top-right-radius: 8px !important;
-                border-bottom-right-radius: 8px !important;
-            }
-            .p-calendar.p-inputwrapper .p-datepicker-trigger:hover {
-                background: #4f46e5 !important;
             }
             .custom-section-title {
                 font-size: 0.875rem;
