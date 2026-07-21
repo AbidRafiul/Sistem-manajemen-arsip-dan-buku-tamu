@@ -512,15 +512,22 @@ export default function VisitorBookingForm({
 
                     <div className="col-12 field flex flex-column gap-2 mb-0">
                         <label htmlFor="waktu_masuk" className="font-semibold text-xs text-700">Rencana Waktu Kedatangan *</label>
-                        <Calendar
+                        <input
+                            type="datetime-local"
                             id="waktu_masuk"
-                            value={form.waktu_masuk}
-                            onChange={(e) => handleChange('waktu_masuk', e.value)}
-                            showTime
-                            hourFormat="24"
-                            placeholder="Pilih tanggal dan jam kedatangan"
-                            showIcon
-                            className="w-full"
+                            value={form.waktu_masuk instanceof Date ? new Date(form.waktu_masuk.getTime() - form.waktu_masuk.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                handleChange('waktu_masuk', val ? new Date(val) : undefined);
+                            }}
+                            className="p-inputtext p-component w-full"
+                            style={{ 
+                                padding: '0.5rem 0.75rem', 
+                                borderRadius: '6px', 
+                                border: '1px solid #ced4da',
+                                minHeight: '39px',
+                                fontSize: '0.875rem'
+                            }}
                         />
                     </div>
 
