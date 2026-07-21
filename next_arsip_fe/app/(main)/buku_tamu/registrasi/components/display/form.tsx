@@ -424,7 +424,23 @@ export default function RegistrasiForm({
                             <label htmlFor="check_in_time" className="font-semibold block mb-2 text-sm text-800">
                                 Rencana Waktu Kedatangan <span className="p-error">*</span>
                             </label>
-                            <Calendar id="check_in_time" value={formData.check_in_time} onChange={(e) => handleChange('check_in_time', e.value)} showTime hourFormat="24" placeholder="Pilih tanggal dan jam rencana" minDate={new Date()} showIcon className="p-inputtext-sm" />
+                            <input
+                                type="datetime-local"
+                                id="check_in_time"
+                                value={formData.check_in_time instanceof Date ? new Date(formData.check_in_time.getTime() - formData.check_in_time.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    handleChange('check_in_time', val ? new Date(val) : null);
+                                }}
+                                className="p-inputtext p-component w-full"
+                                style={{ 
+                                    padding: '0.429rem 0.75rem', 
+                                    borderRadius: '6px', 
+                                    border: '1px solid #ced4da',
+                                    minHeight: '34px',
+                                    fontSize: '0.875rem'
+                                }}
+                            />
                         </div>
                         <div className="field">
                             <label htmlFor="visit_notes" className="font-semibold block mb-2 text-sm text-800">Catatan Tambahan</label>
