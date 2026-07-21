@@ -20,7 +20,7 @@ const isBypassed = (url) => {
   const lower = url.toLowerCase();
   return (
     lower.includes("/purposes") ||
-    lower.includes("/branches") ||
+    lower.includes("/buku_tamu/visit_data/branches") ||
     lower.includes("/visit_checkin") ||
     lower.includes("/visit_booking") ||
     lower.includes("/visit_data/users")
@@ -176,10 +176,15 @@ export const validateSignature = async (req, res, next) => {
     if (oUser.kode_peran !== 'SUPERADMIN' && oUser.kode_peran !== 'SA') {
       if (oUser.id_cabang) {
         allowedCabangIds = new Set([oUser.id_cabang]);
-        // Hanya ambil anak langsung (1 level ke bawah), bukan cucu/cicit
-        for (const c of allCabangs) {
-          if (c.id_induk === oUser.id_cabang) {
-            allowedCabangIds.add(c.id_cabang);
+        // Ambil SEMUA keturunan (anak, cucu, cicit, dst)
+        let added = true;
+        while (added) {
+          added = false;
+          for (const c of allCabangs) {
+            if (allowedCabangIds.has(c.id_induk) && !allowedCabangIds.has(c.id_cabang)) {
+              allowedCabangIds.add(c.id_cabang);
+              added = true;
+            }
           }
         }
       }
@@ -188,21 +193,21 @@ export const validateSignature = async (req, res, next) => {
     const reqCabang = req.headers['x-filter-cabang'];
 
     if (reqCabang && reqCabang !== 'null' && reqCabang !== 'undefined') {
-      // Jika ada request filter (dari siapapun, termasuk SA), kembangkan filter tersebut secara rekursif ke seluruh level bawahnya
+      // Kembangkan request filter (dari siapapun) untuk mencakup SEMUA keturunan (anak, cucu, dst)
       const requestedIds = String(reqCabang).split(",").map(id => parseInt(id, 10));
       const expandedRequestedIds = new Set(requestedIds);
 
-      let currentParentIds = [...requestedIds];
-      while (currentParentIds.length > 0) {
-        const nextParentIds = [];
+      let addedFilter = true;
+      while (addedFilter) {
+        addedFilter = false;
         for (const c of allCabangs) {
-          if (c.id_induk && currentParentIds.includes(c.id_induk) && !expandedRequestedIds.has(c.id_cabang)) {
+          if (expandedRequestedIds.has(c.id_induk) && !expandedRequestedIds.has(c.id_cabang)) {
             expandedRequestedIds.add(c.id_cabang);
-            nextParentIds.push(c.id_cabang);
+            addedFilter = true;
           }
         }
-        currentParentIds = nextParentIds;
       }
+
 
       if (allowedCabangIds) {
         // Jika Admin Daerah, pastikan filter tidak melebihi wilayah kekuasaannya (Intersect)

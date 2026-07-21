@@ -58,6 +58,11 @@ const logout = async (
     });
 
     if (typeof window !== "undefined") {
+        localStorage.removeItem('globalFilter');
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        sessionStorage.clear();
+        
         if (redirectToLogin) {
             const base = window.location.origin;
             await signOut({ callbackUrl: `${base}/auth/login` });

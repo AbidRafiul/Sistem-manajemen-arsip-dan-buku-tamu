@@ -15,7 +15,7 @@ const uploadDocumentFile = async (req, res) => {
       return res.status(400).json(oResult);
     }
 
-    const cFilePath = `/uploads/documents/${oFile.filename}`;
+    const cFilePath = oFile.path;
 
     const oResult = {
       status: "success",

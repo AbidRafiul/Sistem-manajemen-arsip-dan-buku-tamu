@@ -176,9 +176,35 @@ body {
   background: #ffffff !important;
   border: 1.5px solid var(--color-border) !important;
   border-radius: var(--radius-md) !important;
-  padding: 0.7rem 1rem !important;
   transition: var(--transition-smooth) !important;
   box-shadow: var(--shadow-sm) !important;
+}
+
+.p-inputtext,
+.p-inputtextarea {
+  padding: 0.7rem 1rem !important;
+}
+
+.p-dropdown .p-dropdown-label,
+.p-multiselect .p-multiselect-label {
+  padding: 0.7rem 1rem !important;
+}
+
+/* Fix Paginator Dropdown getting clipped */
+.p-paginator .p-dropdown {
+  height: 2.25rem !important;
+  display: flex !important;
+  align-items: center !important;
+}
+.p-paginator .p-dropdown .p-dropdown-label {
+  padding: 0 0.75rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
+}
+.p-paginator .p-dropdown .p-dropdown-trigger {
+  width: 2rem !important;
 }
 
 .p-inputtext:hover,
