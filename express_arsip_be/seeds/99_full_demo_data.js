@@ -103,21 +103,13 @@ const menu = JSON.stringify([
 export async function seed(knex) {
   const dNow = now();
 
-  await upsertRows(knex, "mst_cabang", "kode_cabang", [
-    {
-      kode_cabang: "BR-PST",
-      nama_cabang: "Kantor Pusat Demo",
-      alamat: "Jl. Merdeka No. 1",
-      telepon: "0215550101",
-      surel: "pusat@example.local",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow,
-    },
-  ]);
   const branch = await knex("mst_cabang")
-    .where("kode_cabang", "BR-PST")
+    .where("kode_cabang", "BR-001") // Pusat Jakarta
     .first();
+    
+  if (!branch) {
+      throw new Error("Pusat Jakarta (BR-001) tidak ditemukan. Pastikan 01_master_data.js sudah dijalankan.");
+  }
 
   await upsertRows(knex, "mst_departemen", "kode_departemen", [
     {
@@ -344,11 +336,11 @@ export async function seed(knex) {
       surel: "superadmin@admin.com",
       telepon: "08100000000",
       kata_sandi: hashPassword("superadmin@admin.com", "Superadmin321!"),
-      id_cabang: branch.id_cabang,
-      id_divisi: division.id_divisi,
-      id_departemen: department.id_departemen,
-      id_jabatan: position.id_jabatan,
-      id_unit_kerja: workUnit.id_unit_kerja,
+      id_cabang: 1, // Pusat Jakarta (dari 01_master_data.js)
+      id_departemen: 1,
+      id_divisi: 1,
+      id_jabatan: 1,
+      id_unit_kerja: 1,
       gagal_masuk: 0,
       status: "active",
       created_at: dNow,

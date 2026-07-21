@@ -4,6 +4,7 @@ import DB from "../../../core/config/knex.js";
 import {
   removeFileFromMinio,
   uploadFileToMinio,
+  getMinioPrefix
 } from "../../../core/components/tools/minio_helper.js";
 
 const router = express.Router();
@@ -66,11 +67,34 @@ const outgoingLetterUpload = async (req, res) => {
       });
     }
 
-    // Separated MinIO folder: correspondence/surat_keluar
+    // Ambil detail pengunggah (untuk struktur folder hirarki MinIO)
+    let uploaderIdCabang = null, uploaderIdDept = null, uploaderIdDiv = null, uploaderIdUnit = null;
+    const uploaderId = oPayload.uploaded_by || oPayload.UploadedBy || req?.auth?.id_pengguna;
+    if (uploaderId) {
+      const uploader = await DB("mst_pengguna")
+        .select("id_cabang", "id_departemen", "id_divisi", "id_unit_kerja")
+        .where("id_pengguna", uploaderId).first();
+      
+      if (uploader) {
+        uploaderIdCabang = uploader.id_cabang;
+        uploaderIdDept = uploader.id_departemen;
+        uploaderIdDiv = uploader.id_divisi;
+        uploaderIdUnit = uploader.id_unit_kerja;
+      }
+    }
+    
+    // Fallback
+    if (!uploaderIdCabang && req.context && req.context.id_cabang) {
+      uploaderIdCabang = req.context.id_cabang;
+    }
+
+    const minioPrefix = await getMinioPrefix(uploaderIdCabang, uploaderIdDept, uploaderIdDiv, uploaderIdUnit);
+
+    // Separated MinIO folder: [prefix]/correspondence/surat_keluar
     cObjectName = await uploadFileToMinio(
       cBucketName,
       oFile,
-      "correspondence/surat_keluar",
+      `${minioPrefix}/correspondence/surat_keluar`,
     );
 
     const dNow = new Date();

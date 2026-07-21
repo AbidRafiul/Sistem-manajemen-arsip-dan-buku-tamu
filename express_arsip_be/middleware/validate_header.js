@@ -20,7 +20,7 @@ const isBypassed = (url) => {
   const lower = url.toLowerCase();
   return (
     lower.includes("/purposes") ||
-    lower.includes("/branches") ||
+    lower.includes("/buku_tamu/visit_data/branches") ||
     lower.includes("/visit_checkin") ||
     lower.includes("/visit_booking") ||
     lower.includes("/visit_data/users")
@@ -176,10 +176,15 @@ export const validateSignature = async (req, res, next) => {
     if (oUser.kode_peran !== 'SUPERADMIN' && oUser.kode_peran !== 'SA') {
       if (oUser.id_cabang) {
         allowedCabangIds = new Set([oUser.id_cabang]);
-        // Hanya ambil anak langsung (1 level ke bawah), bukan cucu/cicit
-        for (const c of allCabangs) {
-          if (c.id_induk === oUser.id_cabang) {
-            allowedCabangIds.add(c.id_cabang);
+        // Ambil SEMUA keturunan (anak, cucu, cicit, dst)
+        let added = true;
+        while (added) {
+          added = false;
+          for (const c of allCabangs) {
+            if (allowedCabangIds.has(c.id_induk) && !allowedCabangIds.has(c.id_cabang)) {
+              allowedCabangIds.add(c.id_cabang);
+              added = true;
+            }
           }
         }
       }
@@ -190,6 +195,7 @@ export const validateSignature = async (req, res, next) => {
     if (reqCabang && reqCabang !== 'null' && reqCabang !== 'undefined') {
       // Terapkan tepat cabang yang dipilih oleh pengguna di BranchSwitcher (Strict Exact Branch Matching)
       const requestedIds = String(reqCabang).split(",").map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+
 
       if (allowedCabangIds) {
         // Jika Admin Daerah, pastikan cabang yang dipilih berada dalam wewenangnya

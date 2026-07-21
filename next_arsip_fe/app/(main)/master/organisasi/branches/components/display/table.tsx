@@ -13,7 +13,6 @@ import { useRouter } from 'next/navigation';
 import { apiEndpointGet } from '../endpoints';
 import { LayoutContext } from '@/layout/context/layoutcontext';
 import { useContext } from 'react';
-import GlobalFilter from '@/layout/GlobalFilter';
 
 const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) => {
     const permissions = usePermissions();
@@ -83,8 +82,6 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                 )}
                 <Divider layout="vertical" />
                 <Button size="small" label="Muat Ulang" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
-                <Divider layout="vertical" />
-                <GlobalFilter />
             </div>
 
             <DataTable value={state.data} selection={state.selectedData} onSelectionChange={(e) => setState(p => ({ ...p, selectedData: e.value }))} dataKey="id_cabang" paginator rows={10} rowsPerPageOptions={[5, 10, 25]} globalFilterFields={["kode_cabang","nama_cabang","alamat","telepon","surel","status"]} filters={state.filters} header={renderHeader()} emptyMessage="Tidak ada data ditemukan." loading={state.load} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">

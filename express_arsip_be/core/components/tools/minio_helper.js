@@ -8,7 +8,7 @@ const MINIO_BUCKET_NAME = process.env.MINIO_BUCKET_NAME || 'arsip-bucket';
  * @param {number|string} idCabang - ID Cabang milik uploader
  * @returns {Promise<string>} - Prefix hirarki (contoh: "PUSAT-JAKARTA/PUSAT-SURABAYA")
  */
-const getMinioPrefix = async (idCabang) => {
+const getMinioPrefix = async (idCabang, idDepartemen = null, idDivisi = null, idUnitKerja = null) => {
     if (!idCabang) return 'GLOBAL';
 
     let currentId = parseInt(idCabang, 10);
@@ -36,6 +36,30 @@ const getMinioPrefix = async (idCabang) => {
 
             // Naik ke parent
             currentId = branch.id_induk;
+        }
+
+        // Add Departemen
+        if (idDepartemen) {
+            const dept = await DB("mst_departemen").select("nama_departemen").where("id_departemen", idDepartemen).first();
+            if (dept && dept.nama_departemen) {
+                hierarchy.push(dept.nama_departemen.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').toLowerCase());
+            }
+        }
+
+        // Add Divisi
+        if (idDivisi) {
+            const div = await DB("mst_divisi").select("nama_divisi").where("id_divisi", idDivisi).first();
+            if (div && div.nama_divisi) {
+                hierarchy.push(div.nama_divisi.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').toLowerCase());
+            }
+        }
+
+        // Add Unit Kerja
+        if (idUnitKerja) {
+            const unit = await DB("mst_unit_kerja").select("nama_unit_kerja").where("id_unit_kerja", idUnitKerja).first();
+            if (unit && unit.nama_unit_kerja) {
+                hierarchy.push(unit.nama_unit_kerja.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').toLowerCase());
+            }
         }
     } catch (e) {
         console.error("Gagal getMinioPrefix:", e);
@@ -90,11 +114,11 @@ const uploadFileToMinio = async (bucketName, file, options = {}) => {
 
         // 3. Susun penamaan file bersih dari metadata (tanpa angka acak timestamp)
         const ext = file.originalname.split('.').pop();
-        
+
         let cleanNomor = nomorDokumen
             ? String(nomorDokumen).trim().replace(/[^a-zA-Z0-9_-]/g, "-")
             : "";
-            
+
         let cleanNama = namaDokumen
             ? String(namaDokumen).trim().replace(/\s+/g, "-").replace(/[^a-zA-Z0-9_-]/g, "")
             : "";
@@ -102,7 +126,7 @@ const uploadFileToMinio = async (bucketName, file, options = {}) => {
         if (cleanNama.length > 40) cleanNama = cleanNama.substring(0, 40);
 
         const vString = versionLabel ? `_${String(versionLabel).toUpperCase()}` : '_V1';
-        
+
         let baseName = "";
         if (cleanNomor && cleanNama) {
             baseName = `${cleanNomor}_${cleanNama}${vString}.${ext}`;

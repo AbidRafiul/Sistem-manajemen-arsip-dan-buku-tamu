@@ -1,5 +1,6 @@
 import multer from "multer";
-import { uploadFileToMinio } from "../core/components/tools/minio_helper.js";
+import DB from "../core/config/knex.js";
+import { uploadFileToMinio, getMinioPrefix } from "../core/components/tools/minio_helper.js";
 
 const storage = multer.memoryStorage();
 
@@ -46,29 +47,33 @@ export const uploadDocument = (req, res, next) => {
     try {
       const bucketName = process.env.MINIO_BUCKET_NAME || "arsip-bucket";
 
-      // Extract active branch ID from header or context
-      let idCabang = null;
-      const cFilterCabang = req.headers["x-filter-cabang"];
-      if (cFilterCabang && cFilterCabang !== "null" && cFilterCabang !== "undefined") {
-        const firstId = parseInt(String(cFilterCabang).split(",")[0], 10);
-        if (!isNaN(firstId)) idCabang = firstId;
+      let uploaderIdCabang = null, uploaderIdDept = null, uploaderIdDiv = null, uploaderIdUnit = null;
+      const uploaderId = req.body.uploaded_by || req?.auth?.id_pengguna;
+      if (uploaderId) {
+        const uploader = await DB("mst_pengguna")
+          .select("id_cabang", "id_departemen", "id_divisi", "id_unit_kerja")
+          .where("id_pengguna", uploaderId).first();
+        if (uploader) {
+          uploaderIdCabang = uploader.id_cabang;
+          uploaderIdDept = uploader.id_departemen;
+          uploaderIdDiv = uploader.id_divisi;
+          uploaderIdUnit = uploader.id_unit_kerja;
+        }
       }
-      if (!idCabang) {
-        idCabang = req.context?.id_cabang || req.auth?.id_cabang || null;
+
+      // Fallback if not found in db
+      if (!uploaderIdCabang && req.body.id_cabang) {
+        uploaderIdCabang = req.body.id_cabang;
+      } else if (!uploaderIdCabang && req?.auth?.id_cabang) {
+        uploaderIdCabang = req.auth.id_cabang;
       }
 
-      // Extract metadata for clean enterprise file naming
-      const nomorDokumen = req.body?.nomor_dokumen || "";
-      const namaDokumen = req.body?.nama_dokumen || "";
+      const minioPrefix = await getMinioPrefix(uploaderIdCabang, uploaderIdDept, uploaderIdDiv, uploaderIdUnit);
 
-      // Upload ke MinIO dengan penamaan berbasis metadata
-      const objectName = await uploadFileToMinio(bucketName, req.file, {
-        idCabang,
-        modul: "arsip-dokumen",
-        nomorDokumen,
-        namaDokumen
-      });
+      // Upload ke MinIO di bawah folder 'arsip_dokumen'
+      const objectName = await uploadFileToMinio(bucketName, req.file, `${minioPrefix}/arsip_dokumen`);
 
+      // Extract the filename portion for req.file.filename so downstream handles cFilePath correctly
       const baseName = objectName.split("/").pop();
       req.file.filename = baseName;
       req.file.path = objectName;
