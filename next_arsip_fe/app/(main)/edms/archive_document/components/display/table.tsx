@@ -10,8 +10,9 @@ import { Divider } from "primereact/divider";
 import { Card } from "primereact/card";
 import { Avatar } from "primereact/avatar";
 import { Dropdown } from "primereact/dropdown";
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { Html5Qrcode } from "html5-qrcode";
 import { DocumentData, LoanData, TableProps } from "../interfaces";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
 import Form from "./form";
@@ -32,6 +33,52 @@ const Table = ({
 }: TableProps) => {
     const permissions = usePermissions();
     const router = useRouter();
+
+    const [scanMode, setScanMode] = useState<'camera' | 'manual'>('manual');
+    const [cameraActive, setCameraActive] = useState(false);
+    const [cameraErr, setCameraErr] = useState<string | null>(null);
+    const html5QrRef = useRef<Html5Qrcode | null>(null);
+
+    const startCameraScanner = async () => {
+        setCameraErr(null);
+        try {
+            const html5Qr = new Html5Qrcode("qr-camera-reader");
+            html5QrRef.current = html5Qr;
+            setCameraActive(true);
+
+            await html5Qr.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 220, height: 220 } },
+                (decodedText) => {
+                    handleScanQR(decodedText);
+                    html5Qr.stop().then(() => {
+                        setCameraActive(false);
+                    }).catch(console.error);
+                },
+                () => {}
+            );
+        } catch (err: any) {
+            console.error("Gagal memulai kamera:", err);
+            setCameraErr(err?.message || "Kamera tidak ditemukan atau izin akses ditolak");
+            setCameraActive(false);
+        }
+    };
+
+    const stopCameraScanner = () => {
+        if (html5QrRef.current) {
+            html5QrRef.current.stop().then(() => {
+                setCameraActive(false);
+            }).catch(console.error);
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            if (html5QrRef.current) {
+                html5QrRef.current.stop().catch(() => {});
+            }
+        };
+    }, []);
 
     const formatDateInput = (value?: string) => {
         if (!value) return '';
@@ -88,12 +135,22 @@ const Table = ({
                 onClick={() => router.push(`/edms/archive_document/${rowData.id_dokumen}/versions`)}
             />
             <Button
+                icon="pi pi-clock"
+                rounded
+                text
+                severity="help"
+                size="small"
+                tooltip="Audit Trail"
+                tooltipOptions={{ position: 'top' }}
+                onClick={() => router.push(`/edms/archive_document/${rowData.id_dokumen}/history`)}
+            />
+            <Button
                 icon="pi pi-qrcode"
                 rounded
                 text
                 severity="warning"
                 size="small"
-                tooltip="QR Code"
+                tooltip="Lihat & Cetak Stiker QR Code"
                 tooltipOptions={{ position: 'top' }}
                 onClick={() => handleGenerateQR(rowData.id_dokumen)}
             />
@@ -103,7 +160,7 @@ const Table = ({
                 text
                 severity="secondary"
                 size="small"
-                tooltip="Edit"
+                tooltip="Edit Metadata"
                 tooltipOptions={{ position: 'top' }}
                 onClick={() => {
                     formik.setValues({
@@ -130,7 +187,7 @@ const Table = ({
                 text
                 severity="danger"
                 size="small"
-                tooltip="Hapus"
+                tooltip="Hapus Dokumen"
                 tooltipOptions={{ position: 'top' }}
                 onClick={() => setState((p) => ({ ...p, delete: true, selectedDocuments: [rowData] }))}
             />
@@ -239,7 +296,18 @@ const Table = ({
                     icon="pi pi-qrcode"
                     outlined
                     severity="info"
+                    tooltip="Pindai Stiker QR Berkas Fisik dengan Kamera Live atau USB Scanner"
+                    tooltipOptions={{ position: 'top' }}
                     onClick={() => setState(p => ({ ...p, trackingDialog: true, trackingCode: '', trackingResult: null }))}
+                />
+                <Divider layout="vertical" />
+                <Button
+                    size="small"
+                    label="Pencarian OCR & Teks"
+                    icon="pi pi-search-plus"
+                    outlined
+                    severity="help"
+                    onClick={() => router.push('/edms/archive_document/search')}
                 />
                 <Divider layout="vertical" />
                 <Button
@@ -330,13 +398,13 @@ const Table = ({
                             value={state.filterType}
                             options={[
                                 { label: 'Semua Tipe', value: '' },
-                                ...state.documentTypes.map((item: any) => ({
+                                ...(state.documentTypes || []).map((item: any) => ({
                                     label: `${item.kode_jenis_dokumen} - ${item.nama_jenis_dokumen}`,
                                     value: item.kode_jenis_dokumen
                                 }))
                             ]}
                             onChange={(e) => setState(p => ({ ...p, filterType: e.value || '' }))}
-                            placeholder="Pilih Tipe"
+                            placeholder="Pilih Tipe Dokumen"
                             className="w-full text-xs p-inputtext-sm"
                             filter
                             showClear
@@ -349,13 +417,14 @@ const Table = ({
                             options={[
                                 { label: 'Semua Kerahasiaan', value: '' },
                                 ...state.confidentialities.map((item: any) => ({
-                                    label: item.nama_tingkat_kerahasiaan,
+                                    label: `${item.kode_tingkat_kerahasiaan} - ${item.nama_tingkat_kerahasiaan}`,
                                     value: item.kode_tingkat_kerahasiaan
                                 }))
                             ]}
                             onChange={(e) => setState(p => ({ ...p, filterConfidentiality: e.value || '' }))}
                             placeholder="Pilih Kerahasiaan"
                             className="w-full text-xs p-inputtext-sm"
+                            filter
                             showClear
                         />
                     </div>
@@ -364,228 +433,160 @@ const Table = ({
 
             <DataTable
                 value={state.data}
-                paginator
-                selectionMode="multiple"
                 selection={state.selectedDocuments}
-                onSelectionChange={(e) => setState((p) => ({ ...p, selectedDocuments: e.value }))}
+                onSelectionChange={(e: any) => setState((p) => ({ ...p, selectedDocuments: e.value as DocumentData[] }))}
+                selectionMode="multiple"
+                dataKey="id_dokumen"
+                paginator
                 rows={10}
-                header={headerTemplate}
-                globalFilterFields={['nama_dokumen', 'nomor_dokumen', 'nama_pic', 'status', 'nama_jenis_dokumen', 'nama_kategori_dokumen', 'nama_tingkat_kerahasiaan']}
-                filters={state.filters}
+                rowsPerPageOptions={[5, 10, 25, 50]}
                 loading={state.load}
-                rowHover
-                emptyMessage={
-                    <div className="flex flex-column align-items-center py-5 gap-3 text-color-secondary">
-                        <i className="pi pi-folder-open text-4xl text-300" />
-                        <span className="font-medium text-sm">Belum ada dokumen arsip</span>
-                    </div>
-                }
-                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data"
-                className="text-sm"
+                emptyMessage="Tidak ada dokumen ditemukan."
+                header={headerTemplate}
+                filters={state.filters}
+                globalFilterFields={['nomor_dokumen', 'nama_dokumen', 'nama_pic', 'lokasi_fisik']}
+                responsiveLayout="scroll"
+                className="p-datatable-sm border-round-xl border-1 surface-border overflow-hidden"
+                stripedRows
             >
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
-                <Column header="Nomor & Nama Dokumen" body={documentTemplate} sortable sortField="nomor_dokumen" style={{ minWidth: '200px' }} />
-                <Column field="nama_jenis_dokumen" header="Tipe" sortable style={{ minWidth: '110px' }} />
-                <Column field="nama_kategori_dokumen" header="Kategori" sortable style={{ minWidth: '110px' }} />
-                <Column field="nama_retensi" header="Jadwal Retensi" sortable body={rowData => rowData.nama_retensi ? `${rowData.nama_retensi} (${rowData.tahun_retensi} Thn)` : '-'} style={{ minWidth: '135px' }} />
-                <Column field="nama_tingkat_kerahasiaan" header="Kerahasiaan" sortable style={{ minWidth: '120px' }} />
-                <Column header="PIC" body={picTemplate} sortable sortField="nama_pic" style={{ minWidth: '150px' }} />
-                <Column field="tanggal" header="Tgl. Dokumen" sortable body={rowData => formatDateCalendar(rowData.tanggal, 'yyyy-MM-dd')} style={{ width: '130px' }} />
-                <Column field="tanggal_kedaluwarsa" header="Tgl. Kedaluwarsa" sortable body={rowData => formatDateCalendar(rowData.tanggal_kedaluwarsa, 'yyyy-MM-dd')} style={{ width: '140px' }} />
-                <Column body={statusTemplate} header="Status" style={{ width: '110px', textAlign: 'center' }} />
-                <Column header="Preview" body={previewTemplate} style={{ width: '90px', textAlign: 'center' }} />
-                <Column align="center" header="Aksi" body={actionTemplate} style={{ width: '150px', textAlign: 'center' }} />
+                <Column field="nomor_dokumen" header="Nomor / Nama Dokumen" body={documentTemplate} sortable style={{ minWidth: '16rem' }} />
+                <Column field="nama_jenis_dokumen" header="Tipe" sortable style={{ minWidth: '10rem' }} />
+                <Column field="nama_kategori_dokumen" header="Kategori" sortable style={{ minWidth: '12rem' }} />
+                <Column field="lokasi_fisik" header="Lokasi Fisik" body={(r) => r.lokasi_fisik || '-'} sortable style={{ minWidth: '10rem' }} />
+                <Column field="nama_tingkat_kerahasiaan" header="Kerahasiaan" body={(r) => r.nama_tingkat_kerahasiaan || '-'} sortable style={{ minWidth: '10rem' }} />
+                <Column field="nama_pic" header="PIC" body={picTemplate} sortable style={{ minWidth: '12rem' }} />
+                <Column field="tanggal" header="Tgl. Dokumen" body={(r) => formatDateCalendar(r.tanggal, 'yyyy-MM-dd')} sortable style={{ minWidth: '9rem' }} />
+                <Column field="tanggal_kedaluwarsa" header="Tgl. Kedaluwarsa" body={(r) => formatDateCalendar(r.tanggal_kedaluwarsa, 'yyyy-MM-dd')} sortable style={{ minWidth: '9rem' }} />
+                <Column field="status" header="Status" body={statusTemplate} sortable style={{ minWidth: '8rem' }} />
+                <Column header="Berkas" body={previewTemplate} style={{ width: '4rem', textAlign: 'center' }} />
+                <Column header="Aksi" body={actionTemplate} style={{ minWidth: '13rem', textAlign: 'center' }} />
             </DataTable>
         </Card>
 
-        <Form state={state} setState={setState} formik={formik} toast={toast} />
+        {/* Modal Form Tambah / Edit Dokumen */}
+        <Form
+            state={state}
+            setState={setState}
+            formik={formik}
+            toast={toast}
+        />
 
-        {/* Document Detail Dialog */}
+        {/* Modal Hapus Dokumen */}
+        <Dialog
+            visible={state.delete}
+            header="Konfirmasi Hapus Dokumen"
+            modal
+            footer={deleteFooterTemplate}
+            onHide={() => setState((p) => ({ ...p, delete: false }))}
+            style={{ width: '30rem' }}
+        >
+            <div className="flex align-items-center gap-3">
+                <i className="pi pi-exclamation-triangle text-red-500 text-3xl" />
+                <span>
+                    Apakah Anda yakin ingin menghapus <strong className="text-900">{state.selectedDocuments.length}</strong> dokumen yang dipilih? Tindakan ini tidak dapat dibatalkan.
+                </span>
+            </div>
+        </Dialog>
+
+        {/* Modal Detail Dokumen */}
         <Dialog
             visible={state.detail}
             header={
                 <div className="flex align-items-center gap-2">
                     <i className="pi pi-file text-primary" />
-                    <span className="font-bold text-900">Detail Dokumen</span>
+                    <span className="font-bold text-900">Detail Informasi Dokumen</span>
                 </div>
             }
             modal
-            style={{ width: '75rem', maxWidth: '95vw' }}
+            style={{ width: '40rem', maxWidth: '95vw' }}
             onHide={() => setState(p => ({ ...p, detail: false, detailData: null }))}
-            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
         >
-            <div className="flex flex-column gap-4 pt-3">
-                <div className="grid surface-50 border-round-xl p-3 border-1 surface-border text-sm">
-                    <div className="col-12 md:col-6">
-                        <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Nomor Dokumen</div>
-                        <div className="font-bold text-900">{state.detailData?.document?.nomor_dokumen || '-'}</div>
+            {state.detailData?.document ? (
+                <div className="flex flex-column gap-3 text-sm pt-2">
+                    <div className="bg-primary-50 p-3 border-round-xl border-1 border-primary-100 flex justify-content-between align-items-center">
+                        <div>
+                            <span className="font-extrabold text-base text-primary-900 block">{state.detailData.document.nomor_dokumen}</span>
+                            <span className="text-xs text-primary-700 block mt-1">{state.detailData.document.nama_dokumen}</span>
+                        </div>
+                        <Tag
+                            value={state.detailData.document.status === 'active' ? 'AKTIF' : 'NONAKTIF'}
+                            severity={state.detailData.document.status === 'active' ? 'success' : 'danger'}
+                        />
                     </div>
-                    <div className="col-12 md:col-6">
-                        <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Nama Dokumen</div>
-                        <div className="font-semibold text-900">{state.detailData?.document?.nama_dokumen || '-'}</div>
-                    </div>
-                    <div className="col-12 md:col-4">
-                        <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>PIC</div>
-                        <div className="text-900">{state.detailData?.document?.nama_pic || '-'}</div>
-                    </div>
-                    <div className="col-12 md:col-4">
-                        <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Tanggal Dokumen</div>
-                        <div className="text-900">{state.detailData?.document?.tanggal ? formatDateCalendar(state.detailData.document.tanggal, 'yyyy-MM-dd') : '-'}</div>
-                    </div>
-                    <div className="col-12 md:col-4">
-                        <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Tanggal Kedaluwarsa</div>
-                        <div className="text-900">{state.detailData?.document?.tanggal_kedaluwarsa ? formatDateCalendar(state.detailData.document.tanggal_kedaluwarsa, 'yyyy-MM-dd') : '-'}</div>
-                    </div>
-                    <div className="col-12 md:col-4">
-                        <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Tanggal Transaksi</div>
-                        <div className="text-900">{state.detailData?.document?.tanggal_transaksi ? formatDateCalendar(state.detailData.document.tanggal_transaksi, 'yyyy-MM-dd') : '-'}</div>
-                    </div>
-                    <div className="col-12 md:col-4">
-                        <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Lokasi Fisik</div>
-                        <div className="text-900">{state.detailData?.document?.lokasi_fisik || '-'}</div>
-                    </div>
-                    <div className="col-12 md:col-4">
-                        <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: '0.08em' }}>Jadwal Retensi</div>
-                        <div className="text-900">{state.detailData?.document?.nama_retensi ? `${state.detailData.document.nama_retensi} (${state.detailData.document.tahun_retensi} Tahun)` : '-'}</div>
+
+                    <div className="grid mt-1">
+                        <div className="col-6 flex flex-column gap-1">
+                            <span className="text-color-secondary font-bold text-xs uppercase">Kode Dokumen</span>
+                            <span className="text-900 font-medium">{state.detailData.document.kode_dokumen}</span>
+                        </div>
+                        <div className="col-6 flex flex-column gap-1">
+                            <span className="text-color-secondary font-bold text-xs uppercase">Kode UUID QR</span>
+                            <span className="text-900 font-medium font-mono text-xs">{state.detailData.document.qr_code}</span>
+                        </div>
+                        <div className="col-6 flex flex-column gap-1 mt-2">
+                            <span className="text-color-secondary font-bold text-xs uppercase">Tipe Dokumen</span>
+                            <span className="text-900 font-medium">{state.detailData.document.nama_jenis_dokumen || '-'}</span>
+                        </div>
+                        <div className="col-6 flex flex-column gap-1 mt-2">
+                            <span className="text-color-secondary font-bold text-xs uppercase">Kategori Dokumen</span>
+                            <span className="text-900 font-medium">{state.detailData.document.nama_kategori_dokumen || '-'}</span>
+                        </div>
+                        <div className="col-6 flex flex-column gap-1 mt-2">
+                            <span className="text-color-secondary font-bold text-xs uppercase">Klasifikasi Arsip</span>
+                            <span className="text-900 font-medium">{state.detailData.document.nama_klasifikasi || '-'}</span>
+                        </div>
+                        <div className="col-6 flex flex-column gap-1 mt-2">
+                            <span className="text-color-secondary font-bold text-xs uppercase">Tingkat Kerahasiaan</span>
+                            <span className="text-900 font-medium">{state.detailData.document.nama_tingkat_kerahasiaan || '-'}</span>
+                        </div>
+                        <div className="col-6 flex flex-column gap-1 mt-2">
+                            <span className="text-color-secondary font-bold text-xs uppercase">PIC Penanggung Jawab</span>
+                            <span className="text-900 font-medium">{state.detailData.document.nama_pic}</span>
+                        </div>
+                        <div className="col-6 flex flex-column gap-1 mt-2">
+                            <span className="text-color-secondary font-bold text-xs uppercase">Lokasi Penyimpanan Fisik</span>
+                            <span className="text-900 font-medium">{state.detailData.document.lokasi_fisik || 'Belum diatur'}</span>
+                        </div>
                     </div>
                 </div>
-
-                <Divider className="my-0" />
-
-                <div>
-                    <div className="font-bold text-900 mb-3 flex align-items-center gap-2">
-                        <i className="pi pi-history text-primary" />
-                        Riwayat Peminjaman
-                    </div>
-                    <DataTable
-                        value={state.detailData?.loans || []}
-                        rows={5}
-                        paginator
-                        emptyMessage={
-                            <div className="flex align-items-center gap-2 py-3 text-color-secondary text-sm">
-                                <i className="pi pi-info-circle" />
-                                Belum ada riwayat peminjaman
-                            </div>
-                        }
-                        className="text-sm"
-                        rowHover
-                    >
-                        <Column field="nama_peminjam" header="Peminjam" sortable />
-                        <Column field="tanggal_pinjam" header="Tgl. Pinjam" body={(rowData: LoanData) => formatDateCalendar(rowData.tanggal_pinjam)} />
-                        <Column field="tanggal_kembali" header="Tgl. Kembali" body={(rowData: LoanData) => rowData.tanggal_kembali ? formatDateCalendar(rowData.tanggal_kembali) : rowData.status === 'borrowed' ? <span className="text-orange-500 font-medium">Belum Kembali</span> : '-'} />
-                        <Column field="keperluan" header="Keperluan" />
-                        <Column field="status" header="Status" body={(rowData: LoanData) => (
-                            <Tag
-                                value={rowData.status === 'approved' ? 'Disetujui' : rowData.status === 'rejected' ? 'Ditolak' : 'Pending'}
-                                severity={rowData.status === 'approved' ? 'success' : rowData.status === 'rejected' ? 'danger' : 'warning'}
-                                style={{ fontSize: '0.7rem' }}
-                            />
-                        )} />
-                    </DataTable>
-                </div>
-            </div>
+            ) : (
+                <div className="text-center py-4 text-color-secondary">Memuat data...</div>
+            )}
         </Dialog>
 
-        {/* Delete Confirmation Dialog */}
-        <Dialog
-            header={
-                <div className="flex align-items-center gap-2">
-                    <i className="pi pi-exclamation-triangle text-red-500" />
-                    <span className="font-bold text-900">Konfirmasi Hapus</span>
-                </div>
-            }
-            visible={state.delete}
-            onHide={() => setState((p) => ({ ...p, delete: false }))}
-            modal
-            style={{ width: '26rem', maxWidth: '95vw' }}
-            footer={deleteFooterTemplate}
-            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
-        >
-            <div className="flex flex-column align-items-center text-center gap-3 py-4">
-                <div className="flex align-items-center justify-content-center border-circle bg-red-50 border-1 border-red-100" style={{ width: '4rem', height: '4rem' }}>
-                    <i className="pi pi-trash text-red-500 text-2xl" />
-                </div>
-                <div>
-                    <h4 className="font-bold text-900 m-0 mb-2 text-lg">
-                        Hapus {state.selectedDocuments.length > 1 ? `${state.selectedDocuments.length} dokumen` : 'dokumen ini'}?
-                    </h4>
-                    <p className="text-color-secondary text-sm m-0">
-                        {state.selectedDocuments.length > 1
-                            ? `${state.selectedDocuments.length} dokumen yang dipilih akan dinonaktifkan.`
-                            : `Dokumen "${state.selectedDocuments[0]?.nomor_dokumen || ''}" akan dinonaktifkan.`}
-                    </p>
-                </div>
-            </div>
-        </Dialog>
-
-        {/* Document Preview Dialog */}
-        <Dialog
-            visible={state.isPreviewVisible}
-            header={
-                <div className="flex align-items-center gap-2">
-                    <i className="pi pi-file-pdf text-primary" />
-                    <span className="font-bold text-900">Pratinjau Dokumen</span>
-                </div>
-            }
-            modal
-            style={{ width: '60rem', maxWidth: '95vw' }}
-            onHide={() => setState(p => ({ ...p, isPreviewVisible: false, previewUrl: '' }))}
-            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
-        >
-            <div className="pt-3">
-                {state.previewUrl ? (
-                    <iframe
-                        src={state.previewUrl}
-                        width="100%"
-                        height="600px"
-                        style={{ border: 'none', borderRadius: '8px' }}
-                        title="Preview Arsip"
-                    />
-                ) : (
-                    <div className="flex flex-column align-items-center justify-content-center py-5 text-color-secondary">
-                        <i className="pi pi-spin pi-spinner text-3xl mb-3" />
-                        <span>Memuat dokumen...</span>
-                    </div>
-                )}
-            </div>
-        </Dialog>
-
-        {/* QR Code Dialog */}
+        {/* Modal Tampilan & Cetak QR Code Dokumen */}
         <Dialog
             visible={state.qrDialog}
             header={
                 <div className="flex align-items-center gap-2">
-                    <i className="pi pi-qrcode text-primary" />
-                    <span className="font-bold text-900">QR Code Arsip</span>
+                    <i className="pi pi-qrcode text-warning text-xl" />
+                    <span className="font-bold text-900">Stiker QR Code Berkas Fisik</span>
                 </div>
             }
             modal
-            style={{ width: '24rem', maxWidth: '95vw' }}
+            style={{ width: '28rem' }}
             onHide={() => setState(p => ({ ...p, qrDialog: false, qrData: null }))}
-            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
         >
-            <div className="flex flex-column align-items-center justify-content-center pt-4 pb-2 text-sm">
+            <div className="flex flex-column align-items-center justify-content-center py-3">
                 {state.qrLoad ? (
-                    <div className="flex flex-column align-items-center py-5">
-                        <i className="pi pi-spin pi-spinner text-3xl text-primary mb-3" />
-                        <span className="text-color-secondary text-sm">Membuat QR Code...</span>
-                    </div>
+                    <i className="pi pi-spin pi-spinner text-3xl text-primary" />
                 ) : state.qrData ? (
                     <>
-                        <div id="printable-qr" className="p-3 border-1 border-200 border-round-xl bg-white shadow-1 flex flex-column align-items-center text-center">
-                            <img src={state.qrData.qr_base64} alt="QR Code" className="w-12rem h-12rem mb-3" />
-                            <span className="font-bold text-900 block text-base">{state.qrData.nomor_dokumen}</span>
-                            <span className="text-xs text-color-secondary block mt-1 max-w-15rem overflow-hidden text-overflow-ellipsis white-space-nowrap">{state.qrData.nama_dokumen}</span>
-                            <span className="text-xs text-primary font-mono block mt-2 p-1 bg-blue-50 border-round">{state.qrData.qr_code}</span>
+                        <div id="printable-qr" className="flex flex-column align-items-center text-center p-3 border-2 border-dashed surface-border border-round-xl w-full surface-card">
+                            <img src={state.qrData.qr_base64} alt="QR Code" style={{ width: '180px', height: '180px' }} />
+                            <h4 className="m-0 mt-3 text-900 font-bold text-base">{state.qrData.nomor_dokumen}</h4>
+                            <p className="m-0 text-xs text-color-secondary mt-1 max-w-18rem">{state.qrData.nama_dokumen}</p>
+                            <span className="text-xs text-primary font-mono font-bold mt-2 bg-blue-50 px-2 py-1 border-round border-1 border-blue-200">
+                                {state.qrData.qr_code}
+                            </span>
                         </div>
                         <Button
-                            label="Cetak QR Code"
+                            label="Cetak Stiker QR Code"
                             icon="pi pi-print"
-                            className="mt-4 w-full"
-                            severity="success"
+                            className="mt-4 w-full font-bold"
+                            severity="warning"
                             onClick={() => {
-                                const printContent = document.getElementById('printable-qr')?.innerHTML;
                                 if (state.qrData) {
                                     const windowPrint = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
                                     windowPrint?.document.write(`
@@ -630,48 +631,127 @@ const Table = ({
             visible={state.trackingDialog}
             header={
                 <div className="flex align-items-center gap-2">
-                    <i className="pi pi-search text-primary" />
-                    <span className="font-bold text-900">Tracking Dokumen & Scan QR</span>
+                    <i className="pi pi-qrcode text-primary text-xl" />
+                    <div>
+                        <span className="font-bold text-900 block text-base">Tracking Dokumen & Scan QR</span>
+                        <span className="text-xs text-500 font-normal">Pindai stiker QR fisik untuk cek lokasi rak & peminjaman</span>
+                    </div>
                 </div>
             }
             modal
-            style={{ width: '45rem', maxWidth: '95vw' }}
-            onHide={() => setState(p => ({ ...p, trackingDialog: false, trackingCode: '', trackingResult: null }))}
+            style={{ width: '48rem', maxWidth: '95vw' }}
+            onHide={() => {
+                if (html5QrRef.current) {
+                    html5QrRef.current.stop().catch(() => {});
+                }
+                setCameraActive(false);
+                setState(p => ({ ...p, trackingDialog: false, trackingCode: '', trackingResult: null }));
+            }}
             pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
         >
             <div className="flex flex-column gap-4 pt-3">
-                <div className="flex flex-column gap-2 text-sm">
-                    <label htmlFor="qr_input" className="font-bold text-sm text-900">
-                        Scan QR Code / Masukkan Kode Pelacakan <span className="text-red-500">*</span>
-                    </label>
-                    <div className="p-inputgroup">
-                        <InputText
-                            id="qr_input"
-                            value={state.trackingCode}
-                            onChange={(e) => setState(p => ({ ...p, trackingCode: e.target.value }))}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    handleScanQR(state.trackingCode);
-                                }
-                            }}
-                            placeholder="Arahkan kursor ke sini lalu scan QR atau tempel Kode UUID Dokumen..."
-                            className="text-sm"
-                            autoFocus
-                        />
-                        <Button
-                            icon="pi pi-search"
-                            label="Track"
-                            loading={state.trackingLoad}
-                            onClick={() => handleScanQR(state.trackingCode)}
-                        />
+                {/* Information Banner */}
+                <div className="bg-blue-50 border-1 border-blue-200 border-round-xl p-3 text-xs text-blue-900 flex flex-column gap-1">
+                    <div className="font-bold flex align-items-center gap-2">
+                        <i className="pi pi-info-circle text-blue-600" />
+                        <span>Petunjuk Fitur QR Code EDMS:</span>
                     </div>
-                    <small className="text-color-secondary">Gunakan alat pemindai (scanner) USB atau masukkan kode manual dan tekan Enter.</small>
+                    <ul className="m-0 pl-4 flex flex-column gap-1 leading-relaxed">
+                        <li><strong>Fitur Pelacakan (Dialog Ini):</strong> Pindai stiker QR pada berkas fisik menggunakan <strong>Kamera Live</strong> atau <strong>USB Barcode Scanner</strong> untuk melihat posisi rak/lemari & status peminjaman.</li>
+                        <li><strong>Cetak QR Code Dokumen:</strong> Untuk melihat & mencetak stiker QR fisik dokumen, klik tombol berikon QR (<i className="pi pi-qrcode text-warning" />) pada <strong>kolom aksi paling kanan tabel dokumen</strong>.</li>
+                    </ul>
                 </div>
+
+                {/* Mode Selector Buttons */}
+                <div className="flex justify-content-center gap-2">
+                    <Button
+                        label="Scanner USB / Ketik Manual"
+                        icon="pi pi-keyboard"
+                        size="small"
+                        severity={scanMode === 'manual' ? 'info' : 'secondary'}
+                        outlined={scanMode !== 'manual'}
+                        className="font-bold text-xs px-3"
+                        onClick={() => {
+                            if (html5QrRef.current) html5QrRef.current.stop().catch(() => {});
+                            setCameraActive(false);
+                            setScanMode('manual');
+                        }}
+                    />
+                    <Button
+                        label="Pindai via Kamera Live"
+                        icon="pi pi-camera"
+                        size="small"
+                        severity={scanMode === 'camera' ? 'info' : 'secondary'}
+                        outlined={scanMode !== 'camera'}
+                        className="font-bold text-xs px-3"
+                        onClick={() => setScanMode('camera')}
+                    />
+                </div>
+
+                {/* Camera Mode */}
+                {scanMode === 'camera' && (
+                    <div className="flex flex-column align-items-center gap-3 p-3 bg-gray-50 border-round-xl border-1 surface-border">
+                        <div id="qr-camera-reader" className="w-full border-round-lg overflow-hidden bg-black" style={{ minHeight: '260px', maxWidth: '400px' }} />
+                        {cameraErr && (
+                            <span className="text-red-500 text-xs font-semibold">
+                                <i className="pi pi-exclamation-triangle mr-1" />{cameraErr}
+                            </span>
+                        )}
+                        {!cameraActive ? (
+                            <Button
+                                label="Buka Kamera Live"
+                                icon="pi pi-video"
+                                severity="success"
+                                className="p-button-sm font-bold"
+                                onClick={startCameraScanner}
+                            />
+                        ) : (
+                            <Button
+                                label="Tutup Kamera"
+                                icon="pi pi-power-off"
+                                severity="danger"
+                                outlined
+                                className="p-button-sm font-bold"
+                                onClick={stopCameraScanner}
+                            />
+                        )}
+                    </div>
+                )}
+
+                {/* Manual / USB Scanner Mode */}
+                {scanMode === 'manual' && (
+                    <div className="flex flex-column gap-2 text-sm">
+                        <label htmlFor="qr_input" className="font-bold text-sm text-900">
+                            Masukkan Kode UUID / Gunakan USB Scanner <span className="text-red-500">*</span>
+                        </label>
+                        <div className="p-inputgroup">
+                            <InputText
+                                id="qr_input"
+                                value={state.trackingCode}
+                                onChange={(e) => setState(p => ({ ...p, trackingCode: e.target.value }))}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        handleScanQR(state.trackingCode);
+                                    }
+                                }}
+                                placeholder="Arahkan kursor ke sini lalu scan stiker QR dengan USB Scanner..."
+                                className="text-sm"
+                                autoFocus
+                            />
+                            <Button
+                                icon="pi pi-search"
+                                label="Lacak Berkas"
+                                loading={state.trackingLoad}
+                                onClick={() => handleScanQR(state.trackingCode)}
+                            />
+                        </div>
+                    </div>
+                )}
 
                 {state.trackingLoad && (
                     <div className="flex flex-column align-items-center py-5">
                         <i className="pi pi-spin pi-spinner text-3xl text-primary mb-3" />
-                        <span className="text-sm text-color-secondary">Mencari data pelacakan...</span>
+                        <span className="text-sm text-color-secondary">Mencari data pelacakan berkas...</span>
                     </div>
                 )}
 

@@ -9,6 +9,23 @@ const getArchiveDashboardSummary = async (req, res) => {
   const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
+    const fCabang = req.headers["x-filter-cabang"];
+    const vaCabangIds = (fCabang && fCabang !== "null" && fCabang !== "undefined")
+      ? String(fCabang).split(",").map(Number)
+      : null;
+
+    const applyCabangDocFilter = (qb, tableAlias = "") => {
+      if (!vaCabangIds) return qb;
+      const col = tableAlias ? `${tableAlias}.id_cabang` : "id_cabang";
+      return qb.whereIn(col, vaCabangIds);
+    };
+
+    const applyCabangLoanFilter = (qb, tableAlias = "") => {
+      if (!vaCabangIds) return qb;
+      const col = tableAlias ? `${tableAlias}.id_cabang` : "id_cabang";
+      return qb.whereIn(col, vaCabangIds);
+    };
+
     const [
       nPengarsipanDokumen,
       nDokumenDipinjam,
@@ -18,15 +35,13 @@ const getArchiveDashboardSummary = async (req, res) => {
       vaBorrowedRaw
     ] = await Promise.all([
       // 1. Total Pengarsipan Dokumen (trs_dokumen berstatus active)
-      DB("trs_dokumen")
-        .where("status", "active")
+      applyCabangDocFilter(DB("trs_dokumen").where("status", "active"))
         .count("* as count")
         .first()
         .then((r) => Number(r?.count || 0)),
 
       // 2. Total Dokumen Dipinjam (trs_peminjaman_arsip berstatus borrowed)
-      DB("trs_peminjaman_arsip")
-        .where("status", "borrowed")
+      applyCabangLoanFilter(DB("trs_peminjaman_arsip").where("status", "borrowed"))
         .count("* as count")
         .first()
         .then((r) => Number(r?.count || 0)),
@@ -38,38 +53,44 @@ const getArchiveDashboardSummary = async (req, res) => {
         .then((r) => Number(r?.count || 0)),
 
       // 4. Pengelompokan dokumen berdasarkan jenis (untuk circle chart)
-      DB("trs_dokumen as d")
-        .leftJoin("mst_jenis_dokumen as jd", "d.kode_jenis_dokumen", "jd.kode_jenis_dokumen")
-        .select(
-          DB.raw("COALESCE(jd.nama_jenis_dokumen, d.kode_jenis_dokumen) as label"),
-          DB.raw("COUNT(d.id_dokumen) as count")
-        )
-        .where("d.status", "active")
-        .groupBy(DB.raw("COALESCE(jd.nama_jenis_dokumen, d.kode_jenis_dokumen)")),
+      applyCabangDocFilter(
+        DB("trs_dokumen as d")
+          .leftJoin("mst_jenis_dokumen as jd", "d.kode_jenis_dokumen", "jd.kode_jenis_dokumen")
+          .select(
+            DB.raw("COALESCE(jd.nama_jenis_dokumen, d.kode_jenis_dokumen) as label"),
+            DB.raw("COUNT(d.id_dokumen) as count")
+          )
+          .where("d.status", "active"),
+        "d"
+      ).groupBy(DB.raw("COALESCE(jd.nama_jenis_dokumen, d.kode_jenis_dokumen)")),
 
       // 5. Trend pengarsipan 7 hari terakhir
-      DB("trs_dokumen")
-        .select(DB.raw("DATE(created_at) as tanggal"), DB.raw("COUNT(*) as total"))
-        .whereRaw("created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)")
-        .where("status", "active")
+      applyCabangDocFilter(
+        DB("trs_dokumen")
+          .select(DB.raw("DATE(created_at) as tanggal"), DB.raw("COUNT(*) as total"))
+          .whereRaw("created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)")
+          .where("status", "active")
+      )
         .groupByRaw("DATE(created_at)")
         .orderByRaw("DATE(created_at) ASC"),
 
       // 6. Daftar peminjaman aktif (sedang dipinjam)
-      DB("trs_peminjaman_arsip as p")
-        .leftJoin("trs_dokumen as d", "p.kode_dokumen", "d.kode_dokumen")
-        .select(
-          "p.id_peminjaman",
-          "p.kode_dokumen",
-          "d.nama_dokumen",
-          "p.nama_peminjam",
-          "p.tanggal_pinjam",
-          "p.tanggal_pengembalian",
-          "p.keperluan",
-          "p.status"
-        )
-        .where("p.status", "borrowed")
-        .orderBy("p.tanggal_pinjam", "desc")
+      applyCabangLoanFilter(
+        DB("trs_peminjaman_arsip as p")
+          .leftJoin("trs_dokumen as d", "p.kode_dokumen", "d.kode_dokumen")
+          .select(
+            "p.id_peminjaman",
+            "p.kode_dokumen",
+            "d.nama_dokumen",
+            "p.nama_peminjam",
+            "p.tanggal_pinjam",
+            "p.tanggal_pengembalian",
+            "p.keperluan",
+            "p.status"
+          )
+          .where("p.status", "borrowed"),
+        "p"
+      ).orderBy("p.tanggal_pinjam", "desc")
     ]);
 
     // Format trend mingguan (7 hari terakhir)

@@ -1,6 +1,6 @@
 'use client'
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
@@ -11,7 +11,10 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Tag } from "primereact/tag";
 import { Toast } from "primereact/toast";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
+import getData from "@/lib/axios/getData";
+import { showError } from "@/lib/tools/generalTools";
 import { DetailData, VersionData } from "../../../../components/interfaces";
+import { apiEndpointContentGet } from "../../../../components/endpoints";
 
 interface TableProps {
     load: boolean;
@@ -76,6 +79,11 @@ const Table: React.FC<TableProps> = ({
     router,
     toast
 }) => {
+    const [ocrText, setOcrText] = useState('');
+    const [isOcrDialogVisible, setIsOcrDialogVisible] = useState(false);
+    const [ocrLoad, setOcrLoad] = useState(false);
+    const [selectedOcrVersion, setSelectedOcrVersion] = useState<number | null>(null);
+
     const selectedVersion = (detailData?.versions || []).find(
         (version) => version.id_versi === selectedVersionId,
     );
@@ -83,6 +91,29 @@ const Table: React.FC<TableProps> = ({
     const closeApproveDialog = () => {
         setApproveDialogVisible(false);
         setSelectedVersionId(null);
+    };
+
+    const handleFetchOcrText = async (version: VersionData) => {
+        if (!detailData?.document?.kode_dokumen) return;
+        setOcrLoad(true);
+        setSelectedOcrVersion(version.nomor_versi);
+        try {
+            const res = await getData(apiEndpointContentGet, {
+                kode_dokumen: detailData.document.kode_dokumen,
+                id_versi: version.id_versi
+            });
+            if (res.data?.status === 'success') {
+                setOcrText(res.data.data?.konten_teks || 'Teks belum diekstrak atau dokumen kosong.');
+                setIsOcrDialogVisible(true);
+            } else {
+                showError(toast, res.data?.message || 'Gagal mengambil hasil OCR');
+            }
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || 'Hasil OCR / ekstraksi teks belum tersedia');
+        } finally {
+            setOcrLoad(false);
+        }
     };
 
     const versionStatusTemplate = (rowData: VersionData) => {
@@ -94,17 +125,30 @@ const Table: React.FC<TableProps> = ({
     };
 
     const versionPreviewTemplate = (rowData: VersionData) => (
-        <Button
-            icon="pi pi-eye"
-            rounded
-            text
-            severity="info"
-            size="small"
-            tooltip={rowData.file_path ? "Pratinjau Dokumen" : "Belum ada file berkas"}
-            tooltipOptions={{ position: 'top' }}
-            onClick={() => handleFetchPreviewUrl(rowData.file_path || '')}
-            disabled={!rowData.file_path}
-        />
+        <div className="flex gap-1 justify-content-center">
+            <Button
+                icon="pi pi-eye"
+                rounded
+                text
+                severity="info"
+                size="small"
+                tooltip={rowData.file_path ? "Pratinjau Dokumen" : "Belum ada file berkas"}
+                tooltipOptions={{ position: 'top' }}
+                onClick={() => handleFetchPreviewUrl(rowData.file_path || '')}
+                disabled={!rowData.file_path}
+            />
+            <Button
+                icon="pi pi-file-word"
+                rounded
+                text
+                severity="help"
+                size="small"
+                tooltip="Teks Hasil OCR"
+                tooltipOptions={{ position: 'top' }}
+                onClick={() => handleFetchOcrText(rowData)}
+                disabled={!rowData.file_path}
+            />
+        </div>
     );
 
     const versionActionTemplate = (rowData: VersionData) => {
@@ -222,7 +266,7 @@ const Table: React.FC<TableProps> = ({
                     <Button
                         type="button"
                         icon="pi pi-arrow-left"
-                        label="Kembali"
+                        label="Kembali ke Daftar Arsip"
                         text
                         className="p-0 mb-2"
                         onClick={() => router.push('/edms/archive_document')}
@@ -232,14 +276,25 @@ const Table: React.FC<TableProps> = ({
                         {detailData?.document?.nomor_dokumen || '-'} - {detailData?.document?.nama_dokumen || '-'}
                     </span>
                 </div>
-                <Button
-                    size="small"
-                    label="Muat Ulang"
-                    icon="pi pi-refresh"
-                    outlined
-                    loading={load}
-                    onClick={fetchDocumentDetail}
-                />
+                <div className="flex gap-2">
+                    <Button
+                        size="small"
+                        label="Audit Trail (Riwayat)"
+                        icon="pi pi-clock"
+                        severity="info"
+                        outlined
+                        onClick={() => router.push(`/edms/archive_document/${detailData?.document?.id_dokumen}/history`)}
+                        disabled={!detailData?.document?.id_dokumen}
+                    />
+                    <Button
+                        size="small"
+                        label="Muat Ulang"
+                        icon="pi pi-refresh"
+                        outlined
+                        loading={load}
+                        onClick={fetchDocumentDetail}
+                    />
+                </div>
             </div>
 
             <div className="grid text-sm mb-3">
@@ -296,7 +351,7 @@ const Table: React.FC<TableProps> = ({
 
             <DataTable
                 value={detailData?.versions || []}
-                loading={load}
+                loading={load || ocrLoad}
                 rows={10}
                 paginator
                 emptyMessage="Belum ada versi dokumen"
@@ -309,7 +364,7 @@ const Table: React.FC<TableProps> = ({
                 <Column field="status_persetujuan" header="Status" body={versionStatusTemplate} style={{ width: '120px', textAlign: 'center' }} />
                 <Column field="disetujui_oleh" header="Disetujui/Ditolak Oleh" body={(rowData: VersionData) => rowData.disetujui_oleh || '-'} />
                 <Column field="created_at" header="Tanggal Dibuat" body={(rowData: VersionData) => formatDateCalendar(rowData.created_at)} style={{ width: '160px' }} />
-                <Column header="Preview" body={versionPreviewTemplate} style={{ width: '90px', textAlign: 'center' }} />
+                <Column header="Pratinjau / OCR" body={versionPreviewTemplate} style={{ width: '130px', textAlign: 'center' }} />
                 <Column headerStyle={{ textAlign: 'center' }} align="center" header="Aksi" body={versionActionTemplate} style={{ width: '130px', textAlign: 'center' }} />
             </DataTable>
 
@@ -385,6 +440,29 @@ const Table: React.FC<TableProps> = ({
                             placeholder="Contoh: File dokumen buram atau data tidak sesuai dengan draft awal."
                             className="w-full text-sm"
                         />
+                    </div>
+                </div>
+            </Dialog>
+
+            {/* OCR Extracted Text Dialog */}
+            <Dialog
+                visible={isOcrDialogVisible}
+                header={
+                    <div className="flex align-items-center gap-2">
+                        <i className="pi pi-file-word text-purple-600 text-xl" />
+                        <span className="font-bold text-900">Teks Hasil OCR / Ekstraksi V{selectedOcrVersion}</span>
+                    </div>
+                }
+                modal
+                style={{ width: '50rem', maxWidth: '95vw' }}
+                onHide={() => {
+                    setIsOcrDialogVisible(false);
+                    setOcrText('');
+                }}
+            >
+                <div className="pt-2">
+                    <div className="surface-100 p-4 border-round-lg font-mono text-sm line-height-3 style-scroll max-h-30rem overflow-y-auto whitespace-pre-wrap border-1 surface-border">
+                        {ocrText || 'Teks kosong atau belum diekstrak.'}
                     </div>
                 </div>
             </Dialog>

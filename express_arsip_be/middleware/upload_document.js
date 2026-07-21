@@ -8,6 +8,10 @@ const fileFilter = (req, file, cb) => {
     "application/pdf",
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "image/png",
+    "image/jpeg",
+    "image/jpg",
+    "image/webp"
   ];
 
   if (vaAllowedMimeType.includes(file.mimetype)) {
@@ -41,10 +45,30 @@ export const uploadDocument = (req, res, next) => {
 
     try {
       const bucketName = process.env.MINIO_BUCKET_NAME || "arsip-bucket";
-      // Upload ke MinIO di bawah folder 'documents'
-      const objectName = await uploadFileToMinio(bucketName, req.file, "documents");
 
-      // Extract the filename portion for req.file.filename so downstream handles cFilePath correctly
+      // Extract active branch ID from header or context
+      let idCabang = null;
+      const cFilterCabang = req.headers["x-filter-cabang"];
+      if (cFilterCabang && cFilterCabang !== "null" && cFilterCabang !== "undefined") {
+        const firstId = parseInt(String(cFilterCabang).split(",")[0], 10);
+        if (!isNaN(firstId)) idCabang = firstId;
+      }
+      if (!idCabang) {
+        idCabang = req.context?.id_cabang || req.auth?.id_cabang || null;
+      }
+
+      // Extract metadata for clean enterprise file naming
+      const nomorDokumen = req.body?.nomor_dokumen || "";
+      const namaDokumen = req.body?.nama_dokumen || "";
+
+      // Upload ke MinIO dengan penamaan berbasis metadata
+      const objectName = await uploadFileToMinio(bucketName, req.file, {
+        idCabang,
+        modul: "arsip-dokumen",
+        nomorDokumen,
+        namaDokumen
+      });
+
       const baseName = objectName.split("/").pop();
       req.file.filename = baseName;
       req.file.path = objectName;

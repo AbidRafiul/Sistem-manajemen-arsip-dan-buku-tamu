@@ -45,6 +45,12 @@ import documentQrGenerate from "./document_qr_generate.js";
 import documentQrScan from "./document_qr_scan.js";
 import documentLocationUpdate from "./document_location_update.js";
 
+// ── New imports (Phase 5 — OCR, Full-Text Search & Audit Trail) ──────────────
+import { processOcrManual, getOcrStatus } from "./document_ocr_process.js";
+import documentContentGet from "./document_content_get.js";
+import documentSearch from "./document_search.js";
+import documentHistoryGet from "./document_history_get.js";
+
 import { uploadDocument } from "../../../middleware/upload_document.js";
 import dashboardSummary from "./dashboard_summary.js";
 
@@ -75,6 +81,25 @@ router.get("/detail", documentDetail);
 
 // GET /preview — Document preview url generator
 router.get("/preview", documentPreview);
+
+// GET /search — Unified Full-Text & Metadata Search
+router.get("/search", documentSearch);
+
+// GET /history/get — Audit trail changelog per dokumen
+router.get("/history/get", documentHistoryGet);
+
+// ════════════════════════════════════════════════════════════════════════════
+// OCR & FULL-TEXT CONTENT
+// ════════════════════════════════════════════════════════════════════════════
+
+// POST /ocr/process — Trigger manual OCR process
+router.post("/ocr/process", processOcrManual);
+
+// GET /ocr/status — Check OCR status per document version
+router.get("/ocr/status", getOcrStatus);
+
+// GET /content/get — Get extracted text content
+router.get("/content/get", documentContentGet);
 
 // ════════════════════════════════════════════════════════════════════════════
 // MASTER DATA (Dropdown data untuk FE)

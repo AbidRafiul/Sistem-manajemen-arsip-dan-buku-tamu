@@ -1,5 +1,7 @@
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+import { logDocumentChange } from "../components/tools/audit_trail_helper.js";
+import { processDocumentContent } from "../../../core/components/ocr_service.js";
 
 const rollbackDocumentVersion = async (req, res) => {
   const oPayload = req.body;
@@ -8,7 +10,8 @@ const rollbackDocumentVersion = async (req, res) => {
     const cKodeDokumen = oPayload.kode_dokumen || oPayload.document_code;
     const nIdDokumen = oPayload.id_dokumen || oPayload.document_id;
     const nTargetVersionId = oPayload.id_versi || oPayload.version_id;
-    const cUploadedBy = req?.auth?.nama_pengguna || req?.context?.nama_pengguna || oPayload.rollback_by || "system";
+    const cUploadedBy =
+      req?.auth?.nama_pengguna || req?.context?.nama_pengguna || oPayload.rollback_by || "system";
     const dNow = new Date();
 
     if ((!cKodeDokumen && !nIdDokumen) || !nTargetVersionId) {
@@ -73,7 +76,6 @@ const rollbackDocumentVersion = async (req, res) => {
       catatan_perubahan: `Rollback ke V${oTargetVersion.nomor_versi} (VersionId: ${nTargetVersionId})`,
       file_path: oTargetVersion.file_path,
       diunggah_oleh: cUploadedBy,
-      // Rollback langsung approved (by system/user yang melakukan rollback)
       status_persetujuan: "approved",
       disetujui_oleh: cUploadedBy,
       disetujui_pada: dNow,
@@ -84,6 +86,26 @@ const rollbackDocumentVersion = async (req, res) => {
     };
 
     const [nNewVersionId] = await DB("trs_versi_dokumen").insert(oNewVersion);
+
+    // Audit Trail Log
+    await logDocumentChange({
+      kodeDokumen: oDocument.kode_dokumen,
+      aksi: "version_rollback",
+      deskripsi: `Dokumen di-rollback ke V${oTargetVersion.nomor_versi}. Versi baru V${nNewVersionNumber} telah dibuat`,
+      detailJson: {
+        target_version_id: nTargetVersionId,
+        target_version_number: oTargetVersion.nomor_versi,
+        new_version_number: nNewVersionNumber,
+        new_version_id: nNewVersionId,
+      },
+      dilakukanOleh: cUploadedBy,
+      req,
+    });
+
+    // Auto-trigger OCR processing in background if needed
+    processDocumentContent(oDocument.kode_dokumen, nNewVersionId, oTargetVersion.file_path).catch(
+      (err) => console.error("[OCR Rollback Error]:", err.message)
+    );
 
     const oResult = {
       status: "success",

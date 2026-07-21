@@ -18,6 +18,8 @@ const getDocuments = async (req, res) => {
     const oQuery = DB("trs_dokumen as d")
       .select(
         "d.id_dokumen",
+        "d.id_cabang",
+        "cb.nama_cabang",
         "d.kode_dokumen",
         "d.nama_dokumen",
         "d.nomor_dokumen",
@@ -79,10 +81,21 @@ const getDocuments = async (req, res) => {
       )
       .leftJoin("mst_pengguna as u", function () {
         this.on(DB.raw("d.nama_pic COLLATE utf8mb4_unicode_ci = u.nama_lengkap COLLATE utf8mb4_unicode_ci"));
+      })
+      .leftJoin("mst_cabang as cb", function () {
+        this.on(DB.raw("COALESCE(d.id_cabang, u.id_cabang) = cb.id_cabang"));
       });
 
-    // Multi-tenancy filter
-    applyMultiTenantFilter(oQuery, req, 'u');
+    // Multi-tenancy filter (Direct branch filter with fallback for legacy docs)
+    const fCabang = req.headers["x-filter-cabang"];
+    if (fCabang && fCabang !== "null" && fCabang !== "undefined") {
+      const vaCabangIds = String(fCabang).split(",").map(Number);
+      oQuery.where((builder) => {
+        builder.whereIn("d.id_cabang", vaCabangIds).orWhere(function () {
+          this.whereNull("d.id_cabang").whereIn("u.id_cabang", vaCabangIds);
+        });
+      });
+    }
 
     // Filter: status (default active)
     if (cStatus) {
