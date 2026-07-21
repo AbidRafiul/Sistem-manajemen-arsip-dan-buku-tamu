@@ -12,7 +12,7 @@ router.post("/", async (req, res) => {
       .leftJoin("mst_pengguna", "trs_kunjungan.id_user_host", "mst_pengguna.id_pengguna")
       .whereRaw("DATE(trs_kunjungan.created_at) = CURRENT_DATE()")
       .count("trs_kunjungan.id_kunjungan as total");
-    applyMultiTenantFilter(qTotal, req);
+    applyMultiTenantFilter(qTotal, req, 'trs_kunjungan');
     const totalTamuHariIni = await qTotal.first();
 
     let qSedang = DB("trs_kunjungan")
@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
       .whereRaw("DATE(trs_kunjungan.created_at) = CURRENT_DATE()")
       .andWhere("trs_kunjungan.status", "in")
       .count("trs_kunjungan.id_kunjungan as total");
-    applyMultiTenantFilter(qSedang, req);
+    applyMultiTenantFilter(qSedang, req, 'trs_kunjungan');
     const sedangBerkunjung = await qSedang.first();
 
     let qSelesai = DB("trs_kunjungan")
@@ -28,7 +28,7 @@ router.post("/", async (req, res) => {
       .whereRaw("DATE(trs_kunjungan.created_at) = CURRENT_DATE()")
       .andWhere("trs_kunjungan.status", "out")
       .count("trs_kunjungan.id_kunjungan as total");
-    applyMultiTenantFilter(qSelesai, req);
+    applyMultiTenantFilter(qSelesai, req, 'trs_kunjungan');
     const selesaiKunjungan = await qSelesai.first();
 
     let qRute = DB("trs_kunjungan as t")
@@ -38,7 +38,7 @@ router.post("/", async (req, res) => {
       .count("t.id_kunjungan as total")
       .whereRaw("DATE(t.created_at) = CURRENT_DATE()")
       .groupBy("m.nama_tujuan_kunjungan");
-    applyMultiTenantFilter(qRute, req);
+    applyMultiTenantFilter(qRute, req, 't');
     const ruteTujuan = await qRute;
 
     const chart_tujuan_labels = ruteTujuan.map(item => item.nama_tujuan_kunjungan);

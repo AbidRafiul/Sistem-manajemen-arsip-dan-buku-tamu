@@ -68,8 +68,6 @@ export const POST = async (req: NextRequest) => {
                 roleId: userDecrypted?.roleId,
                 name: userDecrypted?.nama_lengkap || userDecrypted?.name,
                 nama_pengguna: userDecrypted?.nama_pengguna,
-                id_cabang: userDecrypted?.id_cabang,
-                nama_cabang: userDecrypted?.nama_cabang,
                 IdPengguna: userDecrypted?.IdPengguna || userDecrypted?.id_pengguna || userDecrypted?.uniqueId || userDecrypted?.uid,
                 id_pengguna: userDecrypted?.IdPengguna || userDecrypted?.id_pengguna || userDecrypted?.uniqueId || userDecrypted?.uid,
                 uniqueId: userDecrypted?.IdPengguna || userDecrypted?.id_pengguna || userDecrypted?.uniqueId || userDecrypted?.uid,
