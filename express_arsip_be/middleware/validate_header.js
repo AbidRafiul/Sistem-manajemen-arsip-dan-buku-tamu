@@ -176,10 +176,15 @@ export const validateSignature = async (req, res, next) => {
     if (oUser.kode_peran !== 'SUPERADMIN' && oUser.kode_peran !== 'SA') {
       if (oUser.id_cabang) {
         allowedCabangIds = new Set([oUser.id_cabang]);
-        // Hanya ambil anak langsung (1 level ke bawah), bukan cucu/cicit
-        for (const c of allCabangs) {
-          if (c.id_induk === oUser.id_cabang) {
-            allowedCabangIds.add(c.id_cabang);
+        // Ambil SEMUA keturunan (anak, cucu, cicit, dst)
+        let added = true;
+        while (added) {
+          added = false;
+          for (const c of allCabangs) {
+            if (allowedCabangIds.has(c.id_induk) && !allowedCabangIds.has(c.id_cabang)) {
+              allowedCabangIds.add(c.id_cabang);
+              added = true;
+            }
           }
         }
       }
@@ -188,13 +193,18 @@ export const validateSignature = async (req, res, next) => {
     const reqCabang = req.headers['x-filter-cabang'];
 
     if (reqCabang && reqCabang !== 'null' && reqCabang !== 'undefined') {
-      // Jika ada request filter (dari siapapun, termasuk SA), kembangkan filter tersebut 1 level ke bawah
+      // Kembangkan request filter (dari siapapun) untuk mencakup SEMUA keturunan (anak, cucu, dst)
       const requestedIds = String(reqCabang).split(",").map(id => parseInt(id, 10));
       const expandedRequestedIds = new Set(requestedIds);
 
-      for (const id of requestedIds) {
+      let addedFilter = true;
+      while (addedFilter) {
+        addedFilter = false;
         for (const c of allCabangs) {
-          if (c.id_induk === id) expandedRequestedIds.add(c.id_cabang);
+          if (expandedRequestedIds.has(c.id_induk) && !expandedRequestedIds.has(c.id_cabang)) {
+            expandedRequestedIds.add(c.id_cabang);
+            addedFilter = true;
+          }
         }
       }
 

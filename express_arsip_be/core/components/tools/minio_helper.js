@@ -80,7 +80,7 @@ const removeFileFromMinio = async (bucketName, objectName) => {
  * @param {number|string} idCabang - ID Cabang milik uploader
  * @returns {Promise<string>} - Prefix hirarki (contoh: "BR-001/BR-002/BR-003")
  */
-const getMinioPrefix = async (idCabang) => {
+const getMinioPrefix = async (idCabang, idDepartemen = null, idDivisi = null, idUnitKerja = null) => {
     if (!idCabang) return 'GLOBAL';
 
     let currentId = idCabang;
@@ -89,16 +89,46 @@ const getMinioPrefix = async (idCabang) => {
     try {
         while (currentId) {
             const branch = await DB("mst_cabang")
-                .select("id_cabang", "kode_cabang", "id_induk")
+                .select("id_cabang", "kode_cabang", "nama_cabang", "id_induk")
                 .where("id_cabang", currentId)
                 .first();
 
             if (!branch) break;
 
-            hierarchy.unshift(branch.kode_cabang || `CAB-${branch.id_cabang}`);
+            // Gunakan nama_cabang yang di-sanitize agar folder MinIO lebih manusiawi (readable)
+            // Hapus karakter aneh dan ganti spasi dengan underscore
+            const sanitizedName = branch.nama_cabang 
+                ? branch.nama_cabang.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').toLowerCase()
+                : `cabang_${branch.id_cabang}`;
+
+            hierarchy.unshift(sanitizedName);
 
             // Naik ke parent
             currentId = branch.id_induk;
+        }
+
+        // Add Departemen
+        if (idDepartemen) {
+            const dept = await DB("mst_departemen").select("nama_departemen").where("id_departemen", idDepartemen).first();
+            if (dept && dept.nama_departemen) {
+                hierarchy.push(dept.nama_departemen.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').toLowerCase());
+            }
+        }
+        
+        // Add Divisi
+        if (idDivisi) {
+            const div = await DB("mst_divisi").select("nama_divisi").where("id_divisi", idDivisi).first();
+            if (div && div.nama_divisi) {
+                hierarchy.push(div.nama_divisi.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').toLowerCase());
+            }
+        }
+
+        // Add Unit Kerja
+        if (idUnitKerja) {
+            const unit = await DB("mst_unit_kerja").select("nama_unit_kerja").where("id_unit_kerja", idUnitKerja).first();
+            if (unit && unit.nama_unit_kerja) {
+                hierarchy.push(unit.nama_unit_kerja.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').toLowerCase());
+            }
         }
     } catch (e) {
         console.error("Gagal getMinioPrefix:", e);

@@ -15,7 +15,7 @@ const uploadDocumentVersion = async (req, res) => {
       return res.status(400).json(oResult);
     }
 
-    const cFilePath = `/uploads/documents/${oFile.filename}`;
+    const cFilePath = oFile.path;
     const cKodeDokumen = oPayload.kode_dokumen || oPayload.document_code;
     const nIdDokumen = oPayload.id_dokumen || oPayload.document_id;
     const cChangeNotes = oPayload.catatan_perubahan || oPayload.change_notes || null;

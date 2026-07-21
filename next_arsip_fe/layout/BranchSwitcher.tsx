@@ -15,6 +15,7 @@ interface Branch {
     kode_cabang: string;
     nama_cabang: string;
     status: string;
+    level?: number;
 }
 
 const BranchSwitcher = () => {
@@ -33,6 +34,7 @@ const BranchSwitcher = () => {
     const [selectedPusat, setSelectedPusat] = useState<number | null>(null);
     const [selectedDaerah, setSelectedDaerah] = useState<number | null>(null);
     const [selectedUnit, setSelectedUnit] = useState<number | null>(null);
+    const [selectedKecamatan, setSelectedKecamatan] = useState<number | null>(null);
 
     const role = activeRole?.toUpperCase() || '';
     const isAdmin = role === 'SUPERADMIN' || role === 'SUPER ADMIN' || role === 'ADMINISTRATOR' || role === 'ADM' || session?.user?.name === 'Super Admin';
@@ -78,22 +80,46 @@ const BranchSwitcher = () => {
             node = node.id_induk ? branches.find(b => b.id_cabang === node!.id_induk) : undefined;
         }
 
-        // path[0] = root, path[1] = pusat daerah, path[2] = unit daerah
-        if (path.length >= 1) setSelectedPusat(path[0].id_cabang);
-        if (path.length >= 2) setSelectedDaerah(path[1].id_cabang);
-        if (path.length >= 3) setSelectedUnit(path[2].id_cabang);
+        // For each node in the path, assign it to the correct state based on its level
+        path.forEach(node => {
+            if (node.level === 1) setSelectedPusat(node.id_cabang);
+            else if (node.level === 2) setSelectedDaerah(node.id_cabang);
+            else if (node.level === 3) setSelectedUnit(node.id_cabang);
+            else if (node.level === 4) setSelectedKecamatan(node.id_cabang);
+        });
     };
 
     // Level 1: Kantor Pusat (root nodes where id_induk === null)
-    const pusatList = allBranches.filter(b => b.id_induk === null);
+    const pusatList = allBranches.filter(b => b.level === 1 || b.id_induk === null);
 
-    // Level 2: Pusat Daerah (children of selected pusat)
-    const daerahList = selectedPusat ? allBranches.filter(b => b.id_induk === selectedPusat) : [];
+    // Level 2: Pusat Daerah
+    // If the user can't see Level 1, we show Level 2 directly if they exist
+    const daerahList = selectedPusat 
+        ? allBranches.filter(b => b.id_induk === selectedPusat) 
+        : pusatList.length === 0 ? allBranches.filter(b => b.level === 2) : [];
 
-    // Level 3: Unit Daerah (children of selected daerah)
-    const unitList = selectedDaerah ? allBranches.filter(b => b.id_induk === selectedDaerah) : [];
+    // Level 3: Unit Daerah
+    const unitList = selectedDaerah 
+        ? allBranches.filter(b => b.id_induk === selectedDaerah) 
+        : (pusatList.length === 0 && daerahList.length === 0) ? allBranches.filter(b => b.level === 3) : [];
 
-    const applyBranch = (branchId: number) => {
+    // Level 4: Kantor Kecamatan
+    const kecamatanList = selectedUnit 
+        ? allBranches.filter(b => b.id_induk === selectedUnit) 
+        : (pusatList.length === 0 && daerahList.length === 0 && unitList.length === 0) ? allBranches.filter(b => b.level === 4) : [];
+
+    // Visibility logic: Hide a level if it is the effective root and has only 1 option
+    const showPusat = pusatList.length > 1;
+    const showDaerah = daerahList.length > 0 && (showPusat || daerahList.length > 1);
+    const showUnit = unitList.length > 0 && (showDaerah || unitList.length > 1);
+    const showKecamatan = kecamatanList.length > 0 && (showUnit || kecamatanList.length > 1);
+
+    const applyBranch = (branchId: number | null) => {
+        if (branchId === null) {
+            handleResetFilter();
+            return;
+        }
+
         const branch = allBranches.find(b => b.id_cabang === branchId);
         if (!branch) return;
 
@@ -119,6 +145,7 @@ const BranchSwitcher = () => {
         setSelectedPusat(null);
         setSelectedDaerah(null);
         setSelectedUnit(null);
+        setSelectedKecamatan(null);
 
         setLayoutState((prev: any) => ({
             ...prev,
@@ -221,32 +248,36 @@ const BranchSwitcher = () => {
                         <Divider className="my-2" style={{ borderColor: '#F3F4F6' }} />
 
                         {/* Level 1: Kantor Pusat */}
-                        <div className="flex flex-column gap-2 mb-3">
-                            <label className="font-semibold text-xs text-600" style={{ letterSpacing: '0.03em' }}>
-                                <i className="pi pi-building mr-1" style={{ fontSize: '0.7rem' }}></i>
-                                Kantor Pusat
-                            </label>
-                            <Dropdown
-                                value={selectedPusat}
-                                onChange={(e) => {
-                                    setSelectedPusat(e.value);
-                                    setSelectedDaerah(null);
-                                    setSelectedUnit(null);
-                                    if (e.value) applyBranch(e.value);
-                                }}
-                                options={pusatList}
-                                optionLabel="nama_cabang"
-                                optionValue="id_cabang"
-                                placeholder="Pilih Kantor Pusat"
-                                showClear
-                                filter
-                                className="w-full p-dropdown-sm"
-                                disabled={loading}
-                            />
-                        </div>
+                        {showPusat && (
+                            <div className="flex flex-column gap-2 mb-3">
+                                <label className="font-semibold text-xs text-600" style={{ letterSpacing: '0.03em' }}>
+                                    <i className="pi pi-building mr-1" style={{ fontSize: '0.7rem' }}></i>
+                                    Kantor Pusat
+                                </label>
+                                <Dropdown
+                                    value={selectedPusat}
+                                    onChange={(e) => {
+                                        setSelectedPusat(e.value);
+                                        setSelectedDaerah(null);
+                                        setSelectedUnit(null);
+                                        setSelectedKecamatan(null);
+                                        if (e.value) applyBranch(e.value);
+                                        else applyBranch(null as any); // Clear completely
+                                    }}
+                                    options={pusatList}
+                                    optionLabel="nama_cabang"
+                                    optionValue="id_cabang"
+                                    placeholder="Pilih Kantor Pusat"
+                                    showClear
+                                    filter
+                                    className="w-full p-dropdown-sm"
+                                    disabled={loading}
+                                />
+                            </div>
+                        )}
 
                         {/* Level 2: Pusat Daerah */}
-                        {selectedPusat && daerahList.length > 0 && (
+                        {showDaerah && (
                             <div className="flex flex-column gap-2 mb-3">
                                 <label className="font-semibold text-xs text-600" style={{ letterSpacing: '0.03em' }}>
                                     <i className="pi pi-sitemap mr-1" style={{ fontSize: '0.7rem' }}></i>
@@ -257,7 +288,9 @@ const BranchSwitcher = () => {
                                     onChange={(e) => {
                                         setSelectedDaerah(e.value);
                                         setSelectedUnit(null);
+                                        setSelectedKecamatan(null);
                                         if (e.value) applyBranch(e.value);
+                                        else applyBranch(selectedPusat); // Revert to level 1
                                     }}
                                     options={daerahList}
                                     optionLabel="nama_cabang"
@@ -271,7 +304,7 @@ const BranchSwitcher = () => {
                         )}
 
                         {/* Level 3: Unit Daerah */}
-                        {selectedDaerah && unitList.length > 0 && (
+                        {showUnit && (
                             <div className="flex flex-column gap-2 mb-3">
                                 <label className="font-semibold text-xs text-600" style={{ letterSpacing: '0.03em' }}>
                                     <i className="pi pi-map mr-1" style={{ fontSize: '0.7rem' }}></i>
@@ -281,12 +314,39 @@ const BranchSwitcher = () => {
                                     value={selectedUnit}
                                     onChange={(e) => {
                                         setSelectedUnit(e.value);
+                                        setSelectedKecamatan(null);
                                         if (e.value) applyBranch(e.value);
+                                        else applyBranch(selectedDaerah); // Revert to level 2
                                     }}
                                     options={unitList}
                                     optionLabel="nama_cabang"
                                     optionValue="id_cabang"
                                     placeholder="Pilih Unit Daerah"
+                                    showClear
+                                    filter
+                                    className="w-full p-dropdown-sm"
+                                />
+                            </div>
+                        )}
+
+                        {/* Level 4: Kantor Kecamatan */}
+                        {showKecamatan && (
+                            <div className="flex flex-column gap-2 mb-3">
+                                <label className="font-semibold text-xs text-600" style={{ letterSpacing: '0.03em' }}>
+                                    <i className="pi pi-home mr-1" style={{ fontSize: '0.7rem' }}></i>
+                                    Kantor Unit Kecamatan ({kecamatanList.length} data)
+                                </label>
+                                <Dropdown
+                                    value={selectedKecamatan}
+                                    onChange={(e) => {
+                                        setSelectedKecamatan(e.value);
+                                        if (e.value) applyBranch(e.value);
+                                        else applyBranch(selectedUnit); // Revert to level 3
+                                    }}
+                                    options={kecamatanList}
+                                    optionLabel="nama_cabang"
+                                    optionValue="id_cabang"
+                                    placeholder="Pilih Kantor Kecamatan"
                                     showClear
                                     filter
                                     className="w-full p-dropdown-sm"
@@ -311,6 +371,12 @@ const BranchSwitcher = () => {
                                         <>
                                             <i className="pi pi-angle-right" style={{ fontSize: '0.6rem' }}></i>
                                             <span>{allBranches.find(b => b.id_cabang === selectedUnit)?.nama_cabang || '-'}</span>
+                                        </>
+                                    )}
+                                    {selectedKecamatan && (
+                                        <>
+                                            <i className="pi pi-angle-right" style={{ fontSize: '0.6rem' }}></i>
+                                            <span>{allBranches.find(b => b.id_cabang === selectedKecamatan)?.nama_cabang || '-'}</span>
                                         </>
                                     )}
                                 </div>

@@ -13,7 +13,6 @@ import { Badge } from 'primereact/badge';
 import { Divider } from 'primereact/divider';
 import { Tag } from 'primereact/tag';
 import { formatDateCalendar } from '@/lib/tools/dateTools';
-import GlobalFilter from './GlobalFilter';
 import BranchSwitcher from './BranchSwitcher';
 
 const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
