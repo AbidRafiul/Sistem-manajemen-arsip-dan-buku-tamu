@@ -1,6 +1,4 @@
-'use client';
-
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
 import { Card } from 'primereact/card';
@@ -8,6 +6,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { FileUpload } from 'primereact/fileupload';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
+import { Dialog } from 'primereact/dialog';
 import { RegistrasiFormData } from '@/app/(main)/buku_tamu/registrasi/components/interfaces';
 import SignaturePad from './SignaturePad';
 
@@ -16,6 +15,8 @@ interface FormProps {
     handleChange: (field: string, value: any) => void;
     setIdentityFile: (file: File | null) => void;
     setSelfieFile: (file: File | null) => void;
+    identityFile: File | null;
+    selfieFile: File | null;
     visitPurposeOptions: any[];
     hostUserOptions: any[];
     branchOptions?: any[];
@@ -24,12 +25,108 @@ interface FormProps {
     handleSubmit: (e: React.FormEvent) => void;
 }
 
-export default function RegistrasiForm({ formData, handleChange, setIdentityFile, setSelfieFile, visitPurposeOptions, hostUserOptions, branchOptions = [], loading, disableBranchSelect, handleSubmit }: FormProps) {
+export default function RegistrasiForm({ 
+    formData, 
+    handleChange, 
+    setIdentityFile, 
+    setSelfieFile, 
+    identityFile,
+    selfieFile,
+    visitPurposeOptions, 
+    hostUserOptions, 
+    branchOptions = [], 
+    loading, 
+    disableBranchSelect, 
+    handleSubmit 
+}: FormProps) {
     const identityTypes = [
         { label: 'KTP', value: 'ktp' },
         { label: 'SIM', value: 'sim' },
         { label: 'Paspor', value: 'paspor' }
     ];
+
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [stream, setStream] = useState<MediaStream | null>(null);
+
+    const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
+    const [identityPreview, setIdentityPreview] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (selfieFile) {
+            const objectUrl = URL.createObjectURL(selfieFile);
+            setSelfiePreview(objectUrl);
+            return () => URL.revokeObjectURL(objectUrl);
+        } else {
+            setSelfiePreview(null);
+        }
+    }, [selfieFile]);
+
+    useEffect(() => {
+        if (identityFile) {
+            const objectUrl = URL.createObjectURL(identityFile);
+            setIdentityPreview(objectUrl);
+            return () => URL.revokeObjectURL(objectUrl);
+        } else {
+            setIdentityPreview(null);
+        }
+    }, [identityFile]);
+
+    const openCamera = async () => {
+        setIsCameraOpen(true);
+        setTimeout(async () => {
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    alert("Kamera tidak didukung di browser ini.");
+                    setIsCameraOpen(false);
+                    return;
+                }
+                const mediaStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: 640, height: 480 }
+                });
+                setStream(mediaStream);
+                if (videoRef.current) {
+                    videoRef.current.srcObject = mediaStream;
+                }
+            } catch (err) {
+                console.error("Gagal mengakses kamera:", err);
+                alert("Gagal mengakses kamera. Pastikan izin kamera telah diberikan.");
+                setIsCameraOpen(false);
+            }
+        }, 100);
+    };
+
+    const closeCamera = () => {
+        if (stream) {
+            stream.getTracks().forEach((track) => track.stop());
+            setStream(null);
+        }
+        setIsCameraOpen(false);
+    };
+
+    const capturePhoto = () => {
+        if (videoRef.current) {
+            const video = videoRef.current;
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const file = new File([blob], `selfie_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                        setSelfieFile(file);
+                    }
+                }, 'image/jpeg', 0.95);
+            }
+        }
+        closeCamera();
+    };
 
     return (
         <form onSubmit={handleSubmit} className="grid">
@@ -76,11 +173,74 @@ export default function RegistrasiForm({ formData, handleChange, setIdentityFile
                         </div>
                         <div className="field">
                             <label className="font-semibold block mb-2 text-sm text-800">Unggah Identitas</label>
-                            <FileUpload mode="basic" accept="image/*" maxFileSize={2000000} onSelect={(e) => setIdentityFile(e.files[0])} chooseLabel="Pilih Foto ID" className="w-full text-sm" />
+                            {identityPreview ? (
+                                <div className="flex flex-column align-items-center gap-2 p-3 surface-50 border-round-lg border-1 border-200">
+                                    <img 
+                                        src={identityPreview} 
+                                        alt="Identity Preview" 
+                                        className="border-round-lg shadow-2"
+                                        style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'contain' }}
+                                    />
+                                    <Button 
+                                        type="button" 
+                                        label="Hapus Identitas" 
+                                        icon="pi pi-trash" 
+                                        className="p-button-danger p-button-text p-button-sm mt-1"
+                                        onClick={() => setIdentityFile(null)}
+                                    />
+                                </div>
+                            ) : (
+                                <FileUpload mode="basic" accept="image/*" maxFileSize={2000000} onSelect={(e) => setIdentityFile(e.files[0])} chooseLabel="Pilih Foto ID" className="w-full text-sm" />
+                            )}
                         </div>
                         <div className="field">
                             <label className="font-semibold block mb-2 text-sm text-800">Foto Selfie Tamu</label>
-                            <FileUpload mode="basic" accept="image/*" maxFileSize={2000000} onSelect={(e) => setSelfieFile(e.files[0])} chooseLabel="Ambil/Pilih Foto Selfie" className="w-full text-sm" />
+                            {selfiePreview ? (
+                                <div className="flex flex-column align-items-center gap-2 p-3 surface-50 border-round-lg border-1 border-200">
+                                    <img 
+                                        src={selfiePreview} 
+                                        alt="Selfie Preview" 
+                                        className="border-round-lg shadow-2"
+                                        style={{ width: '150px', height: '150px', objectFit: 'cover' }}
+                                    />
+                                    <div className="flex gap-2 mt-1">
+                                        <Button 
+                                            type="button" 
+                                            label="Hapus Foto" 
+                                            icon="pi pi-trash" 
+                                            className="p-button-danger p-button-text p-button-sm"
+                                            onClick={() => setSelfieFile(null)}
+                                        />
+                                        <Button 
+                                            type="button" 
+                                            label="Ambil Ulang" 
+                                            icon="pi pi-refresh" 
+                                            className="p-button-secondary p-button-text p-button-sm"
+                                            onClick={openCamera}
+                                        />
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex flex-column sm:flex-row gap-2">
+                                    <Button 
+                                        type="button" 
+                                        label="Ambil Foto Live (Kamera)" 
+                                        icon="pi pi-camera" 
+                                        className="p-button-outlined p-button-primary flex-1 p-button-sm"
+                                        onClick={openCamera}
+                                    />
+                                    <div className="flex-1 relative">
+                                        <FileUpload 
+                                            mode="basic" 
+                                            accept="image/*" 
+                                            maxFileSize={2000000} 
+                                            onSelect={(e) => setSelfieFile(e.files[0])} 
+                                            chooseLabel="Unggah File Foto" 
+                                            className="w-full text-sm p-button-sm" 
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         <div className="field mt-3">
                             <SignaturePad onChange={(val) => handleChange('signature_data', val)} />
@@ -278,6 +438,53 @@ export default function RegistrasiForm({ formData, handleChange, setIdentityFile
                     <Button type="submit" label="Daftarkan Rencana Kunjungan" icon="pi pi-check" loading={loading} className="py-2 px-4 font-semibold text-sm border-round-lg text-white" style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)', border: 'none' }} />
                 </div>
             </div>
+            <Dialog
+                header={
+                    <div className="flex align-items-center gap-2">
+                        <i className="pi pi-camera text-primary text-xl" />
+                        <span className="font-bold text-900">Kamera Selfie Live</span>
+                    </div>
+                }
+                visible={isCameraOpen}
+                modal
+                style={{ width: '95vw', maxWidth: '480px' }}
+                onHide={closeCamera}
+                className="border-round-2xl overflow-hidden"
+                pt={{
+                    root: { className: 'border-round-2xl shadow-6' },
+                    header: { className: 'surface-50 border-bottom-1 surface-border py-3 px-4' },
+                    content: { className: 'p-4 flex flex-column align-items-center' }
+                }}
+            >
+                <div className="relative w-full aspect-video border-round-xl overflow-hidden bg-black shadow-inner mb-4">
+                    <video 
+                        ref={videoRef} 
+                        autoPlay 
+                        playsInline 
+                        muted
+                        className="w-full h-full object-cover"
+                        style={{ transform: 'scaleX(-1)' }}
+                    />
+                </div>
+                
+                <div className="flex gap-3 w-full">
+                    <Button 
+                        type="button" 
+                        label="Batal" 
+                        icon="pi pi-times" 
+                        className="p-button-outlined p-button-secondary flex-1 py-2 font-semibold text-sm border-round-lg"
+                        onClick={closeCamera}
+                    />
+                    <Button 
+                        type="button" 
+                        label="Ambil Foto" 
+                        icon="pi pi-camera" 
+                        className="flex-1 py-2 font-semibold text-sm border-round-lg text-white" 
+                        style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)', border: 'none' }}
+                        onClick={capturePhoto}
+                    />
+                </div>
+            </Dialog>
         </form>
     );
 }
