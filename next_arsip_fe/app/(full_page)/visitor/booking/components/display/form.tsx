@@ -143,7 +143,7 @@ export default function VisitorBookingForm({
                     Profil Pengunjung
                 </div>
 
-                <div className="grid row-gap-3 col-gap-2">
+                <div className="p-fluid grid">
                     <div className="col-12 field flex flex-column gap-2 mb-0">
                         <label htmlFor="nama_tamu" className="font-semibold text-xs text-700">Nama Lengkap *</label>
                         <InputText
@@ -320,7 +320,7 @@ export default function VisitorBookingForm({
                     Detail Kunjungan
                 </div>
 
-                <div className="grid row-gap-3 col-gap-2">
+                <div className="p-fluid grid">
                     <div className="col-12 field flex flex-column gap-2 mb-0">
                         <label htmlFor="id_cabang" className="font-semibold text-xs text-700">Kantor / Cabang Tujuan *</label>
                         <Dropdown
@@ -416,7 +416,7 @@ export default function VisitorBookingForm({
                                             }}
                                         />
                                     </div>
-                                    <div className="grid row-gap-2">
+                                    <div className="p-fluid grid">
                                         <div className="col-12 md:col-4 field m-0 flex flex-column gap-1">
                                             <label className="text-xs font-semibold text-700">Nama Lengkap</label>
                                             <InputText
