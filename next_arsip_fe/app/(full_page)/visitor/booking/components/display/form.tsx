@@ -7,6 +7,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Dialog } from 'primereact/dialog';
+import { FileUpload } from 'primereact/fileupload';
 import Link from 'next/link';
 import { VisitorBookingFormData } from '../interfaces';
 import SignaturePad from '@/app/(main)/buku_tamu/registrasi/components/display/SignaturePad';
@@ -215,13 +216,6 @@ export default function VisitorBookingForm({
                     {/* CUSTOM FILE UPLOAD IDENTITAS */}
                     <div className="col-12 md:col-6 field flex flex-column gap-2 mb-0">
                         <label className="font-semibold text-xs text-700">Foto Identitas (KTP/SIM)</label>
-                        <input
-                            type="file"
-                            ref={fileInputRefIdentity}
-                            onChange={(e) => setIdentityFile(e.target.files?.[0] || null)}
-                            className="hidden"
-                            accept="image/*"
-                        />
                         {identityPreview ? (
                             <div className="flex flex-column align-items-center gap-2 p-3 surface-50 border-round-xl border-1 border-200" style={{ minHeight: '100px' }}>
                                 <img 
@@ -239,27 +233,20 @@ export default function VisitorBookingForm({
                                 />
                             </div>
                         ) : (
-                            <div
-                                onClick={() => fileInputRefIdentity.current?.click()}
-                                className="border-dashed border-2 border-300 border-round-xl p-3 flex flex-column align-items-center justify-content-center cursor-pointer hover:border-primary hover:bg-indigo-50 transition-all transition-duration-200"
-                                style={{ minHeight: '100px', background: '#f8fafc' }}
-                            >
-                                <i className="pi pi-upload text-xl text-500 mb-1" />
-                                <span className="text-xs text-600 font-medium">Pilih / Unggah KTP/SIM</span>
-                            </div>
+                            <FileUpload 
+                                mode="basic" 
+                                accept="image/*" 
+                                maxFileSize={2000000} 
+                                onSelect={(e) => setIdentityFile(e.files[0])} 
+                                chooseLabel="Pilih Foto ID" 
+                                className="w-full text-sm" 
+                            />
                         )}
                     </div>
 
                     {/* CUSTOM FILE UPLOAD SELFIE */}
                     <div className="col-12 md:col-6 field flex flex-column gap-2 mb-0">
                         <label className="font-semibold text-xs text-700">Foto Selfie Tamu</label>
-                        <input
-                            type="file"
-                            ref={fileInputRefSelfie}
-                            onChange={(e) => setSelfieFile(e.target.files?.[0] || null)}
-                            className="hidden"
-                            accept="image/*"
-                        />
                         {selfiePreview ? (
                             <div className="flex flex-column align-items-center gap-2 p-3 surface-50 border-round-xl border-1 border-200" style={{ minHeight: '100px' }}>
                                 <img 
@@ -286,22 +273,23 @@ export default function VisitorBookingForm({
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex gap-2">
+                            <div className="flex flex-column sm:flex-row gap-2">
                                 <Button 
                                     type="button" 
-                                    label="Ambil Foto Live" 
+                                    label="Ambil Foto Live (Kamera)" 
                                     icon="pi pi-camera" 
-                                    className="p-button-outlined p-button-primary flex-1 p-button-sm border-round-xl py-3"
+                                    className="p-button-outlined p-button-primary flex-1 p-button-sm py-2"
                                     onClick={openCamera}
-                                    style={{ minHeight: '100px' }}
                                 />
-                                <div 
-                                    onClick={() => fileInputRefSelfie.current?.click()}
-                                    className="border-dashed border-2 border-300 border-round-xl p-3 flex flex-column align-items-center justify-content-center cursor-pointer hover:border-primary hover:bg-indigo-50 transition-all transition-duration-200 flex-1"
-                                    style={{ minHeight: '100px', background: '#f8fafc' }}
-                                >
-                                    <i className="pi pi-upload text-xl text-500 mb-1" />
-                                    <span className="text-xs text-600 font-medium text-center">Unggah File Foto</span>
+                                <div className="flex-1 relative">
+                                    <FileUpload 
+                                        mode="basic" 
+                                        accept="image/*" 
+                                        maxFileSize={2000000} 
+                                        onSelect={(e) => setSelfieFile(e.files[0])} 
+                                        chooseLabel="Unggah File Foto" 
+                                        className="w-full text-sm p-button-sm" 
+                                    />
                                 </div>
                             </div>
                         )}
