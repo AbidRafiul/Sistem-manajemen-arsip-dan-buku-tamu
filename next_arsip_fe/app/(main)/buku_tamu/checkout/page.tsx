@@ -253,10 +253,40 @@ const CheckoutPage = () => {
         try {
             setState((p: State) => ({ ...p, load: true }));
  
+            const tokenSIAB = typeof window !== 'undefined' ? (localStorage.getItem('token') || sessionStorage.getItem('token') || '') : '';
+            let userIdAdmin = "";
+            if (typeof window !== 'undefined') {
+                const userSessionString = sessionStorage.getItem('user') || localStorage.getItem('user');
+                if (userSessionString) {
+                    try {
+                        const parsedUser = JSON.parse(userSessionString);
+                        userIdAdmin = parsedUser.user_id || parsedUser.id || parsedUser.UniqueId || "";
+                    } catch (e) {
+                        userIdAdmin = "";
+                    }
+                }
+            }
+ 
+            if (!userIdAdmin) {
+                userIdAdmin = "1";
+            }
+ 
+            const timestamp = new Date().toISOString();
+ 
             // Fetch visitor details by scanned QR token
-            const response = await axios.post("http://localhost:8000/api/v1/buku_tamu/visit_qr_scan", {
-                QRToken: decodedText
-            });
+            const response = await axios.post(
+                "http://localhost:8000/api/v1/buku_tamu/visit_qr_scan",
+                { QRToken: decodedText },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': tokenSIAB ? `Bearer ${tokenSIAB}` : '',
+                        'x-access-token': tokenSIAB,
+                        'x-timestamp': timestamp,
+                        'x-uniqueid': userIdAdmin
+                    }
+                }
+            );
  
             if (response.data?.status === '00' && response.data?.data?.record) {
                 const record = response.data.data.record;
