@@ -107,7 +107,7 @@ export default function GuestDataTable({
             <div className="flex flex-column sm:flex-row gap-2">
                 <Button
                     type="button"
-                    label="Scan QR Check-out"
+                    label="Scan QR"
                     icon="pi pi-qrcode"
                     className="p-button-sm px-3 text-white"
                     style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', border: 'none' }}

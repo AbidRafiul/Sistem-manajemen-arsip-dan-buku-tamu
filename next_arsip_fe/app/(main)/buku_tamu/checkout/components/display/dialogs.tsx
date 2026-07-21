@@ -368,7 +368,7 @@ export function ScanQRDialog({
             header={
                 <div className="flex align-items-center gap-2">
                     <i className="pi pi-qrcode text-primary text-xl" />
-                    <span className="font-bold text-900">Scan QR Code Check-Out</span>
+                    <span className="font-bold text-900">Scan QR Code Tamu</span>
                 </div>
             }
             visible={visible}

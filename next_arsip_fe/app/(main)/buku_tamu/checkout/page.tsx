@@ -261,21 +261,29 @@ const CheckoutPage = () => {
             if (response.data?.status === '00' && response.data?.data?.record) {
                 const record = response.data.data.record;
                 
-                // Check if they are currently inside ("in") and can be checked out
-                if (record.status !== 'in') {
-                    showError(toast, `Tamu ${record.nama_tamu} tidak sedang berkunjung (status saat ini: ${record.status})`);
-                    return;
+                if (record.status === 'Rencana') {
+                    // Check-In Flow
+                    if (record.status_persetujuan !== 'approved') {
+                        showError(toast, `Kunjungan tamu ${record.nama_tamu} belum disetujui (Status Persetujuan: ${record.status_persetujuan})`);
+                        return;
+                    }
+                    showSuccess(toast, `QR Dideteksi: Memulai Check-In Tamu ${record.nama_tamu}`);
+                    await handleCheckin(record.id_kunjungan);
+                } else if (record.status === 'in') {
+                    // Check-Out Flow
+                    setSelectedId(record.id_kunjungan);
+                    setState((p: State) => ({
+                        ...p,
+                        showCheckoutDialog: true,
+                        checkoutToken: record.token_qr || record.kode_kunjungan || decodedText,
+                        checkoutNotes: ''
+                    }));
+                    showSuccess(toast, `QR Dideteksi: Menyiapkan Check-Out Tamu ${record.nama_tamu}`);
+                } else if (record.status === 'out') {
+                    showError(toast, `Tamu ${record.nama_tamu} sudah melakukan check-out sebelumnya.`);
+                } else {
+                    showError(toast, `Status kunjungan tamu ${record.nama_tamu} tidak valid (${record.status})`);
                 }
- 
-                // If approved and status is "in", we open the checkout dialog
-                setSelectedId(record.id_kunjungan);
-                setState((p: State) => ({
-                    ...p,
-                    showCheckoutDialog: true,
-                    checkoutToken: record.token_qr || record.kode_kunjungan || decodedText,
-                    checkoutNotes: ''
-                }));
-                showSuccess(toast, `QR Berhasil Dideteksi: Tamu ${record.nama_tamu}`);
             } else {
                 showError(toast, response.data?.message || 'Data kunjungan tamu tidak ditemukan');
             }
