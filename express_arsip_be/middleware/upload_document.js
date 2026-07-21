@@ -9,6 +9,10 @@ const fileFilter = (req, file, cb) => {
     "application/pdf",
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "image/png",
+    "image/jpeg",
+    "image/jpg",
+    "image/webp"
   ];
 
   if (vaAllowedMimeType.includes(file.mimetype)) {
@@ -42,7 +46,7 @@ export const uploadDocument = (req, res, next) => {
 
     try {
       const bucketName = process.env.MINIO_BUCKET_NAME || "arsip-bucket";
-      
+
       let uploaderIdCabang = null, uploaderIdDept = null, uploaderIdDiv = null, uploaderIdUnit = null;
       const uploaderId = req.body.uploaded_by || req?.auth?.id_pengguna;
       if (uploaderId) {
@@ -56,7 +60,7 @@ export const uploadDocument = (req, res, next) => {
           uploaderIdUnit = uploader.id_unit_kerja;
         }
       }
-      
+
       // Fallback if not found in db
       if (!uploaderIdCabang && req.body.id_cabang) {
         uploaderIdCabang = req.body.id_cabang;

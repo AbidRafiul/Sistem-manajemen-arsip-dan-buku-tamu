@@ -1,0 +1,86 @@
+====================================================================
+   PANDUAN TESTING FITUR BARU MODUL ARSIP DOKUMEN & MULTI-TENANT
+====================================================================
+
+Daftar Fitur Baru yang Diuji:
+1. Multi-Tenant Switching Kantor (Auto-Ownership Dokumen)
+2. Ekstraksi Teks & OCR (PDF Digital & Gambar Scan via Tesseract.js)
+3. Full-Text Search (Pencarian Isi Konten Dokumen & Metadata)
+4. Audit Trail / Timeline Riwayat Perubahan Detail (Changelog per Field)
+
+--------------------------------------------------------------------
+SKENARIO 1: Testing Multi-Tenant Switching Kantor (Auto-Ownership)
+--------------------------------------------------------------------
+Tujuan: Memastikan dokumen tersimpan di kantor yang sedang dipilih di BranchSwitcher.
+
+Langkah-langkah:
+1. Login menggunakan akun Superadmin.
+2. Perhatikan tombol indikator kantor di pojok kiri atas halaman (BranchSwitcher).
+3. Klik indikator kantor tersebut, pilih "Kantor Pusat Jakarta" (atau kantor daerah lainnya).
+4. Masuk ke menu "EDMS -> Dokumen Arsip".
+5. Klik tombol "+ Tambah Dokumen".
+6. Isi data dokumen (contoh: "Dokumen Kontrak Jakarta 2026", Nomor: "JKT/DOC/001") dan unggah file PDF.
+7. Simpan dokumen.
+8. Verifikasi 1: Dokumen baru berhasil tersimpan dan muncul di daftar dokumen saat posisi indikator kantor adalah "Kantor Pusat Jakarta".
+9. Uji Coba Pindah Kantor:
+   - Klik indikator kantor di kiri atas, pindah ke "Kantor Pusat Demo".
+   - Perhatikan daftar dokumen: Dokumen "Dokumen Kontrak Jakarta 2026" TIDAK MUNCUL di Kantor Pusat Demo.
+   - Pindah kembali ke "Kantor Pusat Jakarta": Dokumen "Dokumen Kontrak Jakarta 2026" MUNCUL kembali.
+
+--------------------------------------------------------------------
+SKENARIO 2: Testing OCR & Ekstraksi Teks (PDF & Scan)
+--------------------------------------------------------------------
+Tujuan: Memastikan teks di dalam berkas PDF/Gambar diekstrak otomatis.
+
+Langkah-langkah:
+1. Masuk ke menu "EDMS -> Dokumen Arsip".
+2. Tambahkan dokumen baru atau upload versi baru dengan melampirkan berkas PDF atau gambar scan yang berisi teks.
+3. Setelah berhasil diunggah, proses OCR / ekstraksi teks akan berjalan otomatis di latar belakang (background process).
+4. Klik tombol "Detail Versi" (tombol berikon riwayat / pi-history pada baris dokumen).
+5. Pada tabel versi dokumen, perhatikan kolom "Pratinjau / OCR".
+6. Klik tombol berikon dokumen teks (pi-file-word / warna ungu).
+7. Modal dialog akan terbuka menampilkan seluruh isi teks yang berhasil diekstrak dari berkas tersebut.
+
+--------------------------------------------------------------------
+SKENARIO 3: Testing Full-Text Search (Pencarian Isi Dokumen)
+--------------------------------------------------------------------
+Tujuan: Memastikan pencarian dapat menemukan dokumen berdasarkan ISI KONTEN BERKAS.
+
+Langkah-langkah:
+1. Masuk ke menu "EDMS -> Pencarian OCR & Teks" pada sidebar navigasi kiri (atau klik tombol "Pencarian OCR & Teks" di toolbar atas tabel dokumen).
+2. Pada kolom pencarian, ketik kata kunci yang ada DI DALAM ISI BERKAS (contoh: kata/kalimat di dalam paragraf isi dokumen yang tidak ada pada judul dokumen).
+3. Pilih Mode Pencarian:
+   - "Semua Mode" (Pencarian gabungan Metadata + Isi Dokumen)
+   - "Isi Dokumen (OCR)" (Khusus pencarian pada teks hasil ekstraksi berkas)
+4. Klik tombol "Cari Dokumen".
+5. Verifikasi:
+   - Dokumen yang memuat kata kunci tersebut akan muncul pada hasil pencarian.
+   - Terdapat badge label "Isi Teks Dokumen (OCR)" berwarna biru.
+   - Terdapat potongan teks (snippet) dengan pencahayaan kata kunci yang cocok.
+   - Klik tombol "Pratinjau" atau "Lihat Versi" untuk langsung meninjau dokumen tersebut.
+
+--------------------------------------------------------------------
+SKENARIO 4: Testing Audit Trail & Timeline Riwayat Perubahan
+--------------------------------------------------------------------
+Tujuan: Memastikan setiap aktivitas & perubahan field dokumen tercatat secara detail.
+
+Langkah-langkah:
+1. Pada tabel Dokumen Arsip, pilih salah satu dokumen.
+2. Klik tombol "Audit Trail" (tombol berikon jam / pi-clock warna ungu pada baris dokumen).
+3. Halaman Timeline Riwayat Perubahan Dokumen akan terbuka.
+4. Perhatikan entri pertama: Tercatat aktivitas "Dokumen Dibuat" beserta informasi pengubah, waktu, dan IP address.
+5. Uji Coba Perubahan Metadata (Edit):
+   - Kembali ke tabel Dokumen Arsip, klik tombol Edit (pi-pencil).
+   - Ubah Nama Dokumen atau PIC (misal ubah "Laporan A" menjadi "Laporan A Final").
+   - Simpan perubahan.
+6. Buka kembali halaman "Audit Trail" dokumen tersebut.
+7. Verifikasi:
+   - Muncul entri baru "Perubahan Metadata".
+   - Di dalam detail perubahan, ditampilkan field yang diubah secara eksplisit:
+     nama_dokumen: Laporan A -> Laporan A Final
+8. Uji Coba Upload Versi / Approval / Rollback:
+   - Setiap aktivitas upload versi baru, persetujuan versi, atau rollback akan tercatat pada timeline audit trail secara kronologis dengan warna badge yang sesuai.
+
+====================================================================
+  SELESAI — SELURUH FITUR SIAP DIUJI DAN DIGUNAKAN
+====================================================================

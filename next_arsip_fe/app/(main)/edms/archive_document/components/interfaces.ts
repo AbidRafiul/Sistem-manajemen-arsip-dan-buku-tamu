@@ -23,6 +23,8 @@ export interface initValue {
 
 export interface DocumentData {
     id_dokumen: number
+    id_cabang?: number | null
+    nama_cabang?: string | null
     kode_dokumen: string
     nama_dokumen: string
     nomor_dokumen: string
@@ -31,6 +33,7 @@ export interface DocumentData {
     tanggal_kedaluwarsa: string
     nama_pic: string
     lokasi_fisik?: string | null
+    qr_code?: string | null
     status: string
     created_at: string
     updated_at: string
@@ -79,6 +82,39 @@ export interface LoanData {
     catatan_persetujuan?: string | null
     created_at: string
     updated_at: string
+}
+
+export interface DocumentContentData {
+    id_konten: number
+    kode_dokumen: string
+    id_versi: number
+    konten_teks: string
+    sumber_konten: 'pdf_parse' | 'ocr_pdf' | 'ocr_gambar'
+    status_ocr: 'pending' | 'processing' | 'completed' | 'failed'
+    pesan_error?: string | null
+    jumlah_halaman: number
+    bahasa_ocr: string
+    created_at: string
+    updated_at: string
+    nomor_versi?: number
+    file_path?: string
+}
+
+export interface DocumentHistoryData {
+    id_riwayat: number
+    kode_dokumen: string
+    aksi: 'create' | 'update' | 'delete' | 'version_upload' | 'version_approve' | 'version_reject' | 'version_rollback' | 'loan' | 'return'
+    deskripsi: string
+    detail_json?: Record<string, { lama: any; baru: any }> | null
+    dilakukan_oleh: string
+    ip_alamat?: string | null
+    created_at: string
+}
+
+export interface SearchResultData extends DocumentData {
+    source: 'metadata' | 'content'
+    matched_field?: string
+    snippet?: string
 }
 
 export interface DetailData {
