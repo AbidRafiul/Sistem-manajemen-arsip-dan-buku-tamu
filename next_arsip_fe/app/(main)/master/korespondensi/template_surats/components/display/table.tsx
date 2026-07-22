@@ -1,5 +1,6 @@
 'use client';
 
+import { usePermissions } from '@/hooks/usePermissions';
 import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
@@ -10,6 +11,8 @@ import { useEffect } from 'react';
 import { State } from '../interfaces';
 
 const Table = ({ state, setState, formik, getData, handleDelete }: any) => {
+  const { canCreate, canUpdate, canDelete } = usePermissions();
+
   const renderHeader = () => (
     <div className="flex flex-wrap align-items-center justify-content-between gap-3">
       <span className="text-xl font-bold">Daftar Template Surat</span>
@@ -39,9 +42,10 @@ const Table = ({ state, setState, formik, getData, handleDelete }: any) => {
       <Button type="button" icon="pi pi-eye" rounded outlined severity="info" size="small" tooltip="Preview" tooltipOptions={{ position: 'top' }} onClick={() => {
         setState((p: State) => ({ ...p, previewVisible: true, previewContent: rowData.isi_template || '' }));
       }} />
-      <Button type="button" icon="pi pi-pencil" rounded outlined severity="warning" size="small" tooltip="Edit" tooltipOptions={{ position: 'top' }} onClick={() => {
+      {canUpdate && <Button type="button" icon="pi pi-pencil" rounded outlined severity="warning" size="small" tooltip="Edit" tooltipOptions={{ position: 'top' }} onClick={() => {
         formik.setValues({
-          id: rowData.id,
+          id: rowData.id_template || rowData.id,
+          id_template: rowData.id_template || rowData.id,
           kode_template: rowData.kode_template,
           nama_template: rowData.nama_template,
           jenis_surat_id: rowData.jenis_surat_id || null,
@@ -52,8 +56,8 @@ const Table = ({ state, setState, formik, getData, handleDelete }: any) => {
           updated_by: rowData.updated_by,
         });
         setState((p: State) => ({ ...p, edit: true, add: false }));
-      }} />
-      <Button type="button" icon="pi pi-trash" rounded outlined severity="danger" size="small" tooltip="Nonaktifkan" tooltipOptions={{ position: 'top' }} onClick={() => setState((p: State) => ({ ...p, selectedData: [rowData], delete: true }))} />
+      }} />}
+      {canDelete && <Button type="button" icon="pi pi-trash" rounded outlined severity="danger" size="small" tooltip="Nonaktifkan" tooltipOptions={{ position: 'top' }} onClick={() => setState((p: State) => ({ ...p, selectedData: [rowData], delete: true }))} />}
     </div>
   );
 
@@ -72,18 +76,18 @@ const Table = ({ state, setState, formik, getData, handleDelete }: any) => {
       </div>
 
       <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
-        <Button type="button" size="small" label="Baru" icon="pi pi-plus" outlined severity="success" onClick={() => {
+        {canCreate && <Button type="button" size="small" label="Baru" icon="pi pi-plus" outlined severity="success" onClick={() => {
           formik.resetForm();
           setState((p: State) => ({ ...p, add: true, selectedData: [] }));
-        }} />
-        <Divider layout="vertical" className="hidden md:inline" />
-        <Button type="button" size="small" label={state.selectedData.length > 0 ? `Nonaktifkan (${state.selectedData.length})` : 'Nonaktifkan'} icon="pi pi-trash" outlined severity="danger" onClick={() => setState((p: State) => ({ ...p, delete: true }))} disabled={state.selectedData.length === 0} />
-        <Divider layout="vertical" className="hidden md:inline" />
+        }} />}
+        {canCreate && <Divider layout="vertical" className="hidden md:inline" />}
+        {canDelete && <Button type="button" size="small" label={state.selectedData.length > 0 ? `Nonaktifkan (${state.selectedData.length})` : 'Nonaktifkan'} icon="pi pi-trash" outlined severity="danger" onClick={() => setState((p: State) => ({ ...p, delete: true }))} disabled={state.selectedData.length === 0} />}
+        {canDelete && <Divider layout="vertical" className="hidden md:inline" />}
         <Button type="button" size="small" label="Muat Ulang" icon="pi pi-refresh" outlined onClick={() => getData()} loading={state.load} />
       </div>
 
       <DataTable value={state.data} selection={state.selectedData} onSelectionChange={(e) => setState((p: State) => ({ ...p, selectedData: e.value }))} dataKey="id" paginator rows={10} rowsPerPageOptions={[5, 10, 25]} globalFilterFields={['kode_template', 'nama_template', 'status']} filters={state.filters} header={renderHeader()} emptyMessage="Tidak ada data ditemukan." loading={state.load} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
-        <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
+        {canDelete && <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />}
         <Column field="kode_template" header="Kode Template" sortable />
         <Column field="nama_template" header="Nama Template" sortable />
         <Column field="nama_jenis_surat" header="Jenis Surat" />

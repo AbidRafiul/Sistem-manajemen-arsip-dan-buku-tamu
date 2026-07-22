@@ -24,6 +24,7 @@ const createTemplateSurat = async (req, res) => {
         deskripsi: Joi.string().allow(null, "").optional().label("Deskripsi"),
         status: Joi.string().valid("active", "inactive").optional().label("Status"),
         created_by: Joi.number().integer().positive().optional().allow(null).label("Pembuat"),
+        updated_by: Joi.number().integer().positive().optional().allow(null).label("Pengubah"),
       },
       {
         "string.empty": "{#label} tidak boleh kosong",

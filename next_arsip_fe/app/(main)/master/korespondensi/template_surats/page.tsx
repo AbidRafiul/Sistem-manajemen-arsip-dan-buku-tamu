@@ -16,6 +16,7 @@ import { initValue, State } from './components/interfaces';
 
 const initialValues: initValue = {
   id: '',
+  id_template: null,
   kode_template: '',
   nama_template: '',
   jenis_surat_id: null,
@@ -27,6 +28,11 @@ const initialValues: initValue = {
 };
 
 const apiEndpoint = '/master/surat/template-surat';
+
+const mapTemplateSuratRow = (row: any) => ({
+  ...row,
+  id: row.id_template || row.id,
+});
 
 const Page = () => {
   const toast = useRef<Toast>(null);
@@ -65,7 +71,7 @@ const Page = () => {
     setState((p) => ({ ...p, load: true }));
     try {
       const res = await getDataRequest(apiEndpoint);
-      setState((p) => ({ ...p, data: res.data?.data || [] }));
+      setState((p) => ({ ...p, data: (res.data?.data || []).map(mapTemplateSuratRow) }));
     } catch (error: any) {
       showError(toast, error?.response?.data?.message || 'Terjadi Kesalahan');
     } finally {
@@ -75,7 +81,7 @@ const Page = () => {
 
   const fetchLetterTypes = async () => {
     try {
-      const res = await postData('/correspondence/letter-type-data', {});
+      const res = await getDataRequest('/correspondence/letter-type-management');
       setState((p) => ({ ...p, letterTypes: res.data?.data || [] }));
     } catch (error: any) {
       showError(toast, error?.response?.data?.message || 'Jenis surat gagal diambil');
@@ -119,7 +125,7 @@ const Page = () => {
     setState((p) => ({ ...p, load: true }));
     try {
       for (const item of state.selectedData) {
-        await deleteData(`${apiEndpoint}/${item.id}`);
+        await deleteData(`${apiEndpoint}/${item.id_template || item.id}`);
       }
       showSuccess(toast, 'Template surat berhasil dinonaktifkan');
       setState((p) => ({ ...p, selectedData: [], delete: false }));

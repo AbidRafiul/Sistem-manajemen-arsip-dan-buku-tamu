@@ -5,6 +5,7 @@ import {
   Logging,
   validatePayload,
 } from "../components/tools/servertool.js";
+import { generateNomorSurat } from "../components/tools/letter_numbering_service.js";
 
 const router = express.Router();
 const AGENDA_PREFIX = "SK";
@@ -49,18 +50,64 @@ const checkReference = async ({ table, key, value, label }) => {
   return oData ? null : `${label} tidak ditemukan`;
 };
 
+const formatDateValue = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+
+  return new Intl.DateTimeFormat("id-ID", {
+    timeZone: "Asia/Jakarta",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+};
+
+const renderTemplateContent = (templateContent, values) => {
+  if (!templateContent) return "";
+
+  return String(templateContent).replace(/{{\s*([\w_]+)\s*}}/g, (_, key) => {
+    const value = values[key];
+    return value === undefined || value === null ? "" : String(value);
+  });
+};
+
+const toNullablePositiveInteger = (value) => {
+  const nValue = Number(value);
+  return Number.isInteger(nValue) && nValue > 0 ? nValue : null;
+};
+
 const outgoingLetterCreate = async (req, res) => {
   const cFile = "outgoing_letter_create.js";
   const cFunc = "outgoingLetterCreate";
   const oPayload = req.body || {};
+  const nAuthenticatedUserId = toNullablePositiveInteger(
+    req?.auth?.id_pengguna ||
+      req?.auth?.IdPengguna ||
+      req?.context?.id_pengguna ||
+      req?.context?.IdPengguna
+  );
+  const nCreatedBy =
+    toNullablePositiveInteger(oPayload.created_by) || nAuthenticatedUserId;
+  const nUpdatedBy =
+    toNullablePositiveInteger(oPayload.updated_by) || nCreatedBy;
+  const cUnitKerjaId =
+    req?.auth?.id_unit_kerja ||
+    req?.context?.id_unit_kerja ||
+    req?.headers?.["x-filter-unit-kerja"] ||
+    oPayload.id_unit_kerja ||
+    null;
 
   try {
     if (!oPayload.nomor_agenda) {
       delete oPayload.nomor_agenda;
     }
 
+    oPayload.created_by = nCreatedBy;
+    oPayload.updated_by = nUpdatedBy;
+
     const oValidation = {
-      nomor_surat: Joi.string().max(100).required(),
+      nomor_surat: Joi.string().max(100).allow(null, "").optional(),
       nomor_agenda: Joi.string().max(100).optional(),
       tanggal_surat: Joi.date().required(),
       tanggal_kirim: Joi.date().allow(null).optional(),
@@ -69,6 +116,10 @@ const outgoingLetterCreate = async (req, res) => {
       tujuan: Joi.string().max(150).required(),
       instansi_tujuan: Joi.string().max(150).allow(null, "").optional(),
       media_pengiriman: Joi.string().max(100).allow(null, "").optional(),
+      id_template: Joi.number().integer().positive().allow(null).optional(),
+      isi_surat_final: Joi.string().allow(null, "").optional(),
+      nama_pengirim: Joi.string().max(150).allow(null, "").optional(),
+      jabatan: Joi.string().max(150).allow(null, "").optional(),
       status: Joi.string()
         .valid(
           "draft",
@@ -84,7 +135,6 @@ const outgoingLetterCreate = async (req, res) => {
     };
 
     const oMessage = {
-      "nomor_surat.required": "Nomor surat wajib diisi",
       "tanggal_surat.required": "Tanggal surat wajib diisi",
       "id_jenis_surat.required": "Jenis surat wajib dipilih",
       "perihal.required": "Perihal wajib diisi",
@@ -113,6 +163,12 @@ const outgoingLetterCreate = async (req, res) => {
         label: "Jenis surat",
       },
       {
+        table: "mst_template_surat",
+        key: "id_template",
+        value: oPayload.id_template,
+        label: "Template surat",
+      },
+      {
         table: "mst_pengguna",
         key: "id_pengguna",
         value: oPayload.created_by,
@@ -139,12 +195,49 @@ const outgoingLetterCreate = async (req, res) => {
 
     const dNow = new Date();
     const nOutgoingLetterId = await DB.transaction(async (trx) => {
+      const oJenisSurat = await trx("mst_jenis_surat")
+        .where("jenis_surat_id", oPayload.id_jenis_surat)
+        .first();
       const cNomorAgenda =
         oPayload.nomor_agenda || (await generateAgendaNumber(trx));
       const cStatus = oPayload.status || "draft";
+      const cGeneratedNomorSurat = await generateNomorSurat(trx, {
+        jenisSuratId: oPayload.id_jenis_surat,
+        unitKerjaId: cUnitKerjaId,
+        tanggalSurat: oPayload.tanggal_surat,
+      });
+      const cNomorSurat = cGeneratedNomorSurat || oPayload.nomor_surat;
+
+      if (!cNomorSurat) {
+        throw new Error("Nomor surat wajib diisi atau konfigurasi penomoran aktif belum tersedia");
+      }
+
+      const oTemplate = oPayload.id_template
+        ? await trx("mst_template_surat")
+            .where("id_template", oPayload.id_template)
+            .first()
+        : null;
+      const cIsiSuratFinal =
+        oPayload.isi_surat_final ||
+        (oTemplate
+          ? renderTemplateContent(oTemplate.isi_template, {
+              nomor_surat: cNomorSurat,
+              nomor_agenda: cNomorAgenda,
+              tanggal_surat: formatDateValue(oPayload.tanggal_surat),
+              tanggal_kirim: formatDateValue(oPayload.tanggal_kirim),
+              nama_jenis_surat: oJenisSurat?.nama_jenis_surat || "",
+              perihal: oPayload.perihal,
+              tujuan: oPayload.tujuan,
+              instansi_tujuan: oPayload.instansi_tujuan,
+              media_pengiriman: oPayload.media_pengiriman,
+              nama_pengirim: oPayload.nama_pengirim || req?.auth?.nama_lengkap || req?.auth?.nama_pengguna || "",
+              jabatan: oPayload.jabatan || req?.auth?.jabatan || "",
+              isi_surat: "",
+            })
+          : null);
 
       const vaInserted = await trx("trs_surat_keluar").insert({
-        nomor_surat: oPayload.nomor_surat,
+        nomor_surat: cNomorSurat,
         nomor_agenda: cNomorAgenda,
         tanggal_surat: oPayload.tanggal_surat,
         tanggal_kirim: oPayload.tanggal_kirim || null,
@@ -153,9 +246,13 @@ const outgoingLetterCreate = async (req, res) => {
         tujuan: oPayload.tujuan,
         instansi_tujuan: oPayload.instansi_tujuan || null,
         media_pengiriman: oPayload.media_pengiriman || null,
+        id_template: oPayload.id_template || null,
+        isi_surat_final: cIsiSuratFinal || null,
+        nama_pengirim: oPayload.nama_pengirim || null,
+        jabatan: oPayload.jabatan || null,
         status: cStatus,
-        created_by: oPayload.created_by || null,
-        updated_by: oPayload.updated_by || null,
+        created_by: nCreatedBy,
+        updated_by: nUpdatedBy,
         created_at: dNow,
         updated_at: dNow,
       });
@@ -168,7 +265,7 @@ const outgoingLetterCreate = async (req, res) => {
         aktivitas: "surat_dibuat",
         catatan: "Surat keluar dibuat",
         tanggal: dNow,
-        dibuat_oleh: oPayload.created_by || null,
+        dibuat_oleh: nCreatedBy,
         created_at: dNow,
         updated_at: dNow,
       });
@@ -184,6 +281,13 @@ const outgoingLetterCreate = async (req, res) => {
       },
     });
   } catch (error) {
+    if (String(error.message || "").includes("konfigurasi penomoran")) {
+      return res.status(400).json({
+        status: false,
+        message: error.message,
+      });
+    }
+
     const oResult = {
       status: false,
       message: "Surat keluar gagal dibuat",

@@ -2,6 +2,7 @@ import { FilterMatchMode } from 'primereact/api';
 
 export interface initValue {
   id?: string | number;
+  id_template?: number | null;
   kode_template: string;
   nama_template: string;
   jenis_surat_id: number | null;

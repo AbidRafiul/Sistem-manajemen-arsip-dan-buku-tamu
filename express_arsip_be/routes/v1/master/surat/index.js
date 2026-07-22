@@ -5,6 +5,7 @@ import templateSuratDetail from "./template_surat_detail.js";
 import templateSuratCreate from "./template_surat_create.js";
 import templateSuratUpdate from "./template_surat_update.js";
 import templateSuratDelete from "./template_surat_delete.js";
+import penomoranSurat from "./penomoran_surat.js";
 
 const router = express.Router();
 
@@ -13,5 +14,6 @@ router.use("/template-surat", templateSuratDetail);
 router.use("/template-surat", templateSuratCreate);
 router.use("/template-surat", templateSuratUpdate);
 router.use("/template-surat", templateSuratDelete);
+router.use("/penomoran-surat", penomoranSurat);
 
 export default router;

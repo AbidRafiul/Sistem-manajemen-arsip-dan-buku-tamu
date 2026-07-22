@@ -4,6 +4,8 @@ import getDataRequest from "@/lib/axios/getData";
 import postData from "@/lib/axios/postData";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
 import { showError, showSuccess } from "@/lib/tools/generalTools";
+import jsPDF from "jspdf";
+import dynamic from "next/dynamic";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { Column } from "primereact/column";
@@ -20,7 +22,7 @@ import {
     apiEndpointApprove,
     apiEndpointReject,
     apiEndpointDetail,
-    apiEndpointLetterTypeData,
+    apiEndpointLetterTypeManagement,
 } from "../endpoints";
 
 const statusOptions = [
@@ -37,6 +39,161 @@ const statusConfig: Record<string, { label: string; severity: any; icon: string 
     ditolak: { label: "Ditolak", severity: "danger", icon: "pi pi-times" },
     terkirim: { label: "Terkirim", severity: "info", icon: "pi pi-send" },
     selesai: { label: "Selesai", severity: "success", icon: "pi pi-check-circle" },
+};
+
+const PDFViewerDynamic = dynamic(() => import("@/app/components/print_components/pdfViewer"), { ssr: false });
+
+const COMPANY_NAME = "PT. MARSTECH GLOBAL";
+const COMPANY_ADDRESS = "JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR";
+const COMPANY_CONTACT = "Telp. 0351-2812555 E-mail. info@marstech.co.id web. www.marstech.co.id";
+const COMPANY_LICENSE = "SIUP : 503.4/ 29 - MIKRO/ 401.106/ 2018 TDP : 13.13.1.47.00655";
+const COMPANY_LOGO_URL = "/marstech-logo.png";
+const SIGNER_NAME = "BOSTANUL ASY'ARI";
+const SIGNER_TITLE = "DIREKTUR";
+
+const formatDateId = (value?: string | null) => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+
+    return date.toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+    });
+};
+
+const loadImageAsDataUrl = async (url: string) => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+
+    return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+};
+
+const extractIsiSuratFromFinal = (value?: string | null) => {
+    let text = String(value || "").trim();
+    if (!text) return "";
+
+    const hormatIndex = text.toLowerCase().indexOf("dengan hormat");
+    if (hormatIndex >= 0) {
+        text = text.slice(hormatIndex).replace(/^dengan hormat,?\s*/i, "").trim();
+    }
+
+    text = text
+        .replace(/^nomor\s*:.*(?:\r?\n|$)/gim, "")
+        .replace(/^lampiran\s*:.*(?:\r?\n|$)/gim, "")
+        .replace(/^lamp\s*:.*(?:\r?\n|$)/gim, "")
+        .replace(/^perihal\s*:.*(?:\r?\n|$)/gim, "")
+        .replace(/^kepada yth\.?\s*(?:\r?\n|$)/gim, "")
+        .replace(/^di tempat\s*(?:\r?\n|$)/gim, "")
+        .replace(/demikian surat ini[\s\S]*$/i, "")
+        .replace(/demikian surat .*?terima kasih\.?[\s\S]*$/i, "")
+        .replace(/hormat kami,?[\s\S]*$/i, "")
+        .trim();
+
+    return text;
+};
+
+const buildDetailPdfPreviewUrl = async (detailLetter: any) => {
+    const doc = new jsPDF({
+        orientation: "p",
+        unit: "mm",
+        format: "a4",
+        putOnlyUsedFonts: true,
+    });
+
+    const logoDataUrl = await loadImageAsDataUrl(COMPANY_LOGO_URL);
+    const pageWidth = 210;
+    const marginX = 32;
+    const maxWidth = 156;
+    const lineHeight = 6;
+    let cursorY = 43;
+
+    doc.addImage(logoDataUrl, "PNG", 24, 9, 28, 24);
+    doc.setFont("times", "bold");
+    doc.setFontSize(16);
+    doc.text(COMPANY_NAME, pageWidth / 2 + 8, 15, { align: "center" });
+    doc.setFontSize(10);
+    doc.text(COMPANY_ADDRESS, pageWidth / 2 + 8, 21, { align: "center" });
+    doc.setFontSize(9);
+    doc.text(COMPANY_CONTACT, pageWidth / 2 + 8, 26, { align: "center" });
+    doc.text(COMPANY_LICENSE, pageWidth / 2 + 8, 31, { align: "center" });
+    doc.setLineWidth(0.8);
+    doc.line(18, 36, 190, 36);
+
+    doc.setFont("times", "bold");
+    doc.setFontSize(12);
+    const metadataRows = [
+        ["Nomor", detailLetter?.nomor_surat || "-"],
+        ["Perihal", detailLetter?.perihal || "-"],
+        ["Lamp", "-"],
+    ];
+    metadataRows.forEach(([label, value]) => {
+        doc.text(label, marginX, cursorY);
+        doc.text(":", marginX + 22, cursorY);
+        doc.text(String(value || "-"), marginX + 27, cursorY);
+        cursorY += 7;
+    });
+
+    cursorY += 12;
+    const destinationLines = ["Kepada Yth.", detailLetter?.tujuan, detailLetter?.instansi_tujuan, "di Tempat"].filter(Boolean);
+    destinationLines.forEach((line) => {
+        doc.text(String(line), marginX, cursorY);
+        cursorY += 6;
+    });
+    cursorY += 8;
+
+    doc.setFont("times", "normal");
+    doc.setFontSize(11);
+
+    const bodyText = extractIsiSuratFromFinal(detailLetter?.isi_surat_final) || detailLetter?.isi_surat_final || "";
+    const body = ["Dengan hormat,", "", bodyText, "", "Demikian surat ini kami sampaikan, atas perhatian dan kerja samanya kami ucapkan terima kasih."];
+
+    for (const paragraph of body) {
+        const isListLine = /^\s*\d+\./.test(paragraph);
+        const startX = paragraph && !isListLine ? marginX + 8 : marginX;
+        const wrappedLines = paragraph ? doc.splitTextToSize(paragraph, maxWidth - (startX - marginX)) : [""];
+
+        for (const line of wrappedLines) {
+            if (cursorY > 232) {
+                doc.addPage();
+                cursorY = 22;
+            }
+
+            doc.text(line, startX, cursorY);
+            cursorY += lineHeight;
+        }
+
+        cursorY += 2;
+    }
+
+    if (cursorY > 220) {
+        doc.addPage();
+    }
+
+    const signatureY = 238;
+    doc.setFont("times", "normal");
+    doc.setFontSize(11);
+    doc.text(`Madiun, ${formatDateId(detailLetter?.tanggal_surat) || "-"}`, 142, signatureY);
+    doc.addImage(logoDataUrl, "PNG", 145, signatureY + 9, 26, 21);
+    doc.setFont("times", "bolditalic");
+    doc.setFontSize(8);
+    doc.text(COMPANY_NAME, 158, signatureY + 13, { align: "center" });
+    doc.setFont("times", "bold");
+    doc.setFontSize(9);
+    doc.text(detailLetter?.nama_pengirim || SIGNER_NAME, 158, signatureY + 35, { align: "center" });
+    doc.text(detailLetter?.jabatan || SIGNER_TITLE, 158, signatureY + 41, { align: "center" });
+
+    doc.setFont("times", "bolditalic");
+    doc.setFontSize(8);
+    doc.text(`${COMPANY_NAME} - ${detailLetter?.perihal || "Surat Keluar"}`, marginX, 282);
+
+    return URL.createObjectURL(doc.output("blob"));
 };
 
 interface LetterTypeOption {
@@ -64,6 +221,9 @@ const Table = ({ state, setState, getData, toast }: TableProps) => {
     const [actionComment, setActionComment] = useState("");
     const [processingTarget, setProcessingTarget] = useState<any>(null); // single row or 'bulk'
     const [submitLoad, setSubmitLoad] = useState(false);
+    const [pdfPreviewVisible, setPdfPreviewVisible] = useState(false);
+    const [pdfPreviewUrl, setPdfPreviewUrl] = useState("");
+    const [pdfPreviewLoading, setPdfPreviewLoading] = useState(false);
 
     const buildPayload = () => ({
         keyword: state.searchVal || "",
@@ -77,7 +237,7 @@ const Table = ({ state, setState, getData, toast }: TableProps) => {
 
     const fetchLetterTypes = async () => {
         try {
-            const res = await postData(apiEndpointLetterTypeData, {});
+            const res = await getDataRequest(apiEndpointLetterTypeManagement);
             setLetterTypeOptions([
                 { jenis_surat_id: 0, nama_jenis_surat: "Semua Jenis" },
                 ...(res.data?.data || []),
@@ -107,6 +267,28 @@ const Table = ({ state, setState, getData, toast }: TableProps) => {
         setProcessingTarget(target);
         setActionComment("");
         setProcessDialog(true);
+    };
+
+    const openPdfPreview = async () => {
+        if (!detailLetter?.isi_surat_final) {
+            showError(toast, "Isi surat final belum tersedia untuk preview PDF");
+            return;
+        }
+
+        setPdfPreviewLoading(true);
+        try {
+            const nextUrl = await buildDetailPdfPreviewUrl(detailLetter);
+            if (pdfPreviewUrl) {
+                URL.revokeObjectURL(pdfPreviewUrl);
+            }
+            setPdfPreviewUrl(nextUrl);
+            setPdfPreviewVisible(true);
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Preview PDF gagal dibuat");
+        } finally {
+            setPdfPreviewLoading(false);
+        }
     };
 
     const handleProcess = async (type: "approve" | "reject") => {
@@ -277,6 +459,14 @@ const Table = ({ state, setState, getData, toast }: TableProps) => {
     const detailLetter = state.detailData?.surat || null;
     const detailFiles = state.detailData?.files || [];
     const detailTrackings = state.detailData?.trackings || [];
+
+    useEffect(() => {
+        return () => {
+            if (pdfPreviewUrl) {
+                URL.revokeObjectURL(pdfPreviewUrl);
+            }
+        };
+    }, [pdfPreviewUrl]);
 
     const getTimelineIcon = (aktivitas: string) => {
         switch (aktivitas) {
@@ -475,7 +665,18 @@ const Table = ({ state, setState, getData, toast }: TableProps) => {
                                     <span>No. Surat: <strong>{detailLetter?.nomor_surat || "-"}</strong></span>
                                 </div>
                             </div>
-                            {detailLetter?.status && statusTemplate({ status: detailLetter.status } as any)}
+                            <div className="flex flex-column align-items-end gap-2">
+                                <Button
+                                    icon="pi pi-file-pdf"
+                                    label="Preview PDF"
+                                    outlined
+                                    size="small"
+                                    disabled={!detailLetter?.isi_surat_final}
+                                    loading={pdfPreviewLoading}
+                                    onClick={openPdfPreview}
+                                />
+                                {detailLetter?.status && statusTemplate({ status: detailLetter.status } as any)}
+                            </div>
                         </div>
 
                         <div className="grid text-sm">
@@ -566,7 +767,7 @@ const Table = ({ state, setState, getData, toast }: TableProps) => {
                                             {/* Standard download file link since we have uploads exposed */}
                                             {file.path_file && (
                                                 <a 
-                                                    href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/${file.path_file}`}
+                                                    href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/${file.path_file}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="no-underline"
@@ -586,6 +787,41 @@ const Table = ({ state, setState, getData, toast }: TableProps) => {
                         </div>
                     </div>
                 )}
+            </Dialog>
+
+            <Dialog
+                visible={pdfPreviewVisible}
+                header={
+                    <div className="flex align-items-center gap-2">
+                        <i className="pi pi-file-pdf text-primary" />
+                        <span className="font-bold text-900">Preview PDF Surat</span>
+                    </div>
+                }
+                modal
+                style={{ width: "92vw", maxWidth: "92rem", height: "90vh" }}
+                onHide={() => {
+                    setPdfPreviewVisible(false);
+                    if (pdfPreviewUrl) {
+                        URL.revokeObjectURL(pdfPreviewUrl);
+                        setPdfPreviewUrl("");
+                    }
+                }}
+                pt={{ content: { className: "h-full" } }}
+            >
+                <div className="h-full">
+                    {pdfPreviewUrl ? (
+                        <PDFViewerDynamic
+                            pdfUrl={pdfPreviewUrl}
+                            paperSize="A4"
+                            fileName={detailLetter?.nomor_surat || "preview-surat-keluar"}
+                        />
+                    ) : (
+                        <div className="flex flex-column align-items-center justify-content-center h-full gap-3 text-color-secondary">
+                            <i className="pi pi-spin pi-spinner text-3xl text-primary" />
+                            <span className="text-sm font-medium">Memuat preview PDF...</span>
+                        </div>
+                    )}
+                </div>
             </Dialog>
         </>
     );

@@ -14,13 +14,39 @@ const statusOptions = [
 
 const placeholderOptions = [
   '{{nomor_surat}}',
+  '{{nomor_agenda}}',
   '{{tanggal_surat}}',
+  '{{tanggal_kirim}}',
+  '{{nama_jenis_surat}}',
   '{{tujuan}}',
+  '{{instansi_tujuan}}',
   '{{perihal}}',
+  '{{media_pengiriman}}',
   '{{isi_surat}}',
   '{{nama_pengirim}}',
   '{{jabatan}}',
 ];
+
+const defaultReplyTemplate = `Nomor    : {{nomor_surat}}
+Lampiran : -
+Perihal  : {{perihal}}
+
+Kepada Yth.
+{{tujuan}}
+{{instansi_tujuan}}
+di Tempat
+
+Dengan hormat,
+
+{{isi_surat}}
+
+Demikian surat ini kami sampaikan. Atas perhatian dan kerja samanya kami ucapkan terima kasih.
+
+Hormat kami,
+
+
+{{nama_pengirim}}
+{{jabatan}}`;
 
 const Form = ({ state, setState, formik, handleDelete }: any) => {
   const isDialogVisible = state.add || state.edit;
@@ -38,6 +64,10 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
   const insertPlaceholder = (placeholder: string) => {
     const currentValue = formik.values.isi_template || '';
     formik.setFieldValue('isi_template', `${currentValue}${currentValue ? '\n' : ''}${placeholder}`);
+  };
+
+  const applyDefaultReplyTemplate = () => {
+    formik.setFieldValue('isi_template', defaultReplyTemplate);
   };
 
   return (
@@ -73,6 +103,7 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
               {placeholderOptions.map((item) => (
                 <Button key={item} type="button" size="small" text onClick={() => insertPlaceholder(item)} label={item} />
               ))}
+              <Button type="button" size="small" outlined icon="pi pi-file-edit" label="Susunan Balasan" onClick={applyDefaultReplyTemplate} />
             </div>
           </div>
 
@@ -91,6 +122,10 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
             <Button type="submit" label={state.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" loading={state.load} />
           </div>
         </form>
+      </Dialog>
+
+      <Dialog header="Preview Template" visible={state.previewVisible} onHide={() => setState((p: any) => ({ ...p, previewVisible: false, previewContent: '' }))} modal style={{ width: '42rem', maxWidth: '95vw' }}>
+        <pre className="m-0 p-3 surface-50 border-round border-1 surface-border text-sm line-height-3" style={{ whiteSpace: 'pre-wrap', fontFamily: "Georgia, 'Times New Roman', serif" }}>{state.previewContent}</pre>
       </Dialog>
 
       <Dialog header="Konfirmasi Nonaktifkan" visible={state.delete} onHide={hideDialog} modal style={{ width: '25rem' }} footer={(
