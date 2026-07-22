@@ -12,6 +12,12 @@ export const mapOutgoingLetterRow = (row: Record<string, any>): TableData => ({
     tujuan: row.tujuan || '',
     instansi_tujuan: row.instansi_tujuan || null,
     media_pengiriman: row.media_pengiriman || null,
+    id_template: row.id_template || null,
+    nama_template: row.nama_template || null,
+    isi_surat: row.isi_surat || null,
+    isi_surat_final: row.isi_surat_final || null,
+    nama_pengirim: row.nama_pengirim || null,
+    jabatan: row.jabatan || null,
     status: row.status || 'draft',
     created_by: row.created_by || null,
     updated_by: row.updated_by || null,
@@ -31,6 +37,10 @@ export const mapOutgoingLetterPayload = (input: initValue, isEdit: boolean) => {
         tujuan: input.tujuan,
         instansi_tujuan: input.instansi_tujuan || null,
         media_pengiriman: input.media_pengiriman || null,
+        id_template: nullableNumber(input.id_template),
+        isi_surat_final: input.isi_surat_final || null,
+        nama_pengirim: input.nama_pengirim || null,
+        jabatan: input.jabatan || null,
         status: input.status || 'draft',
     };
 

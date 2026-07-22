@@ -23,6 +23,11 @@ export interface initValue {
     tujuan: string;
     instansi_tujuan: string;
     media_pengiriman: string;
+    id_template: number | null;
+    isi_surat: string;
+    isi_surat_final: string;
+    nama_pengirim: string;
+    jabatan: string;
     status: OutgoingLetterStatus | string;
     file_surat: File | null;
     created_by: number | null;
@@ -41,6 +46,12 @@ export interface TableData {
     tujuan: string;
     instansi_tujuan: string | null;
     media_pengiriman: string | null;
+    id_template: number | null;
+    nama_template: string | null;
+    isi_surat: string | null;
+    isi_surat_final: string | null;
+    nama_pengirim: string | null;
+    jabatan: string | null;
     status: OutgoingLetterStatus | string;
     created_by: number | null;
     updated_by: number | null;

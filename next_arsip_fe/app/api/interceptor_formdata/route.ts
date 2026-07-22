@@ -97,7 +97,7 @@ export const POST = async (request: NextRequest) => {
         return await postCRUD(request, token, bridgeCookie);
 
     } catch (error: any) {
-        console.error("Bridge error:", error);
+        console.error("Bridge error:", error?.response?.data || error?.message || error);
 
         const errorMessage = error.response?.data?.message || error.message || 'Internal server error';
         const isConnectionRefused = /ECONNREFUSED/.test(errorMessage);
@@ -198,7 +198,7 @@ async function postCRUD(request: NextRequest, token: any, bridgeCookie: string) 
         return NextResponse.json(result.data);
 
     } catch (err: any) {
-        console.error("POST CRUD error:", err);
+        console.error("POST CRUD error:", err?.response?.data || err?.message || err);
 
         if (err?.response?.status === 401) {
             return NextResponse.json(

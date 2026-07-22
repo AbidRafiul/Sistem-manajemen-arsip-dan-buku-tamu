@@ -37,6 +37,10 @@ const outgoingLetterUpdate = async (req, res) => {
       tujuan: Joi.string().max(150).optional(),
       instansi_tujuan: Joi.string().max(150).allow(null, "").optional(),
       media_pengiriman: Joi.string().max(100).allow(null, "").optional(),
+      id_template: Joi.number().integer().positive().allow(null).optional(),
+      isi_surat_final: Joi.string().allow(null, "").optional(),
+      nama_pengirim: Joi.string().max(150).allow(null, "").optional(),
+      jabatan: Joi.string().max(150).allow(null, "").optional(),
       status: Joi.string()
         .valid(
           "draft",
@@ -91,6 +95,12 @@ const outgoingLetterUpdate = async (req, res) => {
         label: "Jenis surat",
       },
       {
+        table: "mst_template_surat",
+        key: "id_template",
+        value: oPayload.id_template,
+        label: "Template surat",
+      },
+      {
         table: "mst_pengguna",
         key: "id_pengguna",
         value: oPayload.updated_by,
@@ -120,6 +130,10 @@ const outgoingLetterUpdate = async (req, res) => {
       tujuan: oPayload.tujuan,
       instansi_tujuan: oPayload.instansi_tujuan,
       media_pengiriman: oPayload.media_pengiriman,
+      id_template: oPayload.id_template,
+      isi_surat_final: oPayload.isi_surat_final,
+      nama_pengirim: oPayload.nama_pengirim,
+      jabatan: oPayload.jabatan,
       status: oPayload.status,
       updated_by: oPayload.updated_by || null,
       updated_at: dNow,

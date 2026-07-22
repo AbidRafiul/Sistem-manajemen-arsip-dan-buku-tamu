@@ -324,6 +324,8 @@ export async function seed(knex) {
 
   const adminRole = await knex("mst_peran")
     .where("kode_peran", "SUPERADMIN")
+    .orWhere("kode_peran", "ADM")
+    .orderByRaw("CASE WHEN kode_peran = 'SUPERADMIN' THEN 0 ELSE 1 END")
     .first();
   const staffRole = await knex("mst_peran")
     .where("kode_peran", "STF_ARS")
@@ -369,6 +371,10 @@ export async function seed(knex) {
   const staff = await knex("mst_pengguna")
     .where("nama_pengguna", "staff.arsip@example.local")
     .first();
+
+  if (!adminRole) {
+    throw new Error("Role SUPERADMIN/ADM tidak ditemukan untuk seed demo");
+  }
 
   await seedUserRole(knex, superadmin.id_pengguna, adminRole.id_peran, dNow);
   await seedUserRole(
