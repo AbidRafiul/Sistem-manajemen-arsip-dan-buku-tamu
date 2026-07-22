@@ -69,8 +69,21 @@ const getArchiveLoans = async (req, res) => {
       oData.where("l.status", cStatus);
     }
 
-    // Multi-tenancy filter
-    applyMultiTenantFilter(oData, req, 'u');
+    // Multi-tenancy filter (Direct branch filter with fallback for legacy loans)
+    const fCabang = req.headers["x-filter-cabang"];
+    if (fCabang && fCabang !== "null" && fCabang !== "undefined") {
+      const vaCabangIds = String(fCabang).split(",").map(Number);
+      oData.where((builder) => {
+        builder
+          .whereIn("l.id_cabang", vaCabangIds)
+          .orWhereIn("d.id_cabang", vaCabangIds)
+          .orWhere(function () {
+            this.whereNull("l.id_cabang")
+              .whereNull("d.id_cabang")
+              .whereIn("u.id_cabang", vaCabangIds);
+          });
+      });
+    }
 
     const vaData = await oData;
 

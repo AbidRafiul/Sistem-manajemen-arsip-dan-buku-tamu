@@ -1,0 +1,98 @@
+'use client';
+
+import { Button } from 'primereact/button';
+import { Column } from 'primereact/column';
+import { DataTable } from 'primereact/datatable';
+import { Divider } from 'primereact/divider';
+import { InputText } from 'primereact/inputtext';
+import { Tag } from 'primereact/tag';
+import { useEffect } from 'react';
+import { State } from '../interfaces';
+
+const Table = ({ state, setState, formik, getData, handleDelete }: any) => {
+  const renderHeader = () => (
+    <div className="flex flex-wrap align-items-center justify-content-between gap-3">
+      <span className="text-xl font-bold">Daftar Template Surat</span>
+      <span className="p-input-icon-left">
+        <i className="pi pi-search" />
+        <InputText
+          value={state.searchVal}
+          onChange={(e) => {
+            const value = e.target.value;
+            const filters = { ...state.filters } as any;
+            filters.global.value = value;
+            setState((p: State) => ({ ...p, searchVal: value, filters }));
+          }}
+          placeholder="Cari template..."
+        />
+      </span>
+    </div>
+  );
+
+  const statusTemplate = (rowData: any) => {
+    const active = rowData.status === 'active';
+    return <Tag value={active ? 'Aktif' : 'Nonaktif'} severity={active ? 'success' : 'danger'} />;
+  };
+
+  const actionTemplate = (rowData: any) => (
+    <div className="flex gap-2 justify-content-center">
+      <Button type="button" icon="pi pi-eye" rounded outlined severity="info" size="small" tooltip="Preview" tooltipOptions={{ position: 'top' }} onClick={() => {
+        setState((p: State) => ({ ...p, previewVisible: true, previewContent: rowData.isi_template || '' }));
+      }} />
+      <Button type="button" icon="pi pi-pencil" rounded outlined severity="warning" size="small" tooltip="Edit" tooltipOptions={{ position: 'top' }} onClick={() => {
+        formik.setValues({
+          id: rowData.id,
+          kode_template: rowData.kode_template,
+          nama_template: rowData.nama_template,
+          jenis_surat_id: rowData.jenis_surat_id || null,
+          deskripsi: rowData.deskripsi || '',
+          isi_template: rowData.isi_template || '',
+          status: rowData.status || 'active',
+          created_by: rowData.created_by,
+          updated_by: rowData.updated_by,
+        });
+        setState((p: State) => ({ ...p, edit: true, add: false }));
+      }} />
+      <Button type="button" icon="pi pi-trash" rounded outlined severity="danger" size="small" tooltip="Nonaktifkan" tooltipOptions={{ position: 'top' }} onClick={() => setState((p: State) => ({ ...p, selectedData: [rowData], delete: true }))} />
+    </div>
+  );
+
+  useEffect(() => {
+    getData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div className="card shadow-2 border-round-lg p-4 bg-white">
+      <div className="flex justify-content-between items-start mb-4">
+        <div>
+          <h3 className="text-2xl font-bold m-0 text-900">Master Template Surat</h3>
+          <p className="text-sm text-600 mt-1">Kelola template surat resmi yang dapat dipakai berulang kali untuk surat keluar.</p>
+        </div>
+      </div>
+
+      <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
+        <Button type="button" size="small" label="Baru" icon="pi pi-plus" outlined severity="success" onClick={() => {
+          formik.resetForm();
+          setState((p: State) => ({ ...p, add: true, selectedData: [] }));
+        }} />
+        <Divider layout="vertical" className="hidden md:inline" />
+        <Button type="button" size="small" label={state.selectedData.length > 0 ? `Nonaktifkan (${state.selectedData.length})` : 'Nonaktifkan'} icon="pi pi-trash" outlined severity="danger" onClick={() => setState((p: State) => ({ ...p, delete: true }))} disabled={state.selectedData.length === 0} />
+        <Divider layout="vertical" className="hidden md:inline" />
+        <Button type="button" size="small" label="Muat Ulang" icon="pi pi-refresh" outlined onClick={() => getData()} loading={state.load} />
+      </div>
+
+      <DataTable value={state.data} selection={state.selectedData} onSelectionChange={(e) => setState((p: State) => ({ ...p, selectedData: e.value }))} dataKey="id" paginator rows={10} rowsPerPageOptions={[5, 10, 25]} globalFilterFields={['kode_template', 'nama_template', 'status']} filters={state.filters} header={renderHeader()} emptyMessage="Tidak ada data ditemukan." loading={state.load} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
+        <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
+        <Column field="kode_template" header="Kode Template" sortable />
+        <Column field="nama_template" header="Nama Template" sortable />
+        <Column field="nama_jenis_surat" header="Jenis Surat" />
+        <Column body={statusTemplate} header="Status" style={{ width: '10rem' }} />
+        <Column field="updated_at" header="Tanggal Update" body={(rowData: any) => rowData.updated_at ? new Date(rowData.updated_at).toLocaleDateString('id-ID') : '-'} />
+        <Column body={actionTemplate} header="Aksi" style={{ minWidth: '10rem', textAlign: 'center' }} />
+      </DataTable>
+    </div>
+  );
+};
+
+export default Table;

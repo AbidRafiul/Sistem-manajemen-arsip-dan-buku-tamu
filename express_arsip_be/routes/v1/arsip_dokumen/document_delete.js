@@ -1,5 +1,6 @@
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+import { logDocumentChange } from "../components/tools/audit_trail_helper.js";
 
 const deleteDocument = async (req, res) => {
   const oPayload = req.body;
@@ -22,23 +23,39 @@ const deleteDocument = async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    const oData = {
-      status: "nonactive",
-      updated_at: dNow,
-    };
-
-    const nUpdated = await DB("trs_dokumen")
+    const oDocs = await DB("trs_dokumen")
+      .select("id_dokumen", "kode_dokumen", "nama_dokumen")
       .whereIn("id_dokumen", vaDocumentId)
-      .where("status", "active")
-      .update(oData);
+      .where("status", "active");
 
-    if (nUpdated === 0) {
+    if (!oDocs || oDocs.length === 0) {
       const oResult = {
         status: "error",
         message: "Document not found",
       };
 
       return res.status(404).json(oResult);
+    }
+
+    const oData = {
+      status: "nonactive",
+      updated_at: dNow,
+    };
+
+    await DB("trs_dokumen")
+      .whereIn("id_dokumen", vaDocumentId)
+      .where("status", "active")
+      .update(oData);
+
+    // Audit trail log for each deleted document
+    for (const doc of oDocs) {
+      await logDocumentChange({
+        kodeDokumen: doc.kode_dokumen,
+        aksi: "delete",
+        deskripsi: `Dokumen '${doc.nama_dokumen}' telah dinonaktifkan / dihapus`,
+        detailJson: { status: "nonactive" },
+        req,
+      });
     }
 
     const oResult = {

@@ -1,5 +1,6 @@
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+import { logDocumentChange } from "../components/tools/audit_trail_helper.js";
 
 const approveDocumentVersion = async (req, res) => {
   const oPayload = req.body;
@@ -10,7 +11,6 @@ const approveDocumentVersion = async (req, res) => {
     const cApprovalNotes = oPayload.catatan_persetujuan || oPayload.approval_notes || null;
     const cApprovedBy =
       req?.auth?.nama_pengguna ||
-      req?.context?.nama_pengguna ||
       req?.context?.nama_pengguna ||
       oPayload.approved_by ||
       "system";
@@ -66,6 +66,21 @@ const approveDocumentVersion = async (req, res) => {
       .where("id_versi", nVersionId)
       .update(oData);
 
+    // Log to Audit Trail
+    await logDocumentChange({
+      kodeDokumen: oVersion.kode_dokumen,
+      aksi: cStatus === "approved" ? "version_approve" : "version_reject",
+      deskripsi: `Versi V${oVersion.nomor_versi} telah di-${cStatus === "approved" ? "setujui" : "tolak"} oleh ${cApprovedBy}`,
+      detailJson: {
+        id_versi: nVersionId,
+        nomor_versi: oVersion.nomor_versi,
+        status_persetujuan: cStatus,
+        catatan_persetujuan: cApprovalNotes,
+      },
+      dilakukanOleh: cApprovedBy,
+      req,
+    });
+
     const oResult = {
       status: "success",
       message: `Versi dokumen berhasil di-${cStatus === "approved" ? "setujui" : "tolak"}`,
@@ -90,11 +105,7 @@ const approveDocumentVersion = async (req, res) => {
       func: "approveDocumentVersion",
       request: oPayload,
       response: oResult,
-      user:
-        req?.auth?.nama_pengguna ||
-        req?.context?.nama_pengguna ||
-        req?.context?.nama_pengguna ||
-        "system",
+      user: req?.auth?.nama_pengguna || "system",
     });
 
     return res.status(500).json(oResult);

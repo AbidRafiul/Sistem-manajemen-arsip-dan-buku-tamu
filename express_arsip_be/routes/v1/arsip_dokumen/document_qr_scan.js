@@ -5,9 +5,9 @@ const scanDocumentQR = async (req, res) => {
   const oQuery = req.query;
 
   try {
-    const cQRCode = oQuery.qr_code;
+    const cRawInput = oQuery.qr_code;
 
-    if (!cQRCode) {
+    if (!cRawInput) {
       const oResult = {
         status: "error",
         message: "qr_code wajib diisi",
@@ -15,7 +15,23 @@ const scanDocumentQR = async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    // Cari dokumen berdasarkan QR Code string
+    let targetQRCode = String(cRawInput).trim();
+    let targetId = null;
+    let targetNomor = null;
+
+    // Jika input berupa JSON string (misal dari QR Code lama), ekstrak atributnya
+    if (targetQRCode.startsWith("{") && targetQRCode.endsWith("}")) {
+      try {
+        const parsed = JSON.parse(targetQRCode);
+        if (parsed.qr_code) targetQRCode = parsed.qr_code;
+        if (parsed.id_dokumen) targetId = parsed.id_dokumen;
+        if (parsed.nomor_dokumen) targetNomor = parsed.nomor_dokumen;
+      } catch (e) {
+        // Abaikan jika bukan JSON valid
+      }
+    }
+
+    // Cari dokumen secara fleksibel berdasarkan qr_code, nomor_dokumen, atau id_dokumen
     const oDocument = await DB("trs_dokumen as d")
       .select(
         "d.id_dokumen",
@@ -42,7 +58,12 @@ const scanDocumentQR = async (req, res) => {
       .leftJoin("mst_klasifikasi_arsip as ac", "d.kode_klasifikasi", "ac.kode_klasifikasi")
       .leftJoin("mst_tingkat_kerahasiaan as cl", "d.kode_tingkat_kerahasiaan", "cl.kode_tingkat_kerahasiaan")
       .leftJoin("mst_jadwal_retensi as rs", "d.kode_retensi", "rs.kode_retensi")
-      .where("d.qr_code", cQRCode)
+      .where(function () {
+        this.where("d.qr_code", targetQRCode)
+          .orWhere("d.nomor_dokumen", targetQRCode);
+        if (targetId) this.orWhere("d.id_dokumen", targetId);
+        if (targetNomor) this.orWhere("d.nomor_dokumen", targetNomor);
+      })
       .first();
 
     if (!oDocument) {

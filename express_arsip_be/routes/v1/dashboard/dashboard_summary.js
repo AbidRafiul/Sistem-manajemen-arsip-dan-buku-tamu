@@ -50,7 +50,7 @@ const getDashboardSummary = async (req, res) => {
 
     // Metric 3: Surat Disposisi Menunggu Tindak Lanjut
     const qDisposisi = DB("trs_disposisi_surat as tld")
-      .leftJoin("mst_pengguna as u", "tld.to_user_id", "u.id_pengguna")
+      .leftJoin("mst_pengguna as u", "tld.kepada_pengguna_id", "u.id_pengguna")
       .count("* as total")
       .where("tld.status", "baru")
       .first();
@@ -82,14 +82,8 @@ const getDashboardSummary = async (req, res) => {
 
     // Audit Log: 10 aktivitas terbaru
     const qAudit = DB("mst_riwayat_audit as a")
-      .leftJoin("mst_pengguna as u", `a.${auditUserColumn}`, "u.nama_pengguna")
-      .select(
-        "a.id",
-        `a.${auditUserColumn} as nama_pengguna`,
-        `a.${auditActionColumn} as aksi`,
-        "a.status",
-        "a.created_at",
-      )
+      .leftJoin("mst_pengguna as u", "a.nama_pengguna", "u.nama_pengguna")
+      .select("a.id", "a.nama_pengguna as nama_pengguna", "a.aksi", "a.status", "a.created_at")
       .orderBy("a.created_at", "desc")
       .limit(10);
     applyMultiTenantFilter(qAudit, req, 'u');

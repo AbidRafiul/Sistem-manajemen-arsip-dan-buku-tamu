@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
       )
       .leftJoin("mst_tujuan_kunjungan as mp", "t.id_tujuan_kunjungan", "mp.id_tujuan_kunjungan")
       .leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna")
-      .leftJoin("mst_cabang as c", "t.id_cabang", "c.id_cabang");
+      .leftJoin("mst_cabang as c", "u.id_cabang", "c.id_cabang");
 
     const qCount = DB("trs_kunjungan as t")
       .leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna")
@@ -37,17 +37,17 @@ router.post("/", async (req, res) => {
     if (req.auth?.peranCode !== "SUPERADMIN") {
       const userBranchId = req.auth?.id_cabang || 1;
       const branchIds = await getDescendantBranchIds(DB, userBranchId);
-      q.whereIn("t.id_cabang", branchIds);
-      qCount.whereIn("t.id_cabang", branchIds);
+      q.whereIn("u.id_cabang", branchIds);
+      qCount.whereIn("u.id_cabang", branchIds);
     } else if (oPayload.BranchId || oPayload.id_cabang) {
       const filterBranchId = oPayload.BranchId || oPayload.id_cabang;
       const branchIds = await getDescendantBranchIds(DB, filterBranchId);
-      q.whereIn("t.id_cabang", branchIds);
-      qCount.whereIn("t.id_cabang", branchIds);
+      q.whereIn("u.id_cabang", branchIds);
+      qCount.whereIn("u.id_cabang", branchIds);
     } else if (req.headers["x-filter-cabang"]) {
       const branchIds = req.headers["x-filter-cabang"].split(",").map(Number);
-      q.whereIn("t.id_cabang", branchIds);
-      qCount.whereIn("t.id_cabang", branchIds);
+      q.whereIn("u.id_cabang", branchIds);
+      qCount.whereIn("u.id_cabang", branchIds);
     }
 
     if (oPayload.Status) {

@@ -39,6 +39,23 @@ router.post("/get_data", async (req, res) => {
 
     const vaData = await query;
 
+    // Calculate absolute hierarchy level for each branch
+    const allCabangs = await DB("mst_cabang").select("id_cabang", "id_induk");
+    const parentMap = {};
+    for (const c of allCabangs) {
+      parentMap[c.id_cabang] = c.id_induk;
+    }
+
+    for (const row of vaData) {
+      let level = 1;
+      let curr = row.id_induk;
+      while (curr) {
+        level++;
+        curr = parentMap[curr];
+      }
+      row.level = level;
+    }
+
     return res.status(200).json({
       status: status.SUKSES,
       message: "Data berhasil ditarik",

@@ -17,3 +17,9 @@ export const apiEndpointQrScan = '/arsip-dokumen/qr/scan'
 export const apiEndpointLocationUpdate = '/arsip-dokumen/location/update'
 export const apiEndpointRetentionGet = '/arsip-dokumen/master/retention'
 
+// OCR, Full-Text Search & Audit Trail
+export const apiEndpointDocumentSearch = '/arsip-dokumen/search'
+export const apiEndpointContentGet = '/arsip-dokumen/content/get'
+export const apiEndpointOcrProcess = '/arsip-dokumen/ocr/process'
+export const apiEndpointOcrStatus = '/arsip-dokumen/ocr/status'
+export const apiEndpointHistoryGet = '/arsip-dokumen/history/get'

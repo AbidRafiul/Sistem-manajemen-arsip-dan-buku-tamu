@@ -58,7 +58,17 @@ const createArchiveLoan = async (req, res) => {
       return res.status(422).json(oResult);
     }
 
+    let nIdCabang = oDocument.id_cabang || null;
+    if (!nIdCabang) {
+      const cFilterCabang = req.headers["x-filter-cabang"];
+      if (cFilterCabang && cFilterCabang !== "null" && cFilterCabang !== "undefined") {
+        const firstId = parseInt(String(cFilterCabang).split(",")[0], 10);
+        if (!isNaN(firstId)) nIdCabang = firstId;
+      }
+    }
+
     const oData = {
+      id_cabang: nIdCabang,
       kode_dokumen: cKodeDokumen,
       nama_peminjam: cBorrowerName,
       tanggal_pinjam: dLoanDate,
