@@ -49,7 +49,7 @@ const Table = ({
             await html5Qr.start(
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 220, height: 220 } },
-                (decodedText) => {
+                (decodedText: string) => {
                     handleScanQR(decodedText);
                     html5Qr.stop().then(() => {
                         setCameraActive(false);

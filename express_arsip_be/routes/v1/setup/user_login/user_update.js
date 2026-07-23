@@ -90,7 +90,7 @@ router.post("/", async (req, res) => {
     }
 
     const peranCode = req?.auth?.peranCode;
-    if (peranCode !== "SA") {
+    if (peranCode !== "SUPERADMIN") {
       // 1. Pastikan user yang diedit memang berada di cabang yang sama!
       const userToUpdate = await DB("mst_pengguna").where("id_pengguna", userId).first();
       if (!userToUpdate) {
@@ -109,7 +109,7 @@ router.post("/", async (req, res) => {
       // 3. Cegah admin cabang memberikan peran SUPERADMIN
       if (oPayload.id_peran) {
         const peranData = await DB("mst_peran").where("id_peran", oPayload.id_peran).first();
-        if (peranData && (peranData.kode_peran === "SUPERADMIN" || peranData.kode_peran === "SA")) {
+        if (peranData && (peranData.kode_peran === "SUPERADMIN")) {
           return res.status(403).json({ status: status.FORBIDDEN, message: "Anda tidak memiliki izin memberikan peran Superadmin", datetime: datetime() });
         }
       }

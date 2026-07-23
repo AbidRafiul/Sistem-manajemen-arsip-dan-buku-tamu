@@ -7,6 +7,7 @@ import { Logging, validatePayload, generateDailyVisitCode } from "../components/
 import DB from "../../../core/config/knex.js";
 import { uploadFileToMinio, getMinioPrefix, MINIO_BUCKET_NAME } from "../../../core/components/tools/minio_helper.js";
 import { sendMailNotification } from "../../../core/components/tools/mail_helper.js";
+import { sendWhatsAppMessage } from "../../../core/components/tools/wa_helper.js";
 
 const cBucket = MINIO_BUCKET_NAME;
 
@@ -289,6 +290,23 @@ router.post(
           kode_kunjungan: VisitCode,
           catatan_kunjungan: VisitNotes || "-"
         });
+
+        // ==========================================
+        // 5. KIRIM NOTIFIKASI WA KE HOST SECARA ASYNC
+        // ==========================================
+        try {
+          const oHost = await DB("mst_pengguna")
+            .select("nama_lengkap", "telepon")
+            .where("id_pengguna", resolvedHostUserId)
+            .first();
+
+          if (oHost && oHost.telepon) {
+            const waPesan = `Halo Bpk/Ibu ${oHost.nama_lengkap},\n\nAda tamu yang sedang menunggu Anda di Lobi.\n\nNama Tamu: ${GuestName}\nInstansi: ${GuestCompany || '-'}\nKeperluan: ${visitPurposeName || '-'}\nCatatan: ${VisitNotes || '-'}\n\nSilakan segera menemui tamu tersebut. Terima kasih.`;
+            sendWhatsAppMessage(oHost.telepon, waPesan);
+          }
+        } catch (waErr) {
+          console.error("[WA Gateway] Gagal memproses notifikasi:", waErr.message);
+        }
       }
 
       return res.status(200).json({
