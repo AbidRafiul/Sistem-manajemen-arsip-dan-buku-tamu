@@ -23,6 +23,7 @@ interface TableProps {
     onApprove: (row: any) => void;
     onReject: (row: any) => void;
     onCheckin: (row: any) => void;
+    onScanQR: () => void;
 }
 
 export default function GuestDataTable({
@@ -34,7 +35,8 @@ export default function GuestDataTable({
     onRefresh,
     onApprove,
     onReject,
-    onCheckin
+    onCheckin,
+    onScanQR
 }: TableProps) {
     const { data: session } = useSession();
     const roleCode = (session?.user as any)?.roleCode;
@@ -103,6 +105,14 @@ export default function GuestDataTable({
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
             <h5 className="m-0 font-bold">Riwayat Kunjungan Tamu</h5>
             <div className="flex flex-column sm:flex-row gap-2">
+                <Button
+                    type="button"
+                    label="Scan QR"
+                    icon="pi pi-qrcode"
+                    className="p-button-sm px-3 text-white"
+                    style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', border: 'none' }}
+                    onClick={onScanQR}
+                />
 
                 <Dropdown
                     value={state.statusFilter}

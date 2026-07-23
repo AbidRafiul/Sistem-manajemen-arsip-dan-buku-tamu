@@ -28,7 +28,7 @@ export const sendWhatsAppMessage = async (targetNumber, message) => {
             countryCode: '62', // Default Indonesia
         }, {
             headers: {
-                'Authorization': WA_API_TOKEN 
+                'Authorization': WA_API_TOKEN
             }
         });
 

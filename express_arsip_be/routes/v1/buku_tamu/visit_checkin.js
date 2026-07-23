@@ -195,8 +195,7 @@ router.post(
           ? crypto.randomUUID()
           : Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
-      const now = new Date();
-      const currentDateTime = now.toISOString().slice(0, 19).replace('T', ' ');
+      const currentDateTime = formatDateSystem(new Date(), "yyyy-MM-dd HH:mm:ss", "WIB");
 
       const cleanHostUserId = HostUserId && HostUserId !== "" && HostUserId !== "null" && HostUserId !== "undefined" ? HostUserId : null;
       const cleanVisitPurposeId = VisitPurposeId && VisitPurposeId !== "" ? Number(VisitPurposeId) : null;
@@ -331,7 +330,8 @@ router.post(
 ${openingMsg} pada waktu ${formatDateSystem()}.
 
 Data Tamu:
-- Nama: ${GuestName}
+- Nama Tamu: ${GuestName}
+- No. WA Tamu: ${PhoneNumber}
 - Instansi: ${GuestCompany || '-'}
 - Keperluan: ${visitPurposeName || '-'}
 - Catatan: ${VisitNotes || '-'}
@@ -402,8 +402,7 @@ router.put("/:id", async (req, res) => {
       return res.status(400).json({ status: "01", message: "Tamu sudah berstatus check-in", datetime: formatDateSystem() });
     }
 
-    const now = new Date();
-    const currentDateTime = now.toISOString().slice(0, 19).replace('T', ' ');
+    const currentDateTime = formatDateSystem(new Date(), "yyyy-MM-dd HH:mm:ss", "WIB");
 
     await DB("trs_kunjungan")
       .where("id_kunjungan", id)

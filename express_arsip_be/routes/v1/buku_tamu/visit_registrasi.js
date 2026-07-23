@@ -261,7 +261,7 @@ router.post(
               `${minioPrefix}/buku-tamu/photos/${todayPath}`
             );
           }
-          
+
           await DB("trs_kunjungan_anggota").insert({
             id_kunjungan: idKunjungan,
             nama_anggota: member.name || member.nama_anggota || "",
@@ -345,6 +345,7 @@ ${openingMsg}.
 
 Data Rencana Kunjungan:
 - Nama Tamu: ${GuestName}
+- No. WA Tamu: ${GuestPhone}
 - Instansi: ${GuestCompany || '-'}
 - Waktu Kedatangan: ${CheckInTime}
 - Keperluan: ${purposeName}

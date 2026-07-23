@@ -132,7 +132,7 @@ export default function SignaturePad({ onChange }: SignaturePadProps) {
     return (
         <div className="flex flex-column gap-2 border-round-xl border-1 surface-border p-3" style={{ background: '#f8fafc' }}>
             <div className="flex justify-content-between align-items-center mb-1">
-                <span className="font-semibold text-sm text-800">Tanda Tangan Tamu (Gambarkan di Canvas) *</span>
+                <span className="font-semibold text-sm text-800">Tanda Tangan Tamu (Gambarkan di Canvas) <span className="text-red-500">*</span></span>
                 <Button
                     type="button"
                     label="Bersihkan"
