@@ -111,8 +111,8 @@ export default function VisitorCardModal({ visible, onHide, cardData }: TablePro
 
                         {/* Card Footer */}
                         <div className="py-2.5 px-3 border-top-1 surface-border bg-slate-50 text-xs text-color-secondary flex align-items-center justify-content-center gap-2" style={{ background: '#F8FAFC' }}>
-                            <i className="pi pi-envelope text-blue-500 font-bold" style={{ color: '#3b82f6' }} />
-                            <span className="font-medium text-800">Notifikasi otomatis terkirim ke host (Email)</span>
+                            <i className="pi pi-whatsapp text-emerald-500 font-bold text-base" style={{ color: '#25D366' }} />
+                            <span className="font-medium text-800">Notifikasi otomatis terkirim ke host (WhatsApp)</span>
                         </div>
                     </div>
 

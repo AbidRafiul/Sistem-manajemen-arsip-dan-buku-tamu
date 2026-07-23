@@ -146,7 +146,7 @@ export default function VisitorBookingForm({
 
                 <div className="p-fluid grid">
                     <div className="col-12 field flex flex-column gap-2 mb-0">
-                        <label htmlFor="nama_tamu" className="font-semibold text-xs text-700">Nama Lengkap *</label>
+                        <label htmlFor="nama_tamu" className="font-semibold text-xs text-700">Nama Lengkap <span className="text-red-500">*</span></label>
                         <InputText
                             id="nama_tamu"
                             value={form.nama_tamu}
@@ -157,7 +157,7 @@ export default function VisitorBookingForm({
                     </div>
 
                     <div className="col-12 md:col-6 field flex flex-column gap-2 mb-0">
-                        <label htmlFor="nomor_telepon" className="font-semibold text-xs text-700">Nomor WhatsApp *</label>
+                        <label htmlFor="nomor_telepon" className="font-semibold text-xs text-700">Nomor WhatsApp <span className="text-red-500">*</span></label>
                         <InputText
                             id="nomor_telepon"
                             value={form.nomor_telepon}
@@ -310,7 +310,7 @@ export default function VisitorBookingForm({
 
                 <div className="p-fluid grid">
                     <div className="col-12 field flex flex-column gap-2 mb-0">
-                        <label htmlFor="id_cabang" className="font-semibold text-xs text-700">Kantor / Cabang Tujuan *</label>
+                        <label htmlFor="id_cabang" className="font-semibold text-xs text-700">Kantor / Cabang Tujuan <span className="text-red-500">*</span></label>
                         <Dropdown
                             id="id_cabang"
                             value={form.id_cabang}
@@ -326,7 +326,7 @@ export default function VisitorBookingForm({
                     </div>
 
                     <div className="col-12 field flex flex-column gap-2 mb-0">
-                        <label htmlFor="id_tujuan_kunjungan" className="font-semibold text-xs text-700">Tujuan Kunjungan *</label>
+                        <label htmlFor="id_tujuan_kunjungan" className="font-semibold text-xs text-700">Tujuan Kunjungan <span className="text-red-500">*</span></label>
                         <Dropdown
                             id="id_tujuan_kunjungan"
                             value={form.id_tujuan_kunjungan}
@@ -340,7 +340,7 @@ export default function VisitorBookingForm({
                     </div>
 
                     <div className="col-12 md:col-6 field flex flex-column gap-2 mb-0">
-                        <label htmlFor="visit_type" className="font-semibold text-xs text-700">Tipe Kunjungan *</label>
+                        <label htmlFor="visit_type" className="font-semibold text-xs text-700">Tipe Kunjungan <span className="text-red-500">*</span></label>
                         <Dropdown
                             id="visit_type"
                             value={form.visit_type || 'personal'}
@@ -511,7 +511,7 @@ export default function VisitorBookingForm({
                     </div>
 
                     <div className="col-12 field flex flex-column gap-2 mb-0">
-                        <label htmlFor="waktu_masuk" className="font-semibold text-xs text-700">Rencana Waktu Kedatangan *</label>
+                        <label htmlFor="waktu_masuk" className="font-semibold text-xs text-700">Rencana Waktu Kedatangan <span className="text-red-500">*</span></label>
                         <input
                             type="datetime-local"
                             id="waktu_masuk"

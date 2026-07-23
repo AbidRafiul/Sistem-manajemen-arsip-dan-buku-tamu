@@ -345,6 +345,7 @@ ${openingMsg}.
 
 Data Rencana Kunjungan:
 - Nama Tamu: ${GuestName}
+- No. WA Tamu: ${GuestPhone}
 - Instansi: ${GuestCompany || '-'}
 - Waktu Kedatangan: ${CheckInTime}
 - Keperluan: ${purposeName}
