@@ -79,18 +79,18 @@ router.post("/", async (req, res) => {
 
     for (const r of rows) {
       if (r.foto_wajah) {
-        r.PhotoFaceUrl = r.foto_wajah.startsWith('http') ? r.foto_wajah : await getPresignedUrlFromMinio("buku-tamu", r.foto_wajah);
+        r.PhotoFaceUrl = r.foto_wajah.startsWith('http') ? r.foto_wajah : await getPresignedUrlFromMinio("arsip-bucket", r.foto_wajah);
       } else {
         r.PhotoFaceUrl = null;
       }
 
       if (r.foto_identitas) {
-        r.PhotoIdentityUrl = r.foto_identitas.startsWith('http') ? r.foto_identitas : await getPresignedUrlFromMinio("buku-tamu", r.foto_identitas);
+        r.PhotoIdentityUrl = r.foto_identitas.startsWith('http') ? r.foto_identitas : await getPresignedUrlFromMinio("arsip-bucket", r.foto_identitas);
       } else {
         r.PhotoIdentityUrl = null;
       }
       if (r.tanda_tangan) {
-        r.SignatureUrl = r.tanda_tangan.startsWith('http') ? r.tanda_tangan : await getPresignedUrlFromMinio("buku-tamu", r.tanda_tangan);
+        r.SignatureUrl = r.tanda_tangan.startsWith('http') ? r.tanda_tangan : await getPresignedUrlFromMinio("arsip-bucket", r.tanda_tangan);
       } else {
         r.SignatureUrl = null;
       }

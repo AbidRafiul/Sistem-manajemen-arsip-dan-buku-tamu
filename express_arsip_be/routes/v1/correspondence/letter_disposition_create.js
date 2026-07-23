@@ -2,6 +2,8 @@ import express from "express";
 import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { validatePayload } from "../components/tools/servertool.js";
+import { sendWhatsAppMessage } from "../../../core/components/tools/wa_helper.js";
+import { formatDateSystem } from "../components/tools/general.js";
 
 const router = express.Router();
 
@@ -474,6 +476,30 @@ const letterDispositionCreate = async (req, res) => {
 
       return nId;
     });
+
+    // Kirim notifikasi WA secara asynchronous (fire-and-forget)
+    try {
+      const oPenerima = await DB("mst_pengguna").select("nama_lengkap", "no_hp").where("id_pengguna", oPayload.kepada_pengguna_id).first();
+      if (oPenerima && oPenerima.no_hp) {
+         const surat = await DB(letterTable).select("nomor_surat", "perihal").where(letterIdColumn, oPayload.surat_masuk_id).first();
+         
+         const waPesan = `Halo Bpk/Ibu ${oPenerima.nama_lengkap},
+
+Anda mendapat lembar *Disposisi Baru* untuk ditindaklanjuti pada ${formatDateSystem()}.
+
+Detail Disposisi:
+- Nomor Surat: *${surat?.nomor_surat || '-'}*
+- Perihal: *${surat?.perihal || '-'}*
+- Instruksi Pimpinan: ${oPayload.instruksi || oPayload.catatan_disposisi || '-'}
+
+Silakan buka sistem Arsip Digital Anda untuk melihat lampiran fisik surat dan menindaklanjuti disposisi ini. Terima kasih.`;
+         
+         // Tidak pakai await agar response API tidak terhambat
+         sendWhatsAppMessage(oPenerima.no_hp, waPesan);
+      }
+    } catch (waErr) {
+      console.error("[WA Gateway] Gagal mengirim WA Disposisi:", waErr.message);
+    }
 
     return res.status(201).json({
       status: true,

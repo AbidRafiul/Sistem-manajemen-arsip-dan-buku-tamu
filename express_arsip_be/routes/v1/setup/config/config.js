@@ -3,8 +3,12 @@ import DB from "../../../../core/config/knex.js";
 import { status, formatDateSystem, datetime } from "../../components/tools/general.js";
 import { Logging, validatePayload } from "../../components/tools/servertool.js";
 import Joi from "joi";
+import fs from "fs";
+import path from "path";
+import multer from "multer";
 
 const router = express.Router();
+const upload = multer({ dest: 'public/uploads/temp/' });
 
 router.post("/", upload.any(), async (req, res) => {
   const oPayload = req.body;
@@ -85,8 +89,7 @@ router.post("/", upload.any(), async (req, res) => {
         fs.mkdirSync(uploadDir, { recursive: true });
       }
 
-      const ext =
-        path.extname(file.originalname) || mimeToExt[file.mimetype] || "";
+      const ext = path.extname(file.originalname) || "";
       filename = `logo_perusahaan${ext}`;
       const filepath = path.join(uploadDir, filename);
 

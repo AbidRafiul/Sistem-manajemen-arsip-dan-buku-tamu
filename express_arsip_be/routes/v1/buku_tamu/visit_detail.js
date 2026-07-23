@@ -36,7 +36,7 @@ router.post("/", async (req, res) => {
     if (row.foto_wajah) {
       row.PhotoFaceUrl = row.foto_wajah.startsWith("http")
         ? row.foto_wajah
-        : await getPresignedUrlFromMinio("buku-tamu", row.foto_wajah);
+        : await getPresignedUrlFromMinio("arsip-bucket", row.foto_wajah);
     } else {
       row.PhotoFaceUrl = null;
     }
@@ -44,7 +44,7 @@ router.post("/", async (req, res) => {
     if (row.foto_identitas) {
       row.PhotoIdentityUrl = row.foto_identitas.startsWith("http")
         ? row.foto_identitas
-        : await getPresignedUrlFromMinio("buku-tamu", row.foto_identitas);
+        : await getPresignedUrlFromMinio("arsip-bucket", row.foto_identitas);
     } else {
       row.PhotoIdentityUrl = null;
     }
@@ -52,7 +52,7 @@ router.post("/", async (req, res) => {
     if (row.tanda_tangan) {
       row.SignatureUrl = row.tanda_tangan.startsWith("http")
         ? row.tanda_tangan
-        : await getPresignedUrlFromMinio("buku-tamu", row.tanda_tangan);
+        : await getPresignedUrlFromMinio("arsip-bucket", row.tanda_tangan);
     } else {
       row.SignatureUrl = null;
     }
@@ -64,16 +64,16 @@ router.post("/", async (req, res) => {
         .where("id_kunjungan", row.id_kunjungan);
 
       // Map file URLs for group members
-      groupMembers = groupMembers.map(m => {
+      groupMembers = await Promise.all(groupMembers.map(async m => {
         if (m.foto_identitas) {
           m.PhotoIdentityUrl = m.foto_identitas.startsWith("http")
             ? m.foto_identitas
-            : `${cBaseUrl}/uploads/${m.foto_identitas}`;
+            : await getPresignedUrlFromMinio("arsip-bucket", m.foto_identitas);
         } else {
           m.PhotoIdentityUrl = null;
         }
         return m;
-      });
+      }));
     }
     row.group_members = groupMembers;
 

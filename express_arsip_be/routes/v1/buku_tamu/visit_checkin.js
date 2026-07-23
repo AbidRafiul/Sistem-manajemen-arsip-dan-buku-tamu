@@ -7,6 +7,7 @@ import { Logging, validatePayload, generateDailyVisitCode } from "../components/
 import DB from "../../../core/config/knex.js";
 import { uploadFileToMinio, getMinioPrefix, MINIO_BUCKET_NAME } from "../../../core/components/tools/minio_helper.js";
 import { sendMailNotification } from "../../../core/components/tools/mail_helper.js";
+import { sendWhatsAppMessage } from "../../../core/components/tools/wa_helper.js";
 
 const cBucket = MINIO_BUCKET_NAME;
 
@@ -162,7 +163,7 @@ router.post(
       }
 
       if (SignatureData && SignatureData.startsWith("data:image/")) {
-        const matches = SignatureData.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+        const matches = SignatureData.match(new RegExp("^data:([A-Za-z-+/]+);base64,(.+)$"));
         if (matches && matches.length === 3) {
           const type = matches[1];
           const buffer = Buffer.from(matches[2], "base64");
@@ -289,6 +290,58 @@ router.post(
           kode_kunjungan: VisitCode,
           catatan_kunjungan: VisitNotes || "-"
         });
+
+        // ==========================================
+        // 5. KIRIM NOTIFIKASI WA KE HOST SECARA ASYNC
+        // ==========================================
+        try {
+          const oHost = await DB("mst_pengguna")
+            .select("nama_lengkap", "telepon")
+            .where("id_pengguna", resolvedHostUserId)
+            .first();
+
+          if (oHost && oHost.telepon) {
+            let openingMsg = "Ada tamu yang sedang menunggu Anda di Lobi";
+            let closingMsg = "Silakan segera menemui tamu tersebut. Terima kasih.";
+
+            const lowerPurpose = (visitPurposeName || "").toLowerCase();
+
+            if (lowerPurpose.includes("meeting")) {
+              openingMsg = "Ada tamu untuk jadwal Meeting yang sedang menunggu Anda di Lobi";
+              closingMsg = "Silakan persiapkan ruangan dan segera menemui tamu tersebut. Terima kasih.";
+            } else if (lowerPurpose.includes("pengiriman")) {
+              openingMsg = "Ada kurir/pengirim barang yang menunggu Anda di Lobi";
+              closingMsg = "Silakan segera menuju lobi untuk menerima kiriman tersebut. Terima kasih.";
+            } else if (lowerPurpose.includes("interview") || lowerPurpose.includes("wawancara")) {
+              openingMsg = "Kandidat untuk sesi Interview/Wawancara telah hadir di Lobi";
+              closingMsg = "Silakan segera menemui kandidat atau mengarahkannya ke ruangan yang telah disiapkan. Terima kasih.";
+            } else if (lowerPurpose.includes("perbaikan") || lowerPurpose.includes("maintenance")) {
+              openingMsg = "Tim perbaikan/maintenance telah tiba di Lobi";
+              closingMsg = "Silakan temui dan arahkan tim ke lokasi perbaikan. Terima kasih.";
+            } else if (lowerPurpose.includes("audit") || lowerPurpose.includes("pemeriksaan")) {
+              openingMsg = "Tim audit/pemeriksaan telah hadir di Lobi";
+              closingMsg = "Silakan segera menyambut tim audit. Terima kasih.";
+            } else if (lowerPurpose.includes("konsultasi")) {
+              openingMsg = "Ada tamu untuk sesi Konsultasi yang sedang menunggu Anda di Lobi";
+              closingMsg = "Silakan segera menemui tamu tersebut. Terima kasih.";
+            }
+
+            const waPesan = `Halo Bpk/Ibu ${oHost.nama_lengkap},
+
+${openingMsg} pada waktu ${formatDateSystem()}.
+
+Data Tamu:
+- Nama: ${GuestName}
+- Instansi: ${GuestCompany || '-'}
+- Keperluan: ${visitPurposeName || '-'}
+- Catatan: ${VisitNotes || '-'}
+
+${closingMsg}`;
+            sendWhatsAppMessage(oHost.telepon, waPesan);
+          }
+        } catch (waErr) {
+          console.error("[WA Gateway] Gagal memproses notifikasi:", waErr.message);
+        }
       }
 
       return res.status(200).json({
