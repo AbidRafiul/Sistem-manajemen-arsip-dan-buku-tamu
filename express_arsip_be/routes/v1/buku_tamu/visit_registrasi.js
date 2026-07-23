@@ -170,7 +170,7 @@ router.post(
       }
 
       if (SignatureData && SignatureData.startsWith("data:image/")) {
-        const matches = SignatureData.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+        const matches = SignatureData.match(new RegExp("^data:([A-Za-z-+/]+);base64,(.+)$"));
         if (matches && matches.length === 3) {
           const type = matches[1];
           const buffer = Buffer.from(matches[2], "base64");

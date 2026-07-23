@@ -221,7 +221,7 @@ router.post("/", async (req, res) => {
       func: "create",
       request: oPayload,
       response: oResult,
-      user: nama_pengguna,
+      user: cNamaPengguna,
     });
     return res.status(500).json(oResult);
   }

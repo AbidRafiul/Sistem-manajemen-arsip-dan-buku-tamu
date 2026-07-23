@@ -32,18 +32,11 @@ router.post("/", async (req, res) => {
           .try(Joi.string(), Joi.number())
           .optional()
           .label("id_pengguna"),
-        user_id: Joi.alternatives()
-          .try(Joi.string(), Joi.number())
-          .optional()
-          .label("id_pengguna"),
+
         user_id: Joi.alternatives()
           .try(Joi.string(), Joi.number())
           .optional()
           .label("user_id"),
-        id_pengguna: Joi.alternatives()
-          .try(Joi.string(), Joi.number())
-          .optional()
-          .label("id_pengguna"),
         IdPengguna: Joi.alternatives()
           .try(Joi.string(), Joi.number())
           .optional()
