@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
-import { showError } from '@/lib/tools/generalTools';
+import { showError, showSuccess } from '@/lib/tools/generalTools';
 import Link from 'next/link';
 import axios from 'axios';
 import VisitorBookingForm from './components/display/form';
@@ -246,148 +246,234 @@ export default function VisitorBookingPage() {
         return (
             <>
                 <Toast ref={toast} />
-                <div className="flex align-items-center justify-content-center min-h-screen py-5 px-3" style={{ background: 'linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%)' }}>
-                    <style jsx>{`
-                    .ticket-card {
-                        background: #ffffff;
-                        border-radius: 20px;
-                        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-                        width: 100%;
-                        max-width: 450px;
-                        overflow: hidden;
-                        border: none;
-                    }
-                    .ticket-header {
-                        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                        color: #ffffff;
-                        padding: 2rem 1.5rem;
-                        text-align: center;
-                    }
-                    .ticket-body {
-                        padding: 1.5rem;
-                    }
-                    .ticket-stub-line {
-                        border-top: 2.5px dashed #e2e8f0;
-                        position: relative;
-                        margin: 1.5rem 0;
-                    }
-                    .ticket-stub-line::before {
-                        content: '';
-                        position: absolute;
-                        left: -26px;
-                        top: -11px;
-                        width: 20px;
-                        height: 20px;
-                        background: #cbd5e1;
-                        border-radius: 50%;
-                    }
-                    .ticket-stub-line::after {
-                        content: '';
-                        position: absolute;
-                        right: -26px;
-                        top: -11px;
-                        width: 20px;
-                        height: 20px;
-                        background: #cbd5e1;
-                        border-radius: 50%;
-                    }
-                    .ticket-detail-row {
-                        display: flex;
-                        justify-content: space-between;
-                        margin-bottom: 0.75rem;
-                        font-size: 0.85rem;
-                    }
-                    .ticket-detail-label {
-                        color: #64748b;
-                        font-weight: 500;
-                    }
-                    .ticket-detail-value {
-                        color: #1e293b;
-                        font-weight: 600;
-                        text-align: right;
-                    }
-                `}</style>
+                <div 
+                    className="flex flex-column align-items-center justify-content-center min-h-screen py-6 px-3 relative overflow-hidden" 
+                    style={{ 
+                        background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #0f172a 100%)',
+                        color: '#334155'
+                    }}
+                >
+                    {/* Ambient glowing background spheres */}
+                    <div 
+                        className="absolute border-circle pointer-events-none opacity-20 filter blur-3xl"
+                        style={{
+                            width: '400px',
+                            height: '400px',
+                            background: 'radial-gradient(circle, #10b981 0%, transparent 70%)',
+                            top: '-100px',
+                            right: '-100px'
+                        }}
+                    />
+                    <div 
+                        className="absolute border-circle pointer-events-none opacity-20 filter blur-3xl"
+                        style={{
+                            width: '350px',
+                            height: '350px',
+                            background: 'radial-gradient(circle, #6366f1 0%, transparent 70%)',
+                            bottom: '-80px',
+                            left: '-80px'
+                        }}
+                    />
 
-                    <div className="ticket-card">
-                        {/* Header */}
-                        <div className="ticket-header">
-                            <div className="inline-flex align-items-center justify-content-center border-circle mb-2" style={{ background: 'rgba(255, 255, 255, 0.2)', width: '60px', height: '60px' }}>
-                                <i className="pi pi-check-circle text-3xl text-white" />
+                    <style jsx>{`
+                        .ticket-card {
+                            background: #ffffff;
+                            border-radius: 24px;
+                            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+                            width: 100%;
+                            max-width: 460px;
+                            overflow: hidden;
+                            border: none;
+                        }
+                        .ticket-header {
+                            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+                            color: #ffffff;
+                            padding: 2rem 1.5rem;
+                            text-align: center;
+                        }
+                        .ticket-body {
+                            padding: 1.5rem;
+                        }
+                        .ticket-stub-line {
+                            border-top: 2.5px dashed #cbd5e1;
+                            position: relative;
+                            margin: 1.5rem 0;
+                        }
+                        .ticket-stub-line::before {
+                            content: '';
+                            position: absolute;
+                            left: -28px;
+                            top: -11px;
+                            width: 22px;
+                            height: 22px;
+                            background: #1e1b4b;
+                            border-radius: 50%;
+                        }
+                        .ticket-stub-line::after {
+                            content: '';
+                            position: absolute;
+                            right: -28px;
+                            top: -11px;
+                            width: 22px;
+                            height: 22px;
+                            background: #1e1b4b;
+                            border-radius: 50%;
+                        }
+                        .ticket-detail-row {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 0.75rem;
+                            font-size: 0.85rem;
+                        }
+                        .ticket-detail-label {
+                            color: #64748b;
+                            font-weight: 500;
+                        }
+                        .ticket-detail-value {
+                            color: #1e293b;
+                            font-weight: 600;
+                            text-align: right;
+                        }
+                        .animate-fade-in {
+                            animation: fadeIn 0.4s ease-out forwards;
+                        }
+                        @keyframes fadeIn {
+                            from {
+                                opacity: 0;
+                                transform: translateY(12px);
+                            }
+                            to {
+                                opacity: 1;
+                                transform: translateY(0);
+                            }
+                        }
+                    `}</style>
+
+                    <div className="w-full flex flex-column gap-4 relative z-1 align-items-center" style={{ maxWidth: '460px' }}>
+
+                        {/* BRAND LOGO HEADER */}
+                        <div className="flex flex-column align-items-center text-center mb-1">
+                            <div className="flex align-items-center gap-2 mb-1">
+                                <div 
+                                    className="flex align-items-center justify-content-center border-round-xl shadow-4"
+                                    style={{ 
+                                        width: '42px', 
+                                        height: '42px', 
+                                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                        boxShadow: '0 8px 20px rgba(16, 185, 129, 0.35)'
+                                    }}
+                                >
+                                    <i className="pi pi-shield text-xl text-white font-bold" />
+                                </div>
+                                <span className="font-black text-2xl tracking-wide text-white" style={{ letterSpacing: '0.05em' }}>ARSIPKU</span>
                             </div>
-                            <h2 className="m-0 text-xl font-bold text-white">Pendaftaran Berhasil!</h2>
-                            <p className="m-0 mt-1 text-white-alpha-80 text-xs">Rencana kunjungan Anda telah dijadwalkan</p>
+                            <span className="text-xs uppercase font-bold tracking-widest text-emerald-200 opacity-80" style={{ letterSpacing: '0.15em' }}>Sistem Manajemen Buku Tamu</span>
                         </div>
 
-                        <div className="ticket-body">
-                            {/* Summary Details */}
-                            <div className="px-2 mb-2">
-                                <div className="ticket-detail-row">
-                                    <span className="ticket-detail-label">Nama Tamu</span>
-                                    <span className="ticket-detail-value">{form.nama_tamu}</span>
+                        <div className="ticket-card animate-fade-in shadow-6">
+                            {/* Header */}
+                            <div className="ticket-header relative overflow-hidden">
+                                <div className="inline-flex align-items-center justify-content-center border-circle mb-2 shadow-2" style={{ background: 'rgba(255, 255, 255, 0.2)', width: '56px', height: '56px' }}>
+                                    <i className="pi pi-check text-2xl font-black text-white" />
                                 </div>
-                                <div className="ticket-detail-row">
-                                    <span className="ticket-detail-label">Instansi</span>
-                                    <span className="ticket-detail-value">{form.instansi_tamu || '-'}</span>
-                                </div>
-                                <div className="ticket-detail-row">
-                                    <span className="ticket-detail-label">Pegawai</span>
-                                    <span className="ticket-detail-value">{form.nama_host || '-'}</span>
-                                </div>
-                                <div className="ticket-detail-row">
-                                    <span className="ticket-detail-label">Waktu Kedatangan</span>
-                                    <span className="ticket-detail-value">
-                                        {form.waktu_masuk ? form.waktu_masuk.toLocaleString('id-ID', {
-                                            day: 'numeric',
-                                            month: 'short',
-                                            year: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        }) : '-'}
-                                    </span>
-                                </div>
+                                <h2 className="m-0 text-xl font-black text-white">Pendaftaran Berhasil!</h2>
+                                <p className="m-0 mt-1 text-white-alpha-90 text-xs">Rencana kunjungan Anda telah dijadwalkan</p>
                             </div>
 
-                            {/* Dashed Line separator with physical ticket cutout holes */}
-                            <div className="ticket-stub-line" />
-
-                            {/* Digital Ticket Block */}
-                            <div className="text-center">
-                                <span className="text-xs text-500 font-bold uppercase tracking-wider block mb-2" style={{ color: '#64748b' }}>KODE KUNJUNGAN TAMU</span>
-                                <div className="font-bold text-3xl text-primary tracking-widest my-2 uppercase select-all" style={{ color: '#4f46e5' }}>
-                                    {visitCode}
+                            <div className="ticket-body">
+                                {/* Summary Details */}
+                                <div className="px-1">
+                                    <div className="ticket-detail-row">
+                                        <span className="ticket-detail-label">Nama Tamu</span>
+                                        <span className="ticket-detail-value">{form.nama_tamu}</span>
+                                    </div>
+                                    <div className="ticket-detail-row">
+                                        <span className="ticket-detail-label">Instansi</span>
+                                        <span className="ticket-detail-value">{form.instansi_tamu || '-'}</span>
+                                    </div>
+                                    <div className="ticket-detail-row">
+                                        <span className="ticket-detail-label">Pegawai / Host</span>
+                                        <span className="ticket-detail-value">{form.nama_host || '-'}</span>
+                                    </div>
+                                    <div className="ticket-detail-row">
+                                        <span className="ticket-detail-label">Waktu Kedatangan</span>
+                                        <span className="ticket-detail-value font-bold text-emerald-600">
+                                            {form.waktu_masuk ? form.waktu_masuk.toLocaleString('id-ID', {
+                                                day: 'numeric',
+                                                month: 'short',
+                                                year: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            }) + ' WIB' : '-'}
+                                        </span>
+                                    </div>
                                 </div>
 
-                                {/* Simulated Barcode */}
-                                <div className="flex justify-content-center align-items-center gap-1 my-3 opacity-60">
-                                    {[2, 1, 4, 1, 3, 2, 1, 4, 1, 2, 3, 1, 4, 2, 1, 3, 2, 1, 4, 1, 2, 3, 1, 4].map((width, idx) => (
-                                        <div key={idx} className="bg-900" style={{ width: `${width}px`, height: '35px' }} />
-                                    ))}
-                                </div>
+                                {/* Dashed Line separator with physical ticket cutout holes */}
+                                <div className="ticket-stub-line" />
 
-                                <p className="text-xs text-500 line-height-3 mb-4 mt-2 px-3" style={{ color: '#64748b' }}>
-                                    Tunjukkan kode / barcode ini kepada resepsionis saat Anda check-in di lokasi kedatangan.
-                                </p>
-
-                                <div className="flex flex-column gap-2 mt-3">
-                                    <Button
-                                        label="Buat Pendaftaran Baru"
-                                        icon="pi pi-plus"
-                                        className="w-full font-bold py-3 border-round-lg text-sm text-white"
-                                        style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', border: 'none' }}
-                                        onClick={() => {
-                                            setBookingSuccess(false);
-                                            handleReset();
-                                        }}
-                                    />
-                                    <Link href="/visitor/status" className="w-full no-underline">
-                                        <Button
-                                            label="Cek Status Kunjungan"
-                                            icon="pi pi-search"
-                                            outlined
-                                            className="w-full font-semibold py-3 border-round-lg text-sm"
-                                            style={{ borderColor: '#6366f1', color: '#6366f1' }}
+                                {/* Digital Ticket Block */}
+                                <div className="text-center px-1">
+                                    <span className="text-xs text-500 font-bold uppercase tracking-wider block mb-2" style={{ color: '#64748b', letterSpacing: '0.05em' }}>KODE KUNJUNGAN TAMU</span>
+                                    
+                                    <div className="flex align-items-center justify-content-center gap-2 my-2">
+                                        <div 
+                                            className="font-black text-3xl tracking-widest uppercase select-all px-3 py-1 border-round-xl" 
+                                            style={{ color: '#1e1b4b', background: '#eff6ff', border: '1px solid #bfdbfe' }}
+                                        >
+                                            {visitCode}
+                                        </div>
+                                        <Button 
+                                            icon="pi pi-copy" 
+                                            className="p-button-rounded p-button-text p-button-sm text-indigo-600 p-button-outlined"
+                                            style={{ borderColor: '#c7d2fe', background: '#f5f3ff' }}
+                                            tooltip="Salin Kode"
+                                            tooltipOptions={{ position: 'top' }}
+                                            onClick={() => {
+                                                if (navigator.clipboard) {
+                                                    navigator.clipboard.writeText(visitCode);
+                                                    showSuccess(toast, 'Kode Kunjungan berhasil disalin!');
+                                                }
+                                            }}
                                         />
-                                    </Link>
+                                    </div>
+
+                                    {/* Simulated Barcode Visual */}
+                                    <div className="flex justify-content-center align-items-center gap-1 my-3 opacity-75 w-full">
+                                        {[2, 1, 4, 1, 3, 2, 1, 4, 1, 2, 3, 1, 4, 2, 1, 3, 2, 1, 4, 1, 2, 3, 1, 4].map((width, idx) => (
+                                            <div key={idx} className="bg-900" style={{ width: `${width}px`, height: '32px' }} />
+                                        ))}
+                                    </div>
+
+                                    <p className="text-xs text-500 line-height-3 mb-4 mt-2 px-1" style={{ color: '#64748b' }}>
+                                        Simpan kode di atas atau tunjukkan kepada petugas resepsionis saat Anda tiba di lokasi kedatangan.
+                                    </p>
+
+                                    <div className="flex flex-column gap-2 mt-3">
+                                        <Button
+                                            label="Buat Pendaftaran Baru"
+                                            icon="pi pi-plus"
+                                            className="w-full font-bold py-3 border-round-xl text-sm text-white transition-all transition-duration-150"
+                                            style={{ 
+                                                background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', 
+                                                border: 'none',
+                                                boxShadow: '0 4px 12px rgba(99, 102, 241, 0.35)'
+                                            }}
+                                            onClick={() => {
+                                                setBookingSuccess(false);
+                                                handleReset();
+                                            }}
+                                        />
+                                        <Link href="/visitor/status" className="w-full no-underline">
+                                            <Button
+                                                label="Cek Status Kunjungan"
+                                                icon="pi pi-search"
+                                                outlined
+                                                className="w-full font-bold py-3 border-round-xl text-sm transition-all transition-duration-150"
+                                                style={{ borderColor: '#6366f1', color: '#4f46e5' }}
+                                            />
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         </div>

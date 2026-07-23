@@ -35,8 +35,36 @@ export default function VisitorCardModal({ visible, onHide, cardData }: TablePro
         >
             {cardData && (
                 <div className="flex flex-column align-items-center text-center">
+                    <style>{`
+                        @media print {
+                            body * {
+                                visibility: hidden;
+                            }
+                            #printable-card-area, #printable-card-area * {
+                                visibility: visible;
+                            }
+                            #printable-card-area {
+                                position: absolute;
+                                left: 50%;
+                                top: 50px;
+                                transform: translateX(-50%);
+                                width: 340px;
+                                box-shadow: none !important;
+                                border: none !important;
+                                background: white !important;
+                                -webkit-print-color-adjust: exact !important;
+                                print-color-adjust: exact !important;
+                            }
+                            /* Hides default browser header/footer margins (URL, Page count) */
+                            @page {
+                                size: auto;
+                                margin: 0;
+                            }
+                        }
+                    `}</style>
                     {/* Visitor Card Container */}
                     <div 
+                        id="printable-card-area"
                         className="w-full border-1 border-300 border-round-2xl overflow-hidden shadow-2 bg-white relative"
                         style={{ maxWidth: '340px' }}
                     >
