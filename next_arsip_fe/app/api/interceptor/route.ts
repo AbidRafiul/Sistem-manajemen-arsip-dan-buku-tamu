@@ -9,6 +9,7 @@ interface CustomHeaders {
     'x-custom-header'?: string;
     'x-level'?: string;
     'x-credential'?: string;
+    'x-response-type'?: string;
 }
 
 const getBridgeCookie = (request: NextRequest) => {
@@ -295,7 +296,22 @@ async function getCRUD(request: NextRequest, token: any, a2fCookie: string) {
         }
 
         delete requestHeaders['X-Level'];
-        const result = await axios.get(`${process.env.API_URL}${endpoint}`, { headers: requestHeaders });
+
+        const isFileResponse = String(headers['x-response-type'] || "").toLowerCase() === "blob";
+        const result = await axios.get(`${process.env.API_URL}${endpoint}`, {
+            headers: requestHeaders,
+            responseType: isFileResponse ? "arraybuffer" : "json",
+        });
+
+        if (isFileResponse) {
+            return new NextResponse(result.data, {
+                status: result.status,
+                headers: {
+                    "Content-Type": result.headers["content-type"] || "application/octet-stream",
+                    "Content-Disposition": result.headers["content-disposition"] || "attachment",
+                },
+            });
+        }
 
         return NextResponse.json(result.data);
     } catch (err: any) {

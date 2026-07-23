@@ -2,6 +2,8 @@ import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { v4 as uuidv4 } from "uuid";
 import { formatDateSystem } from "../components/tools/general.js";
+import { logDocumentChange } from "../components/tools/audit_trail_helper.js";
+import { processDocumentContent } from "../../../core/components/ocr_service.js";
 
 const createDocument = async (req, res) => {
   const oPayload = req.body;
@@ -74,10 +76,22 @@ const createDocument = async (req, res) => {
       return res.status(422).json(oResult);
     }
 
+    // Extract id_cabang from active branch header (x-filter-cabang) or fallback to user context
+    let nIdCabang = null;
+    const cFilterCabang = req.headers["x-filter-cabang"];
+    if (cFilterCabang && cFilterCabang !== "null" && cFilterCabang !== "undefined") {
+      const firstId = parseInt(String(cFilterCabang).split(",")[0], 10);
+      if (!isNaN(firstId)) nIdCabang = firstId;
+    }
+    if (!nIdCabang) {
+      nIdCabang = req.context?.id_cabang || req.auth?.id_cabang || null;
+    }
+
     // Generate QR Code string unik (format: DOC-<uuid>)
     const cQRCode = `DOC-${uuidv4()}`;
 
     const oData = {
+      id_cabang: nIdCabang,
       kode_klasifikasi: cClassificationCode,
       kode_jenis_dokumen: cDocumentTypeCode,
       kode_kategori_dokumen: cDocumentCategoryCode,
@@ -95,6 +109,10 @@ const createDocument = async (req, res) => {
       created_at: dNow,
       updated_at: dNow,
     };
+
+    let createdKodeDokumen = "";
+    let firstVersionId = null;
+    let uploadedFilePath = null;
 
     const nDocumentId = await DB.transaction(async (trx) => {
       const cClassification = cClassificationCode || "KLS";
@@ -119,17 +137,19 @@ const createDocument = async (req, res) => {
       }
       const cSeqPadded = String(nSeq).padStart(4, "0");
       const cKodeDokumen = `${cPrefix}${cSeqPadded}`;
+      createdKodeDokumen = cKodeDokumen;
 
       // Insert directly with the pre-generated document code
       const [nId] = await trx("trs_dokumen").insert({
         ...oData,
-        kode_dokumen: cKodeDokumen
+        kode_dokumen: cKodeDokumen,
       });
 
       // Automatically insert version v1 if a file is uploaded
       if (req.file) {
-        const cFilePath = `/uploads/documents/${req.file.filename}`;
-        await trx("trs_versi_dokumen").insert({
+        const cFilePath = req.file.path || `/uploads/documents/${req.file.filename}`;
+        uploadedFilePath = cFilePath;
+        const [nVerId] = await trx("trs_versi_dokumen").insert({
           kode_dokumen: cKodeDokumen,
           nomor_versi: 1,
           catatan_perubahan: "Versi Awal (Unggahan Perdana)",
@@ -140,18 +160,37 @@ const createDocument = async (req, res) => {
           disetujui_pada: dNow,
           tanggal_transaksi: dNow,
           created_at: dNow,
-          updated_at: dNow
+          updated_at: dNow,
         });
+        firstVersionId = nVerId;
       }
 
       return nId;
     });
+
+    // Log to Audit Trail
+    await logDocumentChange({
+      kodeDokumen: createdKodeDokumen,
+      aksi: "create",
+      deskripsi: `Dokumen baru '${cDocumentName}' (${cDocumentNumber}) berhasil didaftarkan`,
+      detailJson: { nama_dokumen: cDocumentName, nomor_dokumen: cDocumentNumber, nama_pic: cPic },
+      dilakukanOleh: cPic,
+      req,
+    });
+
+    // Auto-trigger OCR processing in background if file exists
+    if (createdKodeDokumen && firstVersionId && uploadedFilePath) {
+      processDocumentContent(createdKodeDokumen, firstVersionId, uploadedFilePath).catch(
+        (err) => console.error("[OCR Background Error]:", err.message)
+      );
+    }
 
     const oResult = {
       status: "success",
       message: "Document metadata registered successfully",
       data: {
         id_dokumen: nDocumentId,
+        kode_dokumen: createdKodeDokumen,
         nama_pic: cPic,
       },
     };

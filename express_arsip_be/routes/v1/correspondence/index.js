@@ -79,6 +79,7 @@ import outgoingLetterUpload from "./outgoing_letter_upload.js";
 
 //Endpoint POST - outgoing-letter-archive
 import outgoingLetterArchive from "./outgoing_letter_archive.js";
+import outgoingLetterDocument from "./outgoing_letter_document.js";
 
 
 const router = express.Router();
@@ -110,5 +111,6 @@ router.use("/outgoing-letter-reject", outgoingLetterReject);
 router.use("/outgoing-letter-dashboard-stats", outgoingLetterDashboard);
 router.use("/outgoing-file-upload", outgoingLetterUpload);
 router.use("/outgoing-letter-archive", outgoingLetterArchive);
+router.use("/outgoing-letter-document", outgoingLetterDocument);
 
 export default router;

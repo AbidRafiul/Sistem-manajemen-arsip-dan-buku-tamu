@@ -1,5 +1,6 @@
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+import { logDocumentChange, buildChangeDiff } from "../components/tools/audit_trail_helper.js";
 
 const updateDocument = async (req, res) => {
   const oPayload = req.body;
@@ -16,6 +17,36 @@ const updateDocument = async (req, res) => {
     const cConfidentialityLevelCode = oPayload.kode_tingkat_kerahasiaan || null;
     let cRetentionCode = oPayload.kode_retensi || null;
     const cPhysicalLocation = oPayload.lokasi_fisik || null;
+
+    if (!nDocumentId) {
+      const oResult = {
+        status: "error",
+        message: "id_dokumen wajib diisi",
+      };
+      return res.status(422).json(oResult);
+    }
+
+    if (!cDocumentName || !cDocumentNumber || !dDocumentDate || !cPicName) {
+      const oResult = {
+        status: "error",
+        message: "nama_dokumen, nomor_dokumen, tanggal, dan nama_pic wajib diisi",
+      };
+      return res.status(422).json(oResult);
+    }
+
+    // Ambil data lama sebelum update
+    const oOldDoc = await DB("trs_dokumen")
+      .where("id_dokumen", nDocumentId)
+      .where("status", "active")
+      .first();
+
+    if (!oOldDoc) {
+      const oResult = {
+        status: "error",
+        message: "Document not found or already inactive",
+      };
+      return res.status(404).json(oResult);
+    }
 
     // Auto-assign JRA code and get retention years
     let nTahunRetensi = null;
@@ -42,22 +73,6 @@ const updateDocument = async (req, res) => {
     }
     const dNow = new Date();
 
-    if (!nDocumentId) {
-      const oResult = {
-        status: "error",
-        message: "id_dokumen wajib diisi",
-      };
-      return res.status(422).json(oResult);
-    }
-
-    if (!cDocumentName || !cDocumentNumber || !dDocumentDate || !cPicName) {
-      const oResult = {
-        status: "error",
-        message: "nama_dokumen, nomor_dokumen, tanggal, dan nama_pic wajib diisi",
-      };
-      return res.status(422).json(oResult);
-    }
-
     // Cek duplikat nomor dokumen (exclude dokumen yang sedang diedit)
     const oExisting = await DB("trs_dokumen")
       .where("nomor_dokumen", cDocumentNumber)
@@ -73,10 +88,7 @@ const updateDocument = async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    const cKodeDokumen = `${cDocumentNumber}-${nDocumentId}`;
-
     const oData = {
-      kode_dokumen: cKodeDokumen,
       kode_klasifikasi: cClassificationCode,
       kode_jenis_dokumen: cDocumentTypeCode,
       kode_kategori_dokumen: cDocumentCategoryCode,
@@ -92,18 +104,31 @@ const updateDocument = async (req, res) => {
       updated_at: dNow,
     };
 
-    const nUpdated = await DB("trs_dokumen")
+    await DB("trs_dokumen")
       .where("id_dokumen", nDocumentId)
       .where("status", "active")
       .update(oData);
 
-    if (nUpdated === 0) {
-      const oResult = {
-        status: "error",
-        message: "Document not found or already inactive",
-      };
-      return res.status(404).json(oResult);
-    }
+    // Compute diff & log audit trail
+    const diff = buildChangeDiff(oOldDoc, oData, [
+      "nama_dokumen",
+      "nomor_dokumen",
+      "nama_pic",
+      "lokasi_fisik",
+      "kode_jenis_dokumen",
+      "kode_kategori_dokumen",
+      "kode_klasifikasi",
+      "kode_tingkat_kerahasiaan",
+    ]);
+
+    await logDocumentChange({
+      kodeDokumen: oOldDoc.kode_dokumen,
+      aksi: "update",
+      deskripsi: `Metadata dokumen '${cDocumentName}' berhasil diperbarui`,
+      detailJson: diff,
+      dilakukanOleh: req?.auth?.nama_pengguna || cPicName,
+      req,
+    });
 
     const oResult = {
       status: "success",

@@ -1,5 +1,7 @@
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+import { logDocumentChange } from "../components/tools/audit_trail_helper.js";
+import { processDocumentContent } from "../../../core/components/ocr_service.js";
 
 const uploadDocumentVersion = async (req, res) => {
   const oPayload = req.body;
@@ -15,11 +17,16 @@ const uploadDocumentVersion = async (req, res) => {
       return res.status(400).json(oResult);
     }
 
-    const cFilePath = `/uploads/documents/${oFile.filename}`;
+    const cFilePath = oFile.path || `/uploads/documents/${oFile.filename}`;
     const cKodeDokumen = oPayload.kode_dokumen || oPayload.document_code;
     const nIdDokumen = oPayload.id_dokumen || oPayload.document_id;
     const cChangeNotes = oPayload.catatan_perubahan || oPayload.change_notes || null;
-    const cUploadedBy = req?.auth?.nama_pengguna || req?.context?.nama_pengguna || oPayload.diunggah_oleh || oPayload.uploaded_by || "system";
+    const cUploadedBy =
+      req?.auth?.nama_pengguna ||
+      req?.context?.nama_pengguna ||
+      oPayload.diunggah_oleh ||
+      oPayload.uploaded_by ||
+      "system";
     const dNow = new Date();
 
     if (!cKodeDokumen && !nIdDokumen) {
@@ -77,6 +84,26 @@ const uploadDocumentVersion = async (req, res) => {
     };
 
     const [nVersionId] = await DB("trs_versi_dokumen").insert(oData);
+
+    // Audit Trail Log
+    await logDocumentChange({
+      kodeDokumen: oDocument.kode_dokumen,
+      aksi: "version_upload",
+      deskripsi: `Versi baru V${nVersionNumber} diunggah oleh ${cUploadedBy} (Menunggu persetujuan)`,
+      detailJson: {
+        id_versi: nVersionId,
+        nomor_versi: nVersionNumber,
+        catatan_perubahan: cChangeNotes,
+        file_path: cFilePath,
+      },
+      dilakukanOleh: cUploadedBy,
+      req,
+    });
+
+    // Auto-trigger OCR processing in background
+    processDocumentContent(oDocument.kode_dokumen, nVersionId, cFilePath).catch((err) =>
+      console.error("[OCR Upload Error]:", err.message)
+    );
 
     const oResult = {
       status: "success",

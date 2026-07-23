@@ -20,13 +20,13 @@ import {
     apiEndpointDelete,
     apiEndpointDetail,
     apiEndpointGet,
-    apiEndpointLetterTypeData,
+    apiEndpointLetterTypeManagement,
     apiEndpointUpload,
     apiEndpointArchive,
 } from "../endpoints";
 import formUpload from "@/lib/axios/formData";
 import { TableData, TableProps } from "../interfaces";
-import Form from "./form";
+import Form, { extractIsiSuratFromFinal } from "./form";
 
 const statusOptions = [
     { label: "Semua Status", value: "" },
@@ -58,6 +58,17 @@ const getUserId = (state: TableProps["state"]) =>
 const formatDate = (date?: string | null) => {
     if (!date) return "-";
     return formatDateCalendar(date, "dd MMM yyyy", null, "id") || "-";
+};
+
+const getUploadErrorMessage = (error: any) => {
+    const response = error?.response?.data || error;
+    const detail = String(response?.error || response?.message || "");
+
+    if (/ECONNREFUSED.*127\.0\.0\.1:9000/i.test(detail) || /ECONNREFUSED.*9000/i.test(detail)) {
+        return "File gagal diunggah karena server penyimpanan lampiran (MinIO) belum aktif.";
+    }
+
+    return response?.message || "File gagal diunggah";
 };
 
 const getTimelineIcon = (aktivitas: string) => {
@@ -110,8 +121,7 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
             setState((p) => ({ ...p, detailData: res.data?.data || null }));
             await refreshData();
         } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || "File gagal diunggah");
+            showError(toast, getUploadErrorMessage(error));
         } finally {
             setUploading(false);
         }
@@ -175,7 +185,7 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
 
     const fetchLetterTypes = async () => {
         try {
-            const res = await postData(apiEndpointLetterTypeData, {});
+            const res = await getDataRequest(apiEndpointLetterTypeManagement);
             setLetterTypeOptions([
                 { jenis_surat_id: 0, nama_jenis_surat: "Semua Jenis" },
                 ...(res.data?.data || []),
@@ -303,6 +313,11 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
                         tujuan: rowData.tujuan,
                         instansi_tujuan: rowData.instansi_tujuan || "",
                         media_pengiriman: rowData.media_pengiriman || "",
+                        id_template: rowData.id_template || null,
+                        isi_surat: rowData.isi_surat || extractIsiSuratFromFinal(rowData.isi_surat_final),
+                        isi_surat_final: rowData.isi_surat_final || "",
+                        nama_pengirim: rowData.nama_pengirim || "",
+                        jabatan: rowData.jabatan || "",
                         status: rowData.status,
                         file_surat: null,
                         created_by: rowData.created_by,
@@ -562,6 +577,7 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
                                 { label: "Tanggal Surat", value: formatDate(detailLetter?.tanggal_surat) },
                                 { label: "Tanggal Kirim", value: formatDate(detailLetter?.tanggal_kirim) },
                                 { label: "Jenis Surat", value: detailLetter?.nama_jenis_surat },
+                                { label: "Template", value: detailLetter?.nama_template },
                                 { label: "Media Pengiriman", value: detailLetter?.media_pengiriman },
                             ].map(({ label, value }) => (
                                 <div key={label} className="col-12 md:col-4">
@@ -574,6 +590,25 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
                         </div>
 
                         <Divider className="my-0" />
+
+                        {detailLetter?.isi_surat_final && (
+                            <>
+                                <div>
+                                    <div className="font-bold text-900 flex align-items-center gap-2 mb-3">
+                                        <i className="pi pi-file-edit text-primary" />
+                                        Preview Surat
+                                    </div>
+                                    <pre
+                                        className="m-0 p-4 surface-50 border-1 surface-border border-round-lg text-sm line-height-3"
+                                        style={{ whiteSpace: "pre-wrap", fontFamily: "Georgia, 'Times New Roman', serif" }}
+                                    >
+                                        {detailLetter.isi_surat_final}
+                                    </pre>
+                                </div>
+
+                                <Divider className="my-0" />
+                            </>
+                        )}
 
                         <div>
                             <div className="flex align-items-center justify-content-between mb-3">
@@ -626,7 +661,7 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
                                             </div>
                                             {file.path_file && (
                                                 <a 
-                                                    href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/${file.path_file}`}
+                                                    href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/${file.path_file}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="no-underline"

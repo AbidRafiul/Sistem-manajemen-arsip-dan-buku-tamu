@@ -46,16 +46,8 @@ const generateDocumentQR = async (req, res) => {
         });
     }
 
-    // Data yang akan diencode ke dalam QR Code
-    const oQRData = {
-      id_dokumen: oDocument.id_dokumen,
-      nomor_dokumen: oDocument.nomor_dokumen,
-      nama_dokumen: oDocument.nama_dokumen,
-      qr_code: cQRCodeString,
-    };
-
-    // Generate QR Code sebagai base64 PNG
-    const cQRBase64 = await QRCode.toDataURL(JSON.stringify(oQRData), {
+    // Generate QR Code sebagai base64 PNG dengan meng-encode string cQRCodeString langsung
+    const cQRBase64 = await QRCode.toDataURL(cQRCodeString, {
       errorCorrectionLevel: "M",
       margin: 2,
       width: 300,

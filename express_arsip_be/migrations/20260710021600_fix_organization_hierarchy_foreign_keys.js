@@ -5,14 +5,16 @@
 export async function up(knex) {
   await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
 
+  const dropFkIfExists = async (tableName, fkName) => {
+    try {
+      await knex.raw(`ALTER TABLE ?? DROP FOREIGN KEY ??`, [tableName, fkName]);
+    } catch (e) {
+      console.log(`Foreign key ${fkName} on ${tableName} does not exist, skipping drop.`);
+    }
+  };
+
   // 1. Fix mst_departemen foreign key
-  try {
-    await knex.schema.alterTable("mst_departemen", (table) => {
-      table.dropForeign("id_cabang", "mst_departments_divisionid_foreign");
-    });
-  } catch (e) {
-    console.log("Skipped dropping mst_departments_divisionid_foreign (does not exist)");
-  }
+  await dropFkIfExists("mst_departemen", "mst_departments_divisionid_foreign");
   await knex.schema.alterTable("mst_departemen", (table) => {
     table
       .foreign("id_cabang", "mst_departemen_id_cabang_foreign")
@@ -23,13 +25,7 @@ export async function up(knex) {
   });
 
   // 2. Fix mst_divisi foreign key
-  try {
-    await knex.schema.alterTable("mst_divisi", (table) => {
-      table.dropForeign("id_departemen", "mst_divisions_branchid_foreign");
-    });
-  } catch (e) {
-    console.log("Skipped dropping mst_divisions_branchid_foreign (does not exist)");
-  }
+  await dropFkIfExists("mst_divisi", "mst_divisions_branchid_foreign");
   await knex.schema.alterTable("mst_divisi", (table) => {
     table
       .foreign("id_departemen", "mst_divisi_id_departemen_foreign")
@@ -40,13 +36,7 @@ export async function up(knex) {
   });
 
   // 3. Fix mst_unit_kerja foreign key
-  try {
-    await knex.schema.alterTable("mst_unit_kerja", (table) => {
-      table.dropForeign("id_divisi", "mst_work_units_departmentid_foreign");
-    });
-  } catch (e) {
-    console.log("Skipped dropping mst_work_units_departmentid_foreign (does not exist)");
-  }
+  await dropFkIfExists("mst_unit_kerja", "mst_work_units_departmentid_foreign");
   await knex.schema.alterTable("mst_unit_kerja", (table) => {
     table
       .foreign("id_divisi", "mst_unit_kerja_id_divisi_foreign")
@@ -66,12 +56,16 @@ export async function up(knex) {
 export async function down(knex) {
   await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
 
+  const dropFkIfExists = async (tableName, fkName) => {
+    try {
+      await knex.raw(`ALTER TABLE ?? DROP FOREIGN KEY ??`, [tableName, fkName]);
+    } catch (e) {
+      // ignore
+    }
+  };
+
   // Revert mst_unit_kerja foreign key
-  try {
-    await knex.schema.alterTable("mst_unit_kerja", (table) => {
-      table.dropForeign("id_divisi", "mst_unit_kerja_id_divisi_foreign");
-    });
-  } catch (e) {}
+  await dropFkIfExists("mst_unit_kerja", "mst_unit_kerja_id_divisi_foreign");
   await knex.schema.alterTable("mst_unit_kerja", (table) => {
     table
       .foreign("id_divisi", "mst_work_units_departmentid_foreign")
@@ -82,11 +76,7 @@ export async function down(knex) {
   });
 
   // Revert mst_divisi foreign key
-  try {
-    await knex.schema.alterTable("mst_divisi", (table) => {
-      table.dropForeign("id_departemen", "mst_divisi_id_departemen_foreign");
-    });
-  } catch (e) {}
+  await dropFkIfExists("mst_divisi", "mst_divisi_id_departemen_foreign");
   await knex.schema.alterTable("mst_divisi", (table) => {
     table
       .foreign("id_departemen", "mst_divisions_branchid_foreign")
@@ -97,11 +87,7 @@ export async function down(knex) {
   });
 
   // Revert mst_departemen foreign key
-  try {
-    await knex.schema.alterTable("mst_departemen", (table) => {
-      table.dropForeign("id_cabang", "mst_departemen_id_cabang_foreign");
-    });
-  } catch (e) {}
+  await dropFkIfExists("mst_departemen", "mst_departemen_id_cabang_foreign");
   await knex.schema.alterTable("mst_departemen", (table) => {
     table
       .foreign("id_cabang", "mst_departments_divisionid_foreign")

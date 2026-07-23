@@ -98,6 +98,11 @@ const archiveDocumentItems = [
     to: "/edms/archive_document",
   },
   {
+    label: "Pencarian OCR & Teks",
+    icon: "pi pi-fw pi-search-plus",
+    to: "/edms/archive_document/search",
+  },
+  {
     label: "Peminjaman Arsip",
     icon: "pi pi-fw pi-share-alt",
     to: "/edms/archive_loan",

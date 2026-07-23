@@ -22,7 +22,6 @@ router.post("/get_data", async (req, res) => {
       )
       .whereNot("mst_divisi.status", "deleted");
 
-    console.log("division_get headers:", req.headers);
 
     if (req.headers["x-filter-cabang"]) {
       query = query
