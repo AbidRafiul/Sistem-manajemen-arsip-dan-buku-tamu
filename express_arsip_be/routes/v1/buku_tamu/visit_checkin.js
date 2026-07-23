@@ -301,7 +301,42 @@ router.post(
             .first();
 
           if (oHost && oHost.telepon) {
-            const waPesan = `Halo Bpk/Ibu ${oHost.nama_lengkap},\n\nAda tamu yang sedang menunggu Anda di Lobi.\n\nNama Tamu: ${GuestName}\nInstansi: ${GuestCompany || '-'}\nKeperluan: ${visitPurposeName || '-'}\nCatatan: ${VisitNotes || '-'}\n\nSilakan segera menemui tamu tersebut. Terima kasih.`;
+            let openingMsg = "Ada tamu yang sedang menunggu Anda di Lobi";
+            let closingMsg = "Silakan segera menemui tamu tersebut. Terima kasih.";
+
+            const lowerPurpose = (visitPurposeName || "").toLowerCase();
+
+            if (lowerPurpose.includes("meeting")) {
+              openingMsg = "Ada tamu untuk jadwal Meeting yang sedang menunggu Anda di Lobi";
+              closingMsg = "Silakan persiapkan ruangan dan segera menemui tamu tersebut. Terima kasih.";
+            } else if (lowerPurpose.includes("pengiriman")) {
+              openingMsg = "Ada kurir/pengirim barang yang menunggu Anda di Lobi";
+              closingMsg = "Silakan segera menuju lobi untuk menerima kiriman tersebut. Terima kasih.";
+            } else if (lowerPurpose.includes("interview") || lowerPurpose.includes("wawancara")) {
+              openingMsg = "Kandidat untuk sesi Interview/Wawancara telah hadir di Lobi";
+              closingMsg = "Silakan segera menemui kandidat atau mengarahkannya ke ruangan yang telah disiapkan. Terima kasih.";
+            } else if (lowerPurpose.includes("perbaikan") || lowerPurpose.includes("maintenance")) {
+              openingMsg = "Tim perbaikan/maintenance telah tiba di Lobi";
+              closingMsg = "Silakan temui dan arahkan tim ke lokasi perbaikan. Terima kasih.";
+            } else if (lowerPurpose.includes("audit") || lowerPurpose.includes("pemeriksaan")) {
+              openingMsg = "Tim audit/pemeriksaan telah hadir di Lobi";
+              closingMsg = "Silakan segera menyambut tim audit. Terima kasih.";
+            } else if (lowerPurpose.includes("konsultasi")) {
+              openingMsg = "Ada tamu untuk sesi Konsultasi yang sedang menunggu Anda di Lobi";
+              closingMsg = "Silakan segera menemui tamu tersebut. Terima kasih.";
+            }
+
+            const waPesan = `Halo Bpk/Ibu ${oHost.nama_lengkap},
+
+${openingMsg} pada waktu ${formatDateSystem()}.
+
+Data Tamu:
+- Nama: ${GuestName}
+- Instansi: ${GuestCompany || '-'}
+- Keperluan: ${visitPurposeName || '-'}
+- Catatan: ${VisitNotes || '-'}
+
+${closingMsg}`;
             sendWhatsAppMessage(oHost.telepon, waPesan);
           }
         } catch (waErr) {

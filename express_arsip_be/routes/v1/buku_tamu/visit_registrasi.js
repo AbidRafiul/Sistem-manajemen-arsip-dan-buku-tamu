@@ -6,6 +6,7 @@ import { Logging, validatePayload, generateDailyVisitCode } from "../components/
 import DB from "../../../core/config/knex.js";
 import { uploadFileToMinio, getMinioPrefix, MINIO_BUCKET_NAME } from "../../../core/components/tools/minio_helper.js";
 import { sendMailNotification } from "../../../core/components/tools/mail_helper.js";
+import { sendWhatsAppMessage } from "../../../core/components/tools/wa_helper.js";
 
 const cBucket = MINIO_BUCKET_NAME;
 
@@ -307,6 +308,51 @@ router.post(
             kode_kunjungan: VisitCode,
             catatan_kunjungan: VisitNotes || "-"
           });
+
+          // --- Kirim Notifikasi WA Ganda ---
+          const GuestPhone = oPayload.PhoneNumber || PhoneNumber;
+          if (GuestPhone) {
+            const waTamu = `Halo ${GuestName},
+
+Pendaftaran rencana kunjungan Anda berhasil dikonfirmasi.
+
+Detail Kunjungan:
+- Kode Booking: *${VisitCode}*
+- Rencana Kedatangan: ${CheckInTime}
+- Tujuan: ${purposeName}
+
+Silakan tunjukkan Kode Booking di atas kepada Resepsionis saat Anda tiba di lokasi. Terima kasih.`;
+            sendWhatsAppMessage(GuestPhone, waTamu);
+          }
+
+          const oHost = await DB("mst_pengguna").select("nama_lengkap", "telepon").where("id_pengguna", resolvedHostUserId).first();
+          if (oHost && oHost.telepon) {
+            let openingMsg = "Ada tamu yang telah mendaftarkan rencana kunjungan kepada Anda";
+            let closingMsg = "Silakan bersiap untuk menerima tamu tersebut pada jadwal yang ditentukan.";
+
+            const lowerPurpose = (purposeName || "").toLowerCase();
+
+            if (lowerPurpose.includes("meeting")) {
+              openingMsg = "Ada tamu yang menjadwalkan sesi Meeting dengan Anda";
+              closingMsg = "Silakan persiapkan ruangan dan jadwal Anda.";
+            } else if (lowerPurpose.includes("interview") || lowerPurpose.includes("wawancara")) {
+              openingMsg = "Seorang kandidat telah mendaftar untuk sesi Interview/Wawancara dengan Anda";
+            }
+
+            const waHost = `Halo Bpk/Ibu ${oHost.nama_lengkap},
+
+${openingMsg}.
+
+Data Rencana Kunjungan:
+- Nama Tamu: ${GuestName}
+- Instansi: ${GuestCompany || '-'}
+- Waktu Kedatangan: ${CheckInTime}
+- Keperluan: ${purposeName}
+- Catatan: ${VisitNotes || '-'}
+
+${closingMsg} Terima kasih.`;
+            sendWhatsAppMessage(oHost.telepon, waHost);
+          }
         }
       } catch (e) {
         Logging(e, {
