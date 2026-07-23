@@ -5,7 +5,7 @@ import {
   formatDateSystem,
   status,
 } from "../../components/tools/general.js";
-import { Logging } from "../../components/tools/servertool.js";
+import { Logging, getDescendantBranchIds } from "../../components/tools/servertool.js";
 
 const router = express.Router();
 
@@ -42,7 +42,13 @@ router.post("/", async (req, res) => {
       );
 
     if (req.headers["x-filter-cabang"]) {
-      query = query.whereIn("mu.id_cabang", req.headers["x-filter-cabang"].split(","));
+      const parentBranchIds = req.headers["x-filter-cabang"].split(",").map(Number);
+      let allBranchIds = [];
+      for (const bId of parentBranchIds) {
+        const descendantIds = await getDescendantBranchIds(DB, bId);
+        allBranchIds = allBranchIds.concat(descendantIds);
+      }
+      query = query.whereIn("mu.id_cabang", allBranchIds);
     }
     if (req.headers["x-filter-departemen"]) {
       query = query.where("mu.id_departemen", req.headers["x-filter-departemen"]);

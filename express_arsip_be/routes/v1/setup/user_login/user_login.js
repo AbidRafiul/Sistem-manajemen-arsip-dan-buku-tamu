@@ -3,6 +3,9 @@ import DB from "../../../../core/config/knex.js";
 import { status, formatDateSystem, datetime } from "../../components/tools/general.js";
 import { Logging, validatePayload } from "../../components/tools/servertool.js";
 import Joi from "joi";
+import crypto from "crypto";
+
+const hmac = (data, secret, algorithm = 'sha512') => crypto.createHmac(algorithm, secret).update(data).digest('hex');
 
 const router = express.Router();
 

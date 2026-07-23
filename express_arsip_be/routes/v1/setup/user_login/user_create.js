@@ -125,9 +125,9 @@ router.post("/", async (req, res) => {
     }
 
     const cPeranCode = req?.auth?.peranCode;
-    if (cPeranCode !== "SA") {
+    if (cPeranCode !== "SUPERADMIN") {
       // Cegah pembuatan user dengan role SUPERADMIN jika bukan SA
-      if (peranData.kode_peran === "SUPERADMIN" || peranData.kode_peran === "SA") {
+      if (peranData.kode_peran === "SUPERADMIN") {
         return res.status(403).json({
           status: status.FORBIDDEN,
           message: "Anda tidak memiliki izin untuk memberikan peran Superadmin",
@@ -221,7 +221,7 @@ router.post("/", async (req, res) => {
       func: "create",
       request: oPayload,
       response: oResult,
-      user: nama_pengguna,
+      user: cNamaPengguna,
     });
     return res.status(500).json(oResult);
   }
