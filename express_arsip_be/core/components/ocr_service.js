@@ -1,13 +1,28 @@
 import fs from "fs";
 import path from "path";
 import DB from "../config/knex.js";
-import { createWorker } from "tesseract.js";
 import { PDFParse } from "pdf-parse";
 import { downloadFileFromMinio } from "./tools/minio_helper.js";
 
 /**
  * Robust OCR & Text Extraction Service with MinIO support
  */
+
+let createWorkerLoader = null;
+
+const getCreateWorker = async () => {
+  if (!createWorkerLoader) {
+    createWorkerLoader = import("tesseract.js")
+      .then((module) => module.createWorker)
+      .catch((error) => {
+        throw new Error(
+          `Dependency tesseract.js belum tersedia: ${error.message}`
+        );
+      });
+  }
+
+  return createWorkerLoader;
+};
 
 /**
  * Retrieves file buffer from MinIO storage or local disk fallback
@@ -67,6 +82,7 @@ export const extractTextFromPDF = async (fileBuffer) => {
 export const ocrFromImage = async (fileBuffer, lang = "eng") => {
   let worker = null;
   try {
+    const createWorker = await getCreateWorker();
     worker = await createWorker(lang);
     const ret = await worker.recognize(fileBuffer);
     await worker.terminate();

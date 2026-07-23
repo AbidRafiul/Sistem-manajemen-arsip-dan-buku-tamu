@@ -93,12 +93,23 @@ export async function seed(knex) {
       updated_at: dNow
     },
     {
+      kode_menu: "MN_JENIS_SURAT",
+      nama_menu: "Jenis Surat",
+      id_menu_induk: idMasterArsip,
+      jalur_menu: "/master/korespondensi/letter_types",
+      ikon_menu: "pi pi-fw pi-envelope",
+      urutan: 4,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow
+    },
+    {
       kode_menu: "MN_JADWAL_RETENSI",
       nama_menu: "Jadwal Retensi",
       id_menu_induk: idMasterArsip,
       jalur_menu: "/master/arsip/retention_schedules",
       ikon_menu: "pi pi-fw pi-calendar",
-      urutan: 4,
+      urutan: 5,
       status_aktif: 1,
       created_at: dNow,
       updated_at: dNow
@@ -144,6 +155,7 @@ export async function seed(knex) {
   const idKlasifikasiMenu = insertedMenuIds.find(item => item.kode === "MN_KLASIFIKASI_ARSIP").id;
   const idKategoriMenu = insertedMenuIds.find(item => item.kode === "MN_KATEGORI_DOKUMEN").id;
   const idJenisMenu = insertedMenuIds.find(item => item.kode === "MN_JENIS_DOKUMEN").id;
+  const idJenisSuratMenu = insertedMenuIds.find(item => item.kode === "MN_JENIS_SURAT").id;
   const idJadwalMenu = insertedMenuIds.find(item => item.kode === "MN_JADWAL_RETENSI").id;
   const idPemusnahanMenu = insertedMenuIds.find(item => item.kode === "MN_PEMUSNAHAN_ARSIP").id;
 
@@ -177,18 +189,22 @@ export async function seed(knex) {
 
   // SUPERADMIN & ADM (Akses Penuh)
   if (superadminRole) {
+    await grant(superadminRole.id_peran, idMasterData, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(superadminRole.id_peran, idMasterArsip, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(superadminRole.id_peran, idKlasifikasiMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(superadminRole.id_peran, idKategoriMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(superadminRole.id_peran, idJenisMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
+    await grant(superadminRole.id_peran, idJenisSuratMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(superadminRole.id_peran, idJadwalMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(superadminRole.id_peran, idPemusnahanMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
   }
   if (admRole) {
+    await grant(admRole.id_peran, idMasterData, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(admRole.id_peran, idMasterArsip, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(admRole.id_peran, idKlasifikasiMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(admRole.id_peran, idKategoriMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(admRole.id_peran, idJenisMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
+    await grant(admRole.id_peran, idJenisSuratMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(admRole.id_peran, idJadwalMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(admRole.id_peran, idPemusnahanMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
   }
@@ -200,10 +216,12 @@ export async function seed(knex) {
 
   // STF_ARS (Staff Arsip - Full Akses ke Master data arsip dan operational pemusnahan)
   if (stfArsRole) {
+    await grant(stfArsRole.id_peran, idMasterData, { view: 1, create: 1, update: 1, delete: 1, approve: 0 });
     await grant(stfArsRole.id_peran, idMasterArsip, { view: 1, create: 1, update: 1, delete: 1, approve: 0 });
     await grant(stfArsRole.id_peran, idKlasifikasiMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 0 });
     await grant(stfArsRole.id_peran, idKategoriMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 0 });
     await grant(stfArsRole.id_peran, idJenisMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 0 });
+    await grant(stfArsRole.id_peran, idJenisSuratMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 0 });
     await grant(stfArsRole.id_peran, idJadwalMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 0 });
     await grant(stfArsRole.id_peran, idPemusnahanMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 0 });
   }

@@ -44,6 +44,7 @@ const outgoingLetterDetail = async (req, res) => {
         "tsk.id_jenis_surat",
         "mjs.jenis_surat_id"
       )
+      .leftJoin("mst_template_surat as mts", "tsk.id_template", "mts.id_template")
       .select(
         "tsk.id_surat_keluar",
         "tsk.nomor_surat",
@@ -56,6 +57,11 @@ const outgoingLetterDetail = async (req, res) => {
         "tsk.tujuan",
         "tsk.instansi_tujuan",
         "tsk.media_pengiriman",
+        "tsk.id_template",
+        "mts.nama_template",
+        "tsk.isi_surat_final",
+        "tsk.nama_pengirim",
+        "tsk.jabatan",
         "tsk.status",
         "tsk.created_by",
         "tsk.updated_by",
