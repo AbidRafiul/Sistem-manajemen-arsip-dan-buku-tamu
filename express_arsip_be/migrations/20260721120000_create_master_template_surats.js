@@ -53,6 +53,7 @@ export async function up(knex) {
     }
 
     try {
+      await knex.raw("SET FOREIGN_KEY_CHECKS=0;");
       await knex.schema.table("trs_surat_keluar", (table) => {
         table
           .foreign("id_template")
@@ -61,7 +62,9 @@ export async function up(knex) {
           .onDelete("SET NULL")
           .onUpdate("CASCADE");
       });
+      await knex.raw("SET FOREIGN_KEY_CHECKS=1;");
     } catch (error) {
+      await knex.raw("SET FOREIGN_KEY_CHECKS=1;");
       if (!String(error).includes("already exists") && !String(error).includes("Duplicate entry")) {
         throw error;
       }
