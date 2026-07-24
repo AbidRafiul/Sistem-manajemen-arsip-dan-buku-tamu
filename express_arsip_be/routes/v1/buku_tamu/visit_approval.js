@@ -81,7 +81,7 @@ Silakan tunjukkan Kode Booking / QR Code Anda kepada petugas resepsionis saat An
           sendWhatsAppMessage(visitData.nomor_telepon, waPesan);
         } else if (action === "rejected") {
           const hasNote = catatanPersetujuan && String(catatanPersetujuan).trim() !== '' && String(catatanPersetujuan).trim() !== '-';
-          const noteText = hasNote ? `\nAlasan / Catatan: ${catatanPersetujuan}\n` : '';
+          const noteText = hasNote ? `\n\nAlasan / Catatan: ${catatanPersetujuan}` : '';
           const waPesan = `Halo Bpk/Ibu ${visitData.nama_tamu},
 
 Mohon maaf, permohonan rencana kunjungan Anda dengan Kode Booking: *${visitData.kode_kunjungan}* DITOLAK.${noteText}
