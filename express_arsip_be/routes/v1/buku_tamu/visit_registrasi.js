@@ -219,8 +219,8 @@ router.post(
         email_tamu: GuestEmail,
         instansi_tamu: GuestCompany,
         jabatan_tamu: GuestPosition,
-        jenis_identitas: IdentityType,
-        nomor_identitas: IdentityNumber,
+        jenis_identitas: IdentityType && IdentityType !== "" ? String(IdentityType).toLowerCase() : null,
+        nomor_identitas: IdentityNumber && IdentityNumber !== "" ? IdentityNumber : null,
         id_tujuan_kunjungan: VisitPurposeId,
         id_user_host: resolvedHostUserId || null,
         nama_host: HostName,
@@ -261,7 +261,7 @@ router.post(
               `${minioPrefix}/buku-tamu/photos/${todayPath}`
             );
           }
-          
+
           await DB("trs_kunjungan_anggota").insert({
             id_kunjungan: idKunjungan,
             nama_anggota: member.name || member.nama_anggota || "",
@@ -345,6 +345,7 @@ ${openingMsg}.
 
 Data Rencana Kunjungan:
 - Nama Tamu: ${GuestName}
+- No. WA Tamu: ${GuestPhone}
 - Instansi: ${GuestCompany || '-'}
 - Waktu Kedatangan: ${CheckInTime}
 - Keperluan: ${purposeName}

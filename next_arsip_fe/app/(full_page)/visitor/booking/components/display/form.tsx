@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
+import { Dialog } from 'primereact/dialog';
+import { FileUpload } from 'primereact/fileupload';
 import Link from 'next/link';
 import { VisitorBookingFormData } from '../interfaces';
 import SignaturePad from '@/app/(main)/buku_tamu/registrasi/components/display/SignaturePad';
@@ -48,6 +50,89 @@ export default function VisitorBookingForm({
     const fileInputRefIdentity = useRef<HTMLInputElement>(null);
     const fileInputRefSelfie = useRef<HTMLInputElement>(null);
 
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [stream, setStream] = useState<MediaStream | null>(null);
+
+    const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
+    const [identityPreview, setIdentityPreview] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (selfieFile) {
+            const objectUrl = URL.createObjectURL(selfieFile);
+            setSelfiePreview(objectUrl);
+            return () => URL.revokeObjectURL(objectUrl);
+        } else {
+            setSelfiePreview(null);
+        }
+    }, [selfieFile]);
+
+    useEffect(() => {
+        if (identityFile) {
+            const objectUrl = URL.createObjectURL(identityFile);
+            setIdentityPreview(objectUrl);
+            return () => URL.revokeObjectURL(objectUrl);
+        } else {
+            setIdentityPreview(null);
+        }
+    }, [identityFile]);
+
+    const openCamera = async () => {
+        setIsCameraOpen(true);
+        setTimeout(async () => {
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    alert("Kamera tidak didukung di browser ini.");
+                    setIsCameraOpen(false);
+                    return;
+                }
+                const mediaStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: 640, height: 480 }
+                });
+                setStream(mediaStream);
+                if (videoRef.current) {
+                    videoRef.current.srcObject = mediaStream;
+                }
+            } catch (err) {
+                console.error("Gagal mengakses kamera:", err);
+                alert("Gagal mengakses kamera. Pastikan izin kamera telah diberikan.");
+                setIsCameraOpen(false);
+            }
+        }, 100);
+    };
+
+    const closeCamera = () => {
+        if (stream) {
+            stream.getTracks().forEach((track) => track.stop());
+            setStream(null);
+        }
+        setIsCameraOpen(false);
+    };
+
+    const capturePhoto = () => {
+        if (videoRef.current) {
+            const video = videoRef.current;
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const file = new File([blob], `selfie_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                        setSelfieFile(file);
+                    }
+                }, 'image/jpeg', 0.95);
+            }
+        }
+        closeCamera();
+    };
+
     return (
         <form onSubmit={handleSubmit} className="flex flex-column gap-4 w-full">
             {styleOverrides()}
@@ -59,9 +144,9 @@ export default function VisitorBookingForm({
                     Profil Pengunjung
                 </div>
 
-                <div className="grid row-gap-3 col-gap-2">
+                <div className="p-fluid grid">
                     <div className="col-12 field flex flex-column gap-2 mb-0">
-                        <label htmlFor="nama_tamu" className="font-semibold text-xs text-700">Nama Lengkap *</label>
+                        <label htmlFor="nama_tamu" className="font-semibold text-xs text-700">Nama Lengkap <span className="text-red-500">*</span></label>
                         <InputText
                             id="nama_tamu"
                             value={form.nama_tamu}
@@ -72,7 +157,7 @@ export default function VisitorBookingForm({
                     </div>
 
                     <div className="col-12 md:col-6 field flex flex-column gap-2 mb-0">
-                        <label htmlFor="nomor_telepon" className="font-semibold text-xs text-700">Nomor WhatsApp *</label>
+                        <label htmlFor="nomor_telepon" className="font-semibold text-xs text-700">Nomor WhatsApp <span className="text-red-500">*</span></label>
                         <InputText
                             id="nomor_telepon"
                             value={form.nomor_telepon}
@@ -131,75 +216,83 @@ export default function VisitorBookingForm({
                     {/* CUSTOM FILE UPLOAD IDENTITAS */}
                     <div className="col-12 md:col-6 field flex flex-column gap-2 mb-0">
                         <label className="font-semibold text-xs text-700">Foto Identitas (KTP/SIM)</label>
-                        <input
-                            type="file"
-                            ref={fileInputRefIdentity}
-                            onChange={(e) => setIdentityFile(e.target.files?.[0] || null)}
-                            className="hidden"
-                            accept="image/*"
-                        />
-                        <div
-                            onClick={() => fileInputRefIdentity.current?.click()}
-                            className="border-dashed border-2 border-300 border-round-xl p-3 flex flex-column align-items-center justify-content-center cursor-pointer hover:border-primary hover:bg-indigo-50 transition-all transition-duration-200"
-                            style={{ minHeight: '100px', background: '#f8fafc' }}
-                        >
-                            {identityFile ? (
-                                <div className="flex align-items-center gap-2 text-sm text-green-600 font-semibold w-full px-2">
-                                    <i className="pi pi-id-card text-2xl text-green-500" />
-                                    <span className="truncate flex-1 text-xs">{identityFile.name}</span>
-                                    <i
-                                        className="pi pi-times-circle text-base text-500 hover:text-red-500 ml-2"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setIdentityFile(null);
-                                            if (fileInputRefIdentity.current) fileInputRefIdentity.current.value = '';
-                                        }}
-                                    />
-                                </div>
-                            ) : (
-                                <>
-                                    <i className="pi pi-upload text-xl text-500 mb-1" />
-                                    <span className="text-xs text-600 font-medium">Pilih / Unggah KTP/SIM</span>
-                                </>
-                            )}
-                        </div>
+                        {identityPreview ? (
+                            <div className="flex flex-column align-items-center gap-2 p-3 surface-50 border-round-xl border-1 border-200" style={{ minHeight: '100px' }}>
+                                <img 
+                                    src={identityPreview} 
+                                    alt="Identity Preview" 
+                                    className="border-round-lg shadow-2"
+                                    style={{ maxWidth: '100%', maxHeight: '100px', objectFit: 'contain' }}
+                                />
+                                <Button 
+                                    type="button" 
+                                    label="Hapus Identitas" 
+                                    icon="pi pi-trash" 
+                                    className="p-button-danger p-button-text p-button-xs mt-1"
+                                    onClick={() => setIdentityFile(null)}
+                                />
+                            </div>
+                        ) : (
+                            <FileUpload 
+                                mode="basic" 
+                                accept="image/*" 
+                                maxFileSize={2000000} 
+                                onSelect={(e) => setIdentityFile(e.files[0])} 
+                                chooseLabel="Pilih Foto ID" 
+                                className="w-full text-sm" 
+                            />
+                        )}
                     </div>
 
                     {/* CUSTOM FILE UPLOAD SELFIE */}
                     <div className="col-12 md:col-6 field flex flex-column gap-2 mb-0">
                         <label className="font-semibold text-xs text-700">Foto Selfie Tamu</label>
-                        <input
-                            type="file"
-                            ref={fileInputRefSelfie}
-                            onChange={(e) => setSelfieFile(e.target.files?.[0] || null)}
-                            className="hidden"
-                            accept="image/*"
-                        />
-                        <div
-                            onClick={() => fileInputRefSelfie.current?.click()}
-                            className="border-dashed border-2 border-300 border-round-xl p-3 flex flex-column align-items-center justify-content-center cursor-pointer hover:border-primary hover:bg-indigo-50 transition-all transition-duration-200"
-                            style={{ minHeight: '100px', background: '#f8fafc' }}
-                        >
-                            {selfieFile ? (
-                                <div className="flex align-items-center gap-2 text-sm text-green-600 font-semibold w-full px-2">
-                                    <i className="pi pi-camera text-2xl text-green-500" />
-                                    <span className="truncate flex-1 text-xs">{selfieFile.name}</span>
-                                    <i
-                                        className="pi pi-times-circle text-base text-500 hover:text-red-500 ml-2"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setSelfieFile(null);
-                                            if (fileInputRefSelfie.current) fileInputRefSelfie.current.value = '';
-                                        }}
+                        {selfiePreview ? (
+                            <div className="flex flex-column align-items-center gap-2 p-3 surface-50 border-round-xl border-1 border-200" style={{ minHeight: '100px' }}>
+                                <img 
+                                    src={selfiePreview} 
+                                    alt="Selfie Preview" 
+                                    className="border-round-lg shadow-2"
+                                    style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                                />
+                                <div className="flex gap-2 mt-1">
+                                    <Button 
+                                        type="button" 
+                                        label="Hapus Foto" 
+                                        icon="pi pi-trash" 
+                                        className="p-button-danger p-button-text p-button-xs"
+                                        onClick={() => setSelfieFile(null)}
+                                    />
+                                    <Button 
+                                        type="button" 
+                                        label="Ambil Ulang" 
+                                        icon="pi pi-refresh" 
+                                        className="p-button-secondary p-button-text p-button-xs"
+                                        onClick={openCamera}
                                     />
                                 </div>
-                            ) : (
-                                <>
-                                    <i className="pi pi-camera text-xl text-500 mb-1" />
-                                    <span className="text-xs text-600 font-medium">Ambil / Unggah Selfie</span>
-                                </>
-                            )}
-                        </div>
+                            </div>
+                        ) : (
+                            <div className="flex flex-column sm:flex-row gap-2">
+                                <Button 
+                                    type="button" 
+                                    label="Ambil Foto Live (Kamera)" 
+                                    icon="pi pi-camera" 
+                                    className="p-button-outlined p-button-primary flex-1 p-button-sm py-2"
+                                    onClick={openCamera}
+                                />
+                                <div className="flex-1 relative">
+                                    <FileUpload 
+                                        mode="basic" 
+                                        accept="image/*" 
+                                        maxFileSize={2000000} 
+                                        onSelect={(e) => setSelfieFile(e.files[0])} 
+                                        chooseLabel="Unggah File Foto" 
+                                        className="w-full text-sm p-button-sm" 
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
                     {/* CANVAS SIGNATURE */}
                     <div className="col-12 field flex flex-column gap-2 mb-0 mt-2">
@@ -215,9 +308,9 @@ export default function VisitorBookingForm({
                     Detail Kunjungan
                 </div>
 
-                <div className="grid row-gap-3 col-gap-2">
+                <div className="p-fluid grid">
                     <div className="col-12 field flex flex-column gap-2 mb-0">
-                        <label htmlFor="id_cabang" className="font-semibold text-xs text-700">Kantor / Cabang Tujuan *</label>
+                        <label htmlFor="id_cabang" className="font-semibold text-xs text-700">Kantor / Cabang Tujuan <span className="text-red-500">*</span></label>
                         <Dropdown
                             id="id_cabang"
                             value={form.id_cabang}
@@ -233,7 +326,7 @@ export default function VisitorBookingForm({
                     </div>
 
                     <div className="col-12 field flex flex-column gap-2 mb-0">
-                        <label htmlFor="id_tujuan_kunjungan" className="font-semibold text-xs text-700">Tujuan Kunjungan *</label>
+                        <label htmlFor="id_tujuan_kunjungan" className="font-semibold text-xs text-700">Tujuan Kunjungan <span className="text-red-500">*</span></label>
                         <Dropdown
                             id="id_tujuan_kunjungan"
                             value={form.id_tujuan_kunjungan}
@@ -247,7 +340,7 @@ export default function VisitorBookingForm({
                     </div>
 
                     <div className="col-12 md:col-6 field flex flex-column gap-2 mb-0">
-                        <label htmlFor="visit_type" className="font-semibold text-xs text-700">Tipe Kunjungan *</label>
+                        <label htmlFor="visit_type" className="font-semibold text-xs text-700">Tipe Kunjungan <span className="text-red-500">*</span></label>
                         <Dropdown
                             id="visit_type"
                             value={form.visit_type || 'personal'}
@@ -311,7 +404,7 @@ export default function VisitorBookingForm({
                                             }}
                                         />
                                     </div>
-                                    <div className="grid row-gap-2">
+                                    <div className="p-fluid grid">
                                         <div className="col-12 md:col-4 field m-0 flex flex-column gap-1">
                                             <label className="text-xs font-semibold text-700">Nama Lengkap</label>
                                             <InputText
@@ -418,16 +511,23 @@ export default function VisitorBookingForm({
                     </div>
 
                     <div className="col-12 field flex flex-column gap-2 mb-0">
-                        <label htmlFor="waktu_masuk" className="font-semibold text-xs text-700">Rencana Waktu Kedatangan *</label>
-                        <Calendar
+                        <label htmlFor="waktu_masuk" className="font-semibold text-xs text-700">Rencana Waktu Kedatangan <span className="text-red-500">*</span></label>
+                        <input
+                            type="datetime-local"
                             id="waktu_masuk"
-                            value={form.waktu_masuk}
-                            onChange={(e) => handleChange('waktu_masuk', e.value)}
-                            showTime
-                            hourFormat="24"
-                            placeholder="Pilih tanggal dan jam kedatangan"
-                            showIcon
-                            className="w-full"
+                            value={form.waktu_masuk instanceof Date ? new Date(form.waktu_masuk.getTime() - form.waktu_masuk.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                handleChange('waktu_masuk', val ? new Date(val) : undefined);
+                            }}
+                            className="p-inputtext p-component w-full"
+                            style={{ 
+                                padding: '0.5rem 0.75rem', 
+                                borderRadius: '6px', 
+                                border: '1px solid #ced4da',
+                                minHeight: '39px',
+                                fontSize: '0.875rem'
+                            }}
                         />
                     </div>
 
@@ -463,6 +563,53 @@ export default function VisitorBookingForm({
                     style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', border: 'none', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)' }}
                 />
             </div>
+            <Dialog
+                header={
+                    <div className="flex align-items-center gap-2">
+                        <i className="pi pi-camera text-primary text-xl" />
+                        <span className="font-bold text-900">Kamera Selfie Live</span>
+                    </div>
+                }
+                visible={isCameraOpen}
+                modal
+                style={{ width: '95vw', maxWidth: '480px' }}
+                onHide={closeCamera}
+                className="border-round-2xl overflow-hidden"
+                pt={{
+                    root: { className: 'border-round-2xl shadow-6' },
+                    header: { className: 'surface-50 border-bottom-1 surface-border py-3 px-4' },
+                    content: { className: 'p-4 flex flex-column align-items-center' }
+                }}
+            >
+                <div className="relative w-full aspect-video border-round-xl overflow-hidden bg-black shadow-inner mb-4">
+                    <video 
+                        ref={videoRef} 
+                        autoPlay 
+                        playsInline 
+                        muted
+                        className="w-full h-full object-cover"
+                        style={{ transform: 'scaleX(-1)' }}
+                    />
+                </div>
+                
+                <div className="flex gap-3 w-full">
+                    <Button 
+                        type="button" 
+                        label="Batal" 
+                        icon="pi pi-times" 
+                        className="p-button-outlined p-button-secondary flex-1 py-2 font-semibold text-sm border-round-lg"
+                        onClick={closeCamera}
+                    />
+                    <Button 
+                        type="button" 
+                        label="Ambil Foto" 
+                        icon="pi pi-camera" 
+                        className="flex-1 py-2 font-semibold text-sm border-round-lg text-white" 
+                        style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', border: 'none' }}
+                        onClick={capturePhoto}
+                    />
+                </div>
+            </Dialog>
         </form>
     );
 }
@@ -470,44 +617,9 @@ export default function VisitorBookingForm({
 function styleOverrides() {
     return (
         <style jsx global>{`
-            .p-inputtext:focus, 
-            .p-dropdown:not(.p-disabled).p-focus, 
-            .p-calendar:not(.p-disabled).p-focus .p-inputtext {
-                border-color: #6366f1 !important;
-                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
-            }
-            .p-inputtext, 
-            .p-dropdown, 
-            .p-calendar .p-inputtext {
-                transition: all 0.25s ease-in-out !important;
-                border-radius: 8px !important;
-                border: 1.5px solid #cbd5e1 !important;
-                padding: 0.75rem 1rem !important;
-            }
-            .p-dropdown .p-dropdown-label {
-                padding: 0 !important;
-            }
             .p-calendar.p-inputwrapper {
                 display: flex;
                 position: relative;
-            }
-            .p-calendar.p-inputwrapper .p-inputtext {
-                border-top-right-radius: 0 !important;
-                border-bottom-right-radius: 0 !important;
-                border-right: none !important;
-            }
-            .p-calendar.p-inputwrapper .p-datepicker-trigger {
-                border-top-left-radius: 0 !important;
-                border-bottom-left-radius: 0 !important;
-                background: #6366f1 !important;
-                color: #ffffff !important;
-                border: 1.5px solid #6366f1 !important;
-                padding: 0 1.25rem !important;
-                border-top-right-radius: 8px !important;
-                border-bottom-right-radius: 8px !important;
-            }
-            .p-calendar.p-inputwrapper .p-datepicker-trigger:hover {
-                background: #4f46e5 !important;
             }
             .custom-section-title {
                 font-size: 0.875rem;

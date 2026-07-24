@@ -6,10 +6,27 @@ const findMasterArsip = async (knex) => {
   const byCode = await knex("mst_menu").where("kode_menu", "MN_MASTER_ARSIP").first();
   if (byCode) return byCode;
 
-  return await knex("mst_menu")
+  const byName = await knex("mst_menu")
     .where("nama_menu", "like", "%Master Arsip%")
     .orWhere("nama_menu", "like", "%Master%Arsip%")
     .first();
+  if (byName) return byName;
+
+  const masterData = await knex("mst_menu").where("kode_menu", "MASTER_DATA").first();
+  const idMasterData = masterData ? masterData.id_menu : null;
+
+  const [insertedId] = await knex("mst_menu").insert({
+    id_menu_induk: idMasterData,
+    kode_menu: "MN_MASTER_ARSIP",
+    nama_menu: "Master Arsip",
+    ikon_menu: "pi pi-fw pi-folder",
+    urutan: 3,
+    status_aktif: 1,
+    created_at: now(),
+    updated_at: now()
+  });
+
+  return { id_menu: insertedId };
 };
 
 const ensureMenu = async (knex, matcher, payload) => {
@@ -43,11 +60,6 @@ const grantMenuAccess = async (knex, id_menu, roleIds) => {
 
 export async function seed(knex) {
   const parent = await findMasterArsip(knex);
-  if (!parent) {
-    console.warn("Parent 'Master Arsip' not found — skipping Template Surat menu seed.");
-    return;
-  }
-
   const idMasterArsip = parent.id_menu;
 
   const idTemplateMenu = await ensureMenu(

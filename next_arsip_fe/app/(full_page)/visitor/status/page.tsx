@@ -102,34 +102,87 @@ export default function VisitorStatusPage() {
     };
 
     return (
-        <div className="flex flex-column align-items-center justify-content-center min-h-screen py-6 px-3" style={{ background: 'linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%)' }}>
+        <div 
+            className="flex flex-column align-items-center justify-content-center min-h-screen py-6 px-3 relative overflow-hidden" 
+            style={{ 
+                background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #0f172a 100%)',
+                color: '#334155'
+            }}
+        >
+            {/* Ambient glowing background spheres */}
+            <div 
+                className="absolute border-circle pointer-events-none opacity-20 filter blur-3xl"
+                style={{
+                    width: '400px',
+                    height: '400px',
+                    background: 'radial-gradient(circle, #6366f1 0%, transparent 70%)',
+                    top: '-100px',
+                    right: '-100px'
+                }}
+            />
+            <div 
+                className="absolute border-circle pointer-events-none opacity-20 filter blur-3xl"
+                style={{
+                    width: '350px',
+                    height: '350px',
+                    background: 'radial-gradient(circle, #3b82f6 0%, transparent 70%)',
+                    bottom: '-80px',
+                    left: '-80px'
+                }}
+            />
+
             {styleOverrides()}
             
-            <div className="w-full flex flex-column gap-4" style={{ maxWidth: '480px' }}>
+            <div className="w-full flex flex-column gap-4 relative z-1" style={{ maxWidth: '460px' }}>
+
+                {/* BRAND LOGO HEADER */}
+                <div className="flex flex-column align-items-center text-center mb-1">
+                    <div className="flex align-items-center gap-2 mb-1">
+                        <div 
+                            className="flex align-items-center justify-content-center border-round-xl shadow-4"
+                            style={{ 
+                                width: '42px', 
+                                height: '42px', 
+                                background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                                boxShadow: '0 8px 20px rgba(99, 102, 241, 0.35)'
+                            }}
+                        >
+                            <i className="pi pi-shield text-xl text-white font-bold" />
+                        </div>
+                        <span className="font-black text-2xl tracking-wide text-white" style={{ letterSpacing: '0.05em' }}>ARSIPKU</span>
+                    </div>
+                    <span className="text-xs uppercase font-bold tracking-widest text-indigo-200 opacity-80" style={{ letterSpacing: '0.15em' }}>Sistem Manajemen Buku Tamu</span>
+                </div>
 
                 {/* SEARCH CARD */}
-                <div className="w-full bg-white border-round-2xl shadow-3 overflow-hidden">
+                <div 
+                    className="w-full bg-white border-round-2xl shadow-6 overflow-hidden transition-all transition-duration-200"
+                    style={{ boxShadow: '0 20px 40px rgba(0, 0, 0, 0.25)' }}
+                >
                     {/* Header */}
-                    <div className="p-4 text-center text-white" style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)' }}>
-                        <div className="inline-flex align-items-center justify-content-center border-circle mb-2" style={{ background: 'rgba(255, 255, 255, 0.15)', width: '50px', height: '50px' }}>
+                    <div 
+                        className="p-4 text-center text-white relative overflow-hidden" 
+                        style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)' }}
+                    >
+                        <div className="inline-flex align-items-center justify-content-center border-circle mb-2 shadow-2" style={{ background: 'rgba(255, 255, 255, 0.12)', width: '50px', height: '50px' }}>
                             <i className="pi pi-search text-xl text-white" />
                         </div>
-                        <h2 className="m-0 text-xl font-bold text-white">Cek Status Kunjungan</h2>
-                        <p className="m-0 mt-1 text-xs" style={{ color: '#cbd5e1' }}>Masukkan kode booking Anda untuk melacak status kunjungan</p>
+                        <h2 className="m-0 text-xl font-extrabold text-white tracking-tight">Cek Status Kunjungan</h2>
+                        <p className="m-0 mt-1 text-xs text-indigo-200 line-height-3">Masukkan kode booking Anda untuk melacak status kunjungan</p>
                     </div>
 
                     {/* Form Input */}
-                    <div className="p-4">
+                    <div className="p-4 bg-white">
                         <form onSubmit={handleSearch} className="flex flex-column gap-3">
                             <div className="field flex flex-column gap-2 mb-0">
-                                <label htmlFor="visit_code" className="font-semibold text-xs text-700">Kode Kunjungan / Booking</label>
+                                <label htmlFor="visit_code" className="font-bold text-xs uppercase tracking-wider text-700">Kode Kunjungan / Booking</label>
                                 <div className="flex gap-2">
                                     <InputText
                                         id="visit_code"
                                         value={visitCode}
                                         onChange={(e) => setVisitCode(e.target.value)}
-                                        placeholder="Contoh: TAMU202607010001"
-                                        className="flex-1"
+                                        placeholder="Contoh: 21072026-0001"
+                                        className="flex-1 text-sm font-semibold"
                                         disabled={loading}
                                     />
                                     <Button 
@@ -137,17 +190,21 @@ export default function VisitorStatusPage() {
                                         icon="pi pi-search" 
                                         type="submit" 
                                         loading={loading} 
-                                        className="font-bold border-round-lg px-4 text-sm text-white"
-                                        style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', border: 'none' }}
+                                        className="font-bold border-round-xl px-4 text-sm text-white transition-all transition-duration-150"
+                                        style={{ 
+                                            background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', 
+                                            border: 'none',
+                                            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.35)'
+                                        }}
                                     />
                                 </div>
                             </div>
                         </form>
 
                         {errorMsg && (
-                            <div className="p-3 bg-red-50 text-red-700 border-round-lg mt-3 border-1 border-red-200 text-xs flex gap-2 align-items-center">
-                                <i className="pi pi-exclamation-triangle" />
-                                <span>{errorMsg}</span>
+                            <div className="p-3 bg-red-50 text-red-700 border-round-xl mt-3 border-1 border-red-200 text-xs flex gap-2 align-items-center shadow-1">
+                                <i className="pi pi-exclamation-triangle text-base text-red-500" />
+                                <span className="font-semibold">{errorMsg}</span>
                             </div>
                         )}
                     </div>
@@ -155,7 +212,7 @@ export default function VisitorStatusPage() {
 
                 {/* DIGITAL BOARDING PASS CARD (RESULTS) */}
                 {bookingData && (
-                    <div className="ticket-card animate-fade-in">
+                    <div className="ticket-card animate-fade-in shadow-6">
                         {/* Ticket Header status */}
                         <div className="ticket-header-status" style={{ 
                             background: bookingData.status_persetujuan?.toLowerCase() === 'approved' 
@@ -167,11 +224,11 @@ export default function VisitorStatusPage() {
                         }}>
                             <div className="text-center">
                                 <span className="text-xs text-white-alpha-80 font-bold uppercase tracking-wider block mb-1">Status Kunjungan</span>
-                                <h3 className="m-0 text-lg font-bold text-white uppercase tracking-wide">
+                                <h3 className="m-0 text-lg font-black text-white uppercase tracking-wide">
                                     {bookingData.status_persetujuan?.toLowerCase() === 'approved' 
-                                        ? 'DISETUJUI / APPROVED' 
+                                        ? 'DISETUJUI' 
                                         : bookingData.status_persetujuan?.toLowerCase() === 'rejected'
-                                        ? 'DITOLAK / REJECTED'
+                                        ? 'DITOLAK'
                                         : 'MENUNGGU PERSETUJUAN'}
                                 </h3>
                             </div>
@@ -180,7 +237,7 @@ export default function VisitorStatusPage() {
                         {/* Ticket Body */}
                         <div className="ticket-body">
                             {/* Visitor Info */}
-                            <div className="px-2">
+                            <div className="px-1">
                                 <div className="ticket-detail-row">
                                     <span className="ticket-detail-label">Nama Tamu</span>
                                     <span className="ticket-detail-value">{bookingData.nama_tamu}</span>
@@ -203,18 +260,18 @@ export default function VisitorStatusPage() {
                                 </div>
                                 <div className="ticket-detail-row">
                                     <span className="ticket-detail-label">Alur Kunjungan</span>
-                                    <span className="ticket-detail-value">
+                                    <span className="ticket-detail-value font-bold text-indigo-600">
                                         {bookingData.status?.toLowerCase() === 'in' 
-                                            ? 'Sedang Berkunjung' 
+                                            ? 'Sedang Berkunjung (In)' 
                                             : bookingData.status?.toLowerCase() === 'out'
-                                            ? 'Selesai (Checked-Out)'
+                                            ? 'Selesai (Out)'
                                             : 'Rencana Kunjungan'}
                                     </span>
                                 </div>
                                 {bookingData.catatan_kunjungan && (
                                     <div className="flex flex-column gap-1 mt-2 pt-2 border-top-1 border-100">
                                         <span className="ticket-detail-label block mb-1">Catatan Keperluan:</span>
-                                        <span className="text-xs text-600 block bg-slate-50 p-2 border-round-lg border-1 border-200 line-height-3 font-medium">
+                                        <span className="text-xs text-700 block bg-slate-50 p-2.5 border-round-xl border-1 border-200 line-height-3 font-medium">
                                             {bookingData.catatan_kunjungan}
                                         </span>
                                     </div>
@@ -225,19 +282,19 @@ export default function VisitorStatusPage() {
                             <div className="ticket-stub-line" />
 
                             {/* QR & Barcode Section */}
-                            <div className="text-center px-2">
+                            <div className="text-center px-1">
                                 {bookingData.status_persetujuan?.toLowerCase() === 'approved' && bookingData.qr_image_url ? (
                                     <div className="flex flex-column align-items-center gap-2">
-                                        <div className="p-3 bg-white border-round-xl border-200 border-1 shadow-1 inline-block">
+                                        <div className="p-3 bg-white border-round-2xl border-200 border-1 shadow-2 inline-block">
                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img src={bookingData.qr_image_url} alt="Akses QR Code" className="w-10rem h-10rem block" />
                                         </div>
-                                        <span className="text-sm font-bold text-800 tracking-widest mt-1 block uppercase">{bookingData.kode_kunjungan}</span>
+                                        <span className="text-base font-black text-900 tracking-widest mt-1 block uppercase" style={{ letterSpacing: '0.1em' }}>{bookingData.kode_kunjungan}</span>
                                         
                                         {/* Simulated Barcode */}
-                                        <div className="flex justify-content-center align-items-center gap-1 my-3 opacity-60 w-full">
+                                        <div className="flex justify-content-center align-items-center gap-1 my-2 opacity-75 w-full">
                                             {[2,1,4,1,3,2,1,4,1,2,3,1,4,2,1,3,2,1,4,1,2,3,1,4].map((width, idx) => (
-                                                <div key={idx} className="bg-900" style={{ width: `${width}px`, height: '35px' }} />
+                                                <div key={idx} className="bg-900" style={{ width: `${width}px`, height: '32px' }} />
                                             ))}
                                         </div>
 
@@ -248,7 +305,7 @@ export default function VisitorStatusPage() {
                                         <Button
                                             label="Unduh QR Code"
                                             icon="pi pi-download"
-                                            className="p-button-outlined p-button-sm border-round-lg font-bold py-3 mt-2 w-full"
+                                            className="p-button-outlined p-button-sm border-round-xl font-bold py-3 mt-2 w-full transition-all transition-duration-150"
                                             style={{ borderColor: '#6366f1', color: '#6366f1' }}
                                             onClick={() => {
                                                 if (bookingData.qr_image_url) {
@@ -285,11 +342,11 @@ export default function VisitorStatusPage() {
                 )}
 
                 {/* Back to Booking Link */}
-                <div className="text-center">
+                <div className="text-center mt-1">
                     <Link href="/visitor/booking" className="no-underline">
-                        <span className="inline-flex align-items-center gap-2 px-4 py-3 border-round-xl text-sm font-semibold text-600 hover:text-900 bg-white shadow-1 border-1 border-200 transition-all transition-duration-150 cursor-pointer">
-                            <i className="pi pi-arrow-left text-xs" />
-                            Kembali ke Form Pendaftaran
+                        <span className="inline-flex align-items-center gap-2 px-4 py-3 border-round-xl text-xs font-bold text-white bg-white-alpha-10 hover:bg-white-alpha-20 border-1 border-white-alpha-20 transition-all transition-duration-150 cursor-pointer shadow-2">
+                            <i className="pi pi-arrow-left text-xs text-indigo-300" />
+                            <span>Kembali ke Form Pendaftaran</span>
                         </span>
                     </Link>
                 </div>
@@ -303,18 +360,19 @@ function styleOverrides() {
         <style jsx global>{`
             .p-inputtext:focus {
                 border-color: #6366f1 !important;
-                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25) !important;
             }
             .p-inputtext {
                 transition: all 0.25s ease-in-out !important;
-                border-radius: 8px !important;
+                border-radius: 12px !important;
                 border: 1.5px solid #cbd5e1 !important;
                 padding: 0.75rem 1rem !important;
+                background: #ffffff !important;
             }
             .ticket-card {
                 background: #ffffff;
-                border-radius: 20px;
-                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+                border-radius: 24px;
+                box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
                 width: 100%;
                 overflow: hidden;
                 border: none;
@@ -327,28 +385,28 @@ function styleOverrides() {
                 padding: 1.5rem;
             }
             .ticket-stub-line {
-                border-top: 2.5px dashed #e2e8f0;
+                border-top: 2.5px dashed #cbd5e1;
                 position: relative;
                 margin: 1.5rem 0;
             }
             .ticket-stub-line::before {
                 content: '';
                 position: absolute;
-                left: -26px;
+                left: -28px;
                 top: -11px;
-                width: 20px;
-                height: 20px;
-                background: #cbd5e1;
+                width: 22px;
+                height: 22px;
+                background: #1e1b4b;
                 border-radius: 50%;
             }
             .ticket-stub-line::after {
                 content: '';
                 position: absolute;
-                right: -26px;
+                right: -28px;
                 top: -11px;
-                width: 20px;
-                height: 20px;
-                background: #cbd5e1;
+                width: 22px;
+                height: 22px;
+                background: #1e1b4b;
                 border-radius: 50%;
             }
             .ticket-detail-row {
@@ -372,7 +430,7 @@ function styleOverrides() {
             @keyframes fadeIn {
                 from {
                     opacity: 0;
-                    transform: translateY(10px);
+                    transform: translateY(12px);
                 }
                 to {
                     opacity: 1;

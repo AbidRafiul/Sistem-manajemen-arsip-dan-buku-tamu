@@ -35,8 +35,36 @@ export default function VisitorCardModal({ visible, onHide, cardData }: TablePro
         >
             {cardData && (
                 <div className="flex flex-column align-items-center text-center">
+                    <style>{`
+                        @media print {
+                            body * {
+                                visibility: hidden;
+                            }
+                            #printable-card-area, #printable-card-area * {
+                                visibility: visible;
+                            }
+                            #printable-card-area {
+                                position: absolute;
+                                left: 50%;
+                                top: 50px;
+                                transform: translateX(-50%);
+                                width: 340px;
+                                box-shadow: none !important;
+                                border: none !important;
+                                background: white !important;
+                                -webkit-print-color-adjust: exact !important;
+                                print-color-adjust: exact !important;
+                            }
+                            /* Hides default browser header/footer margins (URL, Page count) */
+                            @page {
+                                size: auto;
+                                margin: 0;
+                            }
+                        }
+                    `}</style>
                     {/* Visitor Card Container */}
                     <div 
+                        id="printable-card-area"
                         className="w-full border-1 border-300 border-round-2xl overflow-hidden shadow-2 bg-white relative"
                         style={{ maxWidth: '340px' }}
                     >
@@ -83,8 +111,8 @@ export default function VisitorCardModal({ visible, onHide, cardData }: TablePro
 
                         {/* Card Footer */}
                         <div className="py-2.5 px-3 border-top-1 surface-border bg-slate-50 text-xs text-color-secondary flex align-items-center justify-content-center gap-2" style={{ background: '#F8FAFC' }}>
-                            <i className="pi pi-envelope text-blue-500 font-bold" style={{ color: '#3b82f6' }} />
-                            <span className="font-medium text-800">Notifikasi otomatis terkirim ke host (Email)</span>
+                            <i className="pi pi-whatsapp text-emerald-500 font-bold text-base" style={{ color: '#25D366' }} />
+                            <span className="font-medium text-800">Notifikasi otomatis terkirim ke host (WhatsApp)</span>
                         </div>
                     </div>
 

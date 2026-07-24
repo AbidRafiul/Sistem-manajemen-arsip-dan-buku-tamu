@@ -190,28 +190,46 @@ export const validateSignature = async (req, res, next) => {
       }
     }
 
+    // Helper untuk ekspansi cabang beserta seluruh anak-anak cabangnya (Hierarchical Sub-branches)
+    const expandCabangDescendants = (initialIds) => {
+      const expandedSet = new Set(initialIds);
+      let added = true;
+      while (added) {
+        added = false;
+        for (const c of allCabangs) {
+          if (expandedSet.has(c.id_induk) && !expandedSet.has(c.id_cabang)) {
+            expandedSet.add(c.id_cabang);
+            added = true;
+          }
+        }
+      }
+      return Array.from(expandedSet);
+    };
+
     const reqCabang = req.headers['x-filter-cabang'];
 
     if (reqCabang && reqCabang !== 'null' && reqCabang !== 'undefined') {
-      // Terapkan tepat cabang yang dipilih oleh pengguna di BranchSwitcher (Strict Exact Branch Matching)
       const requestedIds = String(reqCabang).split(",").map(id => parseInt(id, 10)).filter(id => !isNaN(id));
-
+      const expandedRequestedIds = expandCabangDescendants(requestedIds);
 
       if (allowedCabangIds) {
         // Jika Admin Daerah, pastikan cabang yang dipilih berada dalam wewenangnya
-        const validIds = requestedIds.filter(id => allowedCabangIds.has(id));
+        const validIds = expandedRequestedIds.filter(id => allowedCabangIds.has(id));
         if (validIds.length > 0) {
           req.headers['x-filter-cabang'] = validIds.join(",");
         } else {
           req.headers['x-filter-cabang'] = Array.from(allowedCabangIds).join(",");
         }
       } else {
-        // Jika Superadmin / Full Access User, gunakan tepat cabang yang dipilih
-        req.headers['x-filter-cabang'] = requestedIds.join(",");
+        // Superadmin / Full Access: gunakan cabang yang dipilih beserta seluruh sub-cabang di bawahnya
+        req.headers['x-filter-cabang'] = expandedRequestedIds.join(",");
       }
     } else {
       if (allowedCabangIds) {
         req.headers['x-filter-cabang'] = Array.from(allowedCabangIds).join(",");
+      } else {
+        // Superadmin tanpa filter cabang spesifik: izinkan seluruh cabang di sistem
+        req.headers['x-filter-cabang'] = allCabangs.map(c => c.id_cabang).join(",");
       }
     }
 

@@ -314,11 +314,36 @@ const Page = () => {
         }}
         className="p-fluid"
       >
-        <form onSubmit={formik.handleSubmit} className="flex flex-column gap-3 mt-3">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            formik.setTouched({
+              nama_penomoran: true,
+              jenis_surat_id: true,
+              format_nomor: true,
+              jumlah_digit: true,
+              nomor_awal: true,
+            });
+            if (Object.keys(formik.errors).length > 0) {
+              showError(toast, Object.values(formik.errors)[0] || 'Harap lengkapi formulir dengan benar');
+              return;
+            }
+            formik.handleSubmit(e);
+          }}
+          className="flex flex-column gap-3 mt-3"
+        >
           <div className="grid">
             <div className="col-12 md:col-6 flex flex-column gap-2">
               <label htmlFor="nama_penomoran" className="font-bold text-sm text-800">Nama Penomoran</label>
-              <InputText id="nama_penomoran" value={formik.values.nama_penomoran} onChange={(e) => formik.setFieldValue('nama_penomoran', e.target.value)} />
+              <InputText
+                id="nama_penomoran"
+                value={formik.values.nama_penomoran}
+                className={formik.touched.nama_penomoran && formik.errors.nama_penomoran ? 'p-invalid' : ''}
+                onChange={(e) => formik.setFieldValue('nama_penomoran', e.target.value)}
+              />
+              {formik.touched.nama_penomoran && formik.errors.nama_penomoran && (
+                <small className="p-error">{formik.errors.nama_penomoran}</small>
+              )}
             </div>
             <div className="col-12 md:col-6 flex flex-column gap-2">
               <label htmlFor="jenis_surat_id" className="font-bold text-sm text-800">Jenis Surat</label>
@@ -328,14 +353,26 @@ const Page = () => {
                 options={letterTypes}
                 optionLabel="nama_jenis_surat"
                 optionValue="jenis_surat_id"
+                className={formik.touched.jenis_surat_id && formik.errors.jenis_surat_id ? 'p-invalid' : ''}
                 onChange={(e) => formik.setFieldValue('jenis_surat_id', e.value)}
                 placeholder="Pilih jenis surat"
                 filter
               />
+              {formik.touched.jenis_surat_id && formik.errors.jenis_surat_id && (
+                <small className="p-error">{formik.errors.jenis_surat_id}</small>
+              )}
             </div>
             <div className="col-12 flex flex-column gap-2">
               <label htmlFor="format_nomor" className="font-bold text-sm text-800">Format Nomor</label>
-              <InputText id="format_nomor" value={formik.values.format_nomor} onChange={(e) => formik.setFieldValue('format_nomor', e.target.value)} />
+              <InputText
+                id="format_nomor"
+                value={formik.values.format_nomor}
+                className={formik.touched.format_nomor && formik.errors.format_nomor ? 'p-invalid' : ''}
+                onChange={(e) => formik.setFieldValue('format_nomor', e.target.value)}
+              />
+              {formik.touched.format_nomor && formik.errors.format_nomor && (
+                <small className="p-error">{formik.errors.format_nomor}</small>
+              )}
               <div className="flex flex-wrap gap-2">
                 {tokens.map((token) => (
                   <Button key={token} type="button" size="small" text label={token} onClick={() => insertToken(token)} />
@@ -344,11 +381,29 @@ const Page = () => {
             </div>
             <div className="col-12 md:col-4 flex flex-column gap-2">
               <label htmlFor="jumlah_digit" className="font-bold text-sm text-800">Jumlah Digit</label>
-              <InputNumber inputId="jumlah_digit" value={formik.values.jumlah_digit} onValueChange={(e) => formik.setFieldValue('jumlah_digit', e.value || 1)} min={1} />
+              <InputNumber
+                inputId="jumlah_digit"
+                value={formik.values.jumlah_digit}
+                className={formik.touched.jumlah_digit && formik.errors.jumlah_digit ? 'p-invalid' : ''}
+                onValueChange={(e) => formik.setFieldValue('jumlah_digit', e.value || 1)}
+                min={1}
+              />
+              {formik.touched.jumlah_digit && formik.errors.jumlah_digit && (
+                <small className="p-error">{formik.errors.jumlah_digit}</small>
+              )}
             </div>
             <div className="col-12 md:col-4 flex flex-column gap-2">
               <label htmlFor="nomor_awal" className="font-bold text-sm text-800">Nomor Awal</label>
-              <InputNumber inputId="nomor_awal" value={formik.values.nomor_awal} onValueChange={(e) => formik.setFieldValue('nomor_awal', e.value || 1)} min={1} />
+              <InputNumber
+                inputId="nomor_awal"
+                value={formik.values.nomor_awal}
+                className={formik.touched.nomor_awal && formik.errors.nomor_awal ? 'p-invalid' : ''}
+                onValueChange={(e) => formik.setFieldValue('nomor_awal', e.value || 1)}
+                min={1}
+              />
+              {formik.touched.nomor_awal && formik.errors.nomor_awal && (
+                <small className="p-error">{formik.errors.nomor_awal}</small>
+              )}
             </div>
             <div className="col-12 md:col-4 flex flex-column gap-2">
               <label htmlFor="status_aktif" className="font-bold text-sm text-800">Status</label>

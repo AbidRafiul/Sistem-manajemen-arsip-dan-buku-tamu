@@ -17,7 +17,8 @@ export const applyMultiTenantFilter = (queryBuilder, req, userTableAlias = 'mst_
     // Primary filter: Cabang (sudah di-expand oleh middleware untuk semua role)
     const fCabang = req.headers['x-filter-cabang'];
     if (fCabang && fCabang !== 'null' && fCabang !== 'undefined') {
-        queryBuilder.whereIn(`${userTableAlias}.id_cabang`, String(fCabang).split(",").map(Number));
+        const branchIds = String(fCabang).split(",").map(Number);
+        queryBuilder.whereIn(`${userTableAlias}.id_cabang`, branchIds);
     }
 
     // Secondary filters: Drill-down opsional (berlaku untuk semua role)

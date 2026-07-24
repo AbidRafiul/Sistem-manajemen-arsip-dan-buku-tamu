@@ -294,6 +294,8 @@ export default function RegistrasiKunjunganPage() {
                 handleChange={handleChange}
                 setIdentityFile={setIdentityFile}
                 setSelfieFile={setSelfieFile}
+                identityFile={identityFile}
+                selfieFile={selfieFile}
                 visitPurposeOptions={visitPurposeOptions}
                 hostUserOptions={hostUserOptions}
                 branchOptions={branchOptions}
