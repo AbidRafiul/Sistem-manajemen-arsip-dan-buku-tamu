@@ -115,6 +115,28 @@ export async function seed(knex) {
       updated_at: dNow
     },
     {
+      kode_menu: "MN_TEMPLATE_SURAT",
+      nama_menu: "Master Template Surat",
+      id_menu_induk: idMasterArsip,
+      jalur_menu: "/master/korespondensi/template_surats",
+      ikon_menu: "pi pi-fw pi-file",
+      urutan: 6,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow
+    },
+    {
+      kode_menu: "MN_PENOMORAN_SURAT",
+      nama_menu: "Master Penomoran Surat",
+      id_menu_induk: idMasterArsip,
+      jalur_menu: "/master/korespondensi/letter_numbering",
+      ikon_menu: "pi pi-fw pi-sort-numeric-up",
+      urutan: 7,
+      status_aktif: 1,
+      created_at: dNow,
+      updated_at: dNow
+    },
+    {
       kode_menu: "MN_PEMUSNAHAN_ARSIP",
       nama_menu: "Pemusnahan & Retensi",
       id_menu_induk: idParent,
@@ -152,12 +174,14 @@ export async function seed(knex) {
     }
   }
 
-  const idKlasifikasiMenu = insertedMenuIds.find(item => item.kode === "MN_KLASIFIKASI_ARSIP").id;
-  const idKategoriMenu = insertedMenuIds.find(item => item.kode === "MN_KATEGORI_DOKUMEN").id;
-  const idJenisMenu = insertedMenuIds.find(item => item.kode === "MN_JENIS_DOKUMEN").id;
-  const idJenisSuratMenu = insertedMenuIds.find(item => item.kode === "MN_JENIS_SURAT").id;
-  const idJadwalMenu = insertedMenuIds.find(item => item.kode === "MN_JADWAL_RETENSI").id;
-  const idPemusnahanMenu = insertedMenuIds.find(item => item.kode === "MN_PEMUSNAHAN_ARSIP").id;
+  const idKlasifikasiMenu = insertedMenuIds.find(item => item.kode === "MN_KLASIFIKASI_ARSIP")?.id;
+  const idKategoriMenu = insertedMenuIds.find(item => item.kode === "MN_KATEGORI_DOKUMEN")?.id;
+  const idJenisMenu = insertedMenuIds.find(item => item.kode === "MN_JENIS_DOKUMEN")?.id;
+  const idJenisSuratMenu = insertedMenuIds.find(item => item.kode === "MN_JENIS_SURAT")?.id;
+  const idJadwalMenu = insertedMenuIds.find(item => item.kode === "MN_JADWAL_RETENSI")?.id;
+  const idTemplateMenu = insertedMenuIds.find(item => item.kode === "MN_TEMPLATE_SURAT")?.id;
+  const idPenomoranMenu = insertedMenuIds.find(item => item.kode === "MN_PENOMORAN_SURAT")?.id;
+  const idPemusnahanMenu = insertedMenuIds.find(item => item.kode === "MN_PEMUSNAHAN_ARSIP")?.id;
 
   // 4. Hak akses peran (mst_peran_menu)
   const roles = await knex("mst_peran").select("*");
@@ -167,7 +191,7 @@ export async function seed(knex) {
   const stfArsRole = roles.find(r => r.kode_peran === "STF_ARS"); // Staff Arsip
 
   const grant = async (roleId, menuId, perms = {}) => {
-    if (!roleId) return;
+    if (!roleId || !menuId) return;
     // Hapus jika sudah ada untuk menghindari duplikat
     await knex("mst_peran_menu")
       .where("id_peran", roleId)
@@ -196,6 +220,8 @@ export async function seed(knex) {
     await grant(superadminRole.id_peran, idJenisMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(superadminRole.id_peran, idJenisSuratMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(superadminRole.id_peran, idJadwalMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
+    await grant(superadminRole.id_peran, idTemplateMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
+    await grant(superadminRole.id_peran, idPenomoranMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(superadminRole.id_peran, idPemusnahanMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
   }
   if (admRole) {
@@ -206,6 +232,8 @@ export async function seed(knex) {
     await grant(admRole.id_peran, idJenisMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(admRole.id_peran, idJenisSuratMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(admRole.id_peran, idJadwalMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
+    await grant(admRole.id_peran, idTemplateMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
+    await grant(admRole.id_peran, idPenomoranMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
     await grant(admRole.id_peran, idPemusnahanMenu, { view: 1, create: 1, update: 1, delete: 1, approve: 1 });
   }
 

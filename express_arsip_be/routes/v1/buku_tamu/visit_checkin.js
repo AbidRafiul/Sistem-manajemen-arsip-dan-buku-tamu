@@ -219,7 +219,7 @@ router.post(
         email_tamu: GuestEmail && GuestEmail !== "" ? GuestEmail : null,
         instansi_tamu: GuestCompany && GuestCompany !== "" ? GuestCompany : "-",
         jabatan_tamu: GuestPosition && GuestPosition !== "" ? GuestPosition : null,
-        jenis_identitas: IdentityType && IdentityType !== "" ? IdentityType : null,
+        jenis_identitas: IdentityType && IdentityType !== "" ? String(IdentityType).toLowerCase() : null,
         nomor_identitas: IdentityNumber && IdentityNumber !== "" ? IdentityNumber : null,
         id_tujuan_kunjungan: cleanVisitPurposeId,
         id_user_host: resolvedHostUserId,
