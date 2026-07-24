@@ -7,6 +7,7 @@ import fileDownload from "@/lib/axios/fileDownload";
 import { showError, showSuccess } from "@/lib/tools/generalTools";
 import { FilterMatchMode } from "primereact/api";
 import { Toast } from "primereact/toast";
+import { Dialog } from "primereact/dialog";
 import { useFormik } from "formik";
 import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
@@ -27,7 +28,8 @@ import {
     apiEndpointQrGenerate,
     apiEndpointQrScan,
     apiEndpointLocationUpdate,
-    apiEndpointRetentionGet
+    apiEndpointRetentionGet,
+    apiEndpointNumberGenerate
 } from "./components/endpoints";
 import { initValue, State } from "./components/interfaces";
 
@@ -429,6 +431,23 @@ const Page = () => {
         }
     };
 
+    const handleGenerateAutoNumber = async () => {
+        try {
+            const res = await getData(apiEndpointNumberGenerate, {
+                kode_klasifikasi: formik.values.kode_klasifikasi || 'ADM',
+                kode_kategori_dokumen: formik.values.kode_kategori_dokumen || 'KONTRAK',
+                tanggal: formik.values.tanggal || new Date().toISOString().slice(0, 10)
+            });
+
+            if (res.data?.status === 'success' && res.data?.data?.nomor_dokumen) {
+                formik.setFieldValue('nomor_dokumen', res.data.data.nomor_dokumen);
+                showSuccess(toast, `Nomor dokumen dihasilkan: ${res.data.data.nomor_dokumen}`);
+            }
+        } catch (error: any) {
+            console.error('Gagal auto-generate nomor dokumen:', error);
+        }
+    };
+
     const getDropdownOptions = async () => {
         try {
             const [resTypes, resClassifications, resCategories, resConfidentialities, resRetentions] = await Promise.all([
@@ -493,11 +512,46 @@ const Page = () => {
                 handleGenerateQR={handleGenerateQR}
                 handleScanQR={handleScanQR}
                 handleUpdateLocation={handleUpdateLocation}
+                handleGenerateAutoNumber={handleGenerateAutoNumber}
                 state={state}
                 setState={setState}
                 formik={formik}
                 toast={toast}
             />
+
+            {/* Document Preview Dialog */}
+            <Dialog
+                visible={state.isPreviewVisible}
+                header={
+                    <div className="flex align-items-center gap-2">
+                        <i className="pi pi-file-pdf text-primary" />
+                        <span className="font-bold text-900">Pratinjau Dokumen</span>
+                    </div>
+                }
+                modal
+                style={{ width: '60rem', maxWidth: '95vw' }}
+                onHide={() => {
+                    setState((p) => ({ ...p, isPreviewVisible: false, previewUrl: '' }));
+                }}
+                pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
+            >
+                <div className="pt-3">
+                    {state.previewUrl ? (
+                        <iframe
+                            src={state.previewUrl}
+                            width="100%"
+                            height="600px"
+                            style={{ border: 'none', borderRadius: '8px' }}
+                            title="Preview Arsip"
+                        />
+                    ) : (
+                        <div className="flex flex-column align-items-center justify-content-center py-5 text-color-secondary">
+                            <i className="pi pi-spin pi-spinner text-3xl mb-3" />
+                            <span>Memuat dokumen...</span>
+                        </div>
+                    )}
+                </div>
+            </Dialog>
         </div>
     </>
 }
