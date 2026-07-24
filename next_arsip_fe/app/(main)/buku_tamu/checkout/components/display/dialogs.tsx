@@ -419,3 +419,99 @@ export function ScanQRDialog({
         </Dialog>
     );
 }
+
+interface RejectDialogProps {
+    visible: boolean;
+    rejectRecord: any;
+    rejectNotes: string;
+    loading: boolean;
+    onHide: () => void;
+    onNotesChange: (val: string) => void;
+    onConfirm: () => void;
+}
+
+export function RejectDialog({
+    visible,
+    rejectRecord,
+    rejectNotes,
+    loading,
+    onHide,
+    onNotesChange,
+    onConfirm
+}: RejectDialogProps) {
+    return (
+        <Dialog
+            header={
+                <div className="flex align-items-center gap-2">
+                    <i className="pi pi-times-circle text-red-500 text-xl" />
+                    <span className="font-bold text-900">Konfirmasi Penolakan Kunjungan</span>
+                </div>
+            }
+            visible={visible}
+            modal
+            style={{ width: '480px' }}
+            onHide={onHide}
+            className="border-round-2xl overflow-hidden"
+            pt={{
+                root: { className: 'border-round-2xl shadow-6' },
+                header: { className: 'surface-50 border-bottom-1 surface-border py-3 px-4' },
+                content: { className: 'p-4' }
+            }}
+        >
+            <div className="flex flex-column gap-3 p-fluid mt-1">
+                {rejectRecord && (
+                    <div className="surface-50 p-3 border-round-xl border-1 surface-border flex flex-column gap-1 text-sm">
+                        <div className="flex justify-content-between">
+                            <span className="text-600 font-medium">Nama Tamu:</span>
+                            <span className="font-bold text-900">{rejectRecord.nama_tamu}</span>
+                        </div>
+                        {rejectRecord.instansi_tamu && (
+                            <div className="flex justify-content-between">
+                                <span className="text-600 font-medium">Instansi:</span>
+                                <span className="font-semibold text-800">{rejectRecord.instansi_tamu}</span>
+                            </div>
+                        )}
+                        <div className="flex justify-content-between">
+                            <span className="text-600 font-medium">Kode Kunjungan:</span>
+                            <span className="font-bold text-primary">{rejectRecord.kode_kunjungan || rejectRecord.visit_code}</span>
+                        </div>
+                    </div>
+                )}
+
+                <div className="field m-0">
+                    <label htmlFor="rejectNotes" className="font-semibold block mb-2 text-sm text-800">
+                        Alasan / Catatan Penolakan <span className="text-500 font-normal">(Opsional)</span>
+                    </label>
+                    <InputTextarea
+                        id="rejectNotes"
+                        value={rejectNotes}
+                        onChange={(e) => onNotesChange(e.target.value)}
+                        rows={3}
+                        placeholder="Tuliskan alasan penolakan untuk disampaikan ke tamu..."
+                        className="p-inputtext-sm"
+                        autoResize
+                    />
+                </div>
+            </div>
+
+            <div className="flex justify-content-end gap-2 mt-4 pt-3 border-top-1 surface-border">
+                <Button
+                    label="Batal"
+                    severity="secondary"
+                    outlined
+                    className="py-2 px-4 font-semibold text-sm border-round-lg"
+                    onClick={onHide}
+                    disabled={loading}
+                />
+                <Button
+                    label="Tolak Kunjungan"
+                    icon="pi pi-times"
+                    severity="danger"
+                    loading={loading}
+                    className="py-2 px-4 font-semibold text-sm border-round-lg text-white"
+                    onClick={onConfirm}
+                />
+            </div>
+        </Dialog>
+    );
+}

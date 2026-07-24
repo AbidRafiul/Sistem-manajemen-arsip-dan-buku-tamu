@@ -392,7 +392,7 @@ export default function VisitorBookingPage() {
                                         <span className="ticket-detail-value">{form.instansi_tamu || '-'}</span>
                                     </div>
                                     <div className="ticket-detail-row">
-                                        <span className="ticket-detail-label">Pegawai / Host</span>
+                                        <span className="ticket-detail-label">Pegawai</span>
                                         <span className="ticket-detail-value">{form.nama_host || '-'}</span>
                                     </div>
                                     <div className="ticket-detail-row">
