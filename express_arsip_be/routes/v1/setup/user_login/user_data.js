@@ -44,9 +44,13 @@ router.post("/", async (req, res) => {
     if (req.headers["x-filter-cabang"]) {
       const parentBranchIds = req.headers["x-filter-cabang"].split(",").map(Number);
       let allBranchIds = [];
-      for (const bId of parentBranchIds) {
-        const descendantIds = await getDescendantBranchIds(DB, bId);
-        allBranchIds = allBranchIds.concat(descendantIds);
+      if (req.headers["x-exact-cabang"] === 'true') {
+        allBranchIds = parentBranchIds;
+      } else {
+        for (const bId of parentBranchIds) {
+          const descendantIds = await getDescendantBranchIds(DB, bId);
+          allBranchIds = allBranchIds.concat(descendantIds);
+        }
       }
       query = query.whereIn("mu.id_cabang", allBranchIds);
     }
