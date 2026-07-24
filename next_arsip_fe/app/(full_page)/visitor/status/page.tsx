@@ -226,9 +226,9 @@ export default function VisitorStatusPage() {
                                 <span className="text-xs text-white-alpha-80 font-bold uppercase tracking-wider block mb-1">Status Kunjungan</span>
                                 <h3 className="m-0 text-lg font-black text-white uppercase tracking-wide">
                                     {bookingData.status_persetujuan?.toLowerCase() === 'approved' 
-                                        ? 'DISETUJUI / APPROVED' 
+                                        ? 'DISETUJUI' 
                                         : bookingData.status_persetujuan?.toLowerCase() === 'rejected'
-                                        ? 'DITOLAK / REJECTED'
+                                        ? 'DITOLAK'
                                         : 'MENUNGGU PERSETUJUAN'}
                                 </h3>
                             </div>
@@ -251,7 +251,7 @@ export default function VisitorStatusPage() {
                                     <span className="ticket-detail-value">{bookingData.VisitPurposeName}</span>
                                 </div>
                                 <div className="ticket-detail-row">
-                                    <span className="ticket-detail-label">Pegawai / Host</span>
+                                    <span className="ticket-detail-label">Pegawai</span>
                                     <span className="ticket-detail-value">{bookingData.nama_host || '-'}</span>
                                 </div>
                                 <div className="ticket-detail-row">

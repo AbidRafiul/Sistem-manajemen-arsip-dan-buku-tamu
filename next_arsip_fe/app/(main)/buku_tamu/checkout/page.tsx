@@ -9,10 +9,8 @@ import { FilterMatchMode } from 'primereact/api';
 import { State } from './components/interfaces';
 import { apiEndpointGet, apiEndpointApproval } from './components/endpoints';
 import GuestDataTable from './components/display/table';
-import { CheckoutDialog, DetailVisitorDialog, ScanQRDialog } from './components/display/dialogs';
+import { CheckoutDialog, DetailVisitorDialog, ScanQRDialog, RejectDialog } from './components/display/dialogs';
 import { useSession } from 'next-auth/react';
-
-
 
 const CheckoutPage = () => {
     const toast = useRef<Toast>(null);
@@ -29,6 +27,9 @@ const CheckoutPage = () => {
     });
     const [selectedId, setSelectedId] = useState<string | number>('');
     const [showScanDialog, setShowScanDialog] = useState(false);
+    const [rejectRecord, setRejectRecord] = useState<any>(null);
+    const [showRejectDialog, setShowRejectDialog] = useState(false);
+    const [rejectNotes, setRejectNotes] = useState('');
 
 
     const getData = async (apiEndpoint: string, payload: Record<string, any> = {}) => {
@@ -138,7 +139,7 @@ const CheckoutPage = () => {
         }
     };
 
-    const handleApproval = async (idKunjungan: string | number, action: 'approved' | 'rejected') => {
+    const handleApproval = async (idKunjungan: string | number, action: 'approved' | 'rejected', notes: string = '') => {
         try {
             setState((p: State) => ({ ...p, load: true }));
 
@@ -168,7 +169,7 @@ const CheckoutPage = () => {
                 {
                     idKunjungan,
                     action,
-                    catatanPersetujuan: ""
+                    catatanPersetujuan: notes
                 },
                 {
                     headers: {
@@ -183,6 +184,9 @@ const CheckoutPage = () => {
 
             if (response.data?.status === '00') {
                 showSuccess(toast, action === 'approved' ? 'Permohonan kunjungan disetujui!' : 'Permohonan kunjungan ditolak!');
+                setShowRejectDialog(false);
+                setRejectRecord(null);
+                setRejectNotes('');
                 fetchAll();
             } else {
                 throw new Error(response.data?.message || 'Gagal memproses persetujuan');
@@ -336,9 +340,23 @@ const CheckoutPage = () => {
                 onFilterStatus={onFilterStatus}
                 onRefresh={fetchAll}
                 onApprove={(row) => handleApproval(row.id_kunjungan, 'approved')}
-                onReject={(row) => handleApproval(row.id_kunjungan, 'rejected')}
+                onReject={(row) => {
+                    setRejectRecord(row);
+                    setRejectNotes('');
+                    setShowRejectDialog(true);
+                }}
                 onCheckin={(row) => handleCheckin(row.id_kunjungan)}
                 onScanQR={() => setShowScanDialog(true)}
+            />
+
+            <RejectDialog
+                visible={showRejectDialog}
+                rejectRecord={rejectRecord}
+                rejectNotes={rejectNotes}
+                loading={state.load}
+                onHide={() => setShowRejectDialog(false)}
+                onNotesChange={setRejectNotes}
+                onConfirm={() => rejectRecord && handleApproval(rejectRecord.id_kunjungan, 'rejected', rejectNotes)}
             />
  
             <CheckoutDialog
