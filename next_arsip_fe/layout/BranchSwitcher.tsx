@@ -82,18 +82,19 @@ const BranchSwitcher = () => {
 
         const isExact = (layoutState.globalFilter as any)?.exact_cabang;
 
-        // For each node in the path, assign it to the correct state based on its level
-        path.forEach(node => {
-            if (node.level === 1) {
+        // For each node in the path, assign it to the correct state based on its index (level)
+        path.forEach((node, index) => {
+            const level = index + 1;
+            if (level === 1) {
                 setSelectedPusat(node.id_cabang);
                 // Jika Pusat Jakarta dipilih dari dropdown Daerah (exact match)
                 if (isExact && node.id_cabang === currentId) {
                     setSelectedDaerah(node.id_cabang);
                 }
             }
-            else if (node.level === 2) setSelectedDaerah(node.id_cabang);
-            else if (node.level === 3) setSelectedUnit(node.id_cabang);
-            else if (node.level === 4) setSelectedKecamatan(node.id_cabang);
+            else if (level === 2) setSelectedDaerah(node.id_cabang);
+            else if (level === 3) setSelectedUnit(node.id_cabang);
+            else if (level === 4) setSelectedKecamatan(node.id_cabang);
         });
     };
 
