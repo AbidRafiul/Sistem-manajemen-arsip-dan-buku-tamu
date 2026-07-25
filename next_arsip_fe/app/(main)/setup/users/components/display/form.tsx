@@ -41,6 +41,25 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
         return isFormFieldInvalid(name) ? <small className="p-error">{formik?.errors[name]}</small> : <small className="p-error">&nbsp;</small>;
     };
 
+    // Logika Cascading Dropdown (Hierarki Organisasi)
+    const filteredDepartments = (state.masterData?.departments || []).filter((d: any) =>
+        !formik?.values.id_cabang || d.id_cabang === formik?.values.id_cabang
+    );
+    const validDeptIds = filteredDepartments.map((d: any) => d.id_departemen || d.id);
+
+    const filteredDivisions = (state.masterData?.divisions || []).filter((div: any) => {
+        if (formik?.values.id_departemen) return div.id_departemen === formik?.values.id_departemen;
+        if (formik?.values.id_cabang) return validDeptIds.includes(div.id_departemen);
+        return true;
+    });
+    const validDivIds = filteredDivisions.map((div: any) => div.id_divisi || div.id);
+
+    const filteredWorkUnits = (state.masterData?.workUnits || []).filter((u: any) => {
+        if (formik?.values.id_divisi) return u.id_divisi === formik?.values.id_divisi;
+        if (formik?.values.id_departemen || formik?.values.id_cabang) return validDivIds.includes(u.id_divisi);
+        return true;
+    });
+
     return (
         <>
             <Dialog
@@ -124,7 +143,7 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                     </div>
 
                     <div className="grid">
-                        {/* DATA DROPDOWN SEKARANG DIAMBIL DARI state.masterData YANG DIKIRIM DARI page.tsx */}
+                        {/* 1. CABANG */}
                         <div className="col-12 md:col-6 field">
                             <label htmlFor="id_cabang">Cabang</label>
                             <Dropdown
@@ -134,13 +153,113 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                                 options={state.masterData?.branches || []}
                                 optionLabel="nama_cabang"
                                 optionValue="id_cabang"
-                                onChange={(e) => formik?.setFieldValue('id_cabang', e.value)}
+                                onChange={(e) => {
+                                    formik?.setFieldValue('id_cabang', e.value || '');
+                                    formik?.setFieldValue('id_departemen', '');
+                                    formik?.setFieldValue('id_divisi', '');
+                                    formik?.setFieldValue('id_unit_kerja', '');
+                                }}
                                 placeholder="Pilih Cabang"
                                 className="w-full"
                                 filter
+                                showClear
                             />
                         </div>
 
+                        {/* 2. DEPARTEMEN (Dipilah berdasarkan Cabang) */}
+                        <div className="col-12 md:col-6 field">
+                            <label htmlFor="id_departemen">Departemen</label>
+                            <Dropdown
+                                id="id_departemen"
+                                name="id_departemen"
+                                value={formik?.values.id_departemen}
+                                options={filteredDepartments}
+                                optionLabel="nama_departemen"
+                                optionValue="id_departemen"
+                                onChange={(e) => {
+                                    formik?.setFieldValue('id_departemen', e.value || '');
+                                    formik?.setFieldValue('id_divisi', '');
+                                    formik?.setFieldValue('id_unit_kerja', '');
+                                    if (e.value && !formik?.values.id_cabang) {
+                                        const selectedDept = (state.masterData?.departments || []).find((d: any) => (d.id_departemen || d.id) === e.value);
+                                        if (selectedDept?.id_cabang) {
+                                            formik?.setFieldValue('id_cabang', selectedDept.id_cabang);
+                                        }
+                                    }
+                                }}
+                                placeholder="Pilih Departemen"
+                                className="w-full"
+                                filter
+                                showClear
+                            />
+                        </div>
+
+                        {/* 3. DIVISI (Dipilah berdasarkan Departemen/Cabang) */}
+                        <div className="col-12 md:col-6 field">
+                            <label htmlFor="id_divisi">Divisi</label>
+                            <Dropdown
+                                id="id_divisi"
+                                name="id_divisi"
+                                value={formik?.values.id_divisi}
+                                options={filteredDivisions}
+                                optionLabel="nama_divisi"
+                                optionValue="id_divisi"
+                                onChange={(e) => {
+                                    formik?.setFieldValue('id_divisi', e.value || '');
+                                    formik?.setFieldValue('id_unit_kerja', '');
+                                    if (e.value) {
+                                        const selectedDiv = (state.masterData?.divisions || []).find((div: any) => (div.id_divisi || div.id) === e.value);
+                                        if (selectedDiv?.id_departemen && !formik?.values.id_departemen) {
+                                            formik?.setFieldValue('id_departemen', selectedDiv.id_departemen);
+                                            const selectedDept = (state.masterData?.departments || []).find((d: any) => (d.id_departemen || d.id) === selectedDiv.id_departemen);
+                                            if (selectedDept?.id_cabang && !formik?.values.id_cabang) {
+                                                formik?.setFieldValue('id_cabang', selectedDept.id_cabang);
+                                            }
+                                        }
+                                    }
+                                }}
+                                placeholder="Pilih Divisi"
+                                className="w-full"
+                                filter
+                                showClear
+                            />
+                        </div>
+
+                        {/* 4. UNIT KERJA (Dipilah berdasarkan Divisi/Departemen) */}
+                        <div className="col-12 md:col-6 field">
+                            <label htmlFor="id_unit_kerja">Unit Kerja</label>
+                            <Dropdown
+                                id="id_unit_kerja"
+                                name="id_unit_kerja"
+                                value={formik?.values.id_unit_kerja}
+                                options={filteredWorkUnits}
+                                optionLabel="nama_unit_kerja"
+                                optionValue="id_unit_kerja"
+                                onChange={(e) => {
+                                    formik?.setFieldValue('id_unit_kerja', e.value || '');
+                                    if (e.value) {
+                                        const selectedUnit = (state.masterData?.workUnits || []).find((u: any) => (u.id_unit_kerja || u.id) === e.value);
+                                        if (selectedUnit?.id_divisi && !formik?.values.id_divisi) {
+                                            formik?.setFieldValue('id_divisi', selectedUnit.id_divisi);
+                                            const selectedDiv = (state.masterData?.divisions || []).find((div: any) => (div.id_divisi || div.id) === selectedUnit.id_divisi);
+                                            if (selectedDiv?.id_departemen && !formik?.values.id_departemen) {
+                                                formik?.setFieldValue('id_departemen', selectedDiv.id_departemen);
+                                                const selectedDept = (state.masterData?.departments || []).find((d: any) => (d.id_departemen || d.id) === selectedDiv.id_departemen);
+                                                if (selectedDept?.id_cabang && !formik?.values.id_cabang) {
+                                                    formik?.setFieldValue('id_cabang', selectedDept.id_cabang);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }}
+                                placeholder="Pilih Unit Kerja"
+                                className="w-full"
+                                filter
+                                showClear
+                            />
+                        </div>
+
+                        {/* 5. POSISI / JABATAN */}
                         <div className="col-12 md:col-6 field">
                             <label htmlFor="id_jabatan">Posisi</label>
                             <Dropdown
@@ -150,58 +269,11 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                                 options={state.masterData?.positions || []}
                                 optionLabel="nama_jabatan"
                                 optionValue="id_jabatan"
-                                onChange={(e) => formik?.setFieldValue('id_jabatan', e.value)}
+                                onChange={(e) => formik?.setFieldValue('id_jabatan', e.value || '')}
                                 placeholder="Pilih Posisi"
                                 className="w-full"
                                 filter
-                            />
-                        </div>
-
-                        <div className="col-12 md:col-6 field">
-                            <label htmlFor="id_divisi">Divisi</label>
-                            <Dropdown
-                                id="id_divisi"
-                                name="id_divisi"
-                                value={formik?.values.id_divisi}
-                                options={state.masterData?.divisions || []}
-                                optionLabel="nama_divisi"
-                                optionValue="id_divisi"
-                                onChange={(e) => formik?.setFieldValue('id_divisi', e.value)}
-                                placeholder="Pilih Divisi"
-                                className="w-full"
-                                filter
-                            />
-                        </div>
-
-                        <div className="col-12 md:col-6 field">
-                            <label htmlFor="id_departemen">Departemen</label>
-                            <Dropdown
-                                id="id_departemen"
-                                name="id_departemen"
-                                value={formik?.values.id_departemen}
-                                options={state.masterData?.departments || []}
-                                optionLabel="nama_departemen"
-                                optionValue="id_departemen"
-                                onChange={(e) => formik?.setFieldValue('id_departemen', e.value)}
-                                placeholder="Pilih Departemen"
-                                className="w-full"
-                                filter
-                            />
-                        </div>
-
-                        <div className="col-12 md:col-6 field">
-                            <label htmlFor="id_unit_kerja">Unit Kerja</label>
-                            <Dropdown
-                                id="id_unit_kerja"
-                                name="id_unit_kerja"
-                                value={formik?.values.id_unit_kerja}
-                                options={state.masterData?.workUnits || []}
-                                optionLabel="nama_unit_kerja"
-                                optionValue="id_unit_kerja"
-                                onChange={(e) => formik?.setFieldValue('id_unit_kerja', e.value)}
-                                placeholder="Pilih Unit Kerja"
-                                className="w-full"
-                                filter
+                                showClear
                             />
                         </div>
                     </div>
