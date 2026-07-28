@@ -25,10 +25,17 @@ export const HeaderLaporan = async ({
     // Yang Handle Logo
     if (img?.trim()) {
         try {
-            // doc.addImage(img, "PNG", layout.imageX, baseY - 4, layout.imageWidth, 0);
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(11);
-            doc.text(img ?? "", layout.imageX, layout.baseY - 4);
+            if (img.startsWith("data:image/")) {
+                // If the backend returned a base64 Data URL, extract format and add image
+                const format = img.split(';')[0].split('/')[1].toUpperCase();
+                // We use layout.imageWidth for both width and height (square aspect) or calculate aspect ratio.
+                // Let's just pass 0 for height so it maintains aspect ratio automatically! (in jsPDF, if h=0 it infers from w)
+                doc.addImage(img, format, layout.imageX, baseY - 4, layout.imageWidth, 0, '', 'FAST');
+            } else {
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(11);
+                doc.text(img ?? "", layout.imageX, layout.baseY - 4);
+            }
         } catch (error: any) {
             console.warn("Logo gagal ditambahkan : ", error?.message)
         }
@@ -79,21 +86,24 @@ export const Footer = async ({
     doc, marginLeft, marginTop, marginRight, paraf1, paraf2,
     namaPetugas1, namaPetugas2, jabatan1, jabatan2, lastY
 }: FooterProps) => {
-    const kotaPerusahaan = await getDBConfig("msKotaPerusahaan");
-    const namaPerusahaan = await getDBConfig("msNamaPerusahaan");
-    // const kotaPerusahaan = "Kota Perusahaan";
-    // const namaPerusahaan = "Nama Perusahaan";
+    const kotaPerusahaan = await getDBConfig("msKotaPerusahaan") || "Kota";
+    const namaPerusahaan = await getDBConfig("msNamaPerusahaan") || "Nama Perusahaan";
+    const pimpinan = await getDBConfig("msNamaPimpinan") || "Pimpinan Utama";
     const today = new Date();
+
+    const finalParaf2 = paraf2 || "Mengetahui,";
+    const finalNamaPetugas2 = namaPetugas2 || pimpinan;
+    const finalJabatan2 = jabatan2 || "Pimpinan Utama";
 
     const vaData = [
         ['', '', '', '', '', `${kotaPerusahaan}, ${formatDateCalendar(today)}`],
         ['', '', '', '', '', `${namaPerusahaan}`],
-        ['', `${paraf1}`, '', '', '', `${paraf2}`],
+        ['', `${paraf1}`, '', '', '', `${finalParaf2}`],
         ['', '', '', '', '', ''],
         ['', '', '', '', '', ''],
         ['', '..............', '', '', '', '.............'],
-        ['', `${namaPetugas1}`, '', '', '', `${namaPetugas2}`],
-        ['', `${jabatan1}`, '', '', '', `${jabatan2}`],
+        ['', `${namaPetugas1}`, '', '', '', `${finalNamaPetugas2}`],
+        ['', `${jabatan1}`, '', '', '', `${finalJabatan2}`],
     ];
 
     const finalY = lastY ?? doc?.autoTable.previous?.finalY ?? 20;

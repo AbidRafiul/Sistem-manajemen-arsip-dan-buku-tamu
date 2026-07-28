@@ -308,7 +308,7 @@ const BranchSwitcher = () => {
                                         setSelectedDaerah(e.value);
                                         setSelectedUnit(null);
                                         setSelectedKecamatan(null);
-                                        if (e.value) applyBranch(e.value, true);
+                                        if (e.value) applyBranch(e.value, false);
                                         else applyBranch(selectedPusat, false); // Revert to level 1
                                     }}
                                     options={daerahList}
@@ -334,8 +334,8 @@ const BranchSwitcher = () => {
                                     onChange={(e) => {
                                         setSelectedUnit(e.value);
                                         setSelectedKecamatan(null);
-                                        if (e.value) applyBranch(e.value, true);
-                                        else applyBranch(selectedDaerah, true); // Revert to level 2
+                                        if (e.value) applyBranch(e.value, false);
+                                        else applyBranch(selectedDaerah, false); // Revert to level 2
                                     }}
                                     options={unitList}
                                     optionLabel="nama_cabang"
@@ -359,8 +359,8 @@ const BranchSwitcher = () => {
                                     value={selectedKecamatan}
                                     onChange={(e) => {
                                         setSelectedKecamatan(e.value);
-                                        if (e.value) applyBranch(e.value, true);
-                                        else applyBranch(selectedUnit, true); // Revert to level 3
+                                        if (e.value) applyBranch(e.value, false);
+                                        else applyBranch(selectedUnit, false); // Revert to level 3
                                     }}
                                     options={kecamatanList}
                                     optionLabel="nama_cabang"

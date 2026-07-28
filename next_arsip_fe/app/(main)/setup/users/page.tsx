@@ -149,7 +149,7 @@ const Page = () => {
 
     // A. Mengambil Master Data (Dropdown)
     useEffect(() => {
-        if (state.add || state.edit) {
+        if (session) {
             const vaEndpoints = [
                 { key: 'branches', path: '/master/organisasi/branches/get_data' },
                 { key: 'positions', path: '/master/organisasi/positions/get_data' },
@@ -159,7 +159,6 @@ const Page = () => {
                 { key: 'roles', path: '/master/organisasi/roles/get_data' }
             ];
 
-            const token = (session as any)?.accessToken || localStorage.getItem('token');
             const myIdPengguna = (session as any)?.user?.IdPengguna || (session as any)?.user?.id || '';
 
             vaEndpoints.forEach((oItem) => {
@@ -167,7 +166,6 @@ const Page = () => {
                     oItem.path,
                     {},
                     {
-                        Authorization: `Bearer ${token}`,
                         'x-uniqueid': myIdPengguna,
                         'x-timestamp': new Date().toISOString()
                     }
@@ -181,7 +179,7 @@ const Page = () => {
                     .catch((e) => console.error(`Error loading ${oItem.key}:`, e));
             });
         }
-    }, [state.add, state.edit, session]);
+    }, [session]);
 
     // B. Handle Save / Update
     const handleSave = async (input: initValue) => {
