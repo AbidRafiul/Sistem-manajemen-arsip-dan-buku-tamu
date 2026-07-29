@@ -29,6 +29,7 @@ const Table = ({
     handleGenerateQR,
     handleScanQR,
     handleUpdateLocation,
+    handleGenerateAutoNumber,
     toast
 }: TableProps) => {
     const permissions = usePermissions();
@@ -469,6 +470,7 @@ const Table = ({
             state={state}
             setState={setState}
             formik={formik}
+            handleGenerateAutoNumber={handleGenerateAutoNumber}
             toast={toast}
         />
 
