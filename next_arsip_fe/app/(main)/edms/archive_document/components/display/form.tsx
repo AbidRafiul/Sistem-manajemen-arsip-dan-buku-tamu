@@ -11,6 +11,7 @@ const Form = ({
     state,
     setState,
     formik,
+    handleGenerateAutoNumber,
 }: FormProps) => {
 
     const isFormFieldInvalid = (name: keyof initValue) => !!(formik?.touched[name] && formik?.errors[name]);
@@ -102,6 +103,9 @@ const Form = ({
                                 } else {
                                     formik.setFieldValue('kode_retensi', '');
                                 }
+                                if (handleGenerateAutoNumber && !state.edit) {
+                                    setTimeout(() => handleGenerateAutoNumber(), 150);
+                                }
                             }}
                             placeholder={formik.values.kode_klasifikasi ? "Pilih Kategori" : "Pilih Klasifikasi Terlebih Dahulu"}
                             disabled={!formik.values.kode_klasifikasi}
@@ -141,15 +145,28 @@ const Form = ({
 
 
                 <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="nomor_dokumen" className="font-semibold text-sm text-900">
-                        Nomor Dokumen <span className="text-red-500">*</span>
-                    </label>
+                    <div className="flex justify-content-between align-items-center">
+                        <label htmlFor="nomor_dokumen" className="font-semibold text-sm text-900">
+                            Nomor Dokumen <span className="text-red-500">*</span>
+                        </label>
+                        {handleGenerateAutoNumber && !state.edit && (
+                            <Button
+                                type="button"
+                                label="Auto-Generate Nomor"
+                                icon="pi pi-cog"
+                                size="small"
+                                text
+                                className="text-xs p-0 text-primary font-semibold hover:underline"
+                                onClick={() => handleGenerateAutoNumber()}
+                            />
+                        )}
+                    </div>
                     <InputText
                         id="nomor_dokumen"
                         value={formik.values.nomor_dokumen}
                         onChange={(e) => formik.setFieldValue('nomor_dokumen', e.target.value)}
                         className={`w-full ${isFormFieldInvalid('nomor_dokumen') ? 'p-invalid' : ''}`}
-                        placeholder="Contoh: DOC-2024-001"
+                        placeholder="Contoh: JKT/ADM/KONTRAK/20260724/0001"
                     />
                     {getFormErrorMessage('nomor_dokumen')}
                 </div>

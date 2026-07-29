@@ -1,6 +1,6 @@
 "use client";
 import { usePermissions } from '@/hooks/usePermissions';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -10,21 +10,24 @@ import { Tag } from 'primereact/tag';
 import { TableProps } from '../interfaces';
 import { Menu } from 'primereact/menu';
 import { useRouter } from 'next/navigation';
-import { apiEndpointGet } from '../endpoints';
+import { apiEndpointGet, apiEndpointCreate } from '../endpoints';
 import { LayoutContext } from '@/layout/context/layoutcontext';
 import { useContext } from 'react';
 
-const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) => {
+import ExcelBulkAction from '@/app/components/excel_components/ExcelBulkAction';
+
+const Table = ({ state, setState, formik, handleDelete, getData, toast }: TableProps) => {
     const permissions = usePermissions();
     const { canCreate, canUpdate, canDelete, canApprove } = usePermissions();
     const { layoutState } = useContext(LayoutContext);
     const cabangName = (layoutState.globalFilter as any)?.nama_cabang;
     const titleSuffix = cabangName ? ` - ${cabangName}` : (permissions?.activeRole?.toUpperCase() === 'SUPERADMIN' ? ' Pusat' : '');
     
+
     const renderHeader = () => {
         return (
             <div className="flex flex-wrap align-items-center justify-content-between gap-2">
-                <span className="text-xl font-bold">Manajemen Cabang{titleSuffix}</span>
+                <span className="text-xl font-bold">Manajemen Cabang</span>
                 <div className="flex gap-2">
                     <span className="p-input-icon-left">
                         <i className="pi pi-search" />
@@ -45,7 +48,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
             <div className="flex gap-2 justify-content-center">
                 {canUpdate && <Button icon="pi pi-pencil" rounded outlined severity="warning" className="p-button-sm" onClick={() => { formik.setValues((p: any) => ({ ...p, ...rowData })); setState(p => ({ ...p, edit: true, add: false })); }} tooltip="Edit" tooltipOptions={{ position: 'top' }} />}
                 
-                    {canDelete && <Button icon="pi pi-trash" rounded outlined severity="danger" className="p-button-sm" onClick={() => setState((p) => ({ ...p, selectedData: [rowData], delete: true }))} tooltip="Delete" tooltipOptions={{ position: 'top' }} />}
+                {canDelete && <Button icon="pi pi-trash" rounded outlined severity="danger" className="p-button-sm" onClick={() => setState((p) => ({ ...p, selectedData: [rowData], delete: true }))} tooltip="Delete" tooltipOptions={{ position: 'top' }} />}
             </div>
         );
     };
@@ -54,6 +57,8 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
         const isActive = rowData.status === 'active';
         return <Tag value={isActive ? 'Aktif' : 'Tidak Aktif'} severity={isActive ? 'success' : 'danger'} className="text-sm" />;
     };
+
+
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
@@ -68,32 +73,32 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                 </div>
             </div>
 
-            <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
-                
+            <div className="flex flex-row flex-wrap items-center justify-content-between gap-2 mb-4">
+                <div className="flex flex-row flex-wrap items-center gap-2">
                     {canCreate && (
-                    <Button size="small" label="Baru" icon="pi pi-plus" outlined severity="success" onClick={() => {
-                    formik.resetForm();
-                    setState(p => ({ ...p, add: true, selectedData: [] }));
-                }} />
-                )}
-                <Divider layout="vertical" />
-                {canDelete && (
-                <Button size="small" label={"Hapus" + (state.selectedData.length > 0 ? " (" + state.selectedData.length + ")" : "")} icon="pi pi-trash" outlined severity="danger" onClick={() => setState(p => ({ ...p, delete: true }))} disabled={state.selectedData.length === 0} />
-                )}
-                <Divider layout="vertical" />
-                <Button size="small" label="Muat Ulang" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
+                        <Button size="small" label="Baru" icon="pi pi-plus" outlined severity="success" onClick={() => {
+                            formik.resetForm();
+                            setState(p => ({ ...p, add: true, selectedData: [] }));
+                        }} />
+                    )}
+                    <Divider layout="vertical" />
+                    {canDelete && (
+                        <Button size="small" label={"Hapus" + (state.selectedData.length > 0 ? " (" + state.selectedData.length + ")" : "")} icon="pi pi-trash" outlined severity="danger" onClick={() => setState(p => ({ ...p, delete: true }))} disabled={state.selectedData.length === 0} />
+                    )}
+                    <Divider layout="vertical" />
+                    <Button size="small" label="Muat Ulang" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
+                </div>
             </div>
-
             <DataTable value={state.data} selection={state.selectedData} onSelectionChange={(e) => setState(p => ({ ...p, selectedData: e.value }))} dataKey="id_cabang" paginator rows={10} rowsPerPageOptions={[5, 10, 25]} globalFilterFields={["kode_cabang","nama_cabang","alamat","telepon","surel","status"]} filters={state.filters} header={renderHeader()} emptyMessage="Tidak ada data ditemukan." loading={state.load} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
-                <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
-                <Column field="kode_cabang" header="Kode" sortable></Column>
-                <Column field="nama_cabang" header="Nama Cabang" sortable></Column>
-                <Column field="nama_induk" header="Induk Cabang" sortable></Column>
-                <Column field="alamat" header="Alamat" sortable></Column>
-                <Column field="telepon" header="Telepon" sortable></Column>
-                <Column field="surel" header="Email" sortable></Column>
-                <Column body={statusBodyTemplate} header="Status"></Column>
-                <Column body={actionBodyTemplate} exportable={false} align="center" header="Aksi" style={{ minWidth: '8rem', textAlign: 'center' }}></Column>
+                    <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
+                    <Column field="kode_cabang" header="Kode" sortable></Column>
+                    <Column field="nama_cabang" header="Nama Cabang" sortable></Column>
+                    <Column field="nama_induk" header="Induk Cabang" sortable></Column>
+                    <Column field="alamat" header="Alamat" sortable></Column>
+                    <Column field="telepon" header="Telepon" sortable></Column>
+                    <Column field="surel" header="Email" sortable></Column>
+                    <Column body={statusBodyTemplate} header="Status"></Column>
+                    <Column body={actionBodyTemplate} exportable={false} align="center" header="Aksi" style={{ minWidth: '8rem', textAlign: 'center' }}></Column>
             </DataTable>
         </div>
     );

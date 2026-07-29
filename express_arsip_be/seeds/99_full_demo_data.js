@@ -104,11 +104,11 @@ export async function seed(knex) {
   const dNow = now();
 
   const branch = await knex("mst_cabang")
-    .where("kode_cabang", "BR-001") // Pusat Jakarta
+    .where("kode_cabang", "CB-001") // Pusat Jakarta
     .first();
     
   if (!branch) {
-      throw new Error("Pusat Jakarta (BR-001) tidak ditemukan. Pastikan 01_master_data.js sudah dijalankan.");
+      throw new Error("Pusat Jakarta (CB-001) tidak ditemukan. Pastikan 01_master_data.js sudah dijalankan.");
   }
 
   await upsertRows(knex, "mst_departemen", "kode_departemen", [

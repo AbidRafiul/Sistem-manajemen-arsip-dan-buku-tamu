@@ -104,6 +104,17 @@ async function runEnterpriseSeeder() {
   const bucketName = process.env.MINIO_BUCKET_NAME || "arsip-bucket";
   const createdResults = [];
 
+  // Clean existing seed records from database to prevent duplication
+  const seedDocNumbers = seedData.map(s => s.nomor_dokumen);
+  const existingSeedDocs = await DB("trs_dokumen").whereIn("nomor_dokumen", seedDocNumbers).select("kode_dokumen", "id_dokumen");
+  if (existingSeedDocs.length > 0) {
+    const existingKodes = existingSeedDocs.map(d => d.kode_dokumen);
+    const existingIds = existingSeedDocs.map(d => d.id_dokumen);
+    await DB("trs_versi_dokumen").whereIn("kode_dokumen", existingKodes).del();
+    await DB("trs_dokumen").whereIn("id_dokumen", existingIds).del();
+    console.log(`[Seeder Clean] De-duplicated ${existingSeedDocs.length} previous seed document records.`);
+  }
+
   for (const item of seedData) {
     const dNow = new Date();
     const cPic = "Superadmin SIAB";

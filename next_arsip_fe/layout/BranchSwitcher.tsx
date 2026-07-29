@@ -80,12 +80,21 @@ const BranchSwitcher = () => {
             node = node.id_induk ? branches.find(b => b.id_cabang === node!.id_induk) : undefined;
         }
 
-        // For each node in the path, assign it to the correct state based on its level
-        path.forEach(node => {
-            if (node.level === 1) setSelectedPusat(node.id_cabang);
-            else if (node.level === 2) setSelectedDaerah(node.id_cabang);
-            else if (node.level === 3) setSelectedUnit(node.id_cabang);
-            else if (node.level === 4) setSelectedKecamatan(node.id_cabang);
+        const isExact = (layoutState.globalFilter as any)?.exact_cabang;
+
+        // For each node in the path, assign it to the correct state based on its index (level)
+        path.forEach((node, index) => {
+            const level = index + 1;
+            if (level === 1) {
+                setSelectedPusat(node.id_cabang);
+                // Jika Pusat Jakarta dipilih dari dropdown Daerah (exact match)
+                if (isExact && node.id_cabang === currentId) {
+                    setSelectedDaerah(node.id_cabang);
+                }
+            }
+            else if (level === 2) setSelectedDaerah(node.id_cabang);
+            else if (level === 3) setSelectedUnit(node.id_cabang);
+            else if (level === 4) setSelectedKecamatan(node.id_cabang);
         });
     };
 
@@ -94,12 +103,20 @@ const BranchSwitcher = () => {
 
     // Level 2: Pusat Daerah
     // If the user can't see Level 1, we show Level 2 directly if they exist
-    const daerahList = selectedPusat
+    let daerahList = selectedPusat
         ? allBranches.filter(b => b.id_induk === selectedPusat)
         : pusatList.length === 0 ? allBranches.filter(b => b.level === 2) : [];
+        
+    // Permintaan User: Masukkan juga Pusat (Jakarta) ke dalam opsi Daerah agar mempermudah
+    if (selectedPusat) {
+        const pusatItem = allBranches.find(b => b.id_cabang === selectedPusat);
+        if (pusatItem) {
+            daerahList = [pusatItem, ...daerahList];
+        }
+    }
 
     // Level 3: Unit Daerah
-    const unitList = selectedDaerah
+    const unitList = (selectedDaerah && selectedDaerah !== selectedPusat)
         ? allBranches.filter(b => b.id_induk === selectedDaerah)
         : (pusatList.length === 0 && daerahList.length === 0) ? allBranches.filter(b => b.level === 3) : [];
 
@@ -108,13 +125,13 @@ const BranchSwitcher = () => {
         ? allBranches.filter(b => b.id_induk === selectedUnit)
         : (pusatList.length === 0 && daerahList.length === 0 && unitList.length === 0) ? allBranches.filter(b => b.level === 4) : [];
 
-    // Visibility logic: Hide a level if it is the effective root and has only 1 option
-    const showPusat = pusatList.length > 1;
-    const showDaerah = daerahList.length > 0 && (showPusat || daerahList.length > 1);
-    const showUnit = unitList.length > 0 && (showDaerah || unitList.length > 1);
-    const showKecamatan = kecamatanList.length > 0 && (showUnit || kecamatanList.length > 1);
+    // Visibility logic: Selalu tampilkan level jika ada datanya agar user bisa memilih kembali ke root
+    const showPusat = pusatList.length > 0;
+    const showDaerah = daerahList.length > 0;
+    const showUnit = unitList.length > 0;
+    const showKecamatan = kecamatanList.length > 0;
 
-    const applyBranch = (branchId: number | null) => {
+    const applyBranch = (branchId: number | null, isExact: boolean = false) => {
         if (branchId === null) {
             handleResetFilter();
             return;
@@ -129,6 +146,7 @@ const BranchSwitcher = () => {
                 ...(prev.globalFilter || {}),
                 id_cabang: branch.id_cabang,
                 nama_cabang: branch.nama_cabang,
+                exact_cabang: isExact,
                 id_departemen: null,
                 id_divisi: null,
                 id_unit_kerja: null
@@ -152,6 +170,7 @@ const BranchSwitcher = () => {
             globalFilter: {
                 id_cabang: (session?.user as any)?.id_cabang || null,
                 nama_cabang: (session?.user as any)?.nama_cabang || null,
+                exact_cabang: false,
                 id_departemen: null,
                 id_divisi: null,
                 id_unit_kerja: null
@@ -261,7 +280,7 @@ const BranchSwitcher = () => {
                                         setSelectedDaerah(null);
                                         setSelectedUnit(null);
                                         setSelectedKecamatan(null);
-                                        if (e.value) applyBranch(e.value);
+                                        if (e.value) applyBranch(e.value, false);
                                         else applyBranch(null as any); // Clear completely
                                     }}
                                     options={pusatList}
@@ -289,8 +308,8 @@ const BranchSwitcher = () => {
                                         setSelectedDaerah(e.value);
                                         setSelectedUnit(null);
                                         setSelectedKecamatan(null);
-                                        if (e.value) applyBranch(e.value);
-                                        else applyBranch(selectedPusat); // Revert to level 1
+                                        if (e.value) applyBranch(e.value, false);
+                                        else applyBranch(selectedPusat, false); // Revert to level 1
                                     }}
                                     options={daerahList}
                                     optionLabel="nama_cabang"
@@ -315,8 +334,8 @@ const BranchSwitcher = () => {
                                     onChange={(e) => {
                                         setSelectedUnit(e.value);
                                         setSelectedKecamatan(null);
-                                        if (e.value) applyBranch(e.value);
-                                        else applyBranch(selectedDaerah); // Revert to level 2
+                                        if (e.value) applyBranch(e.value, false);
+                                        else applyBranch(selectedDaerah, false); // Revert to level 2
                                     }}
                                     options={unitList}
                                     optionLabel="nama_cabang"
@@ -340,8 +359,8 @@ const BranchSwitcher = () => {
                                     value={selectedKecamatan}
                                     onChange={(e) => {
                                         setSelectedKecamatan(e.value);
-                                        if (e.value) applyBranch(e.value);
-                                        else applyBranch(selectedUnit); // Revert to level 3
+                                        if (e.value) applyBranch(e.value, false);
+                                        else applyBranch(selectedUnit, false); // Revert to level 3
                                     }}
                                     options={kecamatanList}
                                     optionLabel="nama_cabang"

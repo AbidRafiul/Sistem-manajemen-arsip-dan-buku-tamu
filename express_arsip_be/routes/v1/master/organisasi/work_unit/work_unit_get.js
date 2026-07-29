@@ -1,7 +1,7 @@
 import express from "express";
 import DB from "../../../../../core/config/knex.js";
 import { status, formatDateSystem } from "../../../components/tools/general.js";
-import { Logging } from "../../../components/tools/servertool.js";
+import { Logging, getDescendantBranchIds } from "../../../components/tools/servertool.js";
 
 const router = express.Router();
 
@@ -23,10 +23,24 @@ router.post("/get_data", async (req, res) => {
       .whereNot("mst_unit_kerja.status", "deleted");
 
     if (req.headers["x-filter-cabang"]) {
-      query = query
-        .join("mst_divisi", "mst_unit_kerja.id_divisi", "mst_divisi.id_divisi")
-        .join("mst_departemen", "mst_divisi.id_departemen", "mst_departemen.id_departemen")
-        .whereIn("mst_departemen.id_cabang", req.headers["x-filter-cabang"].split(","));
+      const parentBranchIds = req.headers["x-filter-cabang"].split(",").map(Number);
+      let allBranchIds = [];
+      if (req.headers["x-exact-cabang"] === 'true') {
+        allBranchIds = parentBranchIds;
+      } else {
+        for (const bId of parentBranchIds) {
+          if (!isNaN(bId)) {
+            const descendantIds = await getDescendantBranchIds(DB, bId);
+            allBranchIds.push(...descendantIds);
+          }
+        }
+      }
+      if (allBranchIds.length > 0) {
+        query = query
+          .join("mst_divisi", "mst_unit_kerja.id_divisi", "mst_divisi.id_divisi")
+          .join("mst_departemen", "mst_divisi.id_departemen", "mst_departemen.id_departemen")
+          .whereIn("mst_departemen.id_cabang", allBranchIds);
+      }
     }
     if (req.headers["x-filter-departemen"]) {
       // Jika join mst_divisi belum ada (karena x-filter-cabang kosong), kita butuh join

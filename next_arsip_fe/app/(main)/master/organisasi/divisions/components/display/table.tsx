@@ -8,11 +8,12 @@ import { InputText } from 'primereact/inputtext';
 import { Divider } from 'primereact/divider';
 import { Tag } from 'primereact/tag';
 import { TableProps } from '../interfaces';
-import { apiEndpointGet } from '../endpoints';
+import { apiEndpointGet, apiEndpointCreate } from '../endpoints';
 import { LayoutContext } from '@/layout/context/layoutcontext';
 import { useContext } from 'react';
+import ExcelBulkAction from '@/app/components/excel_components/ExcelBulkAction';
 
-const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) => {
+const Table = ({ state, setState, formik, handleDelete, getData, toast }: TableProps) => {
     const permissions = usePermissions();
     const { canCreate, canUpdate, canDelete, canApprove } = usePermissions();
     const { layoutState } = useContext(LayoutContext);
@@ -30,7 +31,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                             const value = e.target.value;
                             let _filters = { ...state.filters };
                             _filters['global'].value = value;
-                            setState(p => ({ ...p, searchVal: value, filters: _filters }));
+                            setState(p => ({ ...p, filters: _filters, searchVal: value }));
                         }} placeholder="Cari..." />
                     </span>
                 </div>
@@ -71,20 +72,25 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                 </div>
             </div>
 
-            <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
+            <div className="flex flex-row flex-wrap items-center justify-content-between gap-2 mb-4">
+                <div className="flex flex-row flex-wrap items-center gap-2">
+                    {canCreate && (
+                        <Button size="small" label="Baru" icon="pi pi-plus" outlined severity="success" onClick={() => {
+                            formik.resetForm();
+                            setState(p => ({ ...p, add: true, selectedData: [] }));
+                        }} />
+                    )}
+                    <Divider layout="vertical" />
+                    {canDelete && (
+                        <Button size="small" label={"Hapus" + (state.selectedData.length > 0 ? " (" + state.selectedData.length + ")" : "")} icon="pi pi-trash" outlined severity="danger" onClick={() => setState(p => ({ ...p, delete: true }))} disabled={state.selectedData.length === 0} />
+                    )}
+                    <Divider layout="vertical" />
+                    <Button size="small" label="Muat Ulang" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
+                </div>
 
-                {canCreate && (
-                    <Button size="small" label="Baru" icon="pi pi-plus" outlined severity="success" onClick={() => {
-                        formik.resetForm();
-                        setState(p => ({ ...p, add: true, selectedData: [] }));
-                    }} />
-                )}
-                <Divider layout="vertical" />
-                {canDelete && (
-                    <Button size="small" label={"Hapus" + (state.selectedData.length > 0 ? " (" + state.selectedData.length + ")" : "")} icon="pi pi-trash" outlined severity="danger" onClick={() => setState(p => ({ ...p, delete: true }))} disabled={state.selectedData.length === 0} />
-                )}
-                <Divider layout="vertical" />
-                <Button size="small" label="Muat Ulang" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
+                <div className="flex flex-row flex-wrap items-center gap-2">
+                    
+                </div>
             </div>
 
             <DataTable value={state.data} selection={state.selectedData} onSelectionChange={(e) => setState(p => ({ ...p, selectedData: e.value }))} dataKey="id_divisi" paginator rows={10} rowsPerPageOptions={[5, 10, 25]} globalFilterFields={["id_departemen", "kode_divisi", "nama_divisi", "deskripsi", "status"]} filters={state.filters} header={renderHeader()} emptyMessage="Tidak ada data ditemukan." loading={state.load} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">

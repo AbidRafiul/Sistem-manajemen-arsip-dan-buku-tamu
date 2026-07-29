@@ -142,6 +142,11 @@ const incomingLetterCreate = async (req, res) => {
     }
 
     const dNow = new Date();
+    const nActorId =
+      oPayload.created_by ||
+      req?.auth?.id_pengguna ||
+      req?.context?.id_pengguna ||
+      1;
 
     const nIncomingLetterId = await DB.transaction(async (trx) => {
       const cNomorAgenda =
@@ -160,8 +165,8 @@ const incomingLetterCreate = async (req, res) => {
         klasifikasi_arsip_id: oPayload.archive_classification_id || null,
         tingkat_kerahasiaan_id: oPayload.confidentiality_level_id || null,
         status: "baru",
-        created_by: oPayload.created_by || null,
-        updated_by: oPayload.updated_by || null,
+        created_by: nActorId,
+        updated_by: oPayload.updated_by || nActorId,
         created_at: dNow,
         updated_at: dNow,
       });
@@ -178,7 +183,7 @@ const incomingLetterCreate = async (req, res) => {
         status_saat_ini: "baru",
         catatan: "Surat masuk dibuat",
         processed_at: dNow,
-        created_by: oPayload.created_by || null,
+        created_by: nActorId,
         created_at: dNow,
         updated_at: dNow,
       });

@@ -15,6 +15,7 @@ const getMinioPrefix = async (idCabang, idDepartemen = null, idDivisi = null, id
     if (isNaN(currentId)) return 'GLOBAL';
 
     const hierarchy = [];
+    let leafBranchSlug = "";
 
     try {
         while (currentId) {
@@ -32,34 +33,22 @@ const getMinioPrefix = async (idCabang, idDepartemen = null, idDivisi = null, id
                 .replace(/[^a-zA-Z0-9_-]/g, "")
                 .toUpperCase();
 
+            if (!leafBranchSlug) {
+                leafBranchSlug = rawName
+                    .trim()
+                    .replace(/\s+/g, "-")
+                    .replace(/[^a-zA-Z0-9_-]/g, "")
+                    .toLowerCase();
+            }
+
             hierarchy.unshift(sanitizedName);
 
             // Naik ke parent
             currentId = branch.id_induk;
         }
 
-        // Add Departemen
-        if (idDepartemen) {
-            const dept = await DB("mst_departemen").select("nama_departemen").where("id_departemen", idDepartemen).first();
-            if (dept && dept.nama_departemen) {
-                hierarchy.push(dept.nama_departemen.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').toLowerCase());
-            }
-        }
-
-        // Add Divisi
-        if (idDivisi) {
-            const div = await DB("mst_divisi").select("nama_divisi").where("id_divisi", idDivisi).first();
-            if (div && div.nama_divisi) {
-                hierarchy.push(div.nama_divisi.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').toLowerCase());
-            }
-        }
-
-        // Add Unit Kerja
-        if (idUnitKerja) {
-            const unit = await DB("mst_unit_kerja").select("nama_unit_kerja").where("id_unit_kerja", idUnitKerja).first();
-            if (unit && unit.nama_unit_kerja) {
-                hierarchy.push(unit.nama_unit_kerja.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').toLowerCase());
-            }
+        if (leafBranchSlug) {
+            hierarchy.push(`operasional-${leafBranchSlug}`);
         }
     } catch (e) {
         console.error("Gagal getMinioPrefix:", e);
@@ -84,75 +73,97 @@ const getMinioPrefix = async (idCabang, idDepartemen = null, idDivisi = null, id
 const uploadFileToMinio = async (bucketName, file, options = {}) => {
     try {
         // 1. Cek & pastikan bucket ada
-        const exists = await minioClient.bucketExists(bucketName);
-        if (!exists) {
+        const bExists = await minioClient.bucketExists(bucketName);
+        if (!bExists) {
             await minioClient.makeBucket(bucketName);
             console.log(`Bucket '${bucketName}' berhasil dibuat.`);
         }
 
         // Parse metadata options
         let idCabang = null;
-        let modul = 'documents';
-        let nomorDokumen = '';
-        let namaDokumen = '';
-        let versionLabel = '';
+        let cModul = 'documents';
+        let cNomorDokumen = '';
+        let cNamaDokumen = '';
+        let cVersionLabel = '';
+        let cCustomFolderPath = null;
 
         if (typeof options === 'string') {
-            modul = options.replace(/\/$/, '') || 'documents';
+            cCustomFolderPath = options.replace(/\/$/, '') || 'documents';
         } else if (typeof options === 'object' && options !== null) {
             idCabang = options.idCabang || null;
-            modul = options.modul || 'documents';
-            nomorDokumen = options.nomorDokumen || options.customPrefix || '';
-            namaDokumen = options.namaDokumen || '';
-            versionLabel = options.version || '';
+            cModul = options.modul || 'documents';
+            cNomorDokumen = options.nomorDokumen || options.customPrefix || '';
+            cNamaDokumen = options.namaDokumen || '';
+            cVersionLabel = options.version || '';
         }
 
-        // 2. Susun hirarki folder cabang (PUSAT-JAKARTA/PUSAT-SURABAYA/...)
-        const branchPrefix = await getMinioPrefix(idCabang);
-        const yearFolder = new Date().getFullYear();
-        const folderPath = `${branchPrefix}/${modul}/${yearFolder}`;
+        // 2. Susun hirarki folder
+        const nYearFolder = new Date().getFullYear();
+        let cFolderPath = "";
 
-        // 3. Susun penamaan file bersih dari metadata (tanpa angka acak timestamp)
-        const ext = file.originalname.split('.').pop();
-
-        let cleanNomor = nomorDokumen
-            ? String(nomorDokumen).trim().replace(/[^a-zA-Z0-9_-]/g, "-")
-            : "";
-
-        let cleanNama = namaDokumen
-            ? String(namaDokumen).trim().replace(/\s+/g, "-").replace(/[^a-zA-Z0-9_-]/g, "")
-            : "";
-
-        if (cleanNama.length > 40) cleanNama = cleanNama.substring(0, 40);
-
-        const vString = versionLabel ? `_${String(versionLabel).toUpperCase()}` : '_V1';
-
-        let baseName = "";
-        if (cleanNomor && cleanNama) {
-            baseName = `${cleanNomor}_${cleanNama}${vString}.${ext}`;
-        } else if (cleanNomor) {
-            baseName = `${cleanNomor}${vString}.${ext}`;
-        } else if (cleanNama) {
-            baseName = `${cleanNama}${vString}.${ext}`;
+        if (cCustomFolderPath) {
+            if (/\/\d{4}(\d{4})?$/.test(cCustomFolderPath)) {
+                cFolderPath = cCustomFolderPath;
+            } else {
+                cFolderPath = `${cCustomFolderPath}/${nYearFolder}`;
+            }
         } else {
-            const raw = file.originalname.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "-");
-            baseName = `${raw}${vString}_${Date.now()}.${ext}`;
+            const cBranchPrefix = await getMinioPrefix(idCabang);
+            cFolderPath = `${cBranchPrefix}/${cModul}/${nYearFolder}`;
         }
 
-        const objectName = `${folderPath}/${baseName}`;
+        // 3. Susun penamaan file bersih dari metadata
+        const cExt = file.originalname.split('.').pop().toLowerCase();
+
+        let cCleanNomor = cNomorDokumen
+            ? String(cNomorDokumen)
+                .trim()
+                .replace(/[\/\\]/g, "-")
+                .replace(/[^a-zA-Z0-9_-]/g, "-")
+                .replace(/-+/g, "-")
+                .replace(/^-+|-+$/g, "")
+            : "";
+
+        let cCleanNama = cNamaDokumen
+            ? String(cNamaDokumen)
+                .trim()
+                .replace(/[\/\\]/g, "-")
+                .replace(/\s+/g, "-")
+                .replace(/[^a-zA-Z0-9_-]/g, "")
+                .replace(/-+/g, "-")
+                .replace(/^-+|-+$/g, "")
+            : "";
+
+        if (cCleanNama.length > 40) cCleanNama = cCleanNama.substring(0, 40);
+
+        const cVString = cVersionLabel ? `_${String(cVersionLabel).toUpperCase()}` : '_V1';
+
+        let cBaseName = "";
+        if (cCleanNomor && cCleanNama) {
+            cBaseName = `${cCleanNomor}_${cCleanNama}${cVString}.${cExt}`;
+        } else if (cCleanNomor) {
+            cBaseName = `${cCleanNomor}${cVString}.${cExt}`;
+        } else if (cCleanNama) {
+            cBaseName = `${cCleanNama}${cVString}.${cExt}`;
+        } else {
+            const cRaw = file.originalname.replace(/\.[^/.]+$/, "").replace(/\s+/g, "-").replace(/[^a-zA-Z0-9_-]/g, "-");
+            cBaseName = `${cRaw}${cVString}.${cExt}`;
+        }
+
+        const cObjectName = `${cFolderPath}/${cBaseName}`;
 
         // 4. Put object ke MinIO
         await minioClient.putObject(
             bucketName,
-            objectName,
+            cObjectName,
             file.buffer,
             file.size,
             { 'Content-Type': file.mimetype }
         );
 
-        console.log(`[Metadata MinIO Upload] Berhasil upload -> ${bucketName}/${objectName}`);
+        console.log(`[Metadata MinIO Upload] Berhasil upload -> ${bucketName}/${cObjectName}`);
 
-        return objectName;
+        return cObjectName;
 
     } catch (error) {
         console.error("Gagal upload ke MinIO:", error);
