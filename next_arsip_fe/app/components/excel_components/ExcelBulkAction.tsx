@@ -65,14 +65,14 @@ const ExcelBulkAction: React.FC<ExcelBulkActionProps> = ({
         });
 
         const ws = XLSX.utils.json_to_sheet(exportRows);
-        
+
         // Auto fit column width
         const colWidths = [{ wch: 6 }, ...columns.map(col => ({ wch: Math.max(col.header.length + 6, 20) }))];
         ws['!cols'] = colWidths;
 
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Data');
-        
+
         const fileName = `Export_${title.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.xlsx`;
         XLSX.writeFile(wb, fileName);
 
@@ -93,7 +93,7 @@ const ExcelBulkAction: React.FC<ExcelBulkActionProps> = ({
 
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Template');
-        
+
         const fileName = `Template_Import_${title.replace(/\s+/g, '_')}.xlsx`;
         XLSX.writeFile(wb, fileName);
 
@@ -126,7 +126,7 @@ const ExcelBulkAction: React.FC<ExcelBulkActionProps> = ({
                         const headerReq = `${col.header} *`;
                         const headerNorm = col.header;
                         let val = row[headerReq] !== undefined ? row[headerReq] : (row[headerNorm] !== undefined ? row[headerNorm] : (row[col.field] !== undefined ? row[col.field] : null));
-                        
+
                         if (val !== null && val !== undefined && val !== '') {
                             if (col.type === 'number') {
                                 const num = Number(val);
@@ -179,17 +179,17 @@ const ExcelBulkAction: React.FC<ExcelBulkActionProps> = ({
         setIsImporting(false);
 
         if (succ > 0) {
-            toast?.current?.show({ 
-                severity: 'success', 
-                summary: 'Bulk Import Selesai', 
-                detail: `Berhasil mengimpor ${succ} data! (${fail} gagal)` 
+            toast?.current?.show({
+                severity: 'success',
+                summary: 'Bulk Import Selesai',
+                detail: `Berhasil mengimpor ${succ} data! (${fail} gagal)`
             });
             onSuccess();
         } else if (fail > 0) {
-            toast?.current?.show({ 
-                severity: 'error', 
-                summary: 'Bulk Import Gagal', 
-                detail: `Semua ${fail} data gagal diimpor. Periksa daftar error.` 
+            toast?.current?.show({
+                severity: 'error',
+                summary: 'Bulk Import Gagal',
+                detail: `Semua ${fail} data gagal diimpor. Periksa daftar error.`
             });
         }
     };
@@ -199,37 +199,37 @@ const ExcelBulkAction: React.FC<ExcelBulkActionProps> = ({
     return (
         <React.Fragment>
             <div className="flex align-items-center gap-2">
-                <Button 
-                    size="small" 
-                    label="Import Excel" 
-                    icon="pi pi-cloud-upload" 
-                    severity="info" 
-                    outlined 
-                    onClick={() => { setParsedRows([]); setErrors([]); setVisible(true); }} 
-                    className="py-1 px-3 text-xs font-semibold shadow-1" 
+                <Button
+                    size="small"
+                    label="Import Excel"
+                    icon="pi pi-cloud-upload"
+                    severity="info"
+                    outlined
+                    onClick={() => { setParsedRows([]); setErrors([]); setVisible(true); }}
+                    className="py-1 px-3 text-xs font-semibold shadow-1"
                     tooltip={`Import bulk data ${title} dari Excel/CSV`}
                     tooltipOptions={{ position: 'top' }}
                 />
-                <Button 
-                    size="small" 
-                    label="Export Excel" 
-                    icon="pi pi-file-excel" 
-                    severity="success" 
-                    outlined 
-                    onClick={handleExport} 
-                    disabled={!data || data.length === 0} 
-                    className="py-1 px-3 text-xs font-semibold shadow-1" 
+                <Button
+                    size="small"
+                    label="Export Excel"
+                    icon="pi pi-file-excel"
+                    severity="success"
+                    outlined
+                    onClick={handleExport}
+                    disabled={!data || data.length === 0}
+                    className="py-1 px-3 text-xs font-semibold shadow-1"
                     tooltip={`Export data ${title} ke Excel (.xlsx)`}
                     tooltipOptions={{ position: 'top' }}
                 />
             </div>
 
-            <Dialog 
-                visible={visible} 
-                onHide={() => !isImporting && setVisible(false)} 
-                header={`📥 Bulk Import ${title} dari Excel / CSV`} 
-                style={{ width: '55rem' }} 
-                modal 
+            <Dialog
+                visible={visible}
+                onHide={() => !isImporting && setVisible(false)}
+                header={`Bulk Import ${title} dari Excel / CSV`}
+                style={{ width: '55rem' }}
+                modal
                 className="p-fluid"
                 closable={!isImporting}
             >
@@ -241,14 +241,14 @@ const ExcelBulkAction: React.FC<ExcelBulkActionProps> = ({
                                 <h6 className="m-0 font-bold text-blue-900 text-sm mb-1"><i className="pi pi-step-forward mr-2"></i>Langkah 1: Unduh Template Resmi</h6>
                                 <span className="text-xs text-blue-700 block">Gunakan template Excel resmi ini. Kolom bertanda tanda bintang (*) wajib diisi.</span>
                             </div>
-                            <Button 
-                                type="button" 
-                                label="Unduh Template (.xlsx)" 
-                                icon="pi pi-download" 
-                                severity="success" 
-                                size="small" 
-                                onClick={handleDownloadTemplate} 
-                                className="w-auto py-1 px-3 text-xs shadow-1" 
+                            <Button
+                                type="button"
+                                label="Unduh Template (.xlsx)"
+                                icon="pi pi-download"
+                                severity="success"
+                                size="small"
+                                onClick={handleDownloadTemplate}
+                                className="w-auto py-1 px-3 text-xs shadow-1"
                             />
                         </div>
                     </div>
@@ -257,21 +257,21 @@ const ExcelBulkAction: React.FC<ExcelBulkActionProps> = ({
                     <div className="p-3 bg-50 border-round-lg border-1 border-200">
                         <h6 className="m-0 font-bold text-700 text-sm mb-2"><i className="pi pi-step-forward mr-2"></i>Langkah 2: Pilih File Excel / CSV yang Sudah Diisi</h6>
                         <div className="flex align-items-center gap-3">
-                            <input 
-                                ref={fileInputRef} 
-                                type="file" 
-                                accept=".xlsx, .xls, .csv" 
-                                onChange={handleFileUpload} 
-                                className="hidden" 
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept=".xlsx, .xls, .csv"
+                                onChange={handleFileUpload}
+                                className="hidden"
                             />
-                            <Button 
-                                type="button" 
-                                label="Pilih File Excel/CSV..." 
-                                icon="pi pi-folder-open" 
-                                severity="secondary" 
-                                outlined 
-                                onClick={() => fileInputRef.current?.click()} 
-                                className="w-auto py-2 px-3 text-xs" 
+                            <Button
+                                type="button"
+                                label="Pilih File Excel/CSV..."
+                                icon="pi pi-folder-open"
+                                severity="secondary"
+                                outlined
+                                onClick={() => fileInputRef.current?.click()}
+                                className="w-auto py-2 px-3 text-xs"
                                 disabled={isImporting}
                             />
                             {parsedRows.length > 0 && (
@@ -322,25 +322,25 @@ const ExcelBulkAction: React.FC<ExcelBulkActionProps> = ({
                             )}
 
                             <div className="flex justify-content-end gap-2 mt-3">
-                                <Button 
-                                    type="button" 
-                                    label="Batal" 
-                                    icon="pi pi-times" 
-                                    severity="secondary" 
-                                    outlined 
-                                    onClick={() => setVisible(false)} 
-                                    disabled={isImporting} 
-                                    className="w-auto px-4" 
+                                <Button
+                                    type="button"
+                                    label="Batal"
+                                    icon="pi pi-times"
+                                    severity="secondary"
+                                    outlined
+                                    onClick={() => setVisible(false)}
+                                    disabled={isImporting}
+                                    className="w-auto px-4"
                                 />
-                                <Button 
-                                    type="button" 
-                                    label={isImporting ? `Mengimpor (${progress.current}/${progress.total})...` : "🚀 Mulai Import Data Sekarang"} 
-                                    icon="pi pi-check" 
-                                    severity="success" 
-                                    onClick={handleBulkImport} 
-                                    disabled={isImporting || parsedRows.length === 0} 
-                                    loading={isImporting} 
-                                    className="w-auto px-4 font-bold shadow-2" 
+                                <Button
+                                    type="button"
+                                    label={isImporting ? `Mengimpor (${progress.current}/${progress.total})...` : "Mulai Sekarang"}
+                                    icon="pi pi-check"
+                                    severity="success"
+                                    onClick={handleBulkImport}
+                                    disabled={isImporting || parsedRows.length === 0}
+                                    loading={isImporting}
+                                    className="w-auto px-4 font-bold shadow-2"
                                 />
                             </div>
                         </div>

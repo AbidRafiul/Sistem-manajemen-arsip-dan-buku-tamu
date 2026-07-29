@@ -56,31 +56,34 @@ export async function seed(knex) {
     const id4 = 400 + b.id_cabang;
     const id5 = 500 + b.id_cabang;
 
+    const suffix = b.id_cabang === 1 ? "" : `-${b.id_cabang}`;
+    const loc = b.id_cabang === 1 ? "" : ` ${b.nama_cabang}`;
+
     // 5 Departemen per cabang
     departemens.push(
-      { id_departemen: id1, id_cabang: b.id_cabang, kode_departemen: `DEPT-OPS-${b.id_cabang}`, nama_departemen: `Operasional ${b.nama_cabang}`, status: "active", created_at: dNow, updated_at: dNow },
-      { id_departemen: id2, id_cabang: b.id_cabang, kode_departemen: `DEPT-HRD-${b.id_cabang}`, nama_departemen: `SDM & Umum ${b.nama_cabang}`, status: "active", created_at: dNow, updated_at: dNow },
-      { id_departemen: id3, id_cabang: b.id_cabang, kode_departemen: `DEPT-KEU-${b.id_cabang}`, nama_departemen: `Keuangan & Akuntansi ${b.nama_cabang}`, status: "active", created_at: dNow, updated_at: dNow },
-      { id_departemen: id4, id_cabang: b.id_cabang, kode_departemen: `DEPT-IT-${b.id_cabang}`, nama_departemen: `Teknologi Informasi ${b.nama_cabang}`, status: "active", created_at: dNow, updated_at: dNow },
-      { id_departemen: id5, id_cabang: b.id_cabang, kode_departemen: `DEPT-AUD-${b.id_cabang}`, nama_departemen: `Audit & Kepatuhan ${b.nama_cabang}`, status: "active", created_at: dNow, updated_at: dNow }
+      { id_departemen: id1, id_cabang: b.id_cabang, kode_departemen: `DEPT-OPS${suffix}`, nama_departemen: `Operasional${loc}`, status: "active", created_at: dNow, updated_at: dNow },
+      { id_departemen: id2, id_cabang: b.id_cabang, kode_departemen: `DEPT-HRD${suffix}`, nama_departemen: `SDM & Umum${loc}`, status: "active", created_at: dNow, updated_at: dNow },
+      { id_departemen: id3, id_cabang: b.id_cabang, kode_departemen: `DEPT-KEU${suffix}`, nama_departemen: `Keuangan & Akuntansi${loc}`, status: "active", created_at: dNow, updated_at: dNow },
+      { id_departemen: id4, id_cabang: b.id_cabang, kode_departemen: `DEPT-IT${suffix}`, nama_departemen: `Teknologi Informasi${loc}`, status: "active", created_at: dNow, updated_at: dNow },
+      { id_departemen: id5, id_cabang: b.id_cabang, kode_departemen: `DEPT-AUD${suffix}`, nama_departemen: `Audit & Kepatuhan${loc}`, status: "active", created_at: dNow, updated_at: dNow }
     );
 
     // 5 Divisi per cabang
     divisis.push(
-      { id_divisi: id1, id_departemen: id1, kode_divisi: `DIV-OPS-${b.id_cabang}`, nama_divisi: `Divisi Layanan Operasional ${b.nama_cabang}`, status: "active", created_at: dNow, updated_at: dNow },
-      { id_divisi: id2, id_departemen: id2, kode_divisi: `DIV-HRD-${b.id_cabang}`, nama_divisi: `Divisi Kepegawaian ${b.nama_cabang}`, status: "active", created_at: dNow, updated_at: dNow },
-      { id_divisi: id3, id_departemen: id3, kode_divisi: `DIV-KEU-${b.id_cabang}`, nama_divisi: `Divisi Perbendaharaan ${b.nama_cabang}`, status: "active", created_at: dNow, updated_at: dNow },
-      { id_divisi: id4, id_departemen: id4, kode_divisi: `DIV-IT-${b.id_cabang}`, nama_divisi: `Divisi Infrastruktur IT ${b.nama_cabang}`, status: "active", created_at: dNow, updated_at: dNow },
-      { id_divisi: id5, id_departemen: id5, kode_divisi: `DIV-AUD-${b.id_cabang}`, nama_divisi: `Divisi Pengawasan Internal ${b.nama_cabang}`, status: "active", created_at: dNow, updated_at: dNow }
+      { id_divisi: id1, id_departemen: id1, kode_divisi: `DIV-OPS${suffix}`, nama_divisi: `Divisi Layanan Operasional${loc}`, status: "active", created_at: dNow, updated_at: dNow },
+      { id_divisi: id2, id_departemen: id2, kode_divisi: `DIV-HRD${suffix}`, nama_divisi: `Divisi Kepegawaian${loc}`, status: "active", created_at: dNow, updated_at: dNow },
+      { id_divisi: id3, id_departemen: id3, kode_divisi: `DIV-KEU${suffix}`, nama_divisi: `Divisi Perbendaharaan${loc}`, status: "active", created_at: dNow, updated_at: dNow },
+      { id_divisi: id4, id_departemen: id4, kode_divisi: `DIV-IT${suffix}`, nama_divisi: `Divisi Infrastruktur IT${loc}`, status: "active", created_at: dNow, updated_at: dNow },
+      { id_divisi: id5, id_departemen: id5, kode_divisi: `DIV-AUD${suffix}`, nama_divisi: `Divisi Pengawasan Internal${loc}`, status: "active", created_at: dNow, updated_at: dNow }
     );
 
     // 5 Unit Kerja per cabang
     units.push(
-      { id_unit_kerja: id1, id_divisi: id1, kode_unit_kerja: `UNIT-OPS-${b.id_cabang}`, nama_unit_kerja: `Unit Pelayanan Tamu & Admin ${b.nama_cabang}`, status: "active", created_at: dNow, updated_at: dNow },
-      { id_unit_kerja: id2, id_divisi: id2, kode_unit_kerja: `UNIT-HRD-${b.id_cabang}`, nama_unit_kerja: `Unit Rekrutmen & Training ${b.nama_cabang}`, status: "active", created_at: dNow, updated_at: dNow },
-      { id_unit_kerja: id3, id_divisi: id3, kode_unit_kerja: `UNIT-KEU-${b.id_cabang}`, nama_unit_kerja: `Unit Pembukuan & Pajak ${b.nama_cabang}`, status: "active", created_at: dNow, updated_at: dNow },
-      { id_unit_kerja: id4, id_divisi: id4, kode_unit_kerja: `UNIT-IT-${b.id_cabang}`, nama_unit_kerja: `Unit Maintenance Server ${b.nama_cabang}`, status: "active", created_at: dNow, updated_at: dNow },
-      { id_unit_kerja: id5, id_divisi: id5, kode_unit_kerja: `UNIT-AUD-${b.id_cabang}`, nama_unit_kerja: `Unit Pemeriksaan Dokumen ${b.nama_cabang}`, status: "active", created_at: dNow, updated_at: dNow }
+      { id_unit_kerja: id1, id_divisi: id1, kode_unit_kerja: `UNIT-OPS${suffix}`, nama_unit_kerja: `Unit Pelayanan Tamu & Admin${loc}`, status: "active", created_at: dNow, updated_at: dNow },
+      { id_unit_kerja: id2, id_divisi: id2, kode_unit_kerja: `UNIT-HRD${suffix}`, nama_unit_kerja: `Unit Rekrutmen & Training${loc}`, status: "active", created_at: dNow, updated_at: dNow },
+      { id_unit_kerja: id3, id_divisi: id3, kode_unit_kerja: `UNIT-KEU${suffix}`, nama_unit_kerja: `Unit Pembukuan & Pajak${loc}`, status: "active", created_at: dNow, updated_at: dNow },
+      { id_unit_kerja: id4, id_divisi: id4, kode_unit_kerja: `UNIT-IT${suffix}`, nama_unit_kerja: `Unit Maintenance Server${loc}`, status: "active", created_at: dNow, updated_at: dNow },
+      { id_unit_kerja: id5, id_divisi: id5, kode_unit_kerja: `UNIT-AUD${suffix}`, nama_unit_kerja: `Unit Pemeriksaan Dokumen${loc}`, status: "active", created_at: dNow, updated_at: dNow }
     );
   }
 
