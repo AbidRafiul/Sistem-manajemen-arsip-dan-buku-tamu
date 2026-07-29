@@ -90,11 +90,14 @@ const incomingLetterUpload = async (req, res) => {
 
     const minioPrefix = await getMinioPrefix(uploaderIdCabang, uploaderIdDept, uploaderIdDiv, uploaderIdUnit);
 
-    cObjectName = await uploadFileToMinio(
-      cBucketName,
-      oFile,
-      `${minioPrefix}/correspondence/surat_masuk`,
-    );
+    cObjectName = await uploadFileToMinio(cBucketName, oFile, {
+      idCabang: uploaderIdCabang,
+      modul: "korespondensi/surat-masuk",
+      nomorDokumen: oPayload.nomor_surat,
+      namaDokumen: oPayload.perihal,
+      version: "V1",
+      customFolderPath: `${minioPrefix}/korespondensi/surat-masuk`
+    });
 
     const dNow = new Date();
     let vaInserted;

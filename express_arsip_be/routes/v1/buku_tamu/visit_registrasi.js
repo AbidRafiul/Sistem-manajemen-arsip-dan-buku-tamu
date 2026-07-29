@@ -149,7 +149,8 @@ router.post(
       const photoFaceFile = getFile("SelfieFile") || getFile("PhotoFace");
       const photoIdentityFile = getFile("IdentityFile") || getFile("PhotoIdentity");
       const signatureFile = getFile("SignatureFile");
-      const todayPath = formatDateSystem(new Date(), "yyyyMMdd");
+      const nYear = new Date().getFullYear();
+      const cTodayPath = formatDateSystem(new Date(), "yyyyMMdd");
 
       let PhotoFace = null;
       let PhotoIdentity = null;
@@ -159,14 +160,14 @@ router.post(
         PhotoFace = await uploadFileToMinio(
           cBucket,
           photoFaceFile,
-          `${minioPrefix}/buku-tamu/photos/${todayPath}`,
+          `${minioPrefix}/buku-tamu/foto/${nYear}/${cTodayPath}`,
         );
       }
       if (photoIdentityFile) {
         PhotoIdentity = await uploadFileToMinio(
           cBucket,
           photoIdentityFile,
-          `${minioPrefix}/buku-tamu/photos/${todayPath}`,
+          `${minioPrefix}/buku-tamu/foto/${nYear}/${cTodayPath}`,
         );
       }
 
@@ -185,14 +186,14 @@ router.post(
           TandaTangan = await uploadFileToMinio(
             cBucket,
             fileObj,
-            `${minioPrefix}/buku-tamu/signatures/${todayPath}`,
+            `${minioPrefix}/buku-tamu/tanda-tangan/${nYear}/${cTodayPath}`,
           );
         }
       } else if (signatureFile) {
         TandaTangan = await uploadFileToMinio(
           cBucket,
           signatureFile,
-          `${minioPrefix}/buku-tamu/signatures/${todayPath}`,
+          `${minioPrefix}/buku-tamu/tanda-tangan/${nYear}/${cTodayPath}`,
         );
       }
 
@@ -256,9 +257,9 @@ router.post(
           let memberPhotoPath = null;
           if (memberFile) {
             memberPhotoPath = await uploadFileToMinio(
-              "buku-tamu",
+              cBucket,
               memberFile,
-              `${minioPrefix}/buku-tamu/photos/${todayPath}`
+              `${minioPrefix}/buku-tamu/foto/${nYear}/${cTodayPath}`
             );
           }
 

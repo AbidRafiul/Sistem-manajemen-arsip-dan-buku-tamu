@@ -9,6 +9,7 @@ import documentDelete from "./document_delete.js";
 import documentGet from "./document_get.js";
 import documentDetail from "./document_detail.js";
 import documentPreview from "./document_preview.js";
+import documentNumberGenerate from "./document_number_generate.js";
 
 import documentVersionCreate from "./document_version_create.js";
 import documentVersionUpload from "./document_version_upload.js";
@@ -81,6 +82,9 @@ router.get("/detail", documentDetail);
 
 // GET /preview — Document preview url generator
 router.get("/preview", documentPreview);
+
+// GET /number/generate — Auto-generate document number based on branch, classification, category, date, seq
+router.get("/number/generate", documentNumberGenerate);
 
 // GET /search — Unified Full-Text & Metadata Search
 router.get("/search", documentSearch);

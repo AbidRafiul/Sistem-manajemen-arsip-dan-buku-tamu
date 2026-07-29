@@ -189,6 +189,7 @@ export interface TableProps {
     handleGenerateQR: (id: number) => void;
     handleScanQR: (qrCode: string) => void;
     handleUpdateLocation: (id: number, location: string) => void;
+    handleGenerateAutoNumber?: () => Promise<void>;
     toast: React.RefObject<Toast>;
 }
 
@@ -196,5 +197,6 @@ export interface FormProps {
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>;
     formik: FormikProps<initValue>
+    handleGenerateAutoNumber?: () => Promise<void>;
     toast: RefObject<Toast>
 }

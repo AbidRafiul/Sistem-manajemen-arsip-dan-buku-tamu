@@ -70,13 +70,39 @@ export const uploadDocument = (req, res, next) => {
 
       const minioPrefix = await getMinioPrefix(uploaderIdCabang, uploaderIdDept, uploaderIdDiv, uploaderIdUnit);
 
-      // Upload ke MinIO di bawah folder 'arsip_dokumen'
-      const objectName = await uploadFileToMinio(bucketName, req.file, `${minioPrefix}/arsip_dokumen`);
+      // Extract metadata for structured filename
+      let cNomorDokumen = req.body.nomor_dokumen || req.body.kode_dokumen || req.body.nomor_surat || "";
+      let cNamaDokumen = req.body.nama_dokumen || req.body.perihal || "";
+
+      // Lookup document metadata from DB if id_dokumen / kode_dokumen is present without metadata
+      if ((!cNomorDokumen || !cNamaDokumen) && (req.body.id_dokumen || req.body.kode_dokumen)) {
+        const docQuery = DB("trs_dokumen").select("nomor_dokumen", "nama_dokumen", "kode_dokumen");
+        if (req.body.id_dokumen) {
+          docQuery.where("id_dokumen", req.body.id_dokumen);
+        } else {
+          docQuery.where("kode_dokumen", req.body.kode_dokumen);
+        }
+        const foundDoc = await docQuery.first();
+        if (foundDoc) {
+          if (!cNomorDokumen) cNomorDokumen = foundDoc.nomor_dokumen || foundDoc.kode_dokumen;
+          if (!cNamaDokumen) cNamaDokumen = foundDoc.nama_dokumen;
+        }
+      }
+
+      // Upload ke MinIO dengan metadata penamaan terstruktur
+      const cObjectName = await uploadFileToMinio(bucketName, req.file, {
+        idCabang: uploaderIdCabang,
+        modul: "arsip-dokumen",
+        nomorDokumen: cNomorDokumen,
+        namaDokumen: cNamaDokumen,
+        version: req.body.nomor_versi ? `V${req.body.nomor_versi}` : "V1",
+        customFolderPath: `${minioPrefix}/arsip-dokumen`
+      });
 
       // Extract the filename portion for req.file.filename so downstream handles cFilePath correctly
-      const baseName = objectName.split("/").pop();
+      const baseName = cObjectName.split("/").pop();
       req.file.filename = baseName;
-      req.file.path = objectName;
+      req.file.path = cObjectName;
 
       next();
     } catch (uploadError) {
