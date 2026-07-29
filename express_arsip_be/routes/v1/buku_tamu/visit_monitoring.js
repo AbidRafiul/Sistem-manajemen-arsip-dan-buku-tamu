@@ -44,13 +44,32 @@ router.post("/", async (req, res) => {
     const chart_tujuan_labels = ruteTujuan.map(item => item.nama_tujuan_kunjungan);
     const chart_tujuan_data = ruteTujuan.map(item => parseInt(item.total, 10));
 
+    // Hitung tren mingguan (Senin - Minggu)
+    const chart_mingguan = [0, 0, 0, 0, 0, 0, 0];
+    let qWeekly = DB("trs_kunjungan as t")
+      .leftJoin("mst_pengguna", "t.id_user_host", "mst_pengguna.id_pengguna")
+      .select(DB.raw("WEEKDAY(t.created_at) as day_index, COUNT(t.id_kunjungan) as total"))
+      .whereRaw("YEARWEEK(t.created_at, 1) = YEARWEEK(CURRENT_DATE(), 1)")
+      .groupByRaw("WEEKDAY(t.created_at)");
+    applyMultiTenantFilter(qWeekly, req, 't');
+    const daysInWeek = await qWeekly;
+
+    if (Array.isArray(daysInWeek)) {
+      daysInWeek.forEach(row => {
+        const idx = parseInt(row.day_index, 10);
+        if (idx >= 0 && idx < 7) {
+          chart_mingguan[idx] = parseInt(row.total, 10);
+        }
+      });
+    }
+
     const oDashboardStats = {
       total_tamu_hari_ini: parseInt(totalTamuHariIni?.total || 0, 10),
       sedang_berkunjung: parseInt(sedangBerkunjung?.total || 0, 10),
       selesai_kunjungan: parseInt(selesaiKunjungan?.total || 0, 10),
-      chart_mingguan: [5, 12, 18, 10, parseInt(totalTamuHariIni?.total || 0, 10)],
-      chart_tujuan_labels: chart_tujuan_labels.length > 0 ? chart_tujuan_labels : ['Belum Ada Kunjungan'],
-      chart_tujuan_data: chart_tujuan_data.length > 0 ? chart_tujuan_data : [0]
+      chart_mingguan: chart_mingguan,
+      chart_tujuan_labels: chart_tujuan_labels,
+      chart_tujuan_data: chart_tujuan_data
     };
 
     return res.status(200).json({

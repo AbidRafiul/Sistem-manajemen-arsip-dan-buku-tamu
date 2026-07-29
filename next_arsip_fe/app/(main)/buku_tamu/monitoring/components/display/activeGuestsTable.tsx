@@ -29,8 +29,8 @@ export default function ActiveGuestsTable({ activeGuests }: ActiveGuestsTablePro
             title={
                 <div className="flex align-items-center justify-content-between border-bottom-1 border-100 pb-3">
                     <div className="flex align-items-center gap-2">
-                        <span className="live-pulse-dot" />
-                        <span className="text-lg font-bold text-900">Tamu Sedang Berkunjung (Live)</span>
+                        <i className="pi pi-id-card text-primary text-xl" />
+                        <span className="text-lg font-bold text-900">Tamu Sedang Berkunjung</span>
                     </div>
                     <span className="text-xs text-color-secondary font-medium px-2 py-1 bg-100 border-round">
                         {activeGuests.length} Tamu Aktif

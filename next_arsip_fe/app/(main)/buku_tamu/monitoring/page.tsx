@@ -11,13 +11,14 @@ const MonitoringPage: React.FC = () => {
     const router = useRouter();
     const toast = useRef<Toast>(null);
     const [load, setLoad] = useState<boolean>(false);
+    const [lastUpdated, setLastUpdated] = useState<string>('');
     const [stats, setStats] = useState<DashboardStats>({
         total_tamu_hari_ini: 0,
         sedang_berkunjung: 0,
         selesai_kunjungan: 0,
-        chart_mingguan: [0, 0, 0, 0, 0],
-        chart_tujuan_labels: ['Belum Ada Data'],
-        chart_tujuan_data: [1]
+        chart_mingguan: [0, 0, 0, 0, 0, 0, 0],
+        chart_tujuan_labels: [],
+        chart_tujuan_data: []
     });
     const [activeGuests, setActiveGuests] = useState<any[]>([]);
 
@@ -33,6 +34,10 @@ const MonitoringPage: React.FC = () => {
             if (resActive?.data?.data?.rows) {
                 setActiveGuests(resActive.data.data.rows);
             }
+
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+            setLastUpdated(timeStr);
         } catch (error: any) {
             console.error("Gagal mengambil data monitoring tamu:", error);
             // Default Fallbacks
@@ -40,9 +45,9 @@ const MonitoringPage: React.FC = () => {
                 total_tamu_hari_ini: 0,
                 sedang_berkunjung: 0,
                 selesai_kunjungan: 0,
-                chart_mingguan: [0, 0, 0, 0, 0],
-                chart_tujuan_labels: ['Belum Ada Data'],
-                chart_tujuan_data: [1]
+                chart_mingguan: [0, 0, 0, 0, 0, 0, 0],
+                chart_tujuan_labels: [],
+                chart_tujuan_data: []
             });
             setActiveGuests([]);
         } finally {
@@ -73,6 +78,7 @@ const MonitoringPage: React.FC = () => {
                 stats={stats}
                 activeGuests={activeGuests}
                 load={load}
+                lastUpdated={lastUpdated}
                 onRefresh={fetchMonitoringData}
                 onRegisterNew={handleRegisterNew}
                 onViewHistory={handleViewHistory}

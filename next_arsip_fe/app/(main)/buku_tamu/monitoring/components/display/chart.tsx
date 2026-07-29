@@ -11,11 +11,11 @@ interface ChartDisplayProps {
 
 export default function ChartDisplay({ stats }: ChartDisplayProps) {
     const lineChartData = {
-        labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'],
+        labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
         datasets: [
             {
                 label: 'Jumlah Kunjungan',
-                data: stats.chart_mingguan,
+                data: stats.chart_mingguan && stats.chart_mingguan.length === 7 ? stats.chart_mingguan : (stats.chart_mingguan || [0, 0, 0, 0, 0, 0, 0]),
                 fill: true,
                 borderColor: '#6366f1', // Indigo primary color
                 backgroundColor: 'rgba(99, 102, 241, 0.08)', // Indigo translucent area
@@ -30,13 +30,19 @@ export default function ChartDisplay({ stats }: ChartDisplayProps) {
         ]
     };
 
+    const hasPurposeData = Boolean(
+        stats.chart_tujuan_data &&
+        stats.chart_tujuan_data.length > 0 &&
+        stats.chart_tujuan_data.some(val => val > 0)
+    );
+
     const doughnutChartData = {
-        labels: stats.chart_tujuan_labels,
+        labels: stats.chart_tujuan_labels || [],
         datasets: [
             {
-                data: stats.chart_tujuan_data,
-                backgroundColor: ['#6366f1', '#14b8a6', '#f59e0b', '#ef4444'], // Indigo, Teal, Amber, Red
-                hoverBackgroundColor: ['#4f46e5', '#0d9488', '#d97706', '#dc2626'],
+                data: stats.chart_tujuan_data || [],
+                backgroundColor: ['#6366f1', '#14b8a6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'],
+                hoverBackgroundColor: ['#4f46e5', '#0d9488', '#d97706', '#dc2626', '#7c3aed', '#db2777'],
                 borderWidth: 2,
                 borderColor: '#ffffff'
             }
@@ -47,7 +53,7 @@ export default function ChartDisplay({ stats }: ChartDisplayProps) {
         maintainAspectRatio: false,
         plugins: {
             legend: {
-                display: false // Hide the legend for line chart, it's cleaner and title explains it.
+                display: false
             },
             tooltip: {
                 padding: 10,
@@ -79,10 +85,11 @@ export default function ChartDisplay({ stats }: ChartDisplayProps) {
                     color: '#f1f5f9'
                 },
                 border: {
-                    dash: [5, 5] // Dashed grid lines
+                    dash: [5, 5]
                 },
                 ticks: {
                     color: '#64748b',
+                    stepSize: 1,
                     font: {
                         family: "'Inter', sans-serif",
                         size: 11,
@@ -95,14 +102,14 @@ export default function ChartDisplay({ stats }: ChartDisplayProps) {
 
     const doughnutChartOptions = {
         maintainAspectRatio: false,
-        cutout: '75%', // Modern sleek donut ring
+        cutout: '75%',
         plugins: {
             legend: {
                 position: 'bottom',
                 labels: {
                     boxWidth: 8,
                     boxHeight: 8,
-                    usePointStyle: true, // Circular bullet point style instead of rectangles
+                    usePointStyle: true,
                     padding: 16,
                     font: {
                         family: "'Inter', sans-serif",
@@ -150,8 +157,20 @@ export default function ChartDisplay({ stats }: ChartDisplayProps) {
                     className="border-none shadow-1 border-round-2xl bg-white h-full flex flex-column premium-hover-card"
                     pt={{ content: { style: { padding: 0 } } }}
                 >
-                    <div className="flex justify-content-center align-items-center mt-4 px-2" style={{ height: '260px', position: 'relative' }}>
-                        <Chart type="doughnut" data={doughnutChartData} options={doughnutChartOptions} style={{ width: '100%', maxWidth: '240px' }} />
+                    <div className="flex justify-content-center align-items-center mt-3 px-2" style={{ height: '270px', position: 'relative' }}>
+                        {hasPurposeData ? (
+                            <Chart type="doughnut" data={doughnutChartData} options={doughnutChartOptions} style={{ width: '100%', maxWidth: '240px' }} />
+                        ) : (
+                            <div className="flex flex-column align-items-center justify-content-center h-full py-4 text-center">
+                                <div className="border-circle p-3 mb-2 flex align-items-center justify-content-center" style={{ width: '4rem', height: '4rem', background: '#f8fafc' }}>
+                                    <i className="pi pi-chart-pie text-2xl text-400" style={{ color: '#94a3b8' }} />
+                                </div>
+                                <h4 className="m-0 text-800 font-bold text-base">Belum Ada Kunjungan</h4>
+                                <p className="m-0 text-color-secondary text-xs mt-1 max-w-15rem">
+                                    Statistik persentase rute tujuan akan tampil otomatis setelah ada transaksi tamu hari ini.
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </Card>
             </div>
