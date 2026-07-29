@@ -173,7 +173,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                             data={state.data}
                             columns={[
                                 { field: 'nama_lengkap', header: 'Nama Lengkap', required: true, example: 'Budi Santoso' },
-                                { field: 'nama_pengguna', header: 'Username', required: true, example: 'budi.s' },
+                                { field: 'nama_pengguna', header: 'Email (sebagai Username)', required: true, example: 'budi@perusahaan.com' },
                                 { field: 'telepon', header: 'Telepon', required: true, example: '081234567890' },
                                 { field: 'kata_sandi', header: 'Kata Sandi', required: true, example: 'Rahasia@123' },
                                 { field: 'peran_role', header: 'Peran / Role', required: true, example: 'Staff Arsip' },

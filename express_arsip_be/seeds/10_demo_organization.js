@@ -11,34 +11,34 @@ export async function seed(knex) {
 
   const newBranches = [
     // 4 Tambahan Pusat Cabang (id_induk = 1 for Pusat Jakarta)
-    { id_cabang: 5, id_induk: 1, kode_cabang: "BR-005", nama_cabang: "Pusat Bandung", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 6, id_induk: 1, kode_cabang: "BR-006", nama_cabang: "Pusat Semarang", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 7, id_induk: 1, kode_cabang: "BR-007", nama_cabang: "Pusat Yogyakarta", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 8, id_induk: 1, kode_cabang: "BR-008", nama_cabang: "Pusat Bali", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 5, id_induk: 1, kode_cabang: "CB-005", nama_cabang: "Pusat Bandung", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 6, id_induk: 1, kode_cabang: "CB-006", nama_cabang: "Pusat Semarang", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 7, id_induk: 1, kode_cabang: "CB-007", nama_cabang: "Pusat Yogyakarta", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 8, id_induk: 1, kode_cabang: "CB-008", nama_cabang: "Pusat Bali", status: "active", created_at: dNow, updated_at: dNow },
     
     // 10 Cabang Daerah (Tersebar)
-    { id_cabang: 9, id_induk: 2, kode_cabang: "BR-009", nama_cabang: "Cabang Mojokerto", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 10, id_induk: 2, kode_cabang: "BR-010", nama_cabang: "Cabang Sidoarjo", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 11, id_induk: 5, kode_cabang: "BR-011", nama_cabang: "Cabang Cimahi", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 12, id_induk: 5, kode_cabang: "BR-012", nama_cabang: "Cabang Soreang", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 13, id_induk: 6, kode_cabang: "BR-013", nama_cabang: "Cabang Demak", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 14, id_induk: 6, kode_cabang: "BR-014", nama_cabang: "Cabang Kendal", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 15, id_induk: 7, kode_cabang: "BR-015", nama_cabang: "Cabang Bantul", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 16, id_induk: 7, kode_cabang: "BR-016", nama_cabang: "Cabang Sleman", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 17, id_induk: 8, kode_cabang: "BR-017", nama_cabang: "Cabang Denpasar", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 18, id_induk: 8, kode_cabang: "BR-018", nama_cabang: "Cabang Gianyar", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 9, id_induk: 2, kode_cabang: "CB-009", nama_cabang: "Cabang Mojokerto", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 10, id_induk: 2, kode_cabang: "CB-010", nama_cabang: "Cabang Sidoarjo", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 11, id_induk: 5, kode_cabang: "CB-011", nama_cabang: "Cabang Cimahi", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 12, id_induk: 5, kode_cabang: "CB-012", nama_cabang: "Cabang Soreang", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 13, id_induk: 6, kode_cabang: "CB-013", nama_cabang: "Cabang Demak", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 14, id_induk: 6, kode_cabang: "CB-014", nama_cabang: "Cabang Kendal", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 15, id_induk: 7, kode_cabang: "CB-015", nama_cabang: "Cabang Bantul", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 16, id_induk: 7, kode_cabang: "CB-016", nama_cabang: "Cabang Sleman", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 17, id_induk: 8, kode_cabang: "CB-017", nama_cabang: "Cabang Denpasar", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 18, id_induk: 8, kode_cabang: "CB-018", nama_cabang: "Cabang Gianyar", status: "active", created_at: dNow, updated_at: dNow },
 
     // 10 Unit Kecamatan
-    { id_cabang: 19, id_induk: 9, kode_cabang: "BR-019", nama_cabang: "Kecamatan Mojokerto Kota", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 20, id_induk: 10, kode_cabang: "BR-020", nama_cabang: "Kecamatan Sidoarjo Kota", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 21, id_induk: 11, kode_cabang: "BR-021", nama_cabang: "Kecamatan Cimahi Tengah", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 22, id_induk: 12, kode_cabang: "BR-022", nama_cabang: "Kecamatan Soreang Pusat", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 23, id_induk: 13, kode_cabang: "BR-023", nama_cabang: "Kecamatan Demak Kota", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 24, id_induk: 14, kode_cabang: "BR-024", nama_cabang: "Kecamatan Kendal Kota", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 25, id_induk: 15, kode_cabang: "BR-025", nama_cabang: "Kecamatan Bantul Kota", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 26, id_induk: 16, kode_cabang: "BR-026", nama_cabang: "Kecamatan Sleman Kota", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 27, id_induk: 17, kode_cabang: "BR-027", nama_cabang: "Kecamatan Denpasar Selatan", status: "active", created_at: dNow, updated_at: dNow },
-    { id_cabang: 28, id_induk: 18, kode_cabang: "BR-028", nama_cabang: "Kecamatan Gianyar Kota", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 19, id_induk: 9, kode_cabang: "CB-019", nama_cabang: "Kecamatan Mojokerto Kota", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 20, id_induk: 10, kode_cabang: "CB-020", nama_cabang: "Kecamatan Sidoarjo Kota", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 21, id_induk: 11, kode_cabang: "CB-021", nama_cabang: "Kecamatan Cimahi Tengah", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 22, id_induk: 12, kode_cabang: "CB-022", nama_cabang: "Kecamatan Soreang Pusat", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 23, id_induk: 13, kode_cabang: "CB-023", nama_cabang: "Kecamatan Demak Kota", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 24, id_induk: 14, kode_cabang: "CB-024", nama_cabang: "Kecamatan Kendal Kota", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 25, id_induk: 15, kode_cabang: "CB-025", nama_cabang: "Kecamatan Bantul Kota", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 26, id_induk: 16, kode_cabang: "CB-026", nama_cabang: "Kecamatan Sleman Kota", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 27, id_induk: 17, kode_cabang: "CB-027", nama_cabang: "Kecamatan Denpasar Selatan", status: "active", created_at: dNow, updated_at: dNow },
+    { id_cabang: 28, id_induk: 18, kode_cabang: "CB-028", nama_cabang: "Kecamatan Gianyar Kota", status: "active", created_at: dNow, updated_at: dNow },
   ];
   
   await knex("mst_cabang").insert(newBranches).onConflict("id_cabang").merge();
