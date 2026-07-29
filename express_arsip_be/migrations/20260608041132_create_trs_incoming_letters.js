@@ -54,7 +54,7 @@ export async function up(knex) {
     table.dateTime("created_at").notNullable().defaultTo(knex.fn.now());
     table.dateTime("updated_at").notNullable().defaultTo(knex.fn.now());
 
-    // 🚀 SEMUA REFERENSI FK HARUS SNAKE_CASE
+    // SEMUA REFERENSI FK HARUS SNAKE_CASE
     table
       .foreign("letter_type_id")
       .references("letter_type_id")

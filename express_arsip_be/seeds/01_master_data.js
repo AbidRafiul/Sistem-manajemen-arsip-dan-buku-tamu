@@ -23,7 +23,7 @@ export async function seed(knex) {
     {
       id_cabang: 1,
       id_induk: null,
-      kode_cabang: "BR-001",
+      kode_cabang: "CB-001",
       nama_cabang: "Pusat Jakarta",
       status: "active",
       created_at: new Date(),
@@ -32,7 +32,7 @@ export async function seed(knex) {
     {
       id_cabang: 2,
       id_induk: 1,
-      kode_cabang: "BR-002",
+      kode_cabang: "CB-002",
       nama_cabang: "Pusat Surabaya",
       status: "active",
       created_at: new Date(),
@@ -41,7 +41,7 @@ export async function seed(knex) {
     {
       id_cabang: 3,
       id_induk: 2,
-      kode_cabang: "BR-003",
+      kode_cabang: "CB-003",
       nama_cabang: "Cabang Madiun",
       status: "active",
       created_at: new Date(),
@@ -50,7 +50,7 @@ export async function seed(knex) {
     {
       id_cabang: 4,
       id_induk: 3,
-      kode_cabang: "BR-004",
+      kode_cabang: "CB-004",
       nama_cabang: "Unit Kecamatan Madiun",
       status: "active",
       created_at: new Date(),

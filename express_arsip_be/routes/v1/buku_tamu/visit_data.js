@@ -45,9 +45,22 @@ router.post("/", async (req, res) => {
       q.whereIn("u.id_cabang", branchIds);
       qCount.whereIn("u.id_cabang", branchIds);
     } else if (req.headers["x-filter-cabang"]) {
-      const branchIds = req.headers["x-filter-cabang"].split(",").map(Number);
-      q.whereIn("u.id_cabang", branchIds);
-      qCount.whereIn("u.id_cabang", branchIds);
+      const parentBranchIds = req.headers["x-filter-cabang"].split(",").map(Number);
+      let allBranchIds = [];
+      if (req.headers["x-exact-cabang"] === 'true') {
+        allBranchIds = parentBranchIds;
+      } else {
+        for (const bId of parentBranchIds) {
+          if (!isNaN(bId)) {
+            const descendantIds = await getDescendantBranchIds(DB, bId);
+            allBranchIds.push(...descendantIds);
+          }
+        }
+      }
+      if (allBranchIds.length > 0) {
+        q.whereIn("u.id_cabang", allBranchIds);
+        qCount.whereIn("u.id_cabang", allBranchIds);
+      }
     }
 
     if (oPayload.Status) {

@@ -207,10 +207,11 @@ export const validateSignature = async (req, res, next) => {
     };
 
     const reqCabang = req.headers['x-filter-cabang'];
+    const isExact = req.headers['x-exact-cabang'] === 'true';
 
     if (reqCabang && reqCabang !== 'null' && reqCabang !== 'undefined') {
       const requestedIds = String(reqCabang).split(",").map(id => parseInt(id, 10)).filter(id => !isNaN(id));
-      const expandedRequestedIds = expandCabangDescendants(requestedIds);
+      const expandedRequestedIds = isExact ? requestedIds : expandCabangDescendants(requestedIds);
 
       if (allowedCabangIds) {
         // Jika Admin Daerah, pastikan cabang yang dipilih berada dalam wewenangnya
