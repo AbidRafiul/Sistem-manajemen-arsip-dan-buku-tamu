@@ -7,12 +7,11 @@ import { useFormik } from 'formik';
 import { initValue, NavState, State } from './components/interfaces';
 import { FilterMatchMode } from 'primereact/api';
 import Form from './components/display/form';
-// import { useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 const Page = () => {
     const toast = useRef<Toast>(null);
-    // const { data: session } = useSession()
-    const session: any = { user: { name: 'Superadmin', role: 'admin', IdPengguna: 1 } };
+    const { data: session } = useSession();
 
     const [state, setState] = useState<State>({
         load: false,
@@ -52,7 +51,7 @@ const Page = () => {
         setState((p) => ({ ...p, load: true }));
         try {
             const res = await postData(apiEndpoint, {
-                Kode: ['msNamaPerusahaan', 'msAlamatPerusahaan', 'msKotaPerusahaan', 'msTeleponPerusahaan', 'msNamaPimpinan', 'msLogoPerusahaan']
+                kode: ['msNamaPerusahaan', 'msAlamatPerusahaan', 'msKotaPerusahaan', 'msTeleponPerusahaan', 'msNamaPimpinan', 'msLogoPerusahaan']
             });
 
             const { msLogoPerusahaan, ...vaValues } = res.data?.data || {};

@@ -42,8 +42,8 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
             const key = Object.keys(rest);
             const keterangan = Object.values(rest);
 
-            formData.append('Kode', JSON.stringify(key));
-            formData.append('Keterangan', JSON.stringify(keterangan));
+            formData.append('kode', JSON.stringify(key));
+            formData.append('keterangan', JSON.stringify(keterangan));
 
             if (msLogoPerusahaan) {
                 formData.append('msLogoPerusahaan', msLogoPerusahaan);

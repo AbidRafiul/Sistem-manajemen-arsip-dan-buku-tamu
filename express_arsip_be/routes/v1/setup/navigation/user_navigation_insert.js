@@ -23,12 +23,12 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        // UBAH DI SINI: Dari nama_pengguna jadi NamaPengguna
-        NamaPengguna: Joi.alternatives()
+        // UBAH DI SINI: Dari NamaPengguna jadi id_pengguna
+        id_pengguna: Joi.alternatives()
           .try(Joi.number(), Joi.string())
           .required()
-          .label("NamaPengguna"),
-        Menu: Joi.string().required().label("Menu"),
+          .label("id_pengguna"),
+        menu: Joi.string().required().label("menu"),
       },
       {
         "string.base": "{#label} harus berupa string",
@@ -58,14 +58,14 @@ router.post("/", async (req, res) => {
 
     await DB("navigasi_pengguna")
       .insert({
-        id_pengguna: oPayload.NamaPengguna,
-        menu: oPayload.Menu,
+        id_pengguna: oPayload.id_pengguna,
+        menu: oPayload.menu,
         created_at: formatDateSystem(),
         updated_at: formatDateSystem(),
       })
       .onConflict("id_pengguna")
       .merge({
-        menu: oPayload.Menu,
+        menu: oPayload.menu,
         updated_at: formatDateSystem(),
       });
 

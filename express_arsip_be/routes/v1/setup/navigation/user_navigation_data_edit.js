@@ -34,11 +34,11 @@ router.post("/", async (req, res) => {
 
     const cValidation = await validatePayload(
       {
-        // 🚨 UBAH DI SINI: Dari nama_pengguna jadi NamaPengguna
-        NamaPengguna: Joi.alternatives()
+        // 🚨 UBAH DI SINI: Dari NamaPengguna jadi id_pengguna
+        id_pengguna: Joi.alternatives()
           .try(Joi.number(), Joi.string())
           .required()
-          .label("NamaPengguna"),
+          .label("id_pengguna"),
       },
       {
         "string.base": "{#label} harus berupa string",
@@ -68,7 +68,7 @@ router.post("/", async (req, res) => {
 
     let oNavigation = await DB("navigasi_pengguna")
       .select("menu")
-      .where("id_pengguna", oPayload.NamaPengguna)
+      .where("id_pengguna", oPayload.id_pengguna)
       .first();
 
     // fallback ke mst_navigasi kalau tidak ada
@@ -93,7 +93,7 @@ router.post("/", async (req, res) => {
         "mst_peran.nama_peran as peran",
         "mst_peran.kode_peran",
       )
-      .where("mst_pengguna_peran.id_pengguna", oPayload.NamaPengguna)
+      .where("mst_pengguna_peran.id_pengguna", oPayload.id_pengguna)
       .where("mst_pengguna_peran.status", "active")
       .orderBy("mst_pengguna_peran.peran_utama", "desc")
       .first();

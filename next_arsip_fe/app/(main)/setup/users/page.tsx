@@ -247,8 +247,8 @@ const Page = () => {
             // Pastikan data ini isinya beneran ANGKA (Number)
             const vaIdPengguna = state.selectedUsers.map((v: any) => v.id || v.id_pengguna);
 
-            // Kita bungkus angka tersebut ke dalam key 'NamaPengguna' demi backend
-            const finalPayload = { NamaPengguna: vaIdPengguna.map(Number) };
+            // Kita bungkus angka tersebut ke dalam key 'id_pengguna' demi backend
+            const finalPayload = { id_pengguna: vaIdPengguna.map(Number) };
 
             // (Opsional) Intip payload-nya sebelum dikirim, pastikan BUKAN [ null ] atau [ NaN ]
             console.log("PAYLOAD KE BACKEND:", finalPayload);
@@ -293,7 +293,7 @@ const Page = () => {
             const headers = {
                 'X-Level': '1'
             };
-            const vaData = await postData(apiEndpointGetNavDataEdit, { NamaPengguna: IdPengguna }, headers);
+            const vaData = await postData(apiEndpointGetNavDataEdit, { id_pengguna: IdPengguna }, headers);
 
             let res = vaData.data;
             setNavBar((p) => ({
@@ -316,8 +316,8 @@ const Page = () => {
 
         try {
             const res = await postData(apiEndpointUpdateNav, {
-                IdPengguna: navBar.IdPengguna,
-                Menu: JSON.stringify(navBar.menu)
+                id_pengguna: navBar.IdPengguna,
+                menu: JSON.stringify(navBar.menu)
             });
             showSuccess(toast, res.data.message);
             setNavBar((p) => ({ ...p, show: false }));

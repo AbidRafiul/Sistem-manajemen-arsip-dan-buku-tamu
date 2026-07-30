@@ -7,7 +7,7 @@ import {
 } from "../../components/tools/general.js";
 import Joi from "joi";
 import DB from "../../../../core/config/knex.js";
-import { validatePayload } from "../../components/tools/servertool.js";
+import { validatePayload, Logging } from "../../components/tools/servertool.js";
 
 const router = express.Router();
 
@@ -212,12 +212,19 @@ router.post("/", async (req, res) => {
       datetime: formatDateSystem(),
     });
   } catch (error) {
-    console.log("ERROR DATABASE:", error);
-    return res.status(500).json({
+    const oResult = {
       status: status.BAD_REQUEST,
       message: "Sistem maintenance",
       datetime: datetime(),
+    };
+    Logging(error, {
+      file: "user_update.js",
+      func: "update",
+      request: oPayload,
+      response: oResult,
+      user: req?.auth?.nama_pengguna || "",
     });
+    return res.status(500).json(oResult);
   }
 });
 

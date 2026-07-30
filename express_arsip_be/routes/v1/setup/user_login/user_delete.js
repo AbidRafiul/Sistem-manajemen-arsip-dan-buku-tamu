@@ -17,23 +17,23 @@ router.post("/", async (req, res) => {
   try {
     if (
       !oPayload ||
-      !oPayload.NamaPengguna ||
-      !Array.isArray(oPayload.NamaPengguna)
+      !oPayload.id_pengguna ||
+      !Array.isArray(oPayload.id_pengguna)
     ) {
       return res.status(400).json({
         status: status.BAD_REQUEST,
-        message: "Invalid request body: NamaPengguna (array) is required",
+        message: "Invalid request body: id_pengguna (array) is required",
         datetime: formatDateSystem(),
       });
     }
 
-    // 🔥 PERBAIKAN VALIDASI: Ganti nama_pengguna jadi NamaPengguna
+    // 🔥 PERBAIKAN VALIDASI: Ganti NamaPengguna jadi id_pengguna
     const cValidation = await validatePayload(
       {
-        NamaPengguna: Joi.array()
+        id_pengguna: Joi.array()
           .items(Joi.number())
           .required()
-          .label("NamaPengguna"),
+          .label("id_pengguna"),
       },
       { "any.required": "{#label} wajib diisi" },
       oPayload,
@@ -50,7 +50,7 @@ router.post("/", async (req, res) => {
     await DB.transaction(async (trx) => {
       // 1. Nonaktifkan di mst_pengguna
       await trx("mst_pengguna")
-        .whereIn("id_pengguna", oPayload.NamaPengguna)
+        .whereIn("id_pengguna", oPayload.id_pengguna)
         .update({
           status: "nonactive",
           updated_at: formatDateSystem(),
@@ -58,7 +58,7 @@ router.post("/", async (req, res) => {
 
       // 2. Nonaktifkan juga di mst_pengguna_peran
       await trx("mst_pengguna_peran")
-        .whereIn("id_pengguna", oPayload.NamaPengguna)
+        .whereIn("id_pengguna", oPayload.id_pengguna)
         .update({
           status: "nonactive",
           updated_at: formatDateSystem(),

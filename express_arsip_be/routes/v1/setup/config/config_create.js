@@ -27,8 +27,8 @@ router.post("/", upload.any(), async (req, res) => {
     console.log(oPayload);
     const cValidation = await validatePayload(
       {
-        Kode: Joi.string().required().label("Kode"),
-        Keterangan: Joi.string().required().label("Keterangan"),
+        kode: Joi.string().required().label("kode"),
+        keterangan: Joi.string().required().label("keterangan"),
       },
       {
         "any.required": "{#label} wajib diisi",
@@ -55,13 +55,13 @@ router.post("/", upload.any(), async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    let { Kode, Keterangan } = oPayload;
+    let { kode, keterangan } = oPayload;
 
-    Kode = JSON.parse(Kode);
-    Keterangan = JSON.parse(Keterangan);
+    kode = JSON.parse(kode);
+    keterangan = JSON.parse(keterangan);
     console.log(files);
 
-    if (Kode.length !== Keterangan.length) {
+    if (kode.length !== keterangan.length) {
       const oResult = {
         status: status.BAD_REQUEST,
         message: "Jumlah data kode dan keterangan tidak sama.",
@@ -111,12 +111,12 @@ router.post("/", upload.any(), async (req, res) => {
       fs.renameSync(file.path, filepath);
     }
 
-    Kode.push("msLogoPerusahaan");
-    Keterangan.push(filename);
+    kode.push("msLogoPerusahaan");
+    keterangan.push(filename);
 
-    for (let i = 0; i < Kode.length; i++) {
-      const cKode = Kode[i];
-      const cKeterangan = Keterangan[i] ?? null;
+    for (let i = 0; i < kode.length; i++) {
+      const cKode = kode[i];
+      const cKeterangan = keterangan[i] ?? null;
 
       const existing = await DB("config")
         .select("keterangan")
