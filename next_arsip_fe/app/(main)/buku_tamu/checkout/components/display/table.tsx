@@ -47,20 +47,23 @@ export default function GuestDataTable({
         { label: 'Selesai', value: 'out' }
     ];
 
+    const permissions = usePermissions();
+    const { canUpdate, canApprove } = permissions;
+
     const actionBodyTemplate = (rowData: any) => {
         return (
             <div className="flex gap-2">
                 <Button icon="pi pi-eye" severity="info" rounded outlined onClick={() => onDetail(rowData)} tooltip="Detail" />
-                {rowData.status_persetujuan === 'pending' && (
+                {canApprove && rowData.status_persetujuan === 'pending' && (
                     <>
                         <Button icon="pi pi-check" severity="success" rounded outlined onClick={() => onApprove(rowData)} tooltip="Setujui" />
                         <Button icon="pi pi-times" severity="danger" rounded outlined onClick={() => onReject(rowData)} tooltip="Tolak" />
                     </>
                 )}
-                {rowData.status === 'Rencana' && rowData.status_persetujuan === 'approved' && (
+                {canUpdate && rowData.status === 'Rencana' && rowData.status_persetujuan === 'approved' && (
                     <Button icon="pi pi-sign-in" severity="success" rounded outlined onClick={() => onCheckin(rowData)} tooltip="Check-In (Masuk)" />
                 )}
-                {rowData.status === 'in' && rowData.status_persetujuan === 'approved' && (
+                {canUpdate && rowData.status === 'in' && rowData.status_persetujuan === 'approved' && (
                     <Button icon="pi pi-sign-out" severity="danger" rounded outlined onClick={() => onCheckout(rowData)} tooltip="Check-Out" />
                 )}
             </div>

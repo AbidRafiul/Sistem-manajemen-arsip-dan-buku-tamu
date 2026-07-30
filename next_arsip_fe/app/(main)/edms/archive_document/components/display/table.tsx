@@ -33,6 +33,7 @@ const Table = ({
     toast
 }: TableProps) => {
     const permissions = usePermissions();
+    const { canCreate, canUpdate, canDelete } = permissions;
     const router = useRouter();
 
     const [scanMode, setScanMode] = useState<'camera' | 'manual'>('manual');
@@ -155,43 +156,47 @@ const Table = ({
                 tooltipOptions={{ position: 'top' }}
                 onClick={() => handleGenerateQR(rowData.id_dokumen)}
             />
-            <Button
-                icon="pi pi-pencil"
-                rounded
-                text
-                severity="secondary"
-                size="small"
-                tooltip="Edit Metadata"
-                tooltipOptions={{ position: 'top' }}
-                onClick={() => {
-                    formik.setValues({
-                        id_dokumen: rowData.id_dokumen,
-                        nama_dokumen: rowData.nama_dokumen,
-                        nomor_dokumen: rowData.nomor_dokumen,
-                        tanggal: formatDateInput(rowData.tanggal),
-                        tanggal_kedaluwarsa: formatDateInput(rowData.tanggal_kedaluwarsa),
-                        nama_pic: rowData.nama_pic,
-                        kode_jenis_dokumen: rowData.kode_jenis_dokumen || '',
-                        kode_klasifikasi: rowData.kode_klasifikasi || '',
-                        kode_kategori_dokumen: rowData.kode_kategori_dokumen || '',
-                        kode_tingkat_kerahasiaan: rowData.kode_tingkat_kerahasiaan || '',
-                        tanggal_transaksi: formatDateInput(rowData.tanggal_transaksi || undefined),
-                        lokasi_fisik: rowData.lokasi_fisik || '',
-                        kode_retensi: rowData.kode_retensi || '',
-                    });
-                    setState((p) => ({ ...p, add: false, edit: true, delete: false, selectedDocuments: [rowData] }));
-                }}
-            />
-            <Button
-                icon="pi pi-trash"
-                rounded
-                text
-                severity="danger"
-                size="small"
-                tooltip="Hapus Dokumen"
-                tooltipOptions={{ position: 'top' }}
-                onClick={() => setState((p) => ({ ...p, delete: true, selectedDocuments: [rowData] }))}
-            />
+            {canUpdate && (
+                <Button
+                    icon="pi pi-pencil"
+                    rounded
+                    text
+                    severity="secondary"
+                    size="small"
+                    tooltip="Edit Metadata"
+                    tooltipOptions={{ position: 'top' }}
+                    onClick={() => {
+                        formik.setValues({
+                            id_dokumen: rowData.id_dokumen,
+                            nama_dokumen: rowData.nama_dokumen,
+                            nomor_dokumen: rowData.nomor_dokumen,
+                            tanggal: formatDateInput(rowData.tanggal),
+                            tanggal_kedaluwarsa: formatDateInput(rowData.tanggal_kedaluwarsa),
+                            nama_pic: rowData.nama_pic,
+                            kode_jenis_dokumen: rowData.kode_jenis_dokumen || '',
+                            kode_klasifikasi: rowData.kode_klasifikasi || '',
+                            kode_kategori_dokumen: rowData.kode_kategori_dokumen || '',
+                            kode_tingkat_kerahasiaan: rowData.kode_tingkat_kerahasiaan || '',
+                            tanggal_transaksi: formatDateInput(rowData.tanggal_transaksi || undefined),
+                            lokasi_fisik: rowData.lokasi_fisik || '',
+                            kode_retensi: rowData.kode_retensi || '',
+                        });
+                        setState((p) => ({ ...p, add: false, edit: true, delete: false, selectedDocuments: [rowData] }));
+                    }}
+                />
+            )}
+            {canDelete && (
+                <Button
+                    icon="pi pi-trash"
+                    rounded
+                    text
+                    severity="danger"
+                    size="small"
+                    tooltip="Hapus Dokumen"
+                    tooltipOptions={{ position: 'top' }}
+                    onClick={() => setState((p) => ({ ...p, delete: true, selectedDocuments: [rowData] }))}
+                />
+            )}
         </div>
     );
 
@@ -262,35 +267,39 @@ const Table = ({
             </div>
 
             <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
-                <Button
-                    size="small"
-                    label="Tambah Dokumen"
-                    icon="pi pi-plus"
-                    outlined
-                    severity="success"
-                    onClick={() => {
-                        const name = (state.session?.user as any)?.name || (state.session?.user as any)?.nama_pengguna || '';
-                        formik.resetForm({
-                            values: {
-                                id_dokumen: null,
-                                nama_dokumen: '',
-                                nomor_dokumen: '',
-                                tanggal: '',
-                                tanggal_kedaluwarsa: '',
-                                nama_pic: name,
-                                kode_jenis_dokumen: '',
-                                kode_klasifikasi: '',
-                                kode_kategori_dokumen: '',
-                                kode_tingkat_kerahasiaan: '',
-                                tanggal_transaksi: '',
-                                lokasi_fisik: '',
-                                kode_retensi: '',
-                            }
-                        });
-                        setState(p => ({ ...p, add: true, edit: false, delete: false }));
-                    }}
-                />
-                <Divider layout="vertical" />
+                {canCreate && (
+                    <>
+                        <Button
+                            size="small"
+                            label="Tambah Dokumen"
+                            icon="pi pi-plus"
+                            outlined
+                            severity="success"
+                            onClick={() => {
+                                const name = (state.session?.user as any)?.name || (state.session?.user as any)?.nama_pengguna || '';
+                                formik.resetForm({
+                                    values: {
+                                        id_dokumen: null,
+                                        nama_dokumen: '',
+                                        nomor_dokumen: '',
+                                        tanggal: '',
+                                        tanggal_kedaluwarsa: '',
+                                        nama_pic: name,
+                                        kode_jenis_dokumen: '',
+                                        kode_klasifikasi: '',
+                                        kode_kategori_dokumen: '',
+                                        kode_tingkat_kerahasiaan: '',
+                                        tanggal_transaksi: '',
+                                        lokasi_fisik: '',
+                                        kode_retensi: '',
+                                    }
+                                });
+                                setState(p => ({ ...p, add: true, edit: false, delete: false }));
+                            }}
+                        />
+                        <Divider layout="vertical" />
+                    </>
+                )}
                 <Button
                     size="small"
                     label="Scan & Track QR"
@@ -310,16 +319,20 @@ const Table = ({
                     severity="help"
                     onClick={() => router.push('/edms/archive_document/search')}
                 />
-                <Divider layout="vertical" />
-                <Button
-                    size="small"
-                    label={`Hapus${state.selectedDocuments.length > 0 ? ` (${state.selectedDocuments.length})` : ''}`}
-                    icon="pi pi-trash"
-                    severity="danger"
-                    outlined
-                    disabled={state.selectedDocuments.length === 0}
-                    onClick={() => setState((p) => ({ ...p, delete: true }))}
-                />
+                {canDelete && (
+                    <>
+                        <Divider layout="vertical" />
+                        <Button
+                            size="small"
+                            label={`Hapus${state.selectedDocuments.length > 0 ? ` (${state.selectedDocuments.length})` : ''}`}
+                            icon="pi pi-trash"
+                            severity="danger"
+                            outlined
+                            disabled={state.selectedDocuments.length === 0}
+                            onClick={() => setState((p) => ({ ...p, delete: true }))}
+                        />
+                    </>
+                )}
                 <Divider layout="vertical" />
                 <Button
                     size="small"

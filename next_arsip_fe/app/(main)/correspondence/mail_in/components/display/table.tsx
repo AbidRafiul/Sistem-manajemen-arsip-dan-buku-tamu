@@ -57,6 +57,7 @@ const Table = ({
     toast
 }: TableProps) => {
     const permissions = usePermissions();
+    const { canCreate, canUpdate, canDelete } = permissions;
     const router = useRouter();
     const [previewFile, setPreviewFile] = useState<{ url: string; mimeType: string; fileName: string } | null>(null);
 
@@ -207,39 +208,43 @@ const Table = ({
                 tooltip="Lihat Detail" tooltipOptions={{ position: "top" }}
                 onClick={() => openDetail(rowData)}
             />
-            <Button
-                icon="pi pi-pencil"
-                rounded text severity="secondary" size="small"
-                tooltip="Edit" tooltipOptions={{ position: "top" }}
-                onClick={() => {
-                    formik.setValues({
-                        surat_masuk_id: rowData.surat_masuk_id,
-                        nomor_agenda: rowData.nomor_agenda,
-                        nomor_surat: rowData.nomor_surat,
-                        tanggal_surat: rowData.tanggal_surat?.slice(0, 10) || "",
-                        tanggal_diterima: rowData.tanggal_diterima?.slice(0, 10) || "",
-                        nama_pengirim: rowData.nama_pengirim,
-                        instansi_pengirim: rowData.instansi_pengirim || "",
-                        perihal: rowData.perihal,
-                        keterangan_lampiran: rowData.keterangan_lampiran || "",
-                        file_surat: null,
-                        jenis_surat_id: rowData.jenis_surat_id,
-                        jenis_dokumen_id: rowData.jenis_dokumen_id,
-                        archive_classification_id: rowData.archive_classification_id,
-                        confidentiality_level_id: rowData.confidentiality_level_id,
-                        status: rowData.status,
-                        created_by: rowData.created_by,
-                        updated_by: rowData.updated_by,
-                    });
-                    setState((p) => ({ ...p, add: false, delete: false, edit: true }));
-                }}
-            />
-            <Button
-                icon="pi pi-trash"
-                rounded text severity="danger" size="small"
-                tooltip="Hapus" tooltipOptions={{ position: "top" }}
-                onClick={() => setState((p) => ({ ...p, delete: true, selectedLetters: [rowData] }))}
-            />
+            {canUpdate && (
+                <Button
+                    icon="pi pi-pencil"
+                    rounded text severity="secondary" size="small"
+                    tooltip="Edit" tooltipOptions={{ position: "top" }}
+                    onClick={() => {
+                        formik.setValues({
+                            surat_masuk_id: rowData.surat_masuk_id,
+                            nomor_agenda: rowData.nomor_agenda,
+                            nomor_surat: rowData.nomor_surat,
+                            tanggal_surat: rowData.tanggal_surat?.slice(0, 10) || "",
+                            tanggal_diterima: rowData.tanggal_diterima?.slice(0, 10) || "",
+                            nama_pengirim: rowData.nama_pengirim,
+                            instansi_pengirim: rowData.instansi_pengirim || "",
+                            perihal: rowData.perihal,
+                            keterangan_lampiran: rowData.keterangan_lampiran || "",
+                            file_surat: null,
+                            jenis_surat_id: rowData.jenis_surat_id,
+                            jenis_dokumen_id: rowData.jenis_dokumen_id,
+                            archive_classification_id: rowData.archive_classification_id,
+                            confidentiality_level_id: rowData.confidentiality_level_id,
+                            status: rowData.status,
+                            created_by: rowData.created_by,
+                            updated_by: rowData.updated_by,
+                        });
+                        setState((p) => ({ ...p, add: false, delete: false, edit: true }));
+                    }}
+                />
+            )}
+            {canDelete && (
+                <Button
+                    icon="pi pi-trash"
+                    rounded text severity="danger" size="small"
+                    tooltip="Hapus" tooltipOptions={{ position: "top" }}
+                    onClick={() => setState((p) => ({ ...p, delete: true, selectedLetters: [rowData] }))}
+                />
+            )}
         </div>
     );
 
@@ -303,28 +308,36 @@ const Table = ({
                 </div>
 
                 <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
-                    <Button
-                        size="small"
-                        label="Tambah Surat"
-                        icon="pi pi-plus"
-                        outlined
-                        severity="success"
-                        onClick={() => { formik.resetForm(); setState((p) => ({ ...p, selectedLetters: [], add: true, edit: false, delete: false })); }}
-                    />
-                    <Divider layout="vertical" />
-                    <Button
-                        size="small"
-                        label={`Hapus${state.selectedLetters.length > 0 ? ` (${state.selectedLetters.length})` : ""}`}
-                        icon="pi pi-trash"
-                        severity="danger"
-                        outlined
-                        disabled={state.selectedLetters.length === 0}
-                        onClick={() => {
-                            if (state.selectedLetters.length < 1) return;
-                            setState((p) => ({ ...p, delete: true }));
-                        }}
-                    />
-                    <Divider layout="vertical" />
+                    {canCreate && (
+                        <>
+                            <Button
+                                size="small"
+                                label="Tambah Surat"
+                                icon="pi pi-plus"
+                                outlined
+                                severity="success"
+                                onClick={() => { formik.resetForm(); setState((p) => ({ ...p, selectedLetters: [], add: true, edit: false, delete: false })); }}
+                            />
+                            <Divider layout="vertical" />
+                        </>
+                    )}
+                    {canDelete && (
+                        <>
+                            <Button
+                                size="small"
+                                label={`Hapus${state.selectedLetters.length > 0 ? ` (${state.selectedLetters.length})` : ""}`}
+                                icon="pi pi-trash"
+                                severity="danger"
+                                outlined
+                                disabled={state.selectedLetters.length === 0}
+                                onClick={() => {
+                                    if (state.selectedLetters.length < 1) return;
+                                    setState((p) => ({ ...p, delete: true }));
+                                }}
+                            />
+                            <Divider layout="vertical" />
+                        </>
+                    )}
                     <Button
                         size="small"
                         label="Refresh"
