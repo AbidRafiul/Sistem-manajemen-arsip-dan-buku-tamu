@@ -1,0 +1,79 @@
+================================================================================
+RINGKASAN PERUBAHAN YANG DITAMBAHKAN PADA MERGE KE MAIN (PR #55: refactor/master-data)
+Tanggal Merge: 29 Juli 2026
+Branch Tujuan: main / feature/edms-archive-document
+================================================================================
+
+1. FITUR BARU & ENHANCEMENT UTAMA:
+   -----------------------------------------------------------------------------
+   a. Import Bulk User via Excel (ExcelBulkAction.tsx) [NEW]:
+      - Menambahkan komponen frontend baru `ExcelBulkAction.tsx` di `next_arsip_fe/app/components/excel_components/`.
+      - Memungkinkan admin mengunduh template Excel dan mengunggah/mengimpor data pengguna secara massal (bulk import).
+      - Header template Excel disesuaikan (menggunakan email & format cabang CB-).
+
+   b. Cascading Dropdown Form User & Filter Cabang:
+      - Memperbarui komponen `form.tsx` di `setup/users`.
+      - Menerapkan dropdown bertingkat (cascading) untuk pemilihan struktur organisasi:
+        Cabang -> Divisi -> Departemen -> Unit Kerja.
+      - Memperbaiki presistensi hirarki dropdown dan filter spesifik cabang di `BranchSwitcher.tsx`.
+
+   c. Clean Up Tabel Master & UI Setup Users:
+      - Memperbarui dan merapikan komponen tabel master data (Branches, Department, Divisions, Positions, Work Unit).
+      - Pembaruan tampilan `table.tsx` dan `page.tsx` di `setup/users`.
+
+   d. Endpoint DB Config Baru [NEW]:
+      - Menambahkan file backend baru `express_arsip_be/routes/v1/components/endpoint/db_config.js`.
+      - Membuka endpoint pendukung konfigurasi database.
+
+2. PERBAIKAN BACKEND & MASTER DATA (SEED):
+   -----------------------------------------------------------------------------
+   a. Penyesuaian Kode Cabang & Seed Data Organisasi:
+      - Mengubah format kode cabang di file seed menjadi prefix `CB-`.
+      - Menghapus suffix `-1` pada nama organisasi Pusat Jakarta di file seed (`10_demo_organization.js`).
+      - Memperbanyak data dummy/seed organisasi untuk pengujian hierarki.
+
+   b. Refactoring Filter Query Master Data:
+      - Memperbaiki filter cabang pada endpoint `branch_get.js`, `department_get.js`, `division_get.js`, `work_unit_get.js`, dan `user_data.js`.
+      - Penyesuaian `validate_header.js` dan `visit_data.js` untuk konsistensi penanganan header filter cabang.
+
+   c. Perbaikan Helper PDF & Axios:
+      - Penyesuaian pada `lib/tools/printTools/accPdf.ts`, `getData.ts`, dan `postData.ts`.
+
+3. STATUS MERGE KETIKA PULL KE FEATURE/EDMS-ARCHIVE-DOCUMENT:
+   -----------------------------------------------------------------------------
+   - Status Merge: FAST-FORWARD (SUKSES 100% TANPA KONFLIK).
+   - Seluruh perubahan pekerjaan sebelumnya (EDMS archive document, penomoran otomatis, preview modal, penyelarasan MinIO) tetap AMAN dan TIDAK TERTIMPA.
+
+================================================================================
+Daftar File yang Terpengaruh (26 Files):
+================================================================================
+[BACKEND]
+- express_arsip_be/middleware/validate_header.js
+- express_arsip_be/migrations/20260608041132_create_trs_incoming_letters.js
+- express_arsip_be/routes/v1/buku_tamu/visit_data.js
+- express_arsip_be/routes/v1/components/endpoint/db_config.js (BARU)
+- express_arsip_be/routes/v1/components/index.js
+- express_arsip_be/routes/v1/master/organisasi/branches/branch_get.js
+- express_arsip_be/routes/v1/master/organisasi/department/department_get.js
+- express_arsip_be/routes/v1/master/organisasi/divisions/division_get.js
+- express_arsip_be/routes/v1/master/organisasi/work_unit/work_unit_get.js
+- express_arsip_be/routes/v1/setup/user_login/user_data.js
+- express_arsip_be/seeds/01_master_data.js
+- express_arsip_be/seeds/10_demo_organization.js
+- express_arsip_be/seeds/99_full_demo_data.js
+
+[FRONTEND]
+- next_arsip_fe/app/(main)/master_data/branches/components/display/table.tsx
+- next_arsip_fe/app/(main)/master_data/department/components/display/table.tsx
+- next_arsip_fe/app/(main)/master_data/divisions/components/display/table.tsx
+- next_arsip_fe/app/(main)/master_data/positions/components/display/table.tsx
+- next_arsip_fe/app/(main)/master_data/work_unit/components/display/table.tsx
+- next_arsip_fe/app/(main)/setup/users/components/display/form.tsx
+- next_arsip_fe/app/(main)/setup/users/components/display/table.tsx
+- next_arsip_fe/app/(main)/setup/users/page.tsx
+- next_arsip_fe/app/components/excel_components/ExcelBulkAction.tsx (BARU)
+- next_arsip_fe/layout/BranchSwitcher.tsx
+- next_arsip_fe/lib/axios/getData.ts
+- next_arsip_fe/lib/axios/postData.ts
+- next_arsip_fe/lib/tools/printTools/accPdf.ts
+================================================================================
