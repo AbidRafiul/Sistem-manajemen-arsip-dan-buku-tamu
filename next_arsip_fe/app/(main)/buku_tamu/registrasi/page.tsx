@@ -205,26 +205,25 @@ export default function RegistrasiKunjunganPage() {
         try {
             const submitData = new FormData();
 
-            submitData.append('GuestName', formData.guest_name);
-            submitData.append('PhoneNumber', formData.phone_number);
-            submitData.append('GuestEmail', formData.guest_email || '');
-            submitData.append('GuestCompany', formData.guest_company || '-');
-            submitData.append('GuestPosition', formData.guest_position || '');
-            submitData.append('IdentityType', formData.identity_type || '');
-            submitData.append('IdentityNumber', formData.identity_number || '');
-            submitData.append('VisitPurposeId', String(formData.visit_purpose_id));
-            submitData.append('BranchId', String(formData.id_cabang));
+            submitData.append('nama_tamu', formData.guest_name);
+            submitData.append('nomor_telepon', formData.phone_number);
+            submitData.append('email_tamu', formData.guest_email || '');
+            submitData.append('instansi_tamu', formData.guest_company || '-');
+            submitData.append('jabatan_tamu', formData.guest_position || '');
+            submitData.append('jenis_identitas', formData.identity_type || '');
+            submitData.append('nomor_identitas', formData.identity_number || '');
+            submitData.append('id_tujuan_kunjungan', String(formData.visit_purpose_id));
             submitData.append('id_cabang', String(formData.id_cabang));
-            submitData.append('HostUserId', formData.host_user_id ? String(formData.host_user_id) : '');
-            submitData.append('HostName', formData.host_name || '');
-            submitData.append('VisitNotes', formData.visit_notes || '');
+            submitData.append('id_user_host', formData.host_user_id ? String(formData.host_user_id) : '');
+            submitData.append('nama_host', formData.host_name || '');
+            submitData.append('catatan_kunjungan', formData.visit_notes || '');
             if (formData.check_in_time instanceof Date) {
-                submitData.append('CheckInTime', formData.check_in_time.toISOString());
+                submitData.append('waktu_masuk', formData.check_in_time.toISOString());
             }
-            submitData.append('VisitType', formData.visit_type || 'personal');
-            submitData.append('GuestCount', String(formData.guest_count || 1));
+            submitData.append('tipe_kunjungan', formData.visit_type || 'personal');
+            submitData.append('jumlah_tamu', String(formData.guest_count || 1));
             if (formData.signature_data) {
-                submitData.append('SignatureData', formData.signature_data);
+                submitData.append('tanda_tangan_data', formData.signature_data);
             }
 
             if (formData.visit_type === 'group' && formData.group_members && formData.group_members.length > 0) {
@@ -233,17 +232,17 @@ export default function RegistrasiKunjunganPage() {
                     phone: m.phone,
                     idNumber: m.idNumber,
                 }));
-                submitData.append('GroupMembers', JSON.stringify(membersToSend));
+                submitData.append('anggota_rombongan', JSON.stringify(membersToSend));
 
                 formData.group_members.forEach((member, index) => {
                     if (member.identityFile) {
-                        submitData.append(`MemberIdentityFile_${index}`, member.identityFile);
+                        submitData.append(`foto_identitas_anggota_${index}`, member.identityFile);
                     }
                 });
             }
 
-            if (identityFile) submitData.append('IdentityFile', identityFile);
-            if (selfieFile) submitData.append('SelfieFile', selfieFile);
+            if (identityFile) submitData.append('foto_identitas', identityFile);
+            if (selfieFile) submitData.append('foto_wajah', selfieFile);
 
             const tokenSIAB = typeof window !== 'undefined' ? (localStorage.getItem('token') || sessionStorage.getItem('token') || '') : '';
 

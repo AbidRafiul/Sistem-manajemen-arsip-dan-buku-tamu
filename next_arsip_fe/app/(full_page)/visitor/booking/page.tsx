@@ -187,22 +187,21 @@ export default function VisitorBookingPage() {
         setLoading(true);
         try {
             const formData = new FormData();
-            formData.append('GuestName', form.nama_tamu);
-            formData.append('PhoneNumber', form.nomor_telepon);
-            formData.append('GuestEmail', form.email_tamu || '');
-            formData.append('GuestCompany', form.instansi_tamu || '-');
-            formData.append('VisitPurposeId', String(form.id_tujuan_kunjungan));
-            formData.append('BranchId', String(form.id_cabang));
+            formData.append('nama_tamu', form.nama_tamu);
+            formData.append('nomor_telepon', form.nomor_telepon);
+            formData.append('email_tamu', form.email_tamu || '');
+            formData.append('instansi_tamu', form.instansi_tamu || '-');
+            formData.append('id_tujuan_kunjungan', String(form.id_tujuan_kunjungan));
             formData.append('id_cabang', String(form.id_cabang));
-            formData.append('CheckInTime', form.waktu_masuk ? formatDateForBackend(form.waktu_masuk) : '');
-            formData.append('VisitNotes', form.catatan_kunjungan || '');
-            formData.append('IdentityType', form.jenis_identitas || '');
-            formData.append('IdentityNumber', form.nomor_identitas || '');
-            formData.append('HostName', form.nama_host || '');
-            formData.append('VisitType', form.visit_type || 'personal');
-            formData.append('GuestCount', String(form.guest_count || 1));
+            formData.append('waktu_masuk', form.waktu_masuk ? formatDateForBackend(form.waktu_masuk) : '');
+            formData.append('catatan_kunjungan', form.catatan_kunjungan || '');
+            formData.append('jenis_identitas', form.jenis_identitas || '');
+            formData.append('nomor_identitas', form.nomor_identitas || '');
+            formData.append('nama_host', form.nama_host || '');
+            formData.append('tipe_kunjungan', form.visit_type || 'personal');
+            formData.append('jumlah_tamu', String(form.guest_count || 1));
             if (form.signature_data) {
-                formData.append('SignatureData', form.signature_data);
+                formData.append('tanda_tangan_data', form.signature_data);
             }
 
             if (form.visit_type === 'group' && form.group_members && form.group_members.length > 0) {
@@ -211,17 +210,17 @@ export default function VisitorBookingPage() {
                     phone: m.phone,
                     idNumber: m.idNumber,
                 }));
-                formData.append('GroupMembers', JSON.stringify(membersToSend));
+                formData.append('anggota_rombongan', JSON.stringify(membersToSend));
 
                 form.group_members.forEach((member, index) => {
                     if (member.identityFile) {
-                        formData.append(`MemberIdentityFile_${index}`, member.identityFile);
+                        formData.append(`foto_identitas_anggota_${index}`, member.identityFile);
                     }
                 });
             }
 
-            if (identityFile) formData.append('IdentityFile', identityFile);
-            if (selfieFile) formData.append('SelfieFile', selfieFile);
+            if (identityFile) formData.append('foto_identitas', identityFile);
+            if (selfieFile) formData.append('foto_wajah', selfieFile);
 
             const response = await axios.post("http://localhost:8000/api/v1/buku_tamu/visit_booking", formData, {
                 headers: {

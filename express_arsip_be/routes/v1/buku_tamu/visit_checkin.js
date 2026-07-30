@@ -25,71 +25,71 @@ router.post(
     try {
       const cValidation = await validatePayload(
         {
-          GuestName: Joi.string().max(100).required().label("GuestName"),
-          PhoneNumber: Joi.string().max(45).required().label("PhoneNumber"),
-          GuestEmail: Joi.string()
+          nama_tamu: Joi.string().max(100).required().label("nama_tamu"),
+          nomor_telepon: Joi.string().max(45).required().label("nomor_telepon"),
+          email_tamu: Joi.string()
             .email()
             .max(150)
             .optional()
             .allow(null, "")
-            .label("GuestEmail"),
-          GuestCompany: Joi.string()
+            .label("email_tamu"),
+          instansi_tamu: Joi.string()
             .max(255)
             .optional()
             .allow(null, "")
-            .label("GuestCompany"),
-          GuestPosition: Joi.string()
+            .label("instansi_tamu"),
+          jabatan_tamu: Joi.string()
             .max(20)
             .optional()
             .allow(null, "")
-            .label("GuestPosition"),
-          VisitPurposeId: Joi.alternatives()
+            .label("jabatan_tamu"),
+          id_tujuan_kunjungan: Joi.alternatives()
             .try(Joi.string(), Joi.number())
             .required()
-            .label("VisitPurposeId"),
-          HostUserId: Joi.string()
+            .label("id_tujuan_kunjungan"),
+          id_user_host: Joi.string()
             .max(36)
             .optional()
             .allow(null, "")
-            .label("HostUserId"),
-          HostName: Joi.string()
+            .label("id_user_host"),
+          nama_host: Joi.string()
             .max(100)
             .optional()
             .allow(null, "")
-            .label("HostName"),
-          IdentityType: Joi.string()
+            .label("nama_host"),
+          jenis_identitas: Joi.string()
             .valid("ktp", "sim", "paspor")
             .optional()
             .allow(null, "")
-            .label("IdentityType"),
-          IdentityNumber: Joi.string()
+            .label("jenis_identitas"),
+          nomor_identitas: Joi.string()
             .max(50)
             .optional()
             .allow(null, "")
-            .label("IdentityNumber"),
-          VisitNotes: Joi.string()
+            .label("nomor_identitas"),
+          catatan_kunjungan: Joi.string()
             .optional()
             .allow(null, "")
-            .label("VisitNotes"),
-          VisitType: Joi.string()
+            .label("catatan_kunjungan"),
+          tipe_kunjungan: Joi.string()
             .valid("personal", "group")
             .optional()
             .allow(null, "")
-            .label("VisitType"),
-          GuestCount: Joi.number()
+            .label("tipe_kunjungan"),
+          jumlah_tamu: Joi.number()
             .integer()
             .min(1)
             .optional()
             .allow(null, "")
-            .label("GuestCount"),
-          SignatureData: Joi.string()
+            .label("jumlah_tamu"),
+          tanda_tangan_data: Joi.string()
             .optional()
             .allow(null, "")
-            .label("SignatureData"),
-          GroupMembers: Joi.string()
+            .label("tanda_tangan_data"),
+          anggota_rombongan: Joi.string()
             .optional()
             .allow(null, "")
-            .label("GroupMembers"),
+            .label("anggota_rombongan"),
         },
         {
           "string.base": "{#label} harus berupa string",
@@ -113,33 +113,33 @@ router.post(
       }
 
       const {
-        GuestName,
-        PhoneNumber,
-        GuestEmail,
-        GuestCompany,
-        GuestPosition,
-        VisitPurposeId,
-        HostUserId,
-        HostName,
-        IdentityType,
-        IdentityNumber,
-        VisitNotes,
-        VisitType,
-        GuestCount,
-        SignatureData,
-        GroupMembers,
+        nama_tamu,
+        nomor_telepon,
+        email_tamu,
+        instansi_tamu,
+        jabatan_tamu,
+        id_tujuan_kunjungan,
+        id_user_host,
+        nama_host,
+        jenis_identitas,
+        nomor_identitas,
+        catatan_kunjungan,
+        tipe_kunjungan,
+        jumlah_tamu,
+        tanda_tangan_data,
+        anggota_rombongan,
       } = oPayload;
 
       const getFile = (fieldname) => {
         return (req.files || []).find(f => f.fieldname === fieldname) || null;
       };
 
-      const photoFaceFile = getFile("SelfieFile") || getFile("PhotoFace");
-      const targetBranchId = oPayload.BranchId || oPayload.id_cabang || req.auth?.id_cabang || 1;
+      const photoFaceFile = getFile("foto_wajah") || getFile("SelfieFile");
+      const targetBranchId = oPayload.id_cabang || req.auth?.id_cabang || 1;
       const minioPrefix = await getMinioPrefix(targetBranchId);
 
-      const photoIdentityFile = getFile("IdentityFile") || getFile("PhotoIdentity");
-      const signatureFile = getFile("SignatureFile");
+      const photoIdentityFile = getFile("foto_identitas") || getFile("IdentityFile");
+      const signatureFile = getFile("file_tanda_tangan") || getFile("SignatureFile");
       const nYear = new Date().getFullYear();
       const cTodayPath = formatDateSystem(new Date(), "yyyyMMdd");
 
@@ -163,8 +163,8 @@ router.post(
         );
       }
 
-      if (SignatureData && SignatureData.startsWith("data:image/")) {
-        const matches = SignatureData.match(new RegExp("^data:([A-Za-z-+/]+);base64,(.+)$"));
+      if (tanda_tangan_data && tanda_tangan_data.startsWith("data:image/")) {
+        const matches = tanda_tangan_data.match(new RegExp("^data:([A-Za-z-+/]+);base64,(.+)$"));
         if (matches && matches.length === 3) {
           const type = matches[1];
           const buffer = Buffer.from(matches[2], "base64");
@@ -198,15 +198,15 @@ router.post(
 
       const currentDateTime = formatDateSystem(new Date(), "yyyy-MM-dd HH:mm:ss", "WIB");
 
-      const cleanHostUserId = HostUserId && HostUserId !== "" && HostUserId !== "null" && HostUserId !== "undefined" ? HostUserId : null;
-      const cleanVisitPurposeId = VisitPurposeId && VisitPurposeId !== "" ? Number(VisitPurposeId) : null;
+      const cleanHostUserId = id_user_host && id_user_host !== "" && id_user_host !== "null" && id_user_host !== "undefined" ? id_user_host : null;
+      const cleanVisitPurposeId = id_tujuan_kunjungan && id_tujuan_kunjungan !== "" ? Number(id_tujuan_kunjungan) : null;
 
       let resolvedHostUserId = cleanHostUserId;
-      if (!resolvedHostUserId && HostName) {
+      if (!resolvedHostUserId && nama_host) {
         const matchedUser = await DB("mst_pengguna")
-          .where("nama_lengkap", HostName)
-          .orWhere("nama_pengguna", HostName)
-          .orWhere("surel", HostName)
+          .where("nama_lengkap", nama_host)
+          .orWhere("nama_pengguna", nama_host)
+          .orWhere("surel", nama_host)
           .first();
         if (matchedUser) {
           resolvedHostUserId = matchedUser.id_pengguna;
@@ -215,22 +215,22 @@ router.post(
 
       const oData = {
         id_cabang: targetBranchId,
-        nama_tamu: GuestName || null,
-        nomor_telepon: PhoneNumber || null,
-        email_tamu: GuestEmail && GuestEmail !== "" ? GuestEmail : null,
-        instansi_tamu: GuestCompany && GuestCompany !== "" ? GuestCompany : "-",
-        jabatan_tamu: GuestPosition && GuestPosition !== "" ? GuestPosition : null,
-        jenis_identitas: IdentityType && IdentityType !== "" ? String(IdentityType).toLowerCase() : null,
-        nomor_identitas: IdentityNumber && IdentityNumber !== "" ? IdentityNumber : null,
+        nama_tamu: nama_tamu || null,
+        nomor_telepon: nomor_telepon || null,
+        email_tamu: email_tamu && email_tamu !== "" ? email_tamu : null,
+        instansi_tamu: instansi_tamu && instansi_tamu !== "" ? instansi_tamu : "-",
+        jabatan_tamu: jabatan_tamu && jabatan_tamu !== "" ? jabatan_tamu : null,
+        jenis_identitas: jenis_identitas && jenis_identitas !== "" ? String(jenis_identitas).toLowerCase() : null,
+        nomor_identitas: nomor_identitas && nomor_identitas !== "" ? nomor_identitas : null,
         id_tujuan_kunjungan: cleanVisitPurposeId,
         id_user_host: resolvedHostUserId,
-        nama_host: HostName && HostName !== "" ? HostName : null,
-        catatan_kunjungan: VisitNotes && VisitNotes !== "" ? VisitNotes : null,
+        nama_host: nama_host && nama_host !== "" ? nama_host : null,
+        catatan_kunjungan: catatan_kunjungan && catatan_kunjungan !== "" ? catatan_kunjungan : null,
         foto_wajah: PhotoFace,
         foto_identitas: PhotoIdentity,
         tanda_tangan: TandaTangan,
-        tipe_kunjungan: VisitType || "personal",
-        jumlah_tamu: GuestCount ? Number(GuestCount) : 1,
+        tipe_kunjungan: tipe_kunjungan || "personal",
+        jumlah_tamu: jumlah_tamu ? Number(jumlah_tamu) : 1,
         kode_kunjungan: VisitCode,
         token_qr: QRToken,
         waktu_masuk: currentDateTime,
@@ -244,17 +244,17 @@ router.post(
 
       // Simpan anggota rombongan jika ada
       let parsedGroupMembers = [];
-      if (GroupMembers && GroupMembers !== "") {
+      if (anggota_rombongan && anggota_rombongan !== "") {
         try {
-          parsedGroupMembers = JSON.parse(GroupMembers);
+          parsedGroupMembers = JSON.parse(anggota_rombongan);
         } catch (err) {
-          console.error("Gagal parsing GroupMembers:", err);
+          console.error("Gagal parsing anggota_rombongan:", err);
         }
       }
 
-      if (VisitType === "group" && Array.isArray(parsedGroupMembers) && parsedGroupMembers.length > 0) {
+      if (tipe_kunjungan === "group" && Array.isArray(parsedGroupMembers) && parsedGroupMembers.length > 0) {
         const insertPromises = parsedGroupMembers.map(async (member, index) => {
-          const memberFile = getFile(`MemberIdentityFile_${index}`);
+          const memberFile = getFile(`foto_identitas_anggota_${index}`) || getFile(`MemberIdentityFile_${index}`);
           let memberPhotoPath = null;
           if (memberFile) {
             memberPhotoPath = await uploadFileToMinio(
@@ -283,12 +283,12 @@ router.post(
         const visitPurposeName = purpose ? purpose.nama_tujuan_kunjungan : "Kunjungan";
 
         sendMailNotification(resolvedHostUserId, "checkin", {
-          nama_tamu: GuestName,
-          instansi_tamu: GuestCompany || "-",
+          nama_tamu: nama_tamu,
+          instansi_tamu: instansi_tamu || "-",
           VisitPurposeName: visitPurposeName,
           waktu_masuk: currentDateTime,
           kode_kunjungan: VisitCode,
-          catatan_kunjungan: VisitNotes || "-"
+          catatan_kunjungan: catatan_kunjungan || "-"
         });
 
         // ==========================================
@@ -331,11 +331,11 @@ router.post(
 ${openingMsg} pada waktu ${formatDateSystem()}.
 
 Data Tamu:
-- Nama Tamu: ${GuestName}
-- No. WA Tamu: ${PhoneNumber}
-- Instansi: ${GuestCompany || '-'}
+- Nama Tamu: ${nama_tamu}
+- No. WA Tamu: ${nomor_telepon}
+- Instansi: ${instansi_tamu || '-'}
 - Keperluan: ${visitPurposeName || '-'}
-- Catatan: ${VisitNotes || '-'}
+- Catatan: ${catatan_kunjungan || '-'}
 
 ${closingMsg}`;
             sendWhatsAppMessage(oHost.telepon, waPesan);
@@ -352,8 +352,8 @@ ${closingMsg}`;
           kode_kunjungan: VisitCode,
           token_qr: QRToken,
           id_kunjungan: idKunjungan,
-          nama_tamu: GuestName,
-          instansi_tamu: GuestCompany || "-",
+          nama_tamu: nama_tamu,
+          instansi_tamu: instansi_tamu || "-",
           qr_image_url: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${QRToken}`
         },
         datetime: formatDateSystem(),

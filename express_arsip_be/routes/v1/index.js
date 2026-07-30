@@ -27,6 +27,7 @@ router.use("/auth/reset-password", [validateAccessToken], ResetPassword);
 // Modul-Modul Aplikasi
 router.use(
   "/setup",
+  [validateAccessToken, validateSignature, contextMiddleware],
   Setup
 );
 
