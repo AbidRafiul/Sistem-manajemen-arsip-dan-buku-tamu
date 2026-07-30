@@ -69,7 +69,7 @@ export async function seed(knex) {
   ];
   await knex("mst_jadwal_retensi").insert(retentions);
 
-  // 4. SEED TRANSAKSI ARSIP DOKUMEN (trs_dokumen) - 10 Data Lengkap & Variatif
+  // 4. SEED TRANSAKSI ARSIP DOKUMEN (trs_dokumen) - 4 Data (1 per cabang utama)
 
   const docs = [
     {
@@ -87,6 +87,7 @@ export async function seed(knex) {
       tanggal: "2026-07-01",
       tanggal_kedaluwarsa: "2031-07-01",
       nama_pic: "Staff Arsip Demo",
+      id_cabang: 1, // Pusat Jakarta
       status: "active",
       created_at: dNow,
       updated_at: dNow
@@ -106,6 +107,7 @@ export async function seed(knex) {
       tanggal: "2026-06-30",
       tanggal_kedaluwarsa: "2036-06-30",
       nama_pic: "Staff Arsip Demo",
+      id_cabang: 2, // Pusat Surabaya
       status: "active",
       created_at: dNow,
       updated_at: dNow
@@ -125,6 +127,7 @@ export async function seed(knex) {
       tanggal: "2026-07-02",
       tanggal_kedaluwarsa: "2029-07-02",
       nama_pic: "Staff Arsip Demo",
+      id_cabang: 3, // Cabang Madiun
       status: "active",
       created_at: dNow,
       updated_at: dNow
@@ -144,120 +147,7 @@ export async function seed(knex) {
       tanggal: "2026-07-03",
       tanggal_kedaluwarsa: "2046-07-03",
       nama_pic: "Staff Arsip Demo",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow
-    },
-    {
-      tanggal_transaksi: "2026-07-03",
-      kode_dokumen: "DOC-PRD-2026-005",
-      kode_klasifikasi: "PRD",
-      kode_jenis_dokumen: "SOP",
-      kode_kategori_dokumen: "PRD-SOP",
-      kode_tingkat_kerahasiaan: "INT",
-      kode_retensi: "RET-ADM-05",
-      lokasi_fisik: "Locker Operasional Produksi",
-      qr_code: "QR-DOC-PRD-005",
-      nama_dokumen: "SOP Keselamatan Kerja Dan Penggunaan Alat Berat",
-      nomor_dokumen: "SOP-OPS/K3/2026/01",
-      tanggal: "2026-05-12",
-      tanggal_kedaluwarsa: "2031-05-12",
-      nama_pic: "Staff Arsip Demo",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow
-    },
-    {
-      tanggal_transaksi: "2026-07-03",
-      kode_dokumen: "DOC-ADM-2026-006",
-      kode_klasifikasi: "ADM",
-      kode_jenis_dokumen: "SURAT",
-      kode_kategori_dokumen: "ADM-UMUM",
-      kode_tingkat_kerahasiaan: "PUB",
-      kode_retensi: "RET-ADM-05",
-      lokasi_fisik: "Rak A / Baris 2 / Box 102",
-      qr_code: "QR-DOC-ADM-006",
-      nama_dokumen: "Surat Edaran Libur Nasional Hari Kemerdekaan RI",
-      nomor_dokumen: "099/SE/HRD/VIII/2026",
-      tanggal: "2020-07-03",
-      tanggal_kedaluwarsa: "2025-07-03",
-      nama_pic: "Staff Arsip Demo",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow
-    },
-    {
-      tanggal_transaksi: "2026-07-03",
-      kode_dokumen: "DOC-KEU-2026-007",
-      kode_klasifikasi: "KEU",
-      kode_jenis_dokumen: "LAPORAN",
-      kode_kategori_dokumen: "KEU-LAP",
-      kode_tingkat_kerahasiaan: "RHS",
-      kode_retensi: "RET-KEU-10",
-      lokasi_fisik: "Rak B / Baris 1 / Box 202",
-      qr_code: "QR-DOC-KEU-007",
-      nama_dokumen: "Kwitansi Dan Invoice Pembelian Server Baru",
-      nomor_dokumen: "INV-9801/PRCH/VII/2026",
-      tanggal: "2015-07-02",
-      tanggal_kedaluwarsa: "2025-07-02",
-      nama_pic: "Staff Arsip Demo",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow
-    },
-    {
-      tanggal_transaksi: "2026-07-03",
-      kode_dokumen: "DOC-HRD-2026-008",
-      kode_klasifikasi: "HRD",
-      kode_jenis_dokumen: "SK",
-      kode_kategori_dokumen: "HRD-CV",
-      kode_tingkat_kerahasiaan: "RHS",
-      kode_retensi: "RET-HRD-03",
-      lokasi_fisik: "Rak C / Baris 2 / Box 302",
-      qr_code: "QR-DOC-HRD-008",
-      nama_dokumen: "Berkas Seleksi Calon Staff Keuangan Terpilih",
-      nomor_dokumen: "BS-KEU/2026/001",
-      tanggal: "2022-06-25",
-      tanggal_kedaluwarsa: "2025-06-25",
-      nama_pic: "Staff Arsip Demo",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow
-    },
-    {
-      tanggal_transaksi: "2026-07-03",
-      kode_dokumen: "DOC-HUK-2026-009",
-      kode_klasifikasi: "HUK",
-      kode_jenis_dokumen: "KONTRAK",
-      kode_kategori_dokumen: "HUK-AGR",
-      kode_tingkat_kerahasiaan: "SRHS",
-      kode_retensi: "RET-HUK-20",
-      lokasi_fisik: "Bangkas Utama / Slot Rahasia",
-      qr_code: "QR-DOC-HUK-009",
-      nama_dokumen: "Perjanjian Kerahasiaan (Non-Disclosure Agreement) Project X",
-      nomor_dokumen: "NDA-001/PRJ-X/LGL/2026",
-      tanggal: "2026-07-01",
-      tanggal_kedaluwarsa: "2046-07-01",
-      nama_pic: "Staff Arsip Demo",
-      status: "active",
-      created_at: dNow,
-      updated_at: dNow
-    },
-    {
-      tanggal_transaksi: "2026-07-03",
-      kode_dokumen: "DOC-PRD-2026-010",
-      kode_klasifikasi: "PRD",
-      kode_jenis_dokumen: "LAPORAN",
-      kode_kategori_dokumen: "PRD-SOP",
-      kode_tingkat_kerahasiaan: "INT",
-      kode_retensi: "RET-ADM-05",
-      lokasi_fisik: "Locker Operasional Utama",
-      qr_code: "QR-DOC-PRD-010",
-      nama_dokumen: "Berita Acara Kerusakan & Perbaikan Mesin Produksi 1",
-      nomor_dokumen: "BA-PRD/MAINT/2026/012",
-      tanggal: "2020-07-02",
-      tanggal_kedaluwarsa: "2025-07-02",
-      nama_pic: "Staff Arsip Demo",
+      id_cabang: 4, // Unit Kecamatan Madiun
       status: "active",
       created_at: dNow,
       updated_at: dNow
@@ -265,24 +155,17 @@ export async function seed(knex) {
   ];
   await knex("trs_dokumen").insert(docs);
 
-  // 5. SEED VERSI DOKUMEN (trs_versi_dokumen) - Setiap dokumen butuh versi awal (v1)
+  // 5. SEED VERSI DOKUMEN (trs_versi_dokumen) - 1 versi per dokumen
 
   const versions = [
     { id_versi: 1001, tanggal_transaksi: "2026-07-03", kode_dokumen: "DOC-ADM-2026-001", nomor_versi: 1, catatan_perubahan: "Versi awal (Draft Masukan)", file_path: "uploads/documents/st_monitoring_v1.pdf", diunggah_oleh: "staff.arsip@example.local", status_persetujuan: "approved", disetujui_oleh: "superadmin@admin.com", disetujui_pada: dNow, catatan_persetujuan: "Disetujui untuk digunakan", created_at: dNow, updated_at: dNow },
-    { id_versi: 1002, tanggal_transaksi: "2026-07-03", kode_dokumen: "DOC-ADM-2026-001", nomor_versi: 2, catatan_perubahan: "Versi 2.0 (Revisi Nama PIC & Ttd Direksi)", file_path: "uploads/documents/st_monitoring_v2_final.pdf", diunggah_oleh: "staff.arsip@example.local", status_persetujuan: "approved", disetujui_oleh: "superadmin@admin.com", disetujui_pada: dNow, catatan_persetujuan: "Versi final disetujui", created_at: dNow, updated_at: dNow },
-    { id_versi: 1003, tanggal_transaksi: "2026-07-03", kode_dokumen: "DOC-KEU-2026-002", nomor_versi: 1, catatan_perubahan: "Versi awal hasil audit KAP", file_path: "uploads/documents/lap_keu_semester1_v1.pdf", diunggah_oleh: "staff.arsip@example.local", status_persetujuan: "approved", disetujui_oleh: "superadmin@admin.com", disetujui_pada: dNow, catatan_persetujuan: "Dokumen sah", created_at: dNow, updated_at: dNow },
-    { id_versi: 1004, tanggal_transaksi: "2026-07-03", kode_dokumen: "DOC-HRD-2026-003", nomor_versi: 1, catatan_perubahan: "SK Pengangkatan (Ttd Direksi)", file_path: "uploads/documents/sk_karyawan_tetap.pdf", diunggah_oleh: "staff.arsip@example.local", status_persetujuan: "approved", disetujui_oleh: "superadmin@admin.com", disetujui_pada: dNow, catatan_persetujuan: "Disetujui", created_at: dNow, updated_at: dNow },
-    { id_versi: 1005, tanggal_transaksi: "2026-07-03", kode_dokumen: "DOC-HUK-2026-004", nomor_versi: 1, catatan_perubahan: "MoU & PKS Final Cloud Service", file_path: "uploads/documents/pks_cloud_marshtech.pdf", diunggah_oleh: "staff.arsip@example.local", status_persetujuan: "approved", disetujui_oleh: "superadmin@admin.com", disetujui_pada: dNow, catatan_persetujuan: "Disetujui legalitas", created_at: dNow, updated_at: dNow },
-    { id_versi: 1006, tanggal_transaksi: "2026-07-03", kode_dokumen: "DOC-PRD-2026-005", nomor_versi: 1, catatan_perubahan: "SOP K3 Versi 1.0", file_path: "uploads/documents/sop_k3_v1.pdf", diunggah_oleh: "staff.arsip@example.local", status_persetujuan: "approved", disetujui_oleh: "superadmin@admin.com", disetujui_pada: dNow, catatan_persetujuan: "Siap disosialisasikan", created_at: dNow, updated_at: dNow },
-    { id_versi: 1007, tanggal_transaksi: "2026-07-03", kode_dokumen: "DOC-ADM-2026-006", nomor_versi: 1, catatan_perubahan: "Surat edaran resmi libur", file_path: "uploads/documents/se_libur_nasional.pdf", diunggah_oleh: "staff.arsip@example.local", status_persetujuan: "approved", disetujui_oleh: "superadmin@admin.com", disetujui_pada: dNow, catatan_persetujuan: "Siap siar", created_at: dNow, updated_at: dNow },
-    { id_versi: 1008, tanggal_transaksi: "2026-07-03", kode_dokumen: "DOC-KEU-2026-007", nomor_versi: 1, catatan_perubahan: "Kwitansi dan bukti bayar server", file_path: "uploads/documents/invoice_server_dell.pdf", diunggah_oleh: "staff.arsip@example.local", status_persetujuan: "approved", disetujui_oleh: "superadmin@admin.com", disetujui_pada: dNow, catatan_persetujuan: "Bukti terlampir lengkap", created_at: dNow, updated_at: dNow },
-    { id_versi: 1009, tanggal_transaksi: "2026-07-03", kode_dokumen: "DOC-HRD-2026-008", nomor_versi: 1, catatan_perubahan: "Data wawancara seleksi", file_path: "uploads/documents/seleksi_staff_keu.pdf", diunggah_oleh: "staff.arsip@example.local", status_persetujuan: "approved", disetujui_oleh: "superadmin@admin.com", disetujui_pada: dNow, catatan_persetujuan: "Dokumen pelamar tersimpan", created_at: dNow, updated_at: dNow },
-    { id_versi: 1010, tanggal_transaksi: "2026-07-03", kode_dokumen: "DOC-HUK-2026-009", nomor_versi: 1, catatan_perubahan: "NDA Project X (Tertanda)", file_path: "uploads/documents/nda_project_x.pdf", diunggah_oleh: "staff.arsip@example.local", status_persetujuan: "approved", disetujui_oleh: "superadmin@admin.com", disetujui_pada: dNow, catatan_persetujuan: "Disetujui", created_at: dNow, updated_at: dNow },
-    { id_versi: 1011, tanggal_transaksi: "2026-07-03", kode_dokumen: "DOC-PRD-2026-010", nomor_versi: 1, catatan_perubahan: "Berita acara maintenance utama", file_path: "uploads/documents/ba_maintenance_mesin1.pdf", diunggah_oleh: "staff.arsip@example.local", status_persetujuan: "approved", disetujui_oleh: "superadmin@admin.com", disetujui_pada: dNow, catatan_persetujuan: "Valid", created_at: dNow, updated_at: dNow }
+    { id_versi: 1002, tanggal_transaksi: "2026-07-03", kode_dokumen: "DOC-KEU-2026-002", nomor_versi: 1, catatan_perubahan: "Versi awal hasil audit KAP", file_path: "uploads/documents/lap_keu_semester1_v1.pdf", diunggah_oleh: "staff.arsip@example.local", status_persetujuan: "approved", disetujui_oleh: "superadmin@admin.com", disetujui_pada: dNow, catatan_persetujuan: "Dokumen sah", created_at: dNow, updated_at: dNow },
+    { id_versi: 1003, tanggal_transaksi: "2026-07-03", kode_dokumen: "DOC-HRD-2026-003", nomor_versi: 1, catatan_perubahan: "SK Pengangkatan (Ttd Direksi)", file_path: "uploads/documents/sk_karyawan_tetap.pdf", diunggah_oleh: "staff.arsip@example.local", status_persetujuan: "approved", disetujui_oleh: "superadmin@admin.com", disetujui_pada: dNow, catatan_persetujuan: "Disetujui", created_at: dNow, updated_at: dNow },
+    { id_versi: 1004, tanggal_transaksi: "2026-07-03", kode_dokumen: "DOC-HUK-2026-004", nomor_versi: 1, catatan_perubahan: "MoU & PKS Final Cloud Service", file_path: "uploads/documents/pks_cloud_marshtech.pdf", diunggah_oleh: "staff.arsip@example.local", status_persetujuan: "approved", disetujui_oleh: "superadmin@admin.com", disetujui_pada: dNow, catatan_persetujuan: "Disetujui legalitas", created_at: dNow, updated_at: dNow }
   ];
   await knex("trs_versi_dokumen").insert(versions);
 
-  // 6. SEED PEMINJAMAN ARSIP (trs_peminjaman_arsip) - Beberapa data peminjaman dinamis
+  // 6. SEED PEMINJAMAN ARSIP (trs_peminjaman_arsip) - 1 data peminjaman
 
   const loans = [
     {
@@ -300,49 +183,17 @@ export async function seed(knex) {
       status: "borrowed",
       created_at: dNow,
       updated_at: dNow
-    },
-    {
-      id_peminjaman: 2002,
-      tanggal_transaksi: "2026-07-03",
-      kode_dokumen: "DOC-KEU-2026-002",
-      nama_peminjam: "Siti Badriah",
-      tanggal_pinjam: "2026-06-25",
-      tanggal_pengembalian: "2026-07-02",
-      keperluan: "Referensi perbandingan neraca anggaran",
-      disetujui_oleh: "superadmin@admin.com",
-      disetujui_pada: "2026-06-25 09:00:00",
-      catatan_persetujuan: "Sudah dikembalikan sesuai waktu.",
-      terlambat: 0,
-      status: "returned",
-      created_at: dNow,
-      updated_at: dNow
-    },
-    {
-      id_peminjaman: 2003,
-      tanggal_transaksi: "2026-07-03",
-      kode_dokumen: "DOC-HUK-2026-004",
-      nama_peminjam: "Farhan Hakim",
-      tanggal_pinjam: "2026-07-03",
-      tanggal_pengembalian: "2026-07-10",
-      keperluan: "Penyusunan addendum perjanjian cloud",
-      disetujui_oleh: "superadmin@admin.com",
-      disetujui_pada: "2026-07-03 13:00:00",
-      catatan_persetujuan: "Disetujui untuk perpanjangan legalitas.",
-      terlambat: 0,
-      status: "approved",
-      created_at: dNow,
-      updated_at: dNow
     }
   ];
   await knex("trs_peminjaman_arsip").insert(loans);
 
-  // 7. SEED USULAN PEMUSNAHAN (trs_usulan_pemusnahan) - Berkas retensi yang diusulkan musnah
+  // 7. SEED USULAN PEMUSNAHAN (trs_usulan_pemusnahan) - 1 data
 
   const destructions = [
     {
       id_usulan: 3001,
       tanggal_transaksi: "2026-07-03",
-      kode_dokumen: "DOC-HRD-2026-008",
+      kode_dokumen: "DOC-HRD-2026-003",
       alasan_usulan: "Masa berlaku data rekrutmen sudah lewat 3 tahun sesuai JRA kepegawaian",
       kode_retensi: "RET-HRD-03",
       diusulkan_oleh: "staff.arsip@example.local",
@@ -357,5 +208,6 @@ export async function seed(knex) {
   // 8. Hidupkan kembali foreign key checks
   await knex.raw("SET FOREIGN_KEY_CHECKS = 1;");
 
-  console.log("Seeder Master Arsip dan Transaksi Arsip Dokumen berhasil dijalankan!");
+  console.log("Seeder Master Arsip dan Transaksi Arsip Dokumen (4 dokumen per cabang) berhasil dijalankan!");
 }
+

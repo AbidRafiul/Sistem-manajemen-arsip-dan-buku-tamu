@@ -50,7 +50,7 @@ export async function seed(knex) {
     return found ? found.id_tujuan_kunjungan : 1;
   };
 
-  // 6. Masukkan 10 data kunjungan yang berbeda-beda
+  // 6. Masukkan 4 data kunjungan (1 per cabang utama) yang bervariasi
   const guests = [
     {
       nama_tamu: "Andika Pratama",
@@ -70,29 +70,9 @@ export async function seed(knex) {
       waktu_keluar: "2026-07-03 10:00:00",
       status: "out",
       status_persetujuan: "approved",
+      id_cabang: 1, // Pusat Jakarta
       created_at: "2026-07-03 08:00:00",
       updated_at: "2026-07-03 10:00:00"
-    },
-    {
-      nama_tamu: "Siti Rahmawati",
-      nomor_telepon: "082198765432",
-      email_tamu: "siti.rahma@yahoo.com",
-      instansi_tamu: "Universitas Indonesia",
-      jabatan_tamu: "Dosen Peneliti",
-      jenis_identitas: "ktp",
-      nomor_identitas: "3174029876543210",
-      id_tujuan_kunjungan: getPurposeId("MEETING"),
-      id_user_host: altHostId,
-      nama_host: altHostName,
-      catatan_kunjungan: "Wawancara penelitian manajemen arsip daerah",
-      kode_kunjungan: "TAMU0002",
-      token_qr: "qr-tamu-0002",
-      waktu_masuk: "2026-07-03 09:15:00",
-      waktu_keluar: "2026-07-03 11:30:00",
-      status: "out",
-      status_persetujuan: "approved",
-      created_at: "2026-07-03 09:00:00",
-      updated_at: "2026-07-03 11:30:00"
     },
     {
       nama_tamu: "Bambang Wijaya",
@@ -103,38 +83,18 @@ export async function seed(knex) {
       jenis_identitas: "sim",
       nomor_identitas: "9807123456",
       id_tujuan_kunjungan: getPurposeId("INTERVIEW"),
-      id_user_host: defaultHostId,
-      nama_host: defaultHostName,
-      catatan_kunjungan: "Wawancara kandidat staff kearsipan tingkat lanjut",
-      kode_kunjungan: "TAMU0003",
-      token_qr: "qr-tamu-0003",
+      id_user_host: altHostId,
+      nama_host: altHostName,
+      catatan_kunjungan: "Wawancara kandidat staff kearsipan",
+      kode_kunjungan: "TAMU0002",
+      token_qr: "qr-tamu-0002",
       waktu_masuk: "2026-07-03 10:00:00",
       waktu_keluar: null,
       status: "in",
       status_persetujuan: "approved",
+      id_cabang: 2, // Pusat Surabaya
       created_at: "2026-07-03 09:45:00",
       updated_at: "2026-07-03 10:00:00"
-    },
-    {
-      nama_tamu: "Rian Hidayat",
-      nomor_telepon: "081399887766",
-      email_tamu: "rian.h@dhl.com",
-      instansi_tamu: "DHL Express",
-      jabatan_tamu: "Kurir",
-      jenis_identitas: "sim",
-      nomor_identitas: "8912345678",
-      id_tujuan_kunjungan: getPurposeId("DELIVERY"),
-      id_user_host: altHostId,
-      nama_host: altHostName,
-      catatan_kunjungan: "Pengantaran dokumen penting dari PT Marshtech",
-      kode_kunjungan: "TAMU0004",
-      token_qr: "qr-tamu-0004",
-      waktu_masuk: "2026-07-03 11:00:00",
-      waktu_keluar: "2026-07-03 11:15:00",
-      status: "out",
-      status_persetujuan: "approved",
-      created_at: "2026-07-03 11:00:00",
-      updated_at: "2026-07-03 11:15:00"
     },
     {
       nama_tamu: "Diana Lestari",
@@ -148,12 +108,13 @@ export async function seed(knex) {
       id_user_host: defaultHostId,
       nama_host: defaultHostName,
       catatan_kunjungan: "Audit tahunan kepatuhan arsip dokumen keuangan",
-      kode_kunjungan: "TAMU0005",
-      token_qr: "qr-tamu-0005",
+      kode_kunjungan: "TAMU0003",
+      token_qr: "qr-tamu-0003",
       waktu_masuk: "2026-07-03 13:00:00",
       waktu_keluar: null,
       status: "in",
       status_persetujuan: "approved",
+      id_cabang: 3, // Cabang Madiun
       created_at: "2026-07-03 12:30:00",
       updated_at: "2026-07-03 13:00:00"
     },
@@ -168,100 +129,16 @@ export async function seed(knex) {
       id_tujuan_kunjungan: getPurposeId("MAINTENANCE"),
       id_user_host: altHostId,
       nama_host: altHostName,
-      catatan_kunjungan: "Pemeliharaan rutin switch core & firewall lantai 2",
-      kode_kunjungan: "TAMU0006",
-      token_qr: "qr-tamu-0006",
-      waktu_masuk: "2026-07-03 14:00:00",
+      catatan_kunjungan: "Pemeliharaan rutin switch core & firewall",
+      kode_kunjungan: "TAMU0004",
+      token_qr: "qr-tamu-0004",
+      waktu_masuk: null,
       waktu_keluar: null,
       status: "Rencana",
       status_persetujuan: "pending",
+      id_cabang: 4, // Unit Kecamatan Madiun
       created_at: "2026-07-03 11:30:00",
       updated_at: "2026-07-03 11:30:00"
-    },
-    {
-      nama_tamu: "Fanny Amelia",
-      nomor_telepon: "087811223344",
-      email_tamu: "fanny.amelia@gmail.com",
-      instansi_tamu: "Pelamar Mandiri",
-      jabatan_tamu: "Kandidat Magang",
-      jenis_identitas: "ktp",
-      nomor_identitas: "3172021122334455",
-      id_tujuan_kunjungan: getPurposeId("INTERVIEW"),
-      id_user_host: defaultHostId,
-      nama_host: defaultHostName,
-      catatan_kunjungan: "Wawancara magang divisi administrasi & kearsipan",
-      kode_kunjungan: "TAMU0007",
-      token_qr: "qr-tamu-0007",
-      waktu_masuk: "2026-07-03 14:30:00",
-      waktu_keluar: null,
-      status: "Rencana",
-      status_persetujuan: "approved",
-      created_at: "2026-07-03 10:15:00",
-      updated_at: "2026-07-03 10:15:00"
-    },
-    {
-      nama_tamu: "George Harrison",
-      nomor_telepon: "081299998888",
-      email_tamu: "george@beatles.com",
-      instansi_tamu: "Apple Corps Ltd",
-      jabatan_tamu: "Director",
-      jenis_identitas: "paspor",
-      nomor_identitas: "A1234567B",
-      id_tujuan_kunjungan: getPurposeId("MEETING"),
-      id_user_host: defaultHostId,
-      nama_host: defaultHostName,
-      catatan_kunjungan: "Penandatanganan kontrak lisensi sistem kearsipan audio digital",
-      kode_kunjungan: "TAMU0008",
-      token_qr: "qr-tamu-0008",
-      waktu_masuk: "2026-07-03 15:00:00",
-      waktu_keluar: null,
-      status: "Rencana",
-      status_persetujuan: "rejected",
-      catatan_persetujuan: "Jadwal host penuh, silakan reschedule ke hari senin.",
-      created_at: "2026-07-03 09:30:00",
-      updated_at: "2026-07-03 12:00:00"
-    },
-    {
-      nama_tamu: "Hendra Wijaya",
-      nomor_telepon: "085212341234",
-      email_tamu: "hendra.w@secures.co.id",
-      instansi_tamu: "PT Secure Indotama",
-      jabatan_tamu: "Sales Executive",
-      jenis_identitas: "ktp",
-      nomor_identitas: "3273031206890002",
-      id_tujuan_kunjungan: getPurposeId("MEETING"),
-      id_user_host: altHostId,
-      nama_host: altHostName,
-      catatan_kunjungan: "Presentasi sistem keamanan CCTV termal ruang server utama",
-      kode_kunjungan: "TAMU0009",
-      token_qr: "qr-tamu-0009",
-      waktu_masuk: "2026-07-03 15:30:00",
-      waktu_keluar: null,
-      status: "Rencana",
-      status_persetujuan: "pending",
-      created_at: "2026-07-03 13:00:00",
-      updated_at: "2026-07-03 13:00:00"
-    },
-    {
-      nama_tamu: "Iwan Fals",
-      nomor_telepon: "081345674567",
-      email_tamu: "iwan.fals@musisi.org",
-      instansi_tamu: "Yayasan Orang Indonesia",
-      jabatan_tamu: "Ketua Yayasan",
-      jenis_identitas: "ktp",
-      nomor_identitas: "3204121212120003",
-      id_tujuan_kunjungan: getPurposeId("DELIVERY"),
-      id_user_host: defaultHostId,
-      nama_host: defaultHostName,
-      catatan_kunjungan: "Pengambilan dokumen hibah aset secara fisik oleh ketua yayasan",
-      kode_kunjungan: "TAMU0010",
-      token_qr: "qr-tamu-0010",
-      waktu_masuk: "2026-07-03 16:00:00",
-      waktu_keluar: null,
-      status: "Rencana",
-      status_persetujuan: "approved",
-      created_at: "2026-07-03 13:30:00",
-      updated_at: "2026-07-03 13:30:00"
     }
   ];
 
@@ -270,5 +147,6 @@ export async function seed(knex) {
   // 7. Hidupkan kembali pengecekan foreign key
   await knex.raw("SET FOREIGN_KEY_CHECKS = 1;");
 
-  console.log("Seeder Buku Tamu (10 data variatif) berhasil dijalankan!");
+  console.log("Seeder Buku Tamu (4 data per cabang) berhasil dijalankan!");
 }
+

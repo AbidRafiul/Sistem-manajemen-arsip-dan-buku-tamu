@@ -55,6 +55,12 @@ const BranchSwitcher = () => {
             setAllBranches(branches);
             setLoaded(true);
 
+            // Auto-select root jika hanya ada 1 kantor pusat (best practice: skip level yang tidak perlu dipilih)
+            const roots = branches.filter((b: Branch) => b.level === 1 || b.id_induk === null);
+            if (roots.length === 1) {
+                setSelectedPusat(roots[0].id_cabang);
+            }
+
             // Initialize selection based on current globalFilter
             initializeSelection(branches);
         } catch (e) {
@@ -101,22 +107,13 @@ const BranchSwitcher = () => {
     // Level 1: Kantor Pusat (root nodes where id_induk === null)
     const pusatList = allBranches.filter(b => b.level === 1 || b.id_induk === null);
 
-    // Level 2: Pusat Daerah
-    // If the user can't see Level 1, we show Level 2 directly if they exist
-    let daerahList = selectedPusat
+    // Level 2: Pusat Daerah (anak langsung dari root yang dipilih)
+    const daerahList = selectedPusat
         ? allBranches.filter(b => b.id_induk === selectedPusat)
         : pusatList.length === 0 ? allBranches.filter(b => b.level === 2) : [];
-        
-    // Permintaan User: Masukkan juga Pusat (Jakarta) ke dalam opsi Daerah agar mempermudah
-    if (selectedPusat) {
-        const pusatItem = allBranches.find(b => b.id_cabang === selectedPusat);
-        if (pusatItem) {
-            daerahList = [pusatItem, ...daerahList];
-        }
-    }
 
     // Level 3: Unit Daerah
-    const unitList = (selectedDaerah && selectedDaerah !== selectedPusat)
+    const unitList = selectedDaerah
         ? allBranches.filter(b => b.id_induk === selectedDaerah)
         : (pusatList.length === 0 && daerahList.length === 0) ? allBranches.filter(b => b.level === 3) : [];
 
@@ -125,8 +122,8 @@ const BranchSwitcher = () => {
         ? allBranches.filter(b => b.id_induk === selectedUnit)
         : (pusatList.length === 0 && daerahList.length === 0 && unitList.length === 0) ? allBranches.filter(b => b.level === 4) : [];
 
-    // Visibility logic: Selalu tampilkan level jika ada datanya agar user bisa memilih kembali ke root
-    const showPusat = pusatList.length > 0;
+    // Visibility logic: Tampilkan Level 1 hanya jika ada lebih dari 1 root (best practice: skip level tanpa pilihan)
+    const showPusat = pusatList.length > 1;
     const showDaerah = daerahList.length > 0;
     const showUnit = unitList.length > 0;
     const showKecamatan = kecamatanList.length > 0;

@@ -147,7 +147,7 @@ const Page = () => {
         }
     });
 
-    // A. Mengambil Master Data (Dropdown)
+    // A. Mengambil Master Data (Dropdown) — bypass filter cabang agar admin bisa assign user ke cabang manapun
     useEffect(() => {
         if (session) {
             const vaEndpoints = [
@@ -161,14 +161,21 @@ const Page = () => {
 
             const myIdPengguna = (session as any)?.user?.IdPengguna || (session as any)?.user?.id || '';
 
+            // Bypass filter cabang agar dropdown menampilkan seluruh data organisasi
+            const bypassFilters: Record<string, string> = {
+                'x-uniqueid': String(myIdPengguna),
+                'x-timestamp': new Date().toISOString(),
+                'x-filter-cabang': '',
+                'x-filter-departemen': '',
+                'x-filter-divisi': '',
+                'x-filter-unit-kerja': ''
+            };
+
             vaEndpoints.forEach((oItem) => {
                 postData(
                     oItem.path,
                     {},
-                    {
-                        'x-uniqueid': myIdPengguna,
-                        'x-timestamp': new Date().toISOString()
-                    }
+                    bypassFilters
                 )
                     .then((oRes) => {
                         setState((prev: any) => ({
@@ -261,10 +268,12 @@ const Page = () => {
         }
     }
 
-    const getData = async (apiEndpoint: string) => {
+    const getData = async (apiEndpoint: string, isExact: boolean = true) => {
         setState((p) => ({ ...p, load: true }));
         try {
-            const res = await postData(apiEndpoint);
+            const res = await postData(apiEndpoint, {}, {
+                'x-exact-cabang': isExact ? 'true' : 'false'
+            });
             setState((p) => ({
                 ...p,
                 data: res.data.data

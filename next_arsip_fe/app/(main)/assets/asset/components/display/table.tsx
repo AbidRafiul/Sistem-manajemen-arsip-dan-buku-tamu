@@ -22,6 +22,7 @@ const Table = ({
     toast
 }: TableProps) => {
     const permissions = usePermissions();
+    const { canCreate, canUpdate, canDelete } = permissions;
 
     const headerTemplate = (
         <div className="flex flex-wrap align-items-center justify-content-between gap-2">
@@ -47,36 +48,40 @@ const Table = ({
 
     const actionBodyTemplate = (rowData: TableData) => (
         <div className="flex gap-2">
-            <Button
-                icon="pi pi-pencil"
-                rounded
-                outlined
-                className="p-button-sm"
-                onClick={() => {
-                    formik.setValues(p => ({
-                        ...p,
-                        Code: rowData.Code,
-                        Location: rowData.Location,
-                        CategoryCode: rowData.CategoryCode,
-                        DivisionCode: rowData.DivisionCode,
-                        Type: rowData.Type,
-                        Status: rowData.Status,
-                        Name: rowData.Name,
-                    }))
+            {canUpdate && (
+                <Button
+                    icon="pi pi-pencil"
+                    rounded
+                    outlined
+                    className="p-button-sm"
+                    onClick={() => {
+                        formik.setValues(p => ({
+                            ...p,
+                            Code: rowData.Code,
+                            Location: rowData.Location,
+                            CategoryCode: rowData.CategoryCode,
+                            DivisionCode: rowData.DivisionCode,
+                            Type: rowData.Type,
+                            Status: rowData.Status,
+                            Name: rowData.Name,
+                        }))
 
-                    setState(p => ({ ...p, add: false, delete: false, edit: true }))
-                }}
-                tooltip="Ubah"
-            />
-            <Button
-                icon="pi pi-trash"
-                rounded
-                outlined
-                severity="danger"
-                className="p-button-sm"
-                onClick={() => setState(p => ({ ...p, delete: true, selectedUsers: [rowData] }))}
-                tooltip="Hapus"
-            />
+                        setState(p => ({ ...p, add: false, delete: false, edit: true }))
+                    }}
+                    tooltip="Ubah"
+                />
+            )}
+            {canDelete && (
+                <Button
+                    icon="pi pi-trash"
+                    rounded
+                    outlined
+                    severity="danger"
+                    className="p-button-sm"
+                    onClick={() => setState(p => ({ ...p, delete: true, selectedUsers: [rowData] }))}
+                    tooltip="Hapus"
+                />
+            )}
         </div>
     );
 
@@ -126,48 +131,39 @@ const Table = ({
             </div>
 
             <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
-                <Button
-                    size="small"
-                    label="New"
-                    icon="pi pi-plus"
-                    outlined
-                    severity="success"
-                    onClick={() => {
-                        setState(p => ({ ...p, selectedUser: [], add: true }))
-                    }}
-                />
-                <Button
-                    size="small"
-                    label="Import"
-                    icon="pi pi-file-import"
-                    outlined
-                // onClick={() => fileInputRef.current?.click()}
-                />
+                {canCreate && (
+                    <Button
+                        size="small"
+                        label="New"
+                        icon="pi pi-plus"
+                        outlined
+                        severity="success"
+                        onClick={() => {
+                            setState(p => ({ ...p, selectedUser: [], add: true }))
+                        }}
+                    />
+                )}
+                {canDelete && (
+                    <>
+                        <Divider layout="vertical" />
+                        <Button
+                            size="small"
+                            label={`Delete${state.selectedUsers.length > 0 ? ` (${state.selectedUsers.length})` : ''}`}
+                            icon="pi pi-trash"
+                            severity="danger"
+                            outlined
+                            onClick={() => {
+                                if (state.selectedUsers.length < 1) {
+                                    setState(p => ({ ...p, selectedUser: [], delete: false }))
+                                    return
+                                }
 
-                <Button
-                    size="small"
-                    label="Print"
-                    icon="pi pi-print"
-                    outlined
-                // onClick={() => setAdjustDialog(true)}
-                />
-                <Divider layout="vertical" />
-                <Button
-                    size="small"
-                    label={`Delete${state.selectedUsers.length > 0 ? ` (${state.selectedUsers.length})` : ''}`}
-                    icon="pi pi-trash"
-                    severity="danger"
-                    outlined
-                    onClick={() => {
-                        if (state.selectedUsers.length < 1) {
-                            setState(p => ({ ...p, selectedUser: [], delete: false }))
-                            return
-                        }
-
-                        setState(p => ({ ...p, delete: true }))
-                    }}
-                    disabled={state.selectedUsers.length === 0}
-                />
+                                setState(p => ({ ...p, delete: true }))
+                            }}
+                            disabled={state.selectedUsers.length === 0}
+                        />
+                    </>
+                )}
                 <Divider layout="vertical" />
                 <Button
                     size="small"

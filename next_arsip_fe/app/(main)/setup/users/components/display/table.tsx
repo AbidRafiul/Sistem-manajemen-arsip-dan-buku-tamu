@@ -9,22 +9,39 @@ import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
 import { Divider } from 'primereact/divider';
 import { apiEndpointGet, apiEndpointCreate } from '../endpoints';
-import { useContext, useEffect } from 'react';
-import Form from './form';
+import { Checkbox } from 'primereact/checkbox';
+import { useState, useContext, useEffect } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { LayoutContext } from '@/layout/context/layoutcontext';
 import ExcelBulkAction from '@/app/components/excel_components/ExcelBulkAction';
+import Form from './form';
 
 const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBar, navBar, getNav, handleSave, handleDelete }: TableProps) => {
     const permissions = usePermissions();
     const { layoutState } = useContext(LayoutContext);
+    const [includeSubBranches, setIncludeSubBranches] = useState(false);
+
     const cabangName = (layoutState.globalFilter as any)?.nama_cabang;
     const titleSuffix = cabangName ? ` - ${cabangName}` : (permissions?.activeRole?.toUpperCase() === 'SUPERADMIN' ? ' Pusat' : '');
     const headerTemplate = (
         <div className="flex flex-wrap align-items-center justify-content-between gap-2">
             <span className="text-xl font-bold">Manajemen Pengguna{titleSuffix}</span>
 
-            <div className="flex gap-2">
+            <div className="flex align-items-center gap-3">
+                <div className="flex align-items-center gap-2 px-3 py-2 border-round surface-100">
+                    <Checkbox
+                        inputId="subBranchToggle"
+                        checked={includeSubBranches}
+                        onChange={(e) => {
+                            const val = !!e.checked;
+                            setIncludeSubBranches(val);
+                            getData(apiEndpointGet, !val);
+                        }}
+                    />
+                    <label htmlFor="subBranchToggle" className="text-xs font-semibold text-700 cursor-pointer select-none">
+                        Tampilkan Sub-Cabang
+                    </label>
+                </div>
                 <span className="p-input-icon-left">
                     <i className="pi pi-search" />
                     <InputText
