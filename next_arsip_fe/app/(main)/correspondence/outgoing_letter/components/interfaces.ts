@@ -48,6 +48,11 @@ export interface TableData {
     media_pengiriman: string | null;
     id_template: number | null;
     nama_template: string | null;
+    nama_file: string | null;
+    mime_type: string | null;
+    ukuran_file: number | null;
+    tanggal_upload: string | null;
+    path_file: string | null;
     isi_surat: string | null;
     isi_surat_final: string | null;
     nama_pengirim: string | null;

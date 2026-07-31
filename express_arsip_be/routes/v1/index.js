@@ -9,6 +9,7 @@ import ArsipDokumen from "./arsip_dokumen/index.js";
 import SuratMasuk from "./correspondence/index.js"
 import BukuTamu from "./buku_tamu/index.js"
 import Dashboard from "./dashboard/index.js"
+import VerifikasiDokumen from "./verifikasi_dokumen.js";
 
 import {
   contextMiddleware,
@@ -25,6 +26,8 @@ router.use("/auth/login", Login);
 router.use("/auth/reset-password", [validateAccessToken], ResetPassword);
 
 // Modul-Modul Aplikasi
+router.use("/verifikasi-dokumen", VerifikasiDokumen);
+
 router.use(
   "/setup",
   Setup

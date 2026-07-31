@@ -1,0 +1,9 @@
+export const apiEndpointPending = "/correspondence/outgoing-letter-tte/pending";
+export const apiEndpointSigned = "/correspondence/outgoing-letter-tte/signed";
+export const apiEndpointDetail = "/correspondence/outgoing-letter-tte/surat-keluar";
+export const apiEndpointFinalize = "/correspondence/outgoing-letter-tte/surat-keluar";
+export const apiEndpointSign = "/correspondence/outgoing-letter-tte/surat-keluar";
+export const apiEndpointHistory = "/correspondence/outgoing-letter-tte/surat-keluar";
+export const apiEndpointVerify = "/correspondence/outgoing-letter-tte/verifikasi";
+export const apiEndpointCertificates = "/correspondence/outgoing-letter-tte/sertifikat-elektronik";
+export const apiEndpointPublicVerify = "/verifikasi-dokumen";

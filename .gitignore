@@ -36,6 +36,9 @@ Thumbs.db
 **/.env
 **/.env.*
 !**/.env.example
+**/tte-keystore/
+**/*.p12
+**/*.pfx
 
 run_dev.sh
 

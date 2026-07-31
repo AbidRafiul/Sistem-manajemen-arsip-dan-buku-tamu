@@ -30,6 +30,7 @@ const outgoingLetterUpdate = async (req, res) => {
       id_surat_keluar: Joi.number().required(),
       nomor_surat: Joi.string().max(100).optional(),
       nomor_agenda: Joi.string().max(100).optional(),
+      nomor_surat_auto: Joi.boolean().optional(),
       tanggal_surat: Joi.date().optional(),
       tanggal_kirim: Joi.date().allow(null).optional(),
       id_jenis_surat: Joi.number().optional(),

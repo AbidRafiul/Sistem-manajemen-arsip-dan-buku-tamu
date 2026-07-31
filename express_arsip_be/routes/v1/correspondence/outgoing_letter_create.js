@@ -109,6 +109,7 @@ const outgoingLetterCreate = async (req, res) => {
     const oValidation = {
       nomor_surat: Joi.string().max(100).allow(null, "").optional(),
       nomor_agenda: Joi.string().max(100).optional(),
+      nomor_surat_auto: Joi.boolean().optional(),
       tanggal_surat: Joi.date().required(),
       tanggal_kirim: Joi.date().allow(null).optional(),
       id_jenis_surat: Joi.number().required(),
@@ -201,12 +202,16 @@ const outgoingLetterCreate = async (req, res) => {
       const cNomorAgenda =
         oPayload.nomor_agenda || (await generateAgendaNumber(trx));
       const cStatus = oPayload.status || "draft";
+      const bNomorSuratAuto = oPayload.nomor_surat_auto !== false;
+      const cManualNomorSurat = String(oPayload.nomor_surat || "").trim();
       const cGeneratedNomorSurat = await generateNomorSurat(trx, {
         jenisSuratId: oPayload.id_jenis_surat,
         unitKerjaId: cUnitKerjaId,
         tanggalSurat: oPayload.tanggal_surat,
       });
-      const cNomorSurat = cGeneratedNomorSurat || oPayload.nomor_surat;
+      const cNomorSurat = bNomorSuratAuto
+        ? cGeneratedNomorSurat || cManualNomorSurat
+        : cManualNomorSurat;
 
       if (!cNomorSurat) {
         throw new Error("Nomor surat wajib diisi atau konfigurasi penomoran aktif belum tersedia");
