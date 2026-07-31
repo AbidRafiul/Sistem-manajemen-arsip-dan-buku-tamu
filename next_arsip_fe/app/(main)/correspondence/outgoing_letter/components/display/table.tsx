@@ -49,6 +49,15 @@ const formatDate = (date?: string | null) => {
     return formatDateCalendar(date, "dd MMM yyyy", null, "id") || "-";
 };
 
+const formatFileSize = (size?: number | null) => {
+    if (!size || size <= 0) return "-";
+    if (size < 1024) return `${size} B`;
+    const kb = size / 1024;
+    if (kb < 1024) return `${kb.toFixed(1)} KB`;
+    return `${(kb / 1024).toFixed(1)} MB`;
+};
+
+
 
 
 const getTimelineIcon = (aktivitas: string) => {
@@ -101,7 +110,14 @@ const Table = ({
         const detailLetter = state.detailData?.surat;
         if (!file || !detailLetter || !handleFileUpload) return;
 
+        if (file.type !== "application/pdf") {
+            showError(toast, "File surat keluar harus berupa PDF");
+            e.target.value = "";
+            return;
+        }
+
         setUploading(true);
+
         try {
             await handleFileUpload(file, detailLetter.id_surat_keluar, Number(getUserId(state)) || null);
             if (reloadDetail) await reloadDetail(detailLetter.id_surat_keluar);
@@ -239,6 +255,29 @@ const Table = ({
             )}
         </div>
     );
+
+    const fileMetadataTemplate = (rowData: TableData) => {
+        if (!rowData.nama_file) {
+            return <span className="text-color-secondary">-</span>;
+        }
+
+        return (
+            <div>
+                <div className="font-semibold text-sm text-900 flex align-items-center gap-2">
+                    <i className="pi pi-file-pdf text-red-500" />
+                    <span>{rowData.nama_file}</span>
+                </div>
+                <div className="text-xs text-color-secondary mt-1">
+                    {rowData.mime_type || "application/pdf"} - {formatFileSize(rowData.ukuran_file)}
+                </div>
+                {rowData.tanggal_upload && (
+                    <div className="text-xs text-color-secondary mt-1">
+                        Upload: {formatDate(rowData.tanggal_upload)}
+                    </div>
+                )}
+            </div>
+        );
+    };
 
     const actionTemplate = (rowData: TableData) => (
         <div className="flex gap-1 justify-content-center">
@@ -435,7 +474,7 @@ const Table = ({
                     rows={10}
                     rowsPerPageOptions={[10, 25, 50]}
                     header={headerTemplate}
-                    globalFilterFields={["nomor_surat", "nomor_agenda", "perihal", "tujuan", "instansi_tujuan", "status"]}
+                    globalFilterFields={["nomor_surat", "nomor_agenda", "perihal", "tujuan", "instansi_tujuan", "status", "nama_file"]}
                     filters={state.filters}
                     loading={state.load}
                     selection={state.selectedLetters}
@@ -460,6 +499,7 @@ const Table = ({
                     <Column field="tanggal_surat" header="Tanggal Surat" sortable body={(r) => formatDate(r.tanggal_surat)} style={{ width: "130px" }} />
                     <Column field="tanggal_kirim" header="Tanggal Kirim" sortable body={(r) => formatDate(r.tanggal_kirim)} style={{ width: "130px" }} />
                     <Column field="media_pengiriman" header="Media" body={(r) => r.media_pengiriman || "-"} style={{ width: "120px" }} />
+                    <Column header="File PDF" body={fileMetadataTemplate} style={{ minWidth: "220px" }} />
                     <Column field="status" header="Status" sortable body={statusTemplate} style={{ width: "155px", textAlign: "center" }} />
                     <Column header="Aksi" body={actionTemplate} style={{ width: "120px", textAlign: "center" }} />
                 </DataTable>
@@ -596,7 +636,7 @@ const Table = ({
                                                         ref={fileInputRef}
                                                         style={{ display: "none" }}
                                                         onChange={onFileUpload}
-                                                        accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/jpeg,image/png"
+                                                        accept="application/pdf"
                                                     />
                                                     <Button
                                                         type="button"
@@ -625,7 +665,9 @@ const Table = ({
                                                 <i className="pi pi-file text-primary" />
                                                 <div>
                                                     <div className="font-semibold text-sm text-900">{file.nama_file || "Dokumen"}</div>
-                                                    <div className="text-xs text-color-secondary">{file.mime_type || "-"}</div>
+                                                    <div className="text-xs text-color-secondary">
+                                                        {file.mime_type || "-"} - {formatFileSize(file.ukuran_file)}
+                                                    </div>
                                                 </div>
                                             </div>
                                             {file.path_file && (

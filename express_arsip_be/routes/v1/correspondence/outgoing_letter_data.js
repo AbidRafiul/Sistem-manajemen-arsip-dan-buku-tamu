@@ -41,6 +41,12 @@ const outgoingLetterData = async (req, res) => {
         ? "asc"
         : "desc";
 
+    const latestFileSubquery = DB("trs_file_surat_keluar as tf")
+      .select("tf.id_surat_keluar")
+      .max("tf.id_file_surat_keluar as id_file_surat_keluar")
+      .where("tf.status", "active")
+      .groupBy("tf.id_surat_keluar");
+
     const oQuery = DB("trs_surat_keluar as tsk")
       .leftJoin(
         "mst_jenis_surat as mjs",
@@ -49,6 +55,8 @@ const outgoingLetterData = async (req, res) => {
       )
       .leftJoin("mst_template_surat as mts", "tsk.id_template", "mts.id_template")
       .leftJoin("mst_pengguna as u", "tsk.created_by", "u.id_pengguna")
+      .leftJoin({ tff_latest: latestFileSubquery }, "tsk.id_surat_keluar", "tff_latest.id_surat_keluar")
+      .leftJoin("trs_file_surat_keluar as tf", "tf.id_file_surat_keluar", "tff_latest.id_file_surat_keluar")
       .select(
         "tsk.id_surat_keluar",
         "tsk.nomor_surat",
@@ -63,6 +71,11 @@ const outgoingLetterData = async (req, res) => {
         "tsk.media_pengiriman",
         "tsk.id_template",
         "mts.nama_template",
+        "tf.nama_file",
+        "tf.mime_type",
+        "tf.ukuran_file",
+        "tf.tanggal_upload",
+        "tf.path_file",
         "tsk.isi_surat_final",
         "tsk.nama_pengirim",
         "tsk.jabatan",

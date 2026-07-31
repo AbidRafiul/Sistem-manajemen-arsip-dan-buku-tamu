@@ -1,5 +1,6 @@
 'use client'
 
+
 import { showError, showSuccess } from "@/lib/tools/generalTools";
 import jsPDF from "jspdf";
 import dynamic from "next/dynamic";
@@ -10,9 +11,11 @@ import { Divider } from "primereact/divider";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
-import { useEffect, useMemo, useState } from "react";
+import { SelectButton } from "primereact/selectbutton";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import {
     apiEndpointDocumentDownload,
+
 } from "../endpoints";
 import { FormProps, initValue } from "../interfaces";
 import { mapOutgoingLetterPayload } from "../mappers";
@@ -34,6 +37,11 @@ const mediaPengirimanOptions = [
     { label: "Kurir", value: "Kurir" },
     { label: "Pos", value: "Pos" },
     { label: "Langsung", value: "Langsung" },
+];
+
+const suratModeOptions = [
+    { label: "Sistem", value: "sistem" },
+    { label: "Upload PDF", value: "upload_pdf" },
 ];
 
 interface LetterTypeOption {
@@ -61,6 +69,7 @@ const COMPANY_CONTACT = "Telp. 0351-2812555 E-mail. info@marstech.co.id web. www
 const COMPANY_LICENSE = "SIUP : 503.4/ 29 - MIKRO/ 401.106/ 2018 TDP : 13.13.1.47.00655";
 const SIGNER_NAME = "BOSTANUL ASY'ARI";
 const SIGNER_TITLE = "DIREKTUR";
+const PDF_MIME_TYPE = "application/pdf";
 
 const getUserId = (state: FormProps["state"]) =>
     state.session?.user?.IdPengguna || state.session?.user?.id || null;
@@ -98,6 +107,17 @@ const formatDateId = (value: string) => {
         month: "long",
         year: "numeric",
     });
+};
+
+const formatFileSize = (size?: number | null) => {
+    if (!size || size <= 0) return "-";
+
+    if (size < 1024) return `${size} B`;
+
+    const kb = size / 1024;
+    if (kb < 1024) return `${kb.toFixed(1)} KB`;
+
+    return `${(kb / 1024).toFixed(1)} MB`;
 };
 
 const loadImageAsDataUrl = async (url: string) => {
@@ -329,9 +349,11 @@ const Form = ({
     const [templateOptions, setTemplateOptions] = useState<TemplateOption[]>([]);
     const [nomorPreviewLoading, setNomorPreviewLoading] = useState(false);
     const [nomorSuratAuto, setNomorSuratAuto] = useState(true);
+    const [suratInputMode, setSuratInputMode] = useState<"sistem" | "upload_pdf">("sistem");
     const [pdfPreviewVisible, setPdfPreviewVisible] = useState(false);
     const [pdfPreviewUrl, setPdfPreviewUrl] = useState("");
     const [downloadLoading, setDownloadLoading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const fetchLetterTypeOptions = async () => {
         if (getLetterTypeOptions) {
@@ -428,6 +450,7 @@ const Form = ({
         }
     };
 
+
     const isFormFieldInvalid = (name: keyof initValue) =>
         Boolean(formik.touched[name] && formik.errors[name]);
 
@@ -440,6 +463,28 @@ const Form = ({
         ) : (
             <small className="p-error">&nbsp;</small>
         );
+
+    const clearUploadedPdf = () => {
+        formik.setFieldValue("file_surat", null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    };
+
+    const handlePdfSelection = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (file.type !== "application/pdf") {
+            showError(toast, "Upload langsung hanya menerima file PDF");
+            clearUploadedPdf();
+            return;
+        }
+
+        formik.setFieldValue("file_surat", file);
+    };
+
+
 
     useEffect(() => {
         if (state.submittedData) onSubmit(state.submittedData);
@@ -457,6 +502,31 @@ const Form = ({
             setNomorSuratAuto(false);
         }
     }, [state.edit, formik.values.id_surat_keluar]);
+
+    useEffect(() => {
+        if (state.add || state.edit) {
+            setSuratInputMode("sistem");
+            clearUploadedPdf();
+        } else {
+            setSuratInputMode("sistem");
+            clearUploadedPdf();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [state.add, state.edit]);
+
+    useEffect(() => {
+        if (suratInputMode === "upload_pdf") {
+            if (formik.values.id_template) {
+                formik.setFieldValue("id_template", null);
+            }
+            return;
+        }
+
+        if (formik.values.file_surat) {
+            clearUploadedPdf();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [suratInputMode]);
 
     useEffect(() => {
         if (!state.add && !state.edit) return;
@@ -574,6 +644,8 @@ const Form = ({
             onHide={() => {
                 setState((p) => ({ ...p, add: false, edit: false }));
                 setNomorSuratAuto(true);
+                setSuratInputMode("sistem");
+                clearUploadedPdf();
                 if (pdfPreviewUrl) {
                     URL.revokeObjectURL(pdfPreviewUrl);
                     setPdfPreviewUrl("");
@@ -585,22 +657,6 @@ const Form = ({
         >
             <form onSubmit={formik.handleSubmit} className="flex flex-column gap-1 pt-3 text-sm">
                 <div className="grid">
-                    <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                        <label htmlFor="nomor_agenda" className="font-semibold text-900">
-                            Nomor Agenda {state.edit && <span className="text-red-500">*</span>}
-                        </label>
-                        <InputText
-                            id="nomor_agenda"
-                            className={`w-full ${isFormFieldInvalid("nomor_agenda") ? "p-invalid" : ""}`}
-                            value={state.edit ? formik.values.nomor_agenda : "Otomatis saat disimpan"}
-                            onChange={(e) => {
-                                if (state.edit) formik.setFieldValue("nomor_agenda", e.target.value);
-                            }}
-                            disabled={!state.edit}
-                        />
-                        {getFormErrorMessage("nomor_agenda")}
-                    </div>
-
                     <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
                         <label htmlFor="nomor_surat" className="font-semibold text-900">
                             Nomor Surat <span className="text-red-500">*</span>
@@ -619,9 +675,26 @@ const Form = ({
                         <small className="text-color-secondary">
                             {nomorPreviewLoading
                                 ? "Mengambil nomor otomatis..."
-                                : "Nomor akan mengikuti konfigurasi penomoran aktif berdasarkan jenis surat."}
+                                : "Nomor otomatis boleh diedit; saat disimpan sistem memakai nilai di field ini."}
                         </small>
                         {getFormErrorMessage("nomor_surat")}
+                    </div>
+
+                    <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
+                        <label className="font-semibold text-900">Mode Input Surat</label>
+                        <SelectButton
+                            value={suratInputMode}
+                            onChange={(e) => {
+                                if (e.value) setSuratInputMode(e.value as "sistem" | "upload_pdf");
+                            }}
+                            options={suratModeOptions}
+                            optionLabel="label"
+                            optionValue="value"
+                            className="w-full"
+                        />
+                        <small className="text-color-secondary">
+                            Pilih sistem jika surat dibangun dari template aplikasi, atau upload PDF jika perusahaan sudah punya file jadi.
+                        </small>
                     </div>
 
                     <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
@@ -744,24 +817,66 @@ const Form = ({
                         <small className="p-error">&nbsp;</small>
                     </div>
 
-                    <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                        <label htmlFor="id_template" className="font-semibold text-900">Template Surat</label>
-                        <Dropdown
-                            id="id_template"
-                            className="w-full"
-                            value={formik.values.id_template}
-                            options={availableTemplateOptions}
-                            optionLabel="nama_template"
-                            optionValue="id_template"
-                            onChange={(e) => {
-                                formik.setFieldValue("id_template", e.value || null);
-                            }}
-                            placeholder="Pilih template"
-                            filter
-                            showClear
-                        />
-                        <small className="p-error">&nbsp;</small>
-                    </div>
+                    {suratInputMode === "sistem" ? (
+                        <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
+                            <label htmlFor="id_template" className="font-semibold text-900">Template Surat</label>
+                            <Dropdown
+                                id="id_template"
+                                className="w-full"
+                                value={formik.values.id_template}
+                                options={availableTemplateOptions}
+                                optionLabel="nama_template"
+                                optionValue="id_template"
+                                onChange={(e) => {
+                                    formik.setFieldValue("id_template", e.value || null);
+                                }}
+                                placeholder="Pilih template"
+                                filter
+                                showClear
+                            />
+                            <small className="p-error">&nbsp;</small>
+                        </div>
+                    ) : (
+                        <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
+                            <label htmlFor="file_surat" className="font-semibold text-900">Upload PDF Surat</label>
+                            <input
+                                ref={fileInputRef}
+                                id="file_surat"
+                                type="file"
+                                accept={PDF_MIME_TYPE}
+                                style={{ display: "none" }}
+                                onChange={handlePdfSelection}
+                            />
+                            <div className="flex align-items-stretch gap-2">
+                                <InputText
+                                    className="w-full"
+                                    value={formik.values.file_surat?.name || "Belum ada file PDF dipilih"}
+                                    readOnly
+                                />
+                                <Button
+                                    type="button"
+                                    icon="pi pi-upload"
+                                    outlined
+                                    aria-label="Pilih file PDF"
+                                    onClick={() => fileInputRef.current?.click()}
+                                />
+                                <Button
+                                    type="button"
+                                    icon="pi pi-times"
+                                    severity="secondary"
+                                    outlined
+                                    aria-label="Hapus file PDF"
+                                    disabled={!formik.values.file_surat}
+                                    onClick={clearUploadedPdf}
+                                />
+                            </div>
+                            <small className="text-color-secondary">
+                                {formik.values.file_surat
+                                    ? `PDF siap diupload (${formatFileSize(formik.values.file_surat.size)})`
+                                    : "Hanya file PDF yang diterima untuk upload langsung."}
+                            </small>
+                        </div>
+                    )}
 
                     <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
                         <label htmlFor="nama_pengirim" className="font-semibold text-900">Nama Pengirim</label>
@@ -835,16 +950,16 @@ const Form = ({
                                     onClick={handleDownloadDocx}
                                 />
                             </div>
+                            <InputTextarea
+                                id="isi_surat_final"
+                                className="w-full font-mono"
+                                rows={10}
+                                value={formik.values.isi_surat_final}
+                                readOnly
+                                autoResize
+                            />
                         </div>
-                        <InputTextarea
-                            id="isi_surat_final"
-                            className="w-full font-mono"
-                            rows={10}
-                            value={formik.values.isi_surat_final}
-                            readOnly
-                            autoResize
-                        />
-                    </div>
+                </div>
                 </div>
 
                 <Divider className="my-2" />
@@ -860,6 +975,8 @@ const Form = ({
                         onClick={() => {
                             setState((p) => ({ ...p, add: false, edit: false }));
                             setNomorSuratAuto(true);
+                            setSuratInputMode("sistem");
+                            clearUploadedPdf();
                             if (pdfPreviewUrl) {
                                 URL.revokeObjectURL(pdfPreviewUrl);
                                 setPdfPreviewUrl("");

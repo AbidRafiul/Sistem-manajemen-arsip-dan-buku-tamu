@@ -1,4 +1,3 @@
-"use client";
 import React from 'react';
 import { Card } from 'primereact/card';
 import { DashboardStats } from '../interfaces';
@@ -8,67 +7,51 @@ interface StatsCardsProps {
 }
 
 export default function StatsCards({ stats }: StatsCardsProps) {
+    const vaMetrics = [
+        {
+            label: 'Total Tamu Hari Ini',
+            value: (stats.total_tamu_hari_ini || 0).toLocaleString('id-ID'),
+            note: 'akumulasi hari ini',
+            icon: 'pi pi-users',
+            colorClass: 'text-indigo-600 bg-indigo-50'
+        },
+        {
+            label: 'Sedang Berkunjung',
+            value: (stats.sedang_berkunjung || 0).toLocaleString('id-ID'),
+            note: 'tamu aktif di lokasi',
+            icon: 'pi pi-id-card',
+            colorClass: 'text-orange-600 bg-orange-50'
+        },
+        {
+            label: 'Selesai Kunjungan',
+            value: (stats.selesai_kunjungan || 0).toLocaleString('id-ID'),
+            note: 'telah check-out',
+            icon: 'pi pi-check-circle',
+            colorClass: 'text-green-600 bg-green-50'
+        }
+    ];
+
     return (
         <div className="grid">
-            {/* Total Tamu Hari Ini */}
-            <div className="col-12 sm:col-6 md:col-4">
-                <Card className="border-none shadow-1 border-round-2xl p-1 bg-white h-full premium-hover-card glow-blue" style={{ borderLeft: '4px solid transparent' }}>
-                    <div className="flex align-items-center gap-3">
-                        <div
-                            className="flex align-items-center justify-content-center border-round-xl"
-                            style={{ width: '3.5rem', height: '3.5rem', background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', color: 'var(--primary-color)', flexShrink: 0 }}
-                        >
-                            <i className="pi pi-users text-2xl" />
+            {vaMetrics.map((oMetric) => (
+                <div className="col-12 md:col-4" key={oMetric.label}>
+                    <Card 
+                        className="shadow-1 border-round-2xl border-none h-full hover:shadow-3 hover:-translate-y-1 transition-all transition-duration-200" 
+                        pt={{ body: { className: 'p-4' }, content: { className: 'p-0 m-0' } }}
+                    >
+                        <div className="flex justify-content-between align-items-start">
+                            <div>
+                                <span className="block text-color-secondary font-semibold text-sm mb-2">{oMetric.label}</span>
+                                <div className="text-900 font-extrabold text-3xl mb-2" style={{ letterSpacing: '-0.02em' }}>{oMetric.value}</div>
+                                {oMetric.note && <span className="text-color-secondary text-xs font-medium bg-gray-50 px-2 py-1 border-round">{oMetric.note}</span>}
+                            </div>
+                            <div className={`flex align-items-center justify-content-center border-round-xl ${oMetric.colorClass}`} style={{ width: '3rem', height: '3rem' }}>
+                                <i className={`${oMetric.icon} text-xl`}></i>
+                            </div>
                         </div>
-                        <div>
-                            <span className="text-xs font-bold text-color-secondary uppercase tracking-wider" style={{ letterSpacing: '0.05em' }}>
-                                Total Tamu Hari Ini
-                            </span>
-                            <div className="text-3xl font-extrabold text-900 mt-1">{stats.total_tamu_hari_ini}</div>
-                        </div>
-                    </div>
-                </Card>
-            </div>
-
-            {/* Sedang Berkunjung */}
-            <div className="col-12 sm:col-6 md:col-4">
-                <Card className="border-none shadow-1 border-round-2xl p-1 bg-white h-full premium-hover-card glow-amber" style={{ borderLeft: '4px solid transparent' }}>
-                    <div className="flex align-items-center gap-3">
-                        <div
-                            className="flex align-items-center justify-content-center border-round-xl"
-                            style={{ width: '3.5rem', height: '3.5rem', background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', color: '#d97706', flexShrink: 0 }}
-                        >
-                            <i className="pi pi-id-card text-2xl" />
-                        </div>
-                        <div>
-                            <span className="text-xs font-bold text-color-secondary uppercase tracking-wider" style={{ letterSpacing: '0.05em' }}>
-                                Sedang Berkunjung
-                            </span>
-                            <div className="text-3xl font-extrabold text-900 mt-1">{stats.sedang_berkunjung}</div>
-                        </div>
-                    </div>
-                </Card>
-            </div>
-
-            {/* Selesai Kunjungan */}
-            <div className="col-12 sm:col-6 md:col-4">
-                <Card className="border-none shadow-1 border-round-2xl p-1 bg-white h-full premium-hover-card glow-emerald" style={{ borderLeft: '4px solid transparent' }}>
-                    <div className="flex align-items-center gap-3">
-                        <div
-                            className="flex align-items-center justify-content-center border-round-xl"
-                            style={{ width: '3.5rem', height: '3.5rem', background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', color: '#16a34a', flexShrink: 0 }}
-                        >
-                            <i className="pi pi-check-circle text-2xl" />
-                        </div>
-                        <div>
-                            <span className="text-xs font-bold text-color-secondary uppercase tracking-wider" style={{ letterSpacing: '0.05em' }}>
-                                Selesai Kunjungan
-                            </span>
-                            <div className="text-3xl font-extrabold text-900 mt-1">{stats.selesai_kunjungan}</div>
-                        </div>
-                    </div>
-                </Card>
-            </div>
+                    </Card>
+                </div>
+            ))}
         </div>
     );
 }

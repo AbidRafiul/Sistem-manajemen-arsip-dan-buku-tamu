@@ -91,6 +91,11 @@ router.post(
             .optional()
             .allow(null, "")
             .label("anggota_rombongan"),
+          status_persetujuan: Joi.string()
+            .valid("approved", "pending", "rejected")
+            .optional()
+            .allow(null, "")
+            .label("status_persetujuan"),
         },
         {
           "string.base": "{#label} harus berupa string",
@@ -110,14 +115,7 @@ router.post(
           message: cValidation || "Terdapat kesalahan pada data anda",
           datetime: formatDateSystem(),
         };
-        Logging(null, {
-          file: "visit_registrasi.js",
-          func: "registrasi",
-          request: oPayload,
-          response: oResult,
-          user: nama_pengguna,
-        });
-        return res.status(422).json(oResult);
+        return res.status(400).json(oResult);
       }
 
       const {
@@ -139,15 +137,25 @@ router.post(
         anggota_rombongan,
       } = oPayload;
 
-      const targetBranchId = oPayload.id_cabang || req.auth?.id_cabang || 1;
-      const minioPrefix = await getMinioPrefix(targetBranchId);
+      let targetBranchId = oPayload.id_cabang || req?.auth?.id_cabang || null;
+      if (oPayload.BranchId) {
+        targetBranchId = Number(oPayload.BranchId);
+      }
+      
+      const minioPrefix = await getMinioPrefix(
+        req?.auth?.id_cabang,
+        req?.auth?.id_departemen,
+        req?.auth?.id_divisi,
+        req?.auth?.id_unit_kerja,
+      );
 
       const getFile = (fieldname) => {
-        return (req.files || []).find(f => f.fieldname === fieldname) || null;
+        if (!req.files || !Array.isArray(req.files)) return null;
+        return req.files.find((f) => f.fieldname === fieldname) || null;
       };
 
-      const photoFaceFile = getFile("foto_wajah") || getFile("SelfieFile");
-      const photoIdentityFile = getFile("foto_identitas") || getFile("IdentityFile");
+      const photoFaceFile = getFile("foto_wajah") || getFile("SelfieFile") || getFile("PhotoFaceFile") || getFile("PhotoFace");
+      const photoIdentityFile = getFile("foto_identitas") || getFile("IdentityFile") || getFile("PhotoIdentity");
       const signatureFile = getFile("file_tanda_tangan") || getFile("SignatureFile");
       const nYear = new Date().getFullYear();
       const cTodayPath = formatDateSystem(new Date(), "yyyyMMdd");
@@ -213,6 +221,10 @@ router.post(
         }
       }
 
+      const isInternalUser = !!req?.auth?.nama_pengguna || !!req?.auth?.id_pengguna;
+      const defaultStatus = isInternalUser ? "approved" : "pending";
+      const initialStatusPersetujuan = (oPayload.ApprovalStatus || oPayload.status_persetujuan || defaultStatus).toLowerCase();
+
       const oData = {
         id_cabang: targetBranchId,
         nama_tamu: nama_tamu,
@@ -235,7 +247,7 @@ router.post(
         token_qr: QRToken,
         waktu_masuk: waktu_masuk,
         status: "Rencana",
-        status_persetujuan: "pending",
+        status_persetujuan: initialStatusPersetujuan,
         created_at: formatDateSystem(),
       };
 
@@ -277,30 +289,64 @@ router.post(
       }
 
       try {
-        if (resolvedHostUserId) {
-          // NOTIFIKASI DI WEB DINONAKTIFKAN (KARENA FITUR LONCENG DI FRONTEND MASIH TEMPLATE STATIS)
-          /*
-          await DB("notifications").insert({
-            id_pengguna: resolvedHostUserId,
-            title: "Booking Tamu",
-            body: `Anda memiliki booking tamu dari ${GuestName}`,
-            data: JSON.stringify({
-              id_kunjungan: idKunjungan,
-              kode_kunjungan: VisitCode,
-            }),
-            created_at: formatDateSystem(),
-          });
-          */
+        let purposeName = "Kunjungan";
+        if (VisitPurposeId) {
+          const purposeObj = await DB("mst_tujuan_kunjungan").where("id_tujuan_kunjungan", VisitPurposeId).first();
+          if (purposeObj) {
+            purposeName = purposeObj.nama_tujuan_kunjungan;
+          }
+        }
 
-          // Kirim email notifikasi booking baru ke pegawai secara asinkron
-          let purposeName = "Kunjungan";
-          if (VisitPurposeId) {
-            const purposeObj = await DB("mst_tujuan_kunjungan").where("id_tujuan_kunjungan", VisitPurposeId).first();
-            if (purposeObj) {
-              purposeName = purposeObj.nama_tujuan_kunjungan;
-            }
+        let resolvedHostName = HostName || null;
+        let oHost = null;
+        if (resolvedHostUserId) {
+          oHost = await DB("mst_pengguna")
+            .select("nama_lengkap", "telepon")
+            .where("id_pengguna", resolvedHostUserId)
+            .first();
+          if (oHost && oHost.nama_lengkap) {
+            resolvedHostName = oHost.nama_lengkap;
+          }
+        }
+
+        // --- 1. Kirim Notifikasi WA ke TAMU (Selalu Dikirim) ---
+        const rawPhone = PhoneNumber || oPayload.PhoneNumber || oPayload.phone_number || oPayload.nomor_telepon || oPayload.nomor_hp;
+        const GuestPhone = rawPhone ? String(rawPhone).replace(/[^0-9+]/g, '') : null;
+        console.log(`[visit_registrasi] Target WA Tamu: ${GuestPhone}`);
+        if (GuestPhone) {
+          const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${VisitCode}`;
+          const isApproved = initialStatusPersetujuan === "approved";
+          const isRejected = initialStatusPersetujuan === "rejected";
+          const statusText = isApproved ? "DISETUJUI" : isRejected ? "DITOLAK" : "MENUNGGU PERSETUJUAN";
+
+          let waTamu = "";
+          if (isRejected) {
+            const hasNote = VisitNotes && String(VisitNotes).trim() !== '' && String(VisitNotes).trim() !== '-';
+            const noteText = hasNote ? `\n\nAlasan / Catatan: ${VisitNotes}` : '';
+            waTamu = `Halo Bpk/Ibu ${GuestName},
+
+Mohon maaf, permohonan rencana kunjungan Anda dengan Kode Booking: *${VisitCode}* DITOLAK.${noteText}
+
+Terima kasih.`;
+          } else {
+            waTamu = `Halo Bpk/Ibu ${GuestName},
+
+Pendaftaran rencana kunjungan Anda berhasil dikonfirmasi.
+
+Detail Kunjungan:
+- Pegawai yang Ditemui: ${resolvedHostName || '-'}
+- Status: ${statusText}
+- Rencana Kedatangan: ${CheckInTime}
+- Tujuan: ${purposeName}
+${isApproved ? `\n📱 Link QR Code Tiket:\n${qrCodeImageUrl}\n` : ''}
+${isApproved ? 'Silakan tunjukkan QR Code di atas kepada petugas resepsionis saat Anda tiba di lokasi.' : 'Notifikasi konfirmasi akan dikirimkan kembali setelah permohonan disetujui.'} Terima kasih.`;
           }
 
+          await sendWhatsAppMessage(GuestPhone, waTamu, isApproved ? qrCodeImageUrl : null);
+        }
+
+        // --- 2. Kirim Notifikasi Email & WA ke PEGAWAI / HOST (Jika ada) ---
+        if (resolvedHostUserId) {
           sendMailNotification(resolvedHostUserId, "booking", {
             nama_tamu: nama_tamu,
             instansi_tamu: instansi_tamu || "-",
@@ -310,21 +356,6 @@ router.post(
             catatan_kunjungan: catatan_kunjungan || "-"
           });
 
-          // --- Kirim Notifikasi WA Ganda ---
-          const GuestPhone = oPayload.nomor_telepon || nomor_telepon;
-          if (GuestPhone) {
-            const waTamu = `Halo ${nama_tamu},
-
-Pendaftaran rencana kunjungan Anda berhasil dikonfirmasi.
-
-Detail Kunjungan:
-- Kode Booking: *${VisitCode}*
-- Rencana Kedatangan: ${waktu_masuk}
-- Tujuan: ${purposeName}
-
-Silakan tunjukkan Kode Booking di atas kepada Resepsionis saat Anda tiba di lokasi. Terima kasih.`;
-            sendWhatsAppMessage(GuestPhone, waTamu);
-          }
 
           const oHost = await DB("mst_pengguna").select("nama_lengkap", "telepon").where("id_pengguna", resolvedHostUserId).first();
           if (oHost && oHost.telepon) {
@@ -352,8 +383,8 @@ Data Rencana Kunjungan:
 - Keperluan: ${purposeName}
 - Catatan: ${catatan_kunjungan || '-'}
 
-${closingMsg} Terima kasih.`;
-            sendWhatsAppMessage(oHost.telepon, waHost);
+${closingMsg}`;
+            await sendWhatsAppMessage(oHost.telepon, waHost);
           }
         }
       } catch (e) {

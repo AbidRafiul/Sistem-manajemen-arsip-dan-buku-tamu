@@ -201,6 +201,7 @@ export default function VisitorBookingPage() {
             formData.append('nama_host', form.nama_host || '');
             formData.append('tipe_kunjungan', form.visit_type || 'personal');
             formData.append('jumlah_tamu', String(form.guest_count || 1));
+            formData.append('status_persetujuan', 'pending');
             if (form.signature_data) {
                 formData.append('tanda_tangan_data', form.signature_data);
             }

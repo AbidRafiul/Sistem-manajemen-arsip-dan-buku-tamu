@@ -80,6 +80,7 @@ import outgoingLetterUpload from "./outgoing_letter_upload.js";
 //Endpoint POST - outgoing-letter-archive
 import outgoingLetterArchive from "./outgoing_letter_archive.js";
 import outgoingLetterDocument from "./outgoing_letter_document.js";
+import outgoingLetterTte from "./tte.js";
 
 
 const router = express.Router();
@@ -112,5 +113,6 @@ router.use("/outgoing-letter-dashboard-stats", outgoingLetterDashboard);
 router.use("/outgoing-file-upload", outgoingLetterUpload);
 router.use("/outgoing-letter-archive", outgoingLetterArchive);
 router.use("/outgoing-letter-document", outgoingLetterDocument);
+router.use("/outgoing-letter-tte", outgoingLetterTte);
 
 export default router;
