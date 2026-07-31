@@ -630,7 +630,7 @@ const Table = ({
                                             </div>
                                             {file.path_file && (
                                                 <a 
-                                                    href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/${file.path_file}`}
+                                                    href={`${process.env.NEXT_PUBLIC_URL_API?.replace('/api/v1', '') || ''}/${file.path_file}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="no-underline"

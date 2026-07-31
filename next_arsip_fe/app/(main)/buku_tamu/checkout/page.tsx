@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
+import putData from '@/lib/axios/putData';
 import { Toast } from 'primereact/toast';
 import postData from '@/lib/axios/postData';
 import { showError, showSuccess } from '@/lib/tools/generalTools';
@@ -112,18 +112,9 @@ const CheckoutPage = () => {
 
             const timestamp = new Date().toISOString();
 
-            const response = await axios.put(
-                `http://localhost:8000/api/v1/buku_tamu/visit_checkout/${selectedId}`,
-                {},
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': tokenSIAB ? `Bearer ${tokenSIAB}` : '',
-                        'x-access-token': tokenSIAB,
-                        'x-timestamp': timestamp,
-                        'x-uniqueid': userIdAdmin
-                    }
-                }
+            const response = await putData(
+                `/buku_tamu/visit_checkout/${selectedId}`,
+                {}
             );
 
             if (response.data?.status === '00') {
@@ -165,21 +156,12 @@ const CheckoutPage = () => {
 
             const timestamp = new Date().toISOString();
 
-            const response = await axios.post(
-                `http://localhost:8000/api/v1${apiEndpointApproval}`,
+            const response = await postData(
+                apiEndpointApproval,
                 {
                     idKunjungan,
                     action,
                     catatanPersetujuan: notes
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': tokenSIAB ? `Bearer ${tokenSIAB}` : '',
-                        'x-access-token': tokenSIAB,
-                        'x-timestamp': timestamp,
-                        'x-uniqueid': userIdAdmin
-                    }
                 }
             );
 
@@ -224,18 +206,9 @@ const CheckoutPage = () => {
 
             const timestamp = new Date().toISOString();
 
-            const response = await axios.put(
-                `http://localhost:8000/api/v1/buku_tamu/visit_checkin/${idKunjungan}`,
-                {},
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': tokenSIAB ? `Bearer ${tokenSIAB}` : '',
-                        'x-access-token': tokenSIAB,
-                        'x-timestamp': timestamp,
-                        'x-uniqueid': userIdAdmin
-                    }
-                }
+            const response = await putData(
+                `/buku_tamu/visit_checkin/${idKunjungan}`,
+                {}
             );
 
             if (response.data?.status === '00') {
@@ -279,17 +252,10 @@ const CheckoutPage = () => {
             const timestamp = new Date().toISOString();
  
             // Fetch visitor details by scanned QR token
-            const response = await axios.post(
-                "http://localhost:8000/api/v1/buku_tamu/visit_qr_scan",
-                { QRToken: decodedText },
+            const response = await postData(
+                "/buku_tamu/visit_qr_scan",
                 {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': tokenSIAB ? `Bearer ${tokenSIAB}` : '',
-                        'x-access-token': tokenSIAB,
-                        'x-timestamp': timestamp,
-                        'x-uniqueid': userIdAdmin
-                    }
+                    QRToken: decodedText
                 }
             );
  

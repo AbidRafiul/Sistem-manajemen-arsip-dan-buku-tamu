@@ -1,12 +1,13 @@
 'use client';
 
-import axios from 'axios';
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
-import postData from '@/lib/axios/postData';
 import { showError, showSuccess } from '@/lib/tools/generalTools';
+import postData from '@/lib/axios/postData';
+import formUpload from '@/lib/axios/formData';
+import { apiEndpointRegistrasi } from './components/endpoints';
 import RegistrasiForm from './components/display/form';
 import VisitorCardModal from './components/display/table';
 import { apiEndpointGetPurpose, apiEndpointGetUser, apiEndpointGetBranches } from './components/endpoints';
@@ -153,7 +154,7 @@ export default function RegistrasiKunjunganPage() {
             return;
         }
         try {
-            const response = await axios.post("http://localhost:8000/api/v1/buku_tamu/visit_data/users", { id_cabang: branchId });
+            const response = await postData("/buku_tamu/visit_data/users", { id_cabang: branchId });
             if (response.data?.status === '00' && Array.isArray(response.data?.data)) {
                 const mapped = response.data.data.map((h: any) => ({
                     id_pengguna: h.id,
@@ -244,19 +245,7 @@ export default function RegistrasiKunjunganPage() {
             if (identityFile) submitData.append('foto_identitas', identityFile);
             if (selfieFile) submitData.append('foto_wajah', selfieFile);
 
-            const tokenSIAB = typeof window !== 'undefined' ? (localStorage.getItem('token') || sessionStorage.getItem('token') || '') : '';
-
-            const response = await axios.post(
-                "http://localhost:8000/api/v1/buku_tamu/visit_checkin",
-                submitData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        'Authorization': tokenSIAB ? `Bearer ${tokenSIAB}` : '',
-                        'x-access-token': tokenSIAB
-                    }
-                }
-            );
+            const response = await formUpload(apiEndpointRegistrasi, submitData);
 
             if (response?.data?.status === '00') {
                 showSuccess(toast, 'Check-In Berhasil!');
