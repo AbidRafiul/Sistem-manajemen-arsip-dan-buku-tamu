@@ -51,7 +51,7 @@ const getDashboardSummary = async (req, res) => {
 
     // Metric 3: Surat Disposisi Menunggu Tindak Lanjut
     const qDisposisi = DB("trs_disposisi_surat as tld")
-      .leftJoin("mst_pengguna as u", "tld.to_user_id", "u.id_pengguna")
+      .leftJoin("mst_pengguna as u", "tld.kepada_pengguna_id", "u.id_pengguna")
       .count("* as total")
       .where("tld.status", "baru")
       .first();
