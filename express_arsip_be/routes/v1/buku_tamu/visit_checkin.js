@@ -292,14 +292,43 @@ router.post(
         });
 
         // ==========================================
-        // 5. KIRIM NOTIFIKASI WA KE HOST SECARA ASYNC
+        // 5. KIRIM NOTIFIKASI WA GANDA (KE TAMU & HOST)
         // ==========================================
         try {
-          const oHost = await DB("mst_pengguna")
-            .select("nama_lengkap", "telepon")
-            .where("id_pengguna", resolvedHostUserId)
-            .first();
+          let resolvedHostName = HostName || null;
+          let oHost = null;
 
+          if (resolvedHostUserId) {
+            oHost = await DB("mst_pengguna")
+              .select("nama_lengkap", "telepon")
+              .where("id_pengguna", resolvedHostUserId)
+              .first();
+            if (oHost && oHost.nama_lengkap) {
+              resolvedHostName = oHost.nama_lengkap;
+            }
+          }
+
+          // A. Kirim Notifikasi WA ke TAMU
+          if (PhoneNumber) {
+            const cleanGuestPhone = String(PhoneNumber).replace(/[^0-9+]/g, '');
+            const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${VisitCode}`;
+            const waPesanTamu = `Halo Bpk/Ibu ${GuestName},
+
+Selamat datang! Proses Check-In kunjungan Anda di Lobi telah BERHASIL pada waktu ${formatDateSystem()}.
+
+Detail Kunjungan:
+- Keperluan: ${visitPurposeName || '-'}
+- Pegawai yang Ditemui: ${resolvedHostName || '-'}
+- Status: SEDANG BERKUNJUNG (CHECK-IN)
+
+📱 Link Tiket QR Code Anda:
+${qrCodeImageUrl}
+
+Selamat berkunjung dan semoga urusan Anda berjalan lancar. Terima kasih.`;
+            await sendWhatsAppMessage(cleanGuestPhone, waPesanTamu, qrCodeImageUrl);
+          }
+
+          // B. Kirim Notifikasi WA ke HOST
           if (oHost && oHost.telepon) {
             let openingMsg = "Ada tamu yang sedang menunggu Anda di Lobi";
             let closingMsg = "Silakan segera menemui tamu tersebut. Terima kasih.";
@@ -338,7 +367,7 @@ Data Tamu:
 - Catatan: ${VisitNotes || '-'}
 
 ${closingMsg}`;
-            sendWhatsAppMessage(oHost.telepon, waPesan);
+            await sendWhatsAppMessage(oHost.telepon, waPesan);
           }
         } catch (waErr) {
           console.error("[WA Gateway] Gagal memproses notifikasi:", waErr.message);

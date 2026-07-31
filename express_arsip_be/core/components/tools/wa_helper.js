@@ -8,12 +8,15 @@ const WA_API_TOKEN = process.env.WA_API_TOKEN || '';
  * Mengirim pesan WhatsApp via Fonnte API secara Asynchronous (fire-and-forget).
  * @param {string} targetNumber - Nomor HP tujuan (contoh: '08123456789' atau '628123456789')
  * @param {string} message - Isi pesan WA
+ * @param {string|null} imageUrl - URL Gambar (opsional, contoh: QR Code)
  * @returns {Promise<boolean>}
  */
-export const sendWhatsAppMessage = async (targetNumber, message) => {
-    // Jika token belum disetting, kita skip saja dan beri log (agar aplikasi tidak error saat development)
-    if (!WA_API_TOKEN) {
-        console.log(`\n[WA Gateway - Simulated] Pesan untuk ${targetNumber}:\n${message}\n(Silakan set WA_API_TOKEN di .env untuk mengirim secara nyata)\n`);
+export const sendWhatsAppMessage = async (targetNumber, message, imageUrl = null) => {
+    const token = process.env.WA_API_TOKEN || process.env.FONNTE_TOKEN || '8WKN4xH92PuRFDHVddZk';
+
+    // Jika token belum disetting, kita skip saja dan beri log
+    if (!token) {
+        console.log(`\n[WA Gateway - Simulated] Pesan untuk ${targetNumber}:\n${message}\nImage URL: ${imageUrl}\n`);
         return false;
     }
 
@@ -22,21 +25,30 @@ export const sendWhatsAppMessage = async (targetNumber, message) => {
     }
 
     try {
-        const response = await axios.post('https://api.fonnte.com/send', {
+        const payload = {
             target: targetNumber,
             message: message,
             countryCode: '62', // Default Indonesia
-        }, {
+        };
+
+        if (imageUrl) {
+            payload.url = imageUrl;
+            payload.filename = 'qrcode.png';
+        }
+
+        const response = await axios.post('https://api.fonnte.com/send', payload, {
             headers: {
-                'Authorization': WA_API_TOKEN
+                'Authorization': token
             }
         });
 
-        // Uncomment untuk debug response Fonnte
-        // console.log(`[WA Gateway] Terkirim ke ${targetNumber}:`, response.data);
+        console.log(`[WA Gateway Success] Terkirim ke ${targetNumber}:`, response.data?.detail || response.data);
         return true;
     } catch (error) {
         console.error(`[WA Gateway Error] Gagal kirim ke ${targetNumber}:`, error.message);
+        if (error.response) {
+            console.error(`[WA Gateway Error Response]:`, JSON.stringify(error.response.data));
+        }
         Logging(error, {
             file: 'wa_helper.js',
             func: 'sendWhatsAppMessage',

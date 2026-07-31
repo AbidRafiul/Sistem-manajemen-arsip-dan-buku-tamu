@@ -131,43 +131,40 @@ export default function ChartDisplay({ stats }: ChartDisplayProps) {
     return (
         <div className="grid mt-2">
             <div className="col-12 lg:col-8">
-                <Card 
-                    title={
-                        <div className="flex align-items-center gap-2 mb-2 pb-2 border-bottom-1 border-100">
-                            <i className="pi pi-chart-line text-primary text-xl" style={{ color: '#6366f1' }} />
-                            <span className="text-lg font-bold text-900">Tren Kunjungan Tamu (Mingguan)</span>
+                <Card className="shadow-1 border-round-2xl border-none h-full" pt={{ body: { className: 'p-4 flex flex-column h-full' }, content: { className: 'flex-1 p-0 m-0' } }}>
+                    <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-start mb-4 gap-3">
+                        <div>
+                            <h2 className="m-0 text-900 font-bold text-xl mb-1" style={{ letterSpacing: '-0.02em' }}>Tren Kunjungan Tamu</h2>
+                            <p className="m-0 text-color-secondary text-sm font-medium">Statistik volume kunjungan 7 hari terakhir.</p>
                         </div>
-                    }
-                    className="border-none shadow-1 border-round-2xl bg-white h-full premium-hover-card"
-                    pt={{ content: { style: { padding: 0 } } }}
-                >
-                    <div style={{ height: '320px', position: 'relative' }} className="mt-3 px-2">
+                        <div className="flex align-items-center gap-2 bg-indigo-50 text-indigo-600 px-3 py-2 border-round-3xl font-semibold text-xs border-1 border-indigo-100 shadow-1" style={{ width: 'fit-content' }}>
+                            <span className="border-circle bg-indigo-600" style={{ width: '8px', height: '8px' }}></span>
+                            Tamu Berkunjung
+                        </div>
+                    </div>
+                    <div style={{ height: '320px', position: 'relative' }}>
                         <Chart type="line" data={lineChartData} options={lineChartOptions} style={{ height: '100%' }} />
                     </div>
                 </Card>
             </div>
+
             <div className="col-12 lg:col-4">
-                <Card 
-                    title={
-                        <div className="flex align-items-center gap-2 mb-2 pb-2 border-bottom-1 border-100">
-                            <i className="pi pi-chart-pie text-primary text-xl" style={{ color: '#6366f1' }} />
-                            <span className="text-lg font-bold text-900">Persentase Tujuan</span>
-                        </div>
-                    }
-                    className="border-none shadow-1 border-round-2xl bg-white h-full flex flex-column premium-hover-card"
-                    pt={{ content: { style: { padding: 0 } } }}
-                >
-                    <div className="flex justify-content-center align-items-center mt-3 px-2" style={{ height: '270px', position: 'relative' }}>
+                <Card className="shadow-1 border-round-2xl border-none h-full flex flex-column" pt={{ body: { className: 'p-4 flex flex-column h-full' }, content: { className: 'flex-1 p-0 m-0 flex flex-column' } }}>
+                    <div className="mb-4">
+                        <h2 className="m-0 text-900 font-bold text-xl mb-1" style={{ letterSpacing: '-0.02em' }}>Persentase Tujuan</h2>
+                        <p className="m-0 text-color-secondary text-sm font-medium">Distribusi berdasarkan keperluan.</p>
+                    </div>
+                    <div className="flex justify-content-center align-items-center flex-grow-1" style={{ minHeight: '250px', position: 'relative' }}>
                         {hasPurposeData ? (
                             <Chart type="doughnut" data={doughnutChartData} options={doughnutChartOptions} style={{ width: '100%', maxWidth: '240px' }} />
                         ) : (
-                            <div className="flex flex-column align-items-center justify-content-center h-full py-4 text-center">
-                                <div className="border-circle p-3 mb-2 flex align-items-center justify-content-center" style={{ width: '4rem', height: '4rem', background: '#f8fafc' }}>
-                                    <i className="pi pi-chart-pie text-2xl text-400" style={{ color: '#94a3b8' }} />
+                            <div className="flex flex-column align-items-center justify-content-center py-4 text-center">
+                                <div className="border-circle p-3 mb-2 flex align-items-center justify-content-center bg-gray-50" style={{ width: '4rem', height: '4rem' }}>
+                                    <i className="pi pi-chart-pie text-2xl text-400" />
                                 </div>
-                                <h4 className="m-0 text-800 font-bold text-base">Belum Ada Kunjungan</h4>
+                                <h4 className="m-0 text-800 font-bold text-sm">Belum Ada Transaksi Hari Ini</h4>
                                 <p className="m-0 text-color-secondary text-xs mt-1 max-w-15rem">
-                                    Statistik persentase rute tujuan akan tampil otomatis setelah ada transaksi tamu hari ini.
+                                    Distribusi persentase tujuan akan otomatis muncul setelah ada transaksi hari ini.
                                 </p>
                             </div>
                         )}

@@ -68,6 +68,7 @@ router.post("/", async (req, res) => {
     if (visitData && visitData.nomor_telepon) {
       try {
         if (action === "approved") {
+          const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${visitData.kode_kunjungan}`;
           const waPesan = `Halo Bpk/Ibu ${visitData.nama_tamu},
 
 Permohonan rencana kunjungan Anda dengan Kode Booking: *${visitData.kode_kunjungan}* telah DISETUJUI.
@@ -77,8 +78,11 @@ Detail Persetujuan:
 - Pegawai: ${visitData.nama_host || '-'}
 - Status: DISETUJUI
 
-Silakan tunjukkan Kode Booking / QR Code Anda kepada petugas resepsionis saat Anda tiba di lokasi. Terima kasih.`;
-          sendWhatsAppMessage(visitData.nomor_telepon, waPesan);
+📱 Link QR Code Tiket:
+${qrCodeImageUrl}
+
+Silakan tunjukkan QR Code di atas kepada petugas resepsionis saat Anda tiba di lokasi. Terima kasih.`;
+          sendWhatsAppMessage(visitData.nomor_telepon, waPesan, qrCodeImageUrl);
         } else if (action === "rejected") {
           const hasNote = catatanPersetujuan && String(catatanPersetujuan).trim() !== '' && String(catatanPersetujuan).trim() !== '-';
           const noteText = hasNote ? `\n\nAlasan / Catatan: ${catatanPersetujuan}` : '';

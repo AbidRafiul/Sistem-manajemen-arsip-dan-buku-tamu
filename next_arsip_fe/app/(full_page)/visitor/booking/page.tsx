@@ -201,6 +201,7 @@ export default function VisitorBookingPage() {
             formData.append('HostName', form.nama_host || '');
             formData.append('VisitType', form.visit_type || 'personal');
             formData.append('GuestCount', String(form.guest_count || 1));
+            formData.append('ApprovalStatus', 'pending');
             if (form.signature_data) {
                 formData.append('SignatureData', form.signature_data);
             }
