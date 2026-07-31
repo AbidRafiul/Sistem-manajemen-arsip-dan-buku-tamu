@@ -23,6 +23,7 @@ export interface RegistrasiFormData {
     guest_count?: number;
     signature_data?: string | null;
     group_members?: GroupMember[];
+    approval_status?: 'approved' | 'pending' | 'rejected';
 }
 
 export interface GeneratedCardData {

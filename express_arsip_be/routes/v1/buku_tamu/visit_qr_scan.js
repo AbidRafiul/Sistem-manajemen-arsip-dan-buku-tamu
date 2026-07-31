@@ -9,7 +9,13 @@ router.post("/", async (req, res) => {
   if (!QRToken) return res.status(400).json({ status: "99", message: "QRToken wajib", datetime: formatDateSystem() });
 
   try {
-    const record = await DB("trs_kunjungan").where("token_qr", QRToken).first();
+    const cleanToken = String(QRToken).trim();
+    const record = await DB("trs_kunjungan")
+      .where("token_qr", cleanToken)
+      .orWhere("kode_kunjungan", cleanToken)
+      .orWhere("id_kunjungan", cleanToken)
+      .first();
+
     if (!record) return res.status(404).json({ status: "03", message: "Tamu tidak ditemukan", datetime: formatDateSystem() });
 
     const canCheckout = record.status === "in";

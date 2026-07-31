@@ -77,7 +77,8 @@ const initialFormState: RegistrasiFormData = {
     visit_type: 'personal',
     guest_count: 1,
     signature_data: null,
-    group_members: []
+    group_members: [],
+    approval_status: 'approved'
 };
 
 export default function RegistrasiKunjunganPage() {
@@ -223,6 +224,7 @@ export default function RegistrasiKunjunganPage() {
             }
             submitData.append('VisitType', formData.visit_type || 'personal');
             submitData.append('GuestCount', String(formData.guest_count || 1));
+            submitData.append('ApprovalStatus', 'approved');
             if (formData.signature_data) {
                 submitData.append('SignatureData', formData.signature_data);
             }
@@ -284,9 +286,19 @@ export default function RegistrasiKunjunganPage() {
         <div className="p-4 surface-ground min-h-screen">
             <Toast ref={toast} position="top-right" />
 
-            <div className="flex justify-content-between align-items-center mb-4">
+            <div className="flex flex-column md:flex-row justify-content-between md:align-items-center gap-3 mb-4">
                 <h4 className="m-0 font-bold text-color">Registrasi Kunjungan</h4>
-                <Button type="button" label="Kembali ke Monitoring" icon="pi pi-arrow-left" className="p-button-outlined p-button-sm px-3 py-2 border-round border-300 hover:surface-100" onClick={() => router.push('/buku_tamu/monitoring')} />
+                <div className="flex flex-wrap gap-2">
+                    <Button 
+                        type="button" 
+                        icon="pi pi-external-link" 
+                        label="Halaman Visitor (Publik)" 
+                        severity="info" 
+                        outlined 
+                        className="py-2 px-3 border-round-lg font-semibold text-sm bg-white" 
+                        onClick={() => window.open('/visitor/booking', '_blank')} 
+                    />
+                </div>
             </div>
 
             <RegistrasiForm
