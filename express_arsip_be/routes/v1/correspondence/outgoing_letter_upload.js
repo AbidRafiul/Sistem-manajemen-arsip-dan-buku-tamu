@@ -67,6 +67,9 @@ const outgoingLetterUpload = async (req, res) => {
       });
     }
 
+    const cNomorSurat = oPayload.nomor_surat || oLetter.nomor_surat;
+    const cPerihal = oPayload.perihal || oLetter.perihal;
+
     // Ambil detail pengunggah (untuk struktur folder hirarki MinIO)
     let uploaderIdCabang = null, uploaderIdDept = null, uploaderIdDiv = null, uploaderIdUnit = null;
     const uploaderId = oPayload.uploaded_by || oPayload.UploadedBy || req?.auth?.id_pengguna;
@@ -94,8 +97,8 @@ const outgoingLetterUpload = async (req, res) => {
     cObjectName = await uploadFileToMinio(cBucketName, oFile, {
       idCabang: uploaderIdCabang,
       modul: "korespondensi/surat-keluar",
-      nomorDokumen: oPayload.nomor_surat,
-      namaDokumen: oPayload.perihal,
+      nomorDokumen: cNomorSurat,
+      namaDokumen: cPerihal,
       version: "V1",
       customFolderPath: `${minioPrefix}/korespondensi/surat-keluar`
     });
