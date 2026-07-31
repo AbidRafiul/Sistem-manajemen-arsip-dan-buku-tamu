@@ -1,7 +1,5 @@
 'use client'
 
-import getDataRequest from "@/lib/axios/getData";
-import postData from "@/lib/axios/postData";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
 import { showError, showSuccess } from "@/lib/tools/generalTools";
 import jsPDF from "jspdf";
@@ -19,10 +17,6 @@ import { Tag } from "primereact/tag";
 import { useEffect, useState } from "react";
 import {
     apiEndpointGet,
-    apiEndpointApprove,
-    apiEndpointReject,
-    apiEndpointDetail,
-    apiEndpointLetterTypeManagement,
 } from "../endpoints";
 
 const statusOptions = [
@@ -206,6 +200,9 @@ interface TableProps {
     setState: React.Dispatch<React.SetStateAction<any>>;
     getData: (apiEndpoint: string, payload?: Record<string, any>) => Promise<void>;
     toast: React.RefObject<any>;
+    fetchLetterTypes?: () => Promise<LetterTypeOption[]>;
+    fetchDetail?: (id: number) => Promise<any>;
+    handleProcessApproval?: (type: "approve" | "reject", targets: any[], actionComment: string, buildPayload: () => any) => Promise<boolean>;
 }
 
 const formatDate = (date?: string | null) => {
@@ -213,7 +210,7 @@ const formatDate = (date?: string | null) => {
     return formatDateCalendar(date, "dd MMM yyyy", null, "id") || "-";
 };
 
-const Table = ({ state, setState, getData, toast }: TableProps) => {
+const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail, handleProcessApproval }: TableProps) => {
     const [letterTypeOptions, setLetterTypeOptions] = useState<LetterTypeOption[]>([]);
     
     // Approval Dialog state
@@ -235,32 +232,25 @@ const Table = ({ state, setState, getData, toast }: TableProps) => {
 
     const refreshData = () => getData(apiEndpointGet, buildPayload());
 
-    const fetchLetterTypes = async () => {
-        try {
-            const res = await getDataRequest(apiEndpointLetterTypeManagement);
-            setLetterTypeOptions([
-                { jenis_surat_id: 0, nama_jenis_surat: "Semua Jenis" },
-                ...(res.data?.data || []),
-            ]);
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || "Jenis surat gagal diambil");
+    const loadLetterTypes = async () => {
+        if (fetchLetterTypes) {
+            const data = await fetchLetterTypes();
+            setLetterTypeOptions(data);
         }
     };
 
     const openDetail = async (rowData: any) => {
         setState((p: any) => ({ ...p, detail: true, detailLoad: true, detailData: null }));
 
-        try {
-            const res = await getDataRequest(`${apiEndpointDetail}/${rowData.id_surat_keluar}`);
-            setState((p: any) => ({ ...p, detailData: res.data?.data || null }));
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || "Detail surat keluar gagal diambil");
-            setState((p: any) => ({ ...p, detail: false, detailData: null }));
-        } finally {
-            setState((p: any) => ({ ...p, detailLoad: false }));
+        if (fetchDetail) {
+            const data = await fetchDetail(rowData.id_surat_keluar);
+            if (data) {
+                setState((p: any) => ({ ...p, detailData: data }));
+            } else {
+                setState((p: any) => ({ ...p, detail: false }));
+            }
         }
+        setState((p: any) => ({ ...p, detailLoad: false }));
     };
 
     const openProcessDialog = (target: any) => {
@@ -292,35 +282,25 @@ const Table = ({ state, setState, getData, toast }: TableProps) => {
     };
 
     const handleProcess = async (type: "approve" | "reject") => {
+        if (!handleProcessApproval) return;
         setSubmitLoad(true);
-        const endpoint = type === "approve" ? apiEndpointApprove : apiEndpointReject;
         const targets = processingTarget === "bulk" ? state.selectedLetters : [processingTarget];
 
-        try {
-            for (const target of targets) {
-                await postData(endpoint, {
-                    id_surat_keluar: target.id_surat_keluar,
-                    catatan: actionComment,
-                });
-            }
-
-            showSuccess(toast, `Berhasil memproses ${targets.length} surat keluar.`);
+        const success = await handleProcessApproval(type, targets, actionComment, buildPayload);
+        if (success) {
             setProcessDialog(false);
-            setProcessingTarget(null);
-            setActionComment("");
-            setState((p: any) => ({ ...p, selectedLetters: [] }));
-            refreshData();
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || `Gagal memproses approval surat`);
-        } finally {
-            setSubmitLoad(false);
+            if (processingTarget === "bulk") {
+                setState((p: any) => ({ ...p, selectedLetters: [] }));
+            } else {
+                setState((p: any) => ({ ...p, detail: false, detailData: null }));
+            }
         }
+        setSubmitLoad(false);
     };
 
     useEffect(() => {
         getData(apiEndpointGet, buildPayload());
-        fetchLetterTypes();
+        loadLetterTypes();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.statusFilter, state.jenisSuratFilter]);
 

@@ -19,7 +19,8 @@ const Table = ({
     setState,
     formik,
     getData,
-    toast
+    toast,
+    handleDelete
 }: TableProps) => {
     const permissions = usePermissions();
 

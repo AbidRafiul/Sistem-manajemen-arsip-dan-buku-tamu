@@ -9,6 +9,8 @@ import Table from "./components/display/table";
 import { FilterMatchMode } from "primereact/api";
 import Form from "./components/display/form";
 import { useSession } from "next-auth/react";
+import { apiEndpointCreate, apiEndpointDelete, apiEndpointGet, apiEndpointGetCategory, apiEndpointGetDivision, apiEndpointUpdate } from "./components/endpoints";
+import { showSuccess } from "@/lib/tools/generalTools";
 
 const Page = () => {
     const toast = useRef<Toast>(null)
@@ -56,10 +58,67 @@ const Page = () => {
 
             return errors;
         },
-        onSubmit: (data) => {
-            setState(p => ({ ...p, submittedData: data }));
+        onSubmit: async (data) => {
+            setState((p) => ({ ...p, load: true }));
+
+            try {
+                const isEdit = Boolean(state.edit);
+                const cEndPoint = isEdit ? apiEndpointUpdate : apiEndpointCreate;
+
+                const oHeaders: Record<string, string> = {
+                    'X-Level': '1'
+                };
+
+                const oBody: Record<string, any> = {
+                    Name: data.Name,
+                    Status: data.Status,
+                    Code: data.Code,
+                    Location: data.Location,
+                    Type: data.Type,
+                    CategoryCode: data.CategoryCode,
+                    DivisionCode: data.DivisionCode
+                };
+
+                const vaData = await postData(cEndPoint, oBody, oHeaders);
+                const res = vaData.data;
+
+                showSuccess(toast, res.data?.message || 'Berhasil Menyimpan Data');
+                formik.resetForm();
+                setState((p) => ({ ...p, add: false, edit: false, delete: false }));
+                await getData(apiEndpointGet);
+            } catch (error: any) {
+                const e = error?.response?.data || error;
+                showError(toast, e?.message || 'Terjadi Kesalahan');
+            } finally {
+                setState((p) => ({ ...p, load: false, submittedData: null }));
+            }
         },
     });
+
+    const handleDelete = async () => {
+        setState((p) => ({ ...p, load: true }));
+
+        try {
+            if (state.selectedUsers.length < 1) {
+                showError(toast, 'Tidak Ada Aset yang Dipilih')
+                return
+            }
+
+            const vaCode = state.selectedUsers.map((v) => v.Code);
+
+            const vaData = await postData(apiEndpointDelete, { Code: vaCode });
+            const res = vaData.data;
+
+            showSuccess(toast, res.data?.message || 'Berhasil Menghapus Data');
+            setState((p) => ({ ...p, selectedUsers: [], add: false, edit: false, delete: false }));
+            await getData(apiEndpointGet);
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || 'Terjadi Kesalahan');
+        } finally {
+            setState((p) => ({ ...p, load: false }));
+        }
+    };
 
 
     const getData = async (apiEndpoint: string) => {
@@ -89,6 +148,26 @@ const Page = () => {
         }
     }, [session]);
 
+    const fetchComponentData = async () => {
+        setState((p) => ({ ...p, load: true }));
+
+        try {
+            const { data: vaCateg } = await postData(apiEndpointGetCategory);
+            const { data: vaDivision } = await postData(apiEndpointGetDivision);
+
+            setState((p) => ({ ...p, categoryData: vaCateg.data, divisionData: vaDivision.data, selectedUsers: [], add: false, edit: false, delete: false }));
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || 'Terjadi Kesalahan');
+        } finally {
+            setState((p) => ({ ...p, load: false }));
+        }
+    };
+
+    useEffect(() => {
+        fetchComponentData();
+    }, []);
+
     return <>
         <div className="p-4">
             <Toast ref={toast} position="top-right" />
@@ -102,7 +181,7 @@ const Page = () => {
             /> */}
 
 
-            <Table getData={getData} state={state} setState={setState} formik={formik} toast={toast} />
+            <Table getData={getData} state={state} setState={setState} formik={formik} toast={toast} handleDelete={handleDelete} />
         </div>
     </>
 }

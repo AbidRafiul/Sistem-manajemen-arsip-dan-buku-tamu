@@ -1,10 +1,6 @@
 'use client'
 
-import getDataRequest from "@/lib/axios/getData";
-import postData from "@/lib/axios/postData";
-import putData from "@/lib/axios/putData";
 import { showError, showSuccess } from "@/lib/tools/generalTools";
-import axios from "axios";
 import jsPDF from "jspdf";
 import dynamic from "next/dynamic";
 import { Button } from "primereact/button";
@@ -16,13 +12,7 @@ import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { useEffect, useMemo, useState } from "react";
 import {
-    apiEndpointCreate,
     apiEndpointDocumentDownload,
-    apiEndpointGet,
-    apiEndpointLetterTypeManagement,
-    apiEndpointNumberingPreview,
-    apiEndpointTemplateSurat,
-    apiEndpointUpdate,
 } from "../endpoints";
 import { FormProps, initValue } from "../interfaces";
 import { mapOutgoingLetterPayload } from "../mappers";
@@ -185,7 +175,7 @@ export const extractIsiSuratFromFinal = (value?: string | null) => {
     return text;
 };
 
-const buildFinalLetterText = (values: initValue) => [
+export const buildFinalLetterText = (values: initValue) => [
     `Nomor    : ${values.nomor_surat || "-"}`,
     "Lampiran : -",
     `Perihal  : ${values.perihal || "-"}`,
@@ -324,7 +314,17 @@ const renderTemplateContent = (
     return (templateContent || "").replace(/{{\s*([\w_]+)\s*}}/g, (_, key) => replacements[key] || "");
 };
 
-const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
+const Form = ({ 
+    state, 
+    setState, 
+    formik, 
+    toast,
+    handleSave,
+    downloadDocx,
+    getLetterTypeOptions,
+    getTemplateOptions,
+    loadNomorPreview
+}: FormProps) => {
     const [letterTypeOptions, setLetterTypeOptions] = useState<LetterTypeOption[]>([]);
     const [templateOptions, setTemplateOptions] = useState<TemplateOption[]>([]);
     const [nomorPreviewLoading, setNomorPreviewLoading] = useState(false);
@@ -333,30 +333,17 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
     const [pdfPreviewUrl, setPdfPreviewUrl] = useState("");
     const [downloadLoading, setDownloadLoading] = useState(false);
 
-    const getLetterTypeOptions = async () => {
-        try {
-            const res = await getDataRequest(apiEndpointLetterTypeManagement);
-            setLetterTypeOptions(res.data?.data || []);
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || "Jenis surat gagal diambil");
+    const fetchLetterTypeOptions = async () => {
+        if (getLetterTypeOptions) {
+            const data = await getLetterTypeOptions();
+            setLetterTypeOptions(data);
         }
     };
 
-    const getTemplateOptions = async () => {
-        try {
-            const res = await getDataRequest(apiEndpointTemplateSurat);
-            const templates = (res.data?.data || [])
-                .map((item: any) => ({
-                    ...item,
-                    id_template: item.id_template || item.id,
-                }))
-                .filter((item: TemplateOption) => item.status === "active");
-
-            setTemplateOptions(templates);
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || "Template surat gagal diambil");
+    const fetchTemplateOptions = async () => {
+        if (getTemplateOptions) {
+            const data = await getTemplateOptions();
+            setTemplateOptions(data);
         }
     };
 
@@ -416,94 +403,28 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
         }
     };
 
-    const downloadDocx = async () => {
-        if (!formik.values.id_surat_keluar) {
+    const handleDownloadDocx = async () => {
+        if (!formik.values.id_surat_keluar || !downloadDocx) {
             showError(toast, "Simpan surat terlebih dahulu sebelum mengunduh DOCX");
             return;
         }
 
         setDownloadLoading(true);
         try {
-            const endpoint = `${apiEndpointDocumentDownload}/${formik.values.id_surat_keluar}`;
-            const response = await axios.get(INTERCEPTOR_BASE_URL, {
-                responseType: "blob",
-                headers: {
-                    "X-ENDPOINT": endpoint,
-                    "x-response-type": "blob",
-                    "x-custom-header": JSON.stringify({
-                        "X-Level": "1",
-                        ...getFilterHeaders(),
-                    }),
-                },
-            });
-
-            const blob = new Blob([response.data], {
-                type: response.headers["content-type"] || "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            });
-            const url = URL.createObjectURL(blob);
-            const filename =
-                getFilenameFromDisposition(response.headers["content-disposition"]) ||
-                `${String(formik.values.nomor_surat || "surat-keluar").replace(/[^\w.-]+/g, "_")}.docx`;
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = filename;
-            link.click();
-            URL.revokeObjectURL(url);
-        } catch (error: any) {
-            let message = error?.response?.data?.message || error?.message || "Dokumen gagal diunduh";
-
-            if (error?.response?.data instanceof Blob) {
-                try {
-                    const text = await error.response.data.text();
-                    const parsed = JSON.parse(text);
-                    message = parsed?.message || message;
-                } catch {
-                    message = "Dokumen gagal diunduh";
-                }
-            }
-
-            showError(toast, message);
+            await downloadDocx(formik.values.id_surat_keluar, formik.values.nomor_surat || "surat-keluar");
         } finally {
             setDownloadLoading(false);
         }
     };
 
-    const handleSave = async (input: initValue) => {
-        setState((p) => ({ ...p, load: true }));
-
-        try {
-            const isEdit = Boolean(state.edit);
-            const isiSuratFinal = buildFinalLetterText(input);
-            const payload = mapOutgoingLetterPayload(
-                {
-                    ...input,
-                    isi_surat_final: isiSuratFinal,
-                    created_by: input.created_by || getUserId(state) as number | null,
-                    updated_by: getUserId(state) as number | null,
-                },
-                isEdit
-            );
-
-            const response = isEdit
-                ? await putData(`${apiEndpointUpdate}/${input.id_surat_keluar}`, payload)
-                : await postData(apiEndpointCreate, payload);
-
-            showSuccess(toast, response.data?.message || "Surat keluar berhasil disimpan");
-            formik.resetForm();
-            setState((p) => ({
-                ...p,
-                add: false,
-                edit: false,
-                detail: false,
-                detailData: null,
-                selectedLetters: [],
-            }));
-            await getData(apiEndpointGet);
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || "Surat keluar gagal disimpan");
-        } finally {
-            setState((p) => ({ ...p, load: false, submittedData: null }));
+    const onSubmit = async (input: initValue) => {
+        if (handleSave) {
+            setState((p) => ({ ...p, load: true }));
+            try {
+                await handleSave(input);
+            } finally {
+                setState((p) => ({ ...p, load: false, submittedData: null }));
+            }
         }
     };
 
@@ -521,7 +442,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
         );
 
     useEffect(() => {
-        if (state.submittedData) handleSave(state.submittedData);
+        if (state.submittedData) onSubmit(state.submittedData);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.submittedData]);
 
@@ -561,22 +482,21 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
 
         let cancelled = false;
 
-        const loadNomorPreview = async () => {
+        const fetchNomorPreview = async () => {
             setNomorPreviewLoading(true);
 
             try {
-                const res = await postData(apiEndpointNumberingPreview, {
-                    jenis_surat_id: formik.values.id_jenis_surat,
-                    tanggal_surat: formik.values.tanggal_surat,
-                    id_unit_kerja: currentUnitKerjaId,
-                });
-
-                if (cancelled) return;
-
-                const nomorSurat = res.data?.data?.nomor_surat || "";
-                if (nomorSurat && (nomorSuratAuto || !formik.values.nomor_surat)) {
-                    formik.setFieldValue("nomor_surat", nomorSurat);
-                    setNomorSuratAuto(true);
+                if (loadNomorPreview && !cancelled) {
+                    const nomorSurat = await loadNomorPreview(
+                        formik.values.id_jenis_surat as number,
+                        formik.values.tanggal_surat,
+                        currentUnitKerjaId
+                    );
+                    
+                    if (nomorSurat && (nomorSuratAuto || !formik.values.nomor_surat)) {
+                        formik.setFieldValue("nomor_surat", nomorSurat);
+                        setNomorSuratAuto(true);
+                    }
                 }
             } catch (error: any) {
                 if (!cancelled) {
@@ -591,7 +511,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
             }
         };
 
-        loadNomorPreview();
+        fetchNomorPreview();
 
         return () => {
             cancelled = true;
@@ -632,8 +552,8 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
     }, [pdfPreviewUrl]);
 
     useEffect(() => {
-        getLetterTypeOptions();
-        getTemplateOptions();
+        fetchLetterTypeOptions();
+        fetchTemplateOptions();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -911,8 +831,8 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                                     label="Unduh DOCX"
                                     outlined
                                     loading={downloadLoading}
-                                    disabled={!formik.values.id_surat_keluar}
-                                    onClick={downloadDocx}
+                                    disabled={!formik.values.id_surat_keluar || downloadLoading}
+                                    onClick={handleDownloadDocx}
                                 />
                             </div>
                         </div>

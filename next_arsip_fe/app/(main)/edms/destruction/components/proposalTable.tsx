@@ -9,22 +9,28 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { Dropdown } from 'primereact/dropdown';
 import { Tag } from 'primereact/tag';
 import { usePermissions } from '@/hooks/usePermissions';
-import { apiEndpointProposalGet, apiEndpointProposalReview, apiEndpointProposalExecute } from './endpoints';
-import getData from '@/lib/axios/getData';
-import postData from '@/lib/axios/postData';
-import { showError, showSuccess } from '@/lib/tools/generalTools';
+import { showError } from '@/lib/tools/generalTools';
 
 interface ProposalTableProps {
     toast: React.RefObject<any>;
-    refreshTrigger: number;
+    data: any[];
+    loading: boolean;
+    fetchProposals: (statusFilter: string) => void;
+    reviewProposal: (id: number, status: string, notes: string) => Promise<boolean>;
+    executeProposal: (id: number, file: string) => Promise<boolean>;
 }
 
-export default function ProposalTable({ toast, refreshTrigger }: ProposalTableProps) {
+export default function ProposalTable({ 
+    toast, 
+    data, 
+    loading, 
+    fetchProposals, 
+    reviewProposal, 
+    executeProposal 
+}: ProposalTableProps) {
     const { canApprove, canDelete } = usePermissions();
 
-    const [data, setData] = useState<any[]>([]);
     const [searchVal, setSearchVal] = useState<string>('');
-    const [loading, setLoading] = useState<boolean>(false);
     const [statusFilter, setStatusFilter] = useState<string>('');
 
     // Review Dialog States
@@ -39,25 +45,9 @@ export default function ProposalTable({ toast, refreshTrigger }: ProposalTablePr
     const [baFile, setBaFile] = useState<string>('');
     const [submittingExecution, setSubmittingExecution] = useState<boolean>(false);
 
-    const getProposals = async () => {
-        setLoading(true);
-        try {
-            const params = {} as any;
-            if (statusFilter) {
-                params.status = statusFilter;
-            }
-            const res = await getData(apiEndpointProposalGet, params);
-            setData(res.data?.data || []);
-        } catch (error: any) {
-            showError(toast, error?.response?.data?.message || 'Gagal memuat daftar usulan pemusnahan');
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
-        getProposals();
-    }, [statusFilter, refreshTrigger]);
+        fetchProposals(statusFilter);
+    }, [statusFilter, fetchProposals]);
 
     const handleReviewSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -65,18 +55,13 @@ export default function ProposalTable({ toast, refreshTrigger }: ProposalTablePr
 
         setSubmittingReview(true);
         try {
-            const res = await postData(apiEndpointProposalReview, {
-                id_usulan: selectedProposal.id_usulan,
-                status: reviewStatus,
-                catatan_tinjauan: reviewNotes
-            });
-            showSuccess(toast, res.data?.message || 'Tinjauan usulan berhasil disimpan');
+            await reviewProposal(selectedProposal.id_usulan, reviewStatus, reviewNotes);
             setReviewDialog(false);
             setSelectedProposal(null);
             setReviewNotes('');
-            getProposals();
+            fetchProposals(statusFilter);
         } catch (error: any) {
-            showError(toast, error?.response?.data?.message || 'Gagal memproses tinjauan usulan');
+            // Handled by parent
         } finally {
             setSubmittingReview(false);
         }
@@ -92,17 +77,13 @@ export default function ProposalTable({ toast, refreshTrigger }: ProposalTablePr
 
         setSubmittingExecution(true);
         try {
-            const res = await postData(apiEndpointProposalExecute, {
-                id_usulan: selectedProposal.id_usulan,
-                file_berita_acara: baFile
-            });
-            showSuccess(toast, res.data?.message || 'Pemusnahan berhasil dieksekusi');
+            await executeProposal(selectedProposal.id_usulan, baFile);
             setExecuteDialog(false);
             setSelectedProposal(null);
             setBaFile('');
-            getProposals();
+            fetchProposals(statusFilter);
         } catch (error: any) {
-            showError(toast, error?.response?.data?.message || 'Gagal mengeksekusi pemusnahan');
+            // Handled by parent
         } finally {
             setSubmittingExecution(false);
         }

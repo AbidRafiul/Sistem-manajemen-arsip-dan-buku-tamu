@@ -13,6 +13,7 @@ import { CheckoutDialog, DetailVisitorDialog, ScanQRDialog, RejectDialog } from 
 import { useSession } from 'next-auth/react';
 
 const CheckoutPage = () => {
+    const { data: session } = useSession();
     const toast = useRef<Toast>(null);
     const [state, setState] = useState<State>({
         load: false,
@@ -335,6 +336,7 @@ const CheckoutPage = () => {
             <GuestDataTable
                 state={state}
                 setState={setState}
+                session={session}
                 onCheckout={onCheckout}
                 onDetail={onDetail}
                 onFilterStatus={onFilterStatus}
