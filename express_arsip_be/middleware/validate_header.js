@@ -219,18 +219,18 @@ export const validateSignature = async (req, res, next) => {
         if (validIds.length > 0) {
           req.headers['x-filter-cabang'] = validIds.join(",");
         } else {
-          req.headers['x-filter-cabang'] = Array.from(allowedCabangIds).join(",");
+          req.headers['x-filter-cabang'] = isExact && oUser.id_cabang ? String(oUser.id_cabang) : Array.from(allowedCabangIds).join(",");
         }
       } else {
-        // Superadmin / Full Access: gunakan cabang yang dipilih beserta seluruh sub-cabang di bawahnya
+        // Superadmin / Full Access: gunakan cabang yang dipilih
         req.headers['x-filter-cabang'] = expandedRequestedIds.join(",");
       }
     } else {
       if (allowedCabangIds) {
-        req.headers['x-filter-cabang'] = Array.from(allowedCabangIds).join(",");
+        req.headers['x-filter-cabang'] = isExact && oUser.id_cabang ? String(oUser.id_cabang) : Array.from(allowedCabangIds).join(",");
       } else {
-        // Superadmin tanpa filter cabang spesifik: izinkan seluruh cabang di sistem
-        req.headers['x-filter-cabang'] = allCabangs.map(c => c.id_cabang).join(",");
+        // Superadmin tanpa filter cabang spesifik: izinkan seluruh cabang di sistem (atau cabang user jika exact)
+        req.headers['x-filter-cabang'] = isExact && oUser.id_cabang ? String(oUser.id_cabang) : allCabangs.map(c => c.id_cabang).join(",");
       }
     }
 

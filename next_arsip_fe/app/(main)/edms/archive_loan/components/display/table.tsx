@@ -31,6 +31,7 @@ const Table = ({
     toast,
 }: TableProps) => {
     const permissions = usePermissions();
+    const { canCreate, canUpdate, canDelete, canApprove } = permissions;
 
     const [detailDialog, setDetailDialog] = useState(false);
     const [selectedDetail, setSelectedDetail] = useState<LoanData | null>(null);
@@ -42,7 +43,7 @@ const Table = ({
     const sessionUser = state.session?.user as any;
     const roleKey = String(sessionUser?.role || sessionUser?.roleCode || '').toLowerCase();
     const roleId = Number(sessionUser?.roleId || 0);
-    const canApproveLoan = ['superadmin', 'administrator', 'admin', 'adm', 'pimpinan', 'pmn'].includes(roleKey) || [1, 2].includes(roleId);
+    const canApproveLoan = canApprove || ['superadmin', 'administrator', 'admin', 'adm'].includes(roleKey) || [1, 2].includes(roleId);
 
     const getStatusConfig = (rowData: LoanData): { label: string; severity: 'success' | 'danger' | 'warning' | 'info'; icon: string } => {
         if (rowData.terlambat === 1 && rowData.status === 'borrowed') return { label: 'Terlambat', severity: 'danger', icon: 'pi pi-exclamation-triangle' };
@@ -193,15 +194,19 @@ const Table = ({
             </div>
 
             <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
-                <Button
-                    size="small"
-                    label="Pinjam Dokumen"
-                    icon="pi pi-plus"
-                    outlined
-                    severity="success"
-                    onClick={() => { formik.resetForm(); setState(p => ({ ...p, add: true })); }}
-                />
-                <Divider layout="vertical" />
+                {canCreate && (
+                    <>
+                        <Button
+                            size="small"
+                            label="Pinjam Dokumen"
+                            icon="pi pi-plus"
+                            outlined
+                            severity="success"
+                            onClick={() => { formik.resetForm(); setState(p => ({ ...p, add: true })); }}
+                        />
+                        <Divider layout="vertical" />
+                    </>
+                )}
                 <Button
                     size="small"
                     label="Refresh"

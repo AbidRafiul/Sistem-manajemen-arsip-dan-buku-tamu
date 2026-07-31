@@ -73,7 +73,7 @@ export interface TableProps {
     setDataRekap: React.Dispatch<React.SetStateAction<DataRekap>>;
     formik: FormikProps<initValue>;
     setState: React.Dispatch<React.SetStateAction<State>>;
-    getData: (apiEndpoint: string) => Promise<void>;
+    getData: (apiEndpoint: string, isExact?: boolean) => Promise<void>;
     getNav?: (IdPengguna: string | number) => Promise<void>;
     toast: RefObject<Toast>;
     navBar?: NavState;
@@ -87,7 +87,7 @@ export interface FormProps {
     setState: React.Dispatch<React.SetStateAction<State>>;
     formik: FormikProps<initValue>;
     toast?: RefObject<Toast>; // Dibuat optional karena logic toast pindah ke page.tsx
-    getData?: (apiEndpoint: string) => Promise<void>; // Dibuat optional
+    getData?: (apiEndpoint: string, isExact?: boolean) => Promise<void>; // Dibuat optional
     // 2. PERBAIKAN: Mendaftarkan handler yang dikirim dari page.tsx
     handleSave: (input: initValue) => Promise<void>;
     handleDelete: () => Promise<void>;
@@ -97,7 +97,7 @@ export interface PrintProps {
     state: State;
     setState: React.Dispatch<React.SetStateAction<State>>;
     formik: FormikProps<initValue>;
-    getData?: (apiEndpoint: string) => Promise<void>;
+    getData?: (apiEndpoint: string, isExact?: boolean) => Promise<void>;
     toast: React.RefObject<Toast>;
     dataRekap: DataRekap;
     setDataRekap: React.Dispatch<React.SetStateAction<DataRekap>>;
