@@ -214,9 +214,11 @@ Terdapat **3 middleware inti**:
 ### 6.2 Aturan Penggunaan
 
 - **SEMUA route WAJIB** menggunakan ketiga middleware di atas
-- **KECUALI** route auth berikut:
+- **KECUALI** rute-rute berikut (Pengecualian Resmi):
   - `/auth/login`
   - `/auth/token`
+  - `/auth/reset-password` (Hanya wajib `validateAccessToken`)
+  - `/verifikasi-dokumen` (Tanpa middleware karena ranah publik)
 
 ### 6.3 Fungsi Middleware
 

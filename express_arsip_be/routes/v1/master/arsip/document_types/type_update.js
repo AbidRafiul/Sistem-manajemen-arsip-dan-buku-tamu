@@ -33,13 +33,14 @@ const updateDocumentType = async (req, res) => {
         kode_jenis_dokumen: Joi.string().max(255).required().label("Kode Jenis Dokumen"),
         nama_jenis_dokumen: Joi.string().max(255).required().label("Nama Jenis Dokumen"),
         deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
-
+        status: Joi.string().optional().allow(null, "").label("Status"),
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
         "any.required": "{#label} wajib diisi",
       },
       oPayload,
+      { allowUnknown: true }
     );
 
     if (cValidation) {
@@ -65,7 +66,7 @@ const updateDocumentType = async (req, res) => {
       .update({
         kode_jenis_dokumen: oPayload.kode_jenis_dokumen,
         nama_jenis_dokumen: oPayload.nama_jenis_dokumen,
-
+        status: oPayload.status || "active",
         deskripsi: oPayload.deskripsi || null,
         updated_at: new Date(),
       });

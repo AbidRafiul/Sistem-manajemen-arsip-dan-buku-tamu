@@ -1,11 +1,8 @@
-import express from "express";
-import DB from "../../core/config/knex.js";
-import { Logging } from "./components/tools/servertool.js";
-import { loadObjectBuffer, verifyPdfBuffer } from "./components/tools/tte_service.js";
+import DB from "../../../core/config/knex.js";
+import { Logging } from "../components/tools/servertool.js";
+import { loadObjectBuffer, verifyPdfBuffer } from "../components/tools/tte_service.js";
 
-const router = express.Router();
-
-router.get("/:token_verifikasi", async (req, res) => {
+const getVerifikasiDokumen = async (req, res) => {
   const token = req.params.token_verifikasi;
 
   try {
@@ -71,8 +68,8 @@ router.get("/:token_verifikasi", async (req, res) => {
     });
   } catch (error) {
     await Logging(error, {
-      file: "verifikasi_dokumen.js",
-      func: "getByToken",
+      file: "verifikasi_get.js",
+      func: "getVerifikasiDokumen",
       request: JSON.stringify({ token_verifikasi: token }),
       response: "Verifikasi dokumen gagal diambil",
       user: "",
@@ -83,6 +80,6 @@ router.get("/:token_verifikasi", async (req, res) => {
       message: "Verifikasi dokumen gagal diambil",
     });
   }
-});
+};
 
-export default router;
+export default getVerifikasiDokumen;

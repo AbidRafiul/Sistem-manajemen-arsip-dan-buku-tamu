@@ -45,7 +45,7 @@ router.get("/:id_surat_keluar", async (req, res) => {
         surat.instansi_tujuan || "",
       ].join("\n");
 
-    const buffer = buildDocxBufferFromText(
+    const buffer = await buildDocxBufferFromText(
       `${surat.nomor_surat || "surat-keluar"}`,
       bodyText,
       surat

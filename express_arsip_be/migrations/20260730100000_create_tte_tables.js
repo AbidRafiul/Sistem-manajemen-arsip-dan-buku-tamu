@@ -150,7 +150,7 @@ export async function up(knex) {
     table.bigIncrements("id_detail_alur_tanda_tangan").primary();
     table.bigInteger("id_alur_tanda_tangan").unsigned().notNullable();
     table.integer("id_pengguna").unsigned().nullable();
-    table.integer("id_peran").unsigned().nullable();
+    table.integer("id_peran").nullable();
     table.integer("urutan").notNullable().defaultTo(1);
     table
       .enu("jenis_tindakan", ["persetujuan", "tanda_tangan"])

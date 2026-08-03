@@ -32,12 +32,14 @@ const updateArchiveClassification = async (req, res) => {
         kode_klasifikasi: Joi.string().max(255).required().label("Kode Klasifikasi"),
         nama_klasifikasi: Joi.string().max(255).required().label("Nama Klasifikasi"),
         deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
+        status: Joi.string().optional().allow(null, "").label("Status"),
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
         "any.required": "{#label} wajib diisi",
       },
       oPayload,
+      { allowUnknown: true }
     );
 
     if (cValidation) {
@@ -62,6 +64,7 @@ const updateArchiveClassification = async (req, res) => {
         kode_klasifikasi: oPayload.kode_klasifikasi,
         nama_klasifikasi: oPayload.nama_klasifikasi,
         deskripsi: oPayload.deskripsi || null,
+        status: oPayload.status || "active",
         updated_at: new Date(),
       });
 

@@ -73,10 +73,14 @@ const getMinioPrefix = async (idCabang, idDepartemen = null, idDivisi = null, id
 const uploadFileToMinio = async (bucketName, file, options = {}) => {
     try {
         // 1. Cek & pastikan bucket ada
-        const bExists = await minioClient.bucketExists(bucketName);
-        if (!bExists) {
-            await minioClient.makeBucket(bucketName);
-            console.log(`Bucket '${bucketName}' berhasil dibuat.`);
+        try {
+            const bExists = await minioClient.bucketExists(bucketName);
+            if (!bExists) {
+                await minioClient.makeBucket(bucketName);
+                console.log(`Bucket '${bucketName}' berhasil dibuat.`);
+            }
+        } catch (bucketErr) {
+            console.warn(`[MinIO Warning] Gagal cek/buat bucket (mungkin MinIO mati): ${bucketErr.message}`);
         }
 
         // Parse metadata options
@@ -152,21 +156,37 @@ const uploadFileToMinio = async (bucketName, file, options = {}) => {
 
         const cObjectName = `${cFolderPath}/${cBaseName}`;
 
-        // 4. Put object ke MinIO
-        await minioClient.putObject(
-            bucketName,
-            cObjectName,
-            file.buffer,
-            file.size,
-            { 'Content-Type': file.mimetype }
-        );
-
-        console.log(`[Metadata MinIO Upload] Berhasil upload -> ${bucketName}/${cObjectName}`);
+        try {
+            // 4. Put object ke MinIO
+            await minioClient.putObject(
+                bucketName,
+                cObjectName,
+                file.buffer,
+                file.size,
+                { 'Content-Type': file.mimetype }
+            );
+            console.log(`[Metadata MinIO Upload] Berhasil upload -> ${bucketName}/${cObjectName}`);
+        } catch (minioError) {
+            console.warn(`[MinIO Warning] Gagal upload ke MinIO, fallback menyimpan file lokal: ${minioError.message}`);
+            
+            // Fallback to local storage
+            const fs = await import('fs');
+            const path = await import('path');
+            
+            const localDir = path.join(process.cwd(), 'public', 'uploads', cFolderPath);
+            if (!fs.existsSync(localDir)) {
+                fs.mkdirSync(localDir, { recursive: true });
+            }
+            
+            const localFilePath = path.join(process.cwd(), 'public', 'uploads', cObjectName);
+            fs.writeFileSync(localFilePath, file.buffer);
+            console.log(`[Local Upload Fallback] Berhasil menyimpan file secara lokal di -> public/uploads/${cObjectName}`);
+        }
 
         return cObjectName;
 
     } catch (error) {
-        console.error("Gagal upload ke MinIO:", error);
+        console.error("Kesalahan sistem saat mempersiapkan upload file:", error);
         throw error;
     }
 };

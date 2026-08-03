@@ -16,7 +16,6 @@ import navUserPermissions from "./navigation/user_permissions.js";
 import configCreate from "./config/config_create.js";
 import configData from "./config/config_data.js";
 
-import menuData from "./menu/menu.js";
 
 // master
 // user
@@ -37,6 +36,16 @@ router.use("/nav/user-insert", navUserInsert);
 router.use("/nav/user-permissions", navUserPermissions);
 
 // menu
-router.use("/menu", menuData);
+import menuData from "./menu/menu_data.js";
+import menuDelete from "./menu/menu_delete.js";
+import menuInsert from "./menu/menu_insert.js";
+import menuUpdate from "./menu/menu_update.js";
+import menuRebuild from "./menu/menu_rebuild.js";
+
+router.use("/menu/data", menuData);
+router.use("/menu/delete", menuDelete);
+router.use("/menu/insert", menuInsert);
+router.use("/menu/update", menuUpdate);
+router.use("/menu/rebuild", menuRebuild);
 
 export default router;

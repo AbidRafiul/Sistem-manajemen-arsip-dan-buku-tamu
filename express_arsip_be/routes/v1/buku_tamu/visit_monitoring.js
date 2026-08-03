@@ -2,7 +2,7 @@ import express from "express";
 import DB from "../../../core/config/knex.js";
 import { formatDateSystem } from "../components/tools/general.js";
 
-import { applyMultiTenantFilter } from "../components/tools/filterHelper.js";
+import { applyMultiTenantFilter } from "../components/tools/filter_helper.js";
 
 const router = express.Router();
 

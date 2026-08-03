@@ -97,7 +97,7 @@ export default function VisitorBookingPage() {
     useEffect(() => {
         const fetchPurposes = async () => {
             try {
-                const response = await postData("/buku_tamu/visit_data/purposes", {});
+                const response = await postData("/buku-tamu/visit-data/purposes", {});
                 if (response.data?.status === '00' && Array.isArray(response.data?.data)) {
                     setPurposes(response.data.data);
                 }
@@ -107,7 +107,7 @@ export default function VisitorBookingPage() {
         };
         const fetchBranches = async () => {
             try {
-                const response = await postData("/buku_tamu/visit_data/branches", {});
+                const response = await postData("/buku-tamu/visit-data/branches", {});
                 if (response.data?.status === '00' && Array.isArray(response.data?.data)) {
                     const formatted = groupBranches(response.data.data);
                     setBranches(formatted);
@@ -126,7 +126,7 @@ export default function VisitorBookingPage() {
             return;
         }
         try {
-            const response = await postData("/buku_tamu/visit_data/users", { id_cabang: branchId });
+            const response = await postData("/buku-tamu/visit-data/users", { id_cabang: branchId });
             if (response.data?.status === '00' && Array.isArray(response.data?.data)) {
                 setHosts(response.data.data);
             }
@@ -224,7 +224,7 @@ export default function VisitorBookingPage() {
             if (identityFile) formData.append('foto_identitas', identityFile);
             if (selfieFile) formData.append('foto_wajah', selfieFile);
 
-            const response = await formUpload("/buku_tamu/visit_booking", formData);
+            const response = await formUpload("/buku-tamu/visit-booking", formData);
 
             if (response.data?.status === '00') {
                 setVisitCode(response.data?.data?.kode_kunjungan || 'SUCCESS-QR');
@@ -569,4 +569,5 @@ export default function VisitorBookingPage() {
         </>
     );
 }
+
 

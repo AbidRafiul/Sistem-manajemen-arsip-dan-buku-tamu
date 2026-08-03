@@ -253,7 +253,7 @@ const CheckoutPage = () => {
  
             // Fetch visitor details by scanned QR token
             const response = await postData(
-                "/buku_tamu/visit_qr_scan",
+                "/buku-tamu/visit-qr-scan",
                 {
                     QRToken: decodedText
                 }
@@ -355,3 +355,4 @@ const CheckoutPage = () => {
 };
 
 export default CheckoutPage;
+

@@ -1,7 +1,7 @@
 import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
-import { applyMultiTenantFilter } from "../components/tools/filterHelper.js";
+import { applyMultiTenantFilter } from "../components/tools/filter_helper.js";
 
 const router = express.Router();
 
@@ -54,6 +54,8 @@ const incomingLetterData = async (req, res) => {
 
     if (oPayload.status) {
       oQuery.where("til.status", oPayload.status);
+    } else {
+      oQuery.whereNot("til.status", "dihapus");
     }
 
     if (oPayload.start_date && oPayload.end_date) {

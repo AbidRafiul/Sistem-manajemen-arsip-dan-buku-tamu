@@ -19,7 +19,7 @@ router.post("/create", async (req, res) => {
       {
         kode_jabatan: Joi.string().required().label("Kode Jabatan"),
         nama_jabatan: Joi.string().required().label("Nama Jabatan"),
-        tingkat_jabatan: Joi.string().optional().allow(null, "").label("Tingkat Jabatan"),
+        tingkat_jabatan: Joi.any().optional().allow(null, "").label("Tingkat Jabatan"),
         deskripsi: Joi.string().optional().allow(null, "").label("Deskripsi")
       },
       { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },

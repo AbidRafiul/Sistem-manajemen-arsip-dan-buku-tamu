@@ -9,7 +9,7 @@ import ArsipDokumen from "./arsip_dokumen/index.js";
 import SuratMasuk from "./correspondence/index.js"
 import BukuTamu from "./buku_tamu/index.js"
 import Dashboard from "./dashboard/index.js"
-import VerifikasiDokumen from "./verifikasi_dokumen.js";
+import VerifikasiDokumen from "./verifikasi_dokumen/index.js";
 
 import {
   contextMiddleware,
@@ -22,7 +22,7 @@ const router = express.Router();
 
 // Auth
 router.use("/auth/token", AccessToken);
-router.use("/auth/login", Login);
+router.use("/auth/login", [validateAccessToken], Login);
 router.use("/auth/reset-password", [validateAccessToken], ResetPassword);
 
 // Modul-Modul Aplikasi
@@ -56,7 +56,7 @@ router.use(
 
 // Buku Tamu
 router.use(
-  "/buku_tamu",
+  "/buku-tamu",
   [validateAccessToken, validateSignature, contextMiddleware],
   BukuTamu
 );
@@ -75,3 +75,4 @@ router.use(
 );
 
 export default router;
+

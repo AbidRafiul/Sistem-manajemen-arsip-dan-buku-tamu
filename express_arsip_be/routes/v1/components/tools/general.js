@@ -60,7 +60,7 @@ export const formatDateSystem = (
 }
 
 
-export function datetime() {
+export const datetime = () => {
   const now = new Date();
   const datetime =
     now.getFullYear() +
@@ -73,7 +73,7 @@ export function datetime() {
   return datetime;
 }
 
-export function datetimeIso(now = "") {
+export const datetimeIso = (now = "") => {
   if (!now) {
     now = new Date();
   }
@@ -292,3 +292,5 @@ export const sanitizeString = (str, { mode = "clean" } = {}) => {
 
   return s;
 };
+
+

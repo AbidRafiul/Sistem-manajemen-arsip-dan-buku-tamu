@@ -97,6 +97,13 @@ const Page = () => {
         filters: { global: { value: null, matchMode: FilterMatchMode.CONTAINS } },
         session: null,
         submittedData: null,
+        config: {
+            COMPANY_NAME: "",
+            COMPANY_ADDRESS: "",
+            COMPANY_CONTACT: "",
+            COMPANY_LICENSE: "",
+            COMPANY_LOGO: ""
+        }
     });
 
     const formik = useFormik({
@@ -122,10 +129,24 @@ const Page = () => {
         setState((p) => ({ ...p, load: true }));
 
         try {
-            const res = await getDataRequest(apiEndpoint, payload);
+            const [res, logo, nama, alamat, telepon, izin] = await Promise.all([
+                getDataRequest(apiEndpoint, payload),
+                postData("/function/db-config", { Key: "msLogoPerusahaan" }),
+                postData("/function/db-config", { Key: "msNamaPerusahaan" }),
+                postData("/function/db-config", { Key: "msAlamatPerusahaan" }),
+                postData("/function/db-config", { Key: "msTeleponPerusahaan" }),
+                postData("/function/db-config", { Key: "msIzinPerusahaan" }),
+            ]);
             setState((p) => ({
                 ...p,
                 data: (res.data?.data || []).map(mapOutgoingLetterRow),
+                config: {
+                    COMPANY_LOGO: logo.data?.data || "",
+                    COMPANY_NAME: nama.data?.data || "PT. MARSTECH GLOBAL",
+                    COMPANY_ADDRESS: alamat.data?.data || "JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR",
+                    COMPANY_CONTACT: telepon.data?.data || "Telp. 0351-2812555 E-mail. info@marstech.co.id web. www.marstech.co.id",
+                    COMPANY_LICENSE: izin.data?.data || "SIUP : 503.4/ 29 - MIKRO/ 401.106/ 2018 TDP : 13.13.1.47.00655"
+                }
             }));
         } catch (error: any) {
             const e = error?.response?.data || error;

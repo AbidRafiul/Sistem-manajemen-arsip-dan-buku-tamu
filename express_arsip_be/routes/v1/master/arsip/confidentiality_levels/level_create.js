@@ -32,7 +32,7 @@ const createConfidentialityLevel = async (req, res) => {
         nama_tingkat_kerahasiaan: Joi.string().max(255).required().label("Nama Kerahasiaan"),
         tingkat_kerahasiaan: Joi.number().required().label("Level (Angka)"),
         deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
-
+        status: Joi.string().optional().allow(null, "").label("Status"),
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
@@ -41,6 +41,7 @@ const createConfidentialityLevel = async (req, res) => {
         "number.base": "{#label} harus berupa angka",
       },
       oPayload,
+      { allowUnknown: true }
     );
 
     if (cValidation) {
@@ -66,9 +67,8 @@ const createConfidentialityLevel = async (req, res) => {
       kode_tingkat_kerahasiaan: oPayload.kode_tingkat_kerahasiaan,
       nama_tingkat_kerahasiaan: oPayload.nama_tingkat_kerahasiaan,
       tingkat_kerahasiaan: oPayload.tingkat_kerahasiaan,
-
       deskripsi: oPayload.deskripsi || null,
-      status: "active",
+      status: oPayload.status || "active",
       created_at: dNow,
       updated_at: dNow,
     });

@@ -109,6 +109,13 @@ export interface State {
     };
     session: Session | null;
     submittedData: initValue | null;
+    config?: {
+        COMPANY_NAME: string;
+        COMPANY_ADDRESS: string;
+        COMPANY_CONTACT: string;
+        COMPANY_LICENSE: string;
+        COMPANY_LOGO: string;
+    };
 }
 
 export interface TableProps {

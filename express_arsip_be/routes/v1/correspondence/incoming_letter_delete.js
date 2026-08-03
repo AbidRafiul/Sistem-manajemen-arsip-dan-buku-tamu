@@ -44,19 +44,25 @@ const incomingLetterDelete = async (req, res) => {
       });
     }
 
+    const dNow = new Date();
+
     await DB.transaction(async (trx) => {
-      await trx("trs_tracking_surat_masuk")
-        .where("surat_masuk_id", oPayload.surat_masuk_id)
-        .del();
-      await trx("trs_file_surat_masuk")
-        .where("surat_masuk_id", oPayload.surat_masuk_id)
-        .del();
-      await trx("trs_disposisi_surat")
-        .where("surat_masuk_id", oPayload.surat_masuk_id)
-        .del();
       await trx("trs_surat_masuk")
         .where("surat_masuk_id", oPayload.surat_masuk_id)
-        .del();
+        .update({
+          status: "dihapus",
+          updated_at: dNow,
+        });
+
+      await trx("trs_tracking_surat_masuk").insert({
+        surat_masuk_id: oPayload.surat_masuk_id,
+        status: "dihapus",
+        aktivitas: "surat_dihapus",
+        catatan: "Surat masuk dihapus",
+        tanggal: dNow,
+        created_at: dNow,
+        updated_at: dNow,
+      });
     });
 
     return res.status(200).json({

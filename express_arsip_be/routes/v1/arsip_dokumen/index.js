@@ -47,7 +47,8 @@ import documentQrScan from "./document_qr_scan.js";
 import documentLocationUpdate from "./document_location_update.js";
 
 // ── New imports (Phase 5 — OCR, Full-Text Search & Audit Trail) ──────────────
-import { processOcrManual, getOcrStatus } from "./document_ocr_process.js";
+import { processOcrManual } from "./document_ocr_process_manual.js";
+import { getOcrStatus } from "./document_ocr_status.js";
 import documentContentGet from "./document_content_get.js";
 import documentSearch from "./document_search.js";
 import documentHistoryGet from "./document_history_get.js";
@@ -196,3 +197,4 @@ router.get("/qr/scan", documentQrScan);
 router.post("/location/update", documentLocationUpdate);
 
 export default router;
+

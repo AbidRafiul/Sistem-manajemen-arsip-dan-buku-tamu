@@ -132,6 +132,9 @@ export interface TtePageProps {
     setState: React.Dispatch<React.SetStateAction<TteState>>;
     toast: RefObject<Toast>;
     getData: (apiEndpoint: string, payload?: Record<string, any>) => Promise<void>;
+    openDetail: (rowData: TteDocumentRow) => Promise<number | null>;
+    finalizeDocument: (detailLetter: any) => Promise<void>;
+    signDocument: (detailLetter: any, selectedCertificate: number | null) => Promise<void>;
 }
 
 export interface TteCertificateForm {

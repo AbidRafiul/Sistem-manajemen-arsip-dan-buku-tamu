@@ -42,7 +42,7 @@ export default function VisitorStatusPage() {
         setLoading(true);
         setErrorMsg('');
         try {
-            const response = await postData("/buku_tamu/visit_booking/status", {
+            const response = await postData("/buku-tamu/visit-booking/status", {
                 VisitCode: visitCode.trim()
             });
 
@@ -440,3 +440,4 @@ function styleOverrides() {
         `}</style>
     );
 }
+

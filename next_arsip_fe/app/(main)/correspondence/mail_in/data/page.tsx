@@ -160,7 +160,6 @@ const Page = () => {
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || "Terjadi Kesalahan");
-            throw error;
         }
     };
 
@@ -179,7 +178,6 @@ const Page = () => {
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || "Terjadi Kesalahan");
-            throw error;
         }
     };
 
@@ -213,7 +211,6 @@ const Page = () => {
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || "Surat gagal diarsipkan");
-            throw error;
         }
     };
 

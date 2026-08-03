@@ -19,7 +19,6 @@ import {
 } from "../endpoints";
 import { FormProps, initValue } from "../interfaces";
 import { mapOutgoingLetterPayload } from "../mappers";
-
 const PDFViewer = dynamic(() => import("@/app/components/print_components/pdfViewer"), { ssr: false });
 
 const statusOptions = [
@@ -62,11 +61,6 @@ interface TemplateOption {
 }
 
 const INTERCEPTOR_BASE_URL = process.env.NEXT_PUBLIC_API_DIR_PATH || "/api/interceptor";
-const COMPANY_LOGO_URL = "/marstech-logo.png";
-const COMPANY_NAME = "PT. MARSTECH GLOBAL";
-const COMPANY_ADDRESS = "JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR";
-const COMPANY_CONTACT = "Telp. 0351-2812555 E-mail. info@marstech.co.id web. www.marstech.co.id";
-const COMPANY_LICENSE = "SIUP : 503.4/ 29 - MIKRO/ 401.106/ 2018 TDP : 13.13.1.47.00655";
 const SIGNER_NAME = "BOSTANUL ASY'ARI";
 const SIGNER_TITLE = "DIREKTUR";
 const PDF_MIME_TYPE = "application/pdf";
@@ -121,15 +115,22 @@ const formatFileSize = (size?: number | null) => {
 };
 
 const loadImageAsDataUrl = async (url: string) => {
-    const response = await fetch(url);
-    const blob = await response.blob();
+    if (!url) return "";
+    if (url.startsWith("data:image/")) return url;
+    
+    try {
+        const response = await fetch(url);
+        const blob = await response.blob();
 
-    return await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result || ""));
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
+        return await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ""));
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    } catch {
+        return "";
+    }
 };
 
 const getFilterHeaders = () => {
@@ -214,29 +215,49 @@ export const buildFinalLetterText = (values: initValue) => [
     values.jabatan || SIGNER_TITLE,
 ].filter((line, index, lines) => line || lines[index - 1] !== "").join("\n");
 
-const buildPdfPreviewUrl = async (values: initValue) => {
+const buildPdfPreviewUrl = async (values: initValue, config?: any) => {
+    const cfg = {
+        COMPANY_NAME: config?.COMPANY_NAME || "PT. MARSTECH GLOBAL",
+        COMPANY_ADDRESS: config?.COMPANY_ADDRESS || "JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR",
+        COMPANY_CONTACT: config?.COMPANY_CONTACT || "Telp. 0351-2812555 E-mail. info@marstech.co.id web. www.marstech.co.id",
+        COMPANY_LICENSE: config?.COMPANY_LICENSE || "SIUP : 503.4/ 29 - MIKRO/ 401.106/ 2018 TDP : 13.13.1.47.00655"
+    };
+
     const doc = new jsPDF({
         orientation: "p",
         unit: "mm",
         format: "a4",
         putOnlyUsedFonts: true,
     });
-    const logoDataUrl = await loadImageAsDataUrl(COMPANY_LOGO_URL);
+    
+    let logoDataUrl = "";
+    const img = config?.COMPANY_LOGO || "";
+    if (img?.trim()) {
+        if (img.startsWith("data:image/")) {
+            logoDataUrl = img;
+        } else {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_DIR_PATH?.replace('/api/v1', '') || "";
+            logoDataUrl = await loadImageAsDataUrl(`${apiUrl}/uploads/config/logo_perusahaan/${img}`);
+        }
+    }
+
     const pageWidth = 210;
     const marginX = 32;
     const maxWidth = 156;
     const lineHeight = 6;
     let cursorY = 43;
 
-    doc.addImage(logoDataUrl, "PNG", 24, 9, 28, 24);
+    if (logoDataUrl) {
+        doc.addImage(logoDataUrl, "PNG", 18, 9, 0, 24); // height 24, auto width
+    }
     doc.setFont("times", "bold");
-    doc.setFontSize(16);
-    doc.text(COMPANY_NAME, pageWidth / 2 + 8, 15, { align: "center" });
-    doc.setFontSize(10);
-    doc.text(COMPANY_ADDRESS, pageWidth / 2 + 8, 21, { align: "center" });
+    doc.setFontSize(14);
+    doc.text(cfg.COMPANY_NAME, pageWidth / 2, 15, { align: "center" });
     doc.setFontSize(9);
-    doc.text(COMPANY_CONTACT, pageWidth / 2 + 8, 26, { align: "center" });
-    doc.text(COMPANY_LICENSE, pageWidth / 2 + 8, 31, { align: "center" });
+    doc.text(cfg.COMPANY_ADDRESS, pageWidth / 2, 21, { align: "center" });
+    doc.setFontSize(8);
+    doc.text(cfg.COMPANY_CONTACT, pageWidth / 2, 26, { align: "center" });
+    doc.text(cfg.COMPANY_LICENSE, pageWidth / 2, 31, { align: "center" });
     doc.setLineWidth(0.8);
     doc.line(18, 36, 190, 36);
 
@@ -293,18 +314,20 @@ const buildPdfPreviewUrl = async (values: initValue) => {
     doc.setFont("times", "normal");
     doc.setFontSize(11);
     doc.text(`Madiun, ${formatDateId(values.tanggal_surat) || "-"}`, 142, signatureY);
-    doc.addImage(logoDataUrl, "PNG", 145, signatureY + 9, 26, 21);
+    if (logoDataUrl) {
+        doc.addImage(logoDataUrl, "PNG", 145, signatureY + 9, 26, 21);
+    }
     doc.setFont("times", "bolditalic");
     doc.setFontSize(8);
-    doc.text(COMPANY_NAME, 158, signatureY + 13, { align: "center" });
+    doc.text(cfg.COMPANY_NAME, 158, signatureY + 13, { align: "center" });
     doc.setFont("times", "bold");
     doc.setFontSize(9);
     doc.text(values.nama_pengirim || SIGNER_NAME, 158, signatureY + 35, { align: "center" });
     doc.text(values.jabatan || SIGNER_TITLE, 158, signatureY + 41, { align: "center" });
 
     doc.setFont("times", "bolditalic");
-    doc.setFontSize(8);
-    doc.text(`${COMPANY_NAME} - ${values.perihal || "Surat Keluar"}`, marginX, 282);
+    doc.setFontSize(7);
+    doc.text(`${cfg.COMPANY_NAME} - ${values.perihal || "Surat Keluar"}`, marginX, 282);
 
     return URL.createObjectURL(doc.output("blob"));
 };
@@ -412,7 +435,7 @@ const Form = ({
 
     const generatePdfPreview = async () => {
         try {
-            const pdfUrl = await buildPdfPreviewUrl(formik.values);
+            const pdfUrl = await buildPdfPreviewUrl(formik.values, state.config);
 
             if (pdfPreviewUrl) {
                 URL.revokeObjectURL(pdfPreviewUrl);

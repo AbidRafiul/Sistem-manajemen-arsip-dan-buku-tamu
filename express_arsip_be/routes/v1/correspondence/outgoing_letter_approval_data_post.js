@@ -1,7 +1,7 @@
 import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
-import { applyMultiTenantFilter } from "../components/tools/filterHelper.js";
+import { applyMultiTenantFilter } from "../components/tools/filter_helper.js";
 
 const router = express.Router();
 
@@ -130,7 +130,7 @@ const outgoingLetterApprovalData = async (req, res) => {
   }
 };
 
-router.get("/", outgoingLetterApprovalData);
-router.post("/", outgoingLetterApprovalData); // Allow POST request for datatable compatibility
+router.post("/", outgoingLetterApprovalData);
 
 export default router;
+

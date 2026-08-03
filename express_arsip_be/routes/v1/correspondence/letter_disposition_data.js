@@ -2,7 +2,7 @@ import express from "express";
 import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { validatePayload } from "../components/tools/servertool.js";
-import { applyMultiTenantFilter } from "../components/tools/filterHelper.js";
+import { applyMultiTenantFilter } from "../components/tools/filter_helper.js";
 
 const router = express.Router();
 

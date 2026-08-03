@@ -155,7 +155,7 @@ export default function RegistrasiKunjunganPage() {
             return;
         }
         try {
-            const response = await postData("/buku_tamu/visit_data/users", { id_cabang: branchId });
+            const response = await postData("/buku-tamu/visit-data/users", { id_cabang: branchId });
             if (response.data?.status === '00' && Array.isArray(response.data?.data)) {
                 const mapped = response.data.data.map((h: any) => ({
                     id_pengguna: h.id,
@@ -315,3 +315,4 @@ export default function RegistrasiKunjunganPage() {
         </div>
     );
 }
+

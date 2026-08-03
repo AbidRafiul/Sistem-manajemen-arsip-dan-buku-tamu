@@ -80,7 +80,24 @@ import outgoingLetterUpload from "./outgoing_letter_upload.js";
 //Endpoint POST - outgoing-letter-archive
 import outgoingLetterArchive from "./outgoing_letter_archive.js";
 import outgoingLetterDocument from "./outgoing_letter_document.js";
-import outgoingLetterTte from "./tte.js";
+import LetterTypeManagementGet from "./letter_type_management_get.js";
+import LetterTypeManagementCreate from "./letter_type_management_create.js";
+import LetterTypeManagementUpdate from "./letter_type_management_update.js";
+import LetterTypeManagementDelete from "./letter_type_management_delete.js";
+import OutgoingLetterApprovalDataGet from "./outgoing_letter_approval_data_get.js";
+import OutgoingLetterApprovalDataPost from "./outgoing_letter_approval_data_post.js";
+import OutgoingLetterDashboardGet from "./outgoing_letter_dashboard_get.js";
+import OutgoingLetterDashboardPost from "./outgoing_letter_dashboard_post.js";
+import TtePendingGet from "./tte_pending_get.js";
+import TteSignedGet from "./tte_signed_get.js";
+import TteTandaTanganGet from "./tte_surat_keluar_tanda_tangan_get.js";
+import TteFinalisasiPost from "./tte_surat_keluar_finalisasi_post.js";
+import TteTandaTanganPost from "./tte_surat_keluar_tanda_tangan_post.js";
+import TteRiwayatGet from "./tte_surat_keluar_riwayat_get.js";
+import TteVerifikasiPost from "./tte_verifikasi_post.js";
+import TteSertifikatGet from "./tte_sertifikat_get.js";
+import TteSertifikatPost from "./tte_sertifikat_post.js";
+import TteSertifikatPut from "./tte_sertifikat_put.js";
 
 
 const router = express.Router();
@@ -106,13 +123,32 @@ router.use("/outgoing-letter-create", outgoingLetterCreate);
 router.use("/outgoing-letter-detail", outgoingLetterDetail);
 router.use("/outgoing-letter-update", outgoingLetterUpdate);
 router.use("/outgoing-letter-delete", outgoingLetterDelete);
-router.use("/outgoing-letter-approval-data", outgoingLetterApprovalData);
+router.use("/letter-type-management", LetterTypeManagementGet);
+router.use("/letter-type-management", LetterTypeManagementCreate);
+router.use("/letter-type-management", LetterTypeManagementUpdate);
+router.use("/letter-type-management", LetterTypeManagementDelete);
+
+router.use("/outgoing-letter-approval-data", OutgoingLetterApprovalDataGet);
+router.use("/outgoing-letter-approval-data", OutgoingLetterApprovalDataPost);
 router.use("/outgoing-letter-approve", outgoingLetterApprove);
 router.use("/outgoing-letter-reject", outgoingLetterReject);
-router.use("/outgoing-letter-dashboard-stats", outgoingLetterDashboard);
+
+router.use("/outgoing-letter-dashboard", OutgoingLetterDashboardGet);
+router.use("/outgoing-letter-dashboard", OutgoingLetterDashboardPost);
 router.use("/outgoing-file-upload", outgoingLetterUpload);
 router.use("/outgoing-letter-archive", outgoingLetterArchive);
 router.use("/outgoing-letter-document", outgoingLetterDocument);
-router.use("/outgoing-letter-tte", outgoingLetterTte);
+router.use("/outgoing-letter-tte", TtePendingGet);
+router.use("/outgoing-letter-tte", TteSignedGet);
+router.use("/outgoing-letter-tte", TteTandaTanganGet);
+router.use("/outgoing-letter-tte", TteFinalisasiPost);
+router.use("/outgoing-letter-tte", TteTandaTanganPost);
+router.use("/outgoing-letter-tte", TteRiwayatGet);
+router.use("/outgoing-letter-tte", TteVerifikasiPost);
+router.use("/outgoing-letter-tte", TteSertifikatGet);
+router.use("/outgoing-letter-tte", TteSertifikatPost);
+router.use("/outgoing-letter-tte", TteSertifikatPut);
 
 export default router;
+
+

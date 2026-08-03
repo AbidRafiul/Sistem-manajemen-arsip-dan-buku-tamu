@@ -48,22 +48,22 @@ const documentPreview = async (req, res) => {
     const cObjectName = cFilePath.replace(/^\/uploads\//, "").replace(/^\//, "");
 
     minioClient.presignedGetObject(cBucketName, cObjectName, 3600, (err, presignedUrl) => {
+      let finalUrl = presignedUrl;
+      
       if (err) {
-        console.error("Gagal men-generate presigned URL dari MinIO:", err);
-        return res.status(500).json({
-          status: "error",
-          message: "Gagal men-generate URL preview",
-          error: err.message,
-        });
+        console.warn("Gagal men-generate presigned URL dari MinIO, fallback ke URL lokal:", err.message);
+        // Fallback to local static file serving if MinIO fails (useful for local development)
+        const serverUrl = process.env.APP_SERVER || "http://127.0.0.1:8000";
+        finalUrl = `${serverUrl.replace(/\/$/, "")}/uploads/${cObjectName}`;
       }
 
       return res.status(200).json({
         status: "success",
-        preview_url: presignedUrl,
-        url: presignedUrl,
+        preview_url: finalUrl,
+        url: finalUrl,
         data: {
-          preview_url: presignedUrl,
-          url: presignedUrl,
+          preview_url: finalUrl,
+          url: finalUrl,
         },
       });
     });
