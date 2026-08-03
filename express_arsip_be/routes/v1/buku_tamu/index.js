@@ -29,6 +29,6 @@ router.use("/visit-detail", VisitDetail);
 router.use("/visit-monitoring", VisitMonitoring);
 router.use("/visit-approval", VisitApproval);
 router.use("/visit-qr-scan", VisitQRScan);
-router.use("/visit_booking/status", VisitBookingStatus);
+router.use("/visit-booking/status", VisitBookingStatus);
 
 export default router;

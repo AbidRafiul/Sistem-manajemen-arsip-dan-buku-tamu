@@ -29,8 +29,6 @@ import dispositionReferenceData from "./disposition_reference_data.js";
 //Endpoint POST - letter-type-data
 import letterTypeData from "./letter_type_data.js";
 
-//Endpoint - letter-type-management
-import letterTypeManagement from "./letter_type_management.js";
 
 //Endpoint - letter-diposition-create
 import letterDispositionCreate from "./letter_disposition_create.js";
@@ -62,8 +60,6 @@ import outgoingLetterUpdate from "./outgoing_letter_update.js";
 //Endpoint DELETE - outgoing-letter-delete
 import outgoingLetterDelete from "./outgoing_letter_delete.js";
 
-//Endpoint GET/POST - outgoing-letter-approval-data
-import outgoingLetterApprovalData from "./outgoing_letter_approval_data.js";
 
 //Endpoint POST - outgoing-letter-approve
 import outgoingLetterApprove from "./outgoing_letter_approve.js";
@@ -71,8 +67,6 @@ import outgoingLetterApprove from "./outgoing_letter_approve.js";
 //Endpoint POST - outgoing-letter-reject
 import outgoingLetterReject from "./outgoing_letter_reject.js";
 
-//Endpoint GET/POST - outgoing-letter-dashboard-stats
-import outgoingLetterDashboard from "./outgoing_letter_dashboard.js";
 
 //Endpoint POST - outgoing-file-upload
 import outgoingLetterUpload from "./outgoing_letter_upload.js";
@@ -112,7 +106,6 @@ router.use("/incoming-file-download", incomingLetterFileDownload);
 router.use("/incoming-letter-archive", incomingLetterArchive);
 router.use("/disposition-reference-data", dispositionReferenceData);
 router.use("/letter-type-data", letterTypeData);
-router.use("/letter-type-management", letterTypeManagement);
 router.use("/letter-disposition-create", letterDispositionCreate)
 router.use("/incoming-letter-tracking-data", incomingLetterTrackingData)
 router.use("/letter-disposition-data", letterDispositionData)
@@ -150,5 +143,6 @@ router.use("/outgoing-letter-tte", TteSertifikatPost);
 router.use("/outgoing-letter-tte", TteSertifikatPut);
 
 export default router;
+
 
 
