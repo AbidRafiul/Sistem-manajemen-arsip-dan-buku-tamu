@@ -151,12 +151,12 @@ const Page = () => {
     useEffect(() => {
         if (session) {
             const vaEndpoints = [
-                { key: 'branches', path: '/master/organisasi/branches/get_data' },
-                { key: 'positions', path: '/master/organisasi/positions/get_data' },
-                { key: 'divisions', path: '/master/organisasi/divisions/get_data' },
-                { key: 'departments', path: '/master/organisasi/department/get_data' },
-                { key: 'workUnits', path: '/master/organisasi/work_unit/get_data' },
-                { key: 'roles', path: '/master/organisasi/roles/get_data' }
+                { key: 'branches', path: '/master/organisasi/branches/get-data' },
+                { key: 'positions', path: '/master/organisasi/positions/get-data' },
+                { key: 'divisions', path: '/master/organisasi/divisions/get-data' },
+                { key: 'departments', path: '/master/organisasi/department/get-data' },
+                { key: 'workUnits', path: '/master/organisasi/work-unit/get-data' },
+                { key: 'roles', path: '/master/organisasi/roles/get-data' }
             ];
 
             const myIdPengguna = (session as any)?.user?.IdPengguna || (session as any)?.user?.id || '';

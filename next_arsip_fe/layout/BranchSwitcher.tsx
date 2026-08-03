@@ -51,7 +51,7 @@ const BranchSwitcher = () => {
                 'x-filter-unit-kerja': '',
                 'x-exact-cabang': ''
             };
-            const res = await postData('/master/organisasi/branches/get_data', { limit: 1000, page: 1, keyword: '' }, bypassFilters);
+            const res = await postData('/master/organisasi/branches/get-data', { limit: 1000, page: 1, keyword: '' }, bypassFilters);
             const branches = res.data?.data || [];
             setAllBranches(branches);
             setLoaded(true);

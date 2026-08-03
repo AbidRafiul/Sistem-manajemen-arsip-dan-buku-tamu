@@ -4,56 +4,74 @@ import { validateNumberingFormat } from "../../components/tools/letter_numbering
 import { datetime, formatDateSystem, status } from "../../components/tools/general.js";
 import { Logging, validatePayload } from "../../components/tools/servertool.js";
 import { baseValidation, validationMessages, checkReference, ensureActiveUniqueness, normalizePayload } from "./penomoran_surat_helper.js";
-
 const router = express.Router();
-
 router.post("/", async (req, res) => {
-  const payload = normalizePayload(req.body || {});
-
+  const oPayload = normalizePayload(req.body || {});
   try {
-    const validation = await validatePayload(baseValidation, validationMessages, req.body || {});
-    if (validation) {
-      return res.status(422).json({ status: status.BAD_REQUEST, message: validation, datetime: datetime() });
+    const cValidation = await validatePayload(baseValidation, validationMessages, req.body || {});
+    if (cValidation) {
+      return res.status(422).json({
+        status: status.BAD_REQUEST,
+        message: cValidation,
+        datetime: datetime()
+      });
     }
-
-    const formatError = validateNumberingFormat(payload.format_nomor);
-    if (formatError) {
-      return res.status(422).json({ status: status.BAD_REQUEST, message: formatError, datetime: datetime() });
+    const cFormatError = validateNumberingFormat(oPayload.format_nomor);
+    if (cFormatError) {
+      return res.status(422).json({
+        status: status.BAD_REQUEST,
+        message: cFormatError,
+        datetime: datetime()
+      });
     }
-
-    const referenceError = await checkReference({
+    const cReferenceError = await checkReference({
       table: "mst_jenis_surat",
       key: "jenis_surat_id",
-      value: payload.jenis_surat_id,
-      label: "Jenis surat",
+      value: oPayload.jenis_surat_id,
+      label: "Jenis surat"
     });
-    if (referenceError) {
-      return res.status(400).json({ status: status.BAD_REQUEST, message: referenceError, datetime: datetime() });
+    if (cReferenceError) {
+      return res.status(400).json({
+        status: status.BAD_REQUEST,
+        message: cReferenceError,
+        datetime: datetime()
+      });
     }
-
-    const uniqueError = await ensureActiveUniqueness(payload);
-    if (uniqueError) {
-      return res.status(400).json({ status: status.BAD_REQUEST, message: uniqueError, datetime: datetime() });
+    const cUniqueError = await ensureActiveUniqueness(oPayload);
+    if (cUniqueError) {
+      return res.status(400).json({
+        status: status.BAD_REQUEST,
+        message: cUniqueError,
+        datetime: datetime()
+      });
     }
-
-    const now = new Date();
-    const inserted = await DB("mst_penomoran_surat").insert({
-      ...payload,
-      updated_by: payload.updated_by || payload.created_by || null,
-      created_at: now,
-      updated_at: now,
+    const dNow = new Date();
+    const vaInserted = await DB("mst_penomoran_surat").insert({
+      ...oPayload,
+      updated_by: oPayload.updated_by || oPayload.created_by || null,
+      created_at: dNow,
+      updated_at: dNow
     });
-
     return res.status(201).json({
       status: status.SUKSES,
       message: "Penomoran surat berhasil dibuat",
       datetime: formatDateSystem(),
-      data: { id_penomoran_surat: inserted[0] },
+      data: {
+        id_penomoran_surat: vaInserted[0]
+      }
     });
   } catch (error) {
-    await Logging(error, { file: "penomoran_surat_create.js", func: "create", request: payload, user: req?.auth?.nama_pengguna || "" });
-    return res.status(500).json({ status: status.BAD_REQUEST, message: "Penomoran surat gagal dibuat", datetime: datetime() });
+    await Logging(error, {
+      file: "penomoran_surat_create.js",
+      func: "create",
+      request: oPayload,
+      user: req?.auth?.nama_pengguna || ""
+    });
+    return res.status(500).json({
+      status: status.BAD_REQUEST,
+      message: "Penomoran surat gagal dibuat",
+      datetime: datetime()
+    });
   }
 });
-
 export default router;

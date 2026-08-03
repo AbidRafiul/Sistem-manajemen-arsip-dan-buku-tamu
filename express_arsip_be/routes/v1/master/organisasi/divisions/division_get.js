@@ -5,7 +5,7 @@ import { Logging, getDescendantBranchIds } from "../../../components/tools/serve
 
 const router = express.Router();
 
-router.post("/get_data", async (req, res) => {
+router.post("/get-data", async (req, res) => {
   const oPayload = req.body;
   const cnama_pengguna = req?.auth?.nama_pengguna || "";
 

@@ -51,7 +51,7 @@ const Page = () => {
     // Fetch master data
     useEffect(() => {
         if (session) {
-            postData('/master/organisasi/divisions/get_data', {}).then(res => {
+            postData('/master/organisasi/divisions/get-data', {}).then(res => {
                 setState(prev => ({ ...prev, masterData: res.data.data || [] }));
             }).catch(e => console.error(e));
         }

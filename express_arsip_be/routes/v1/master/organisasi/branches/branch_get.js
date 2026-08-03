@@ -2,30 +2,12 @@ import express from "express";
 import DB from "../../../../../core/config/knex.js";
 import { status, formatDateSystem } from "../../../components/tools/general.js";
 import { Logging, getDescendantBranchIds } from "../../../components/tools/servertool.js";
-
 const router = express.Router();
-
-router.post("/get_data", async (req, res) => {
+router.post("/get-data", async (req, res) => {
   const oPayload = req.body;
   const cnama_pengguna = req?.auth?.nama_pengguna || "";
-
   try {
-    let query = DB("mst_cabang as c")
-      .leftJoin("mst_cabang as induk", "c.id_induk", "induk.id_cabang")
-      .select(
-        "c.id_cabang as id",
-        "c.id_cabang",
-        "c.id_induk",
-        "induk.nama_cabang as nama_induk",
-        "c.kode_cabang",
-        "c.nama_cabang",
-        "c.alamat",
-        "c.telepon",
-        "c.surel",
-        "c.status"
-      )
-      .whereNot("c.status", "deleted");
-
+    let query = DB("mst_cabang as c").leftJoin("mst_cabang as induk", "c.id_induk", "induk.id_cabang").select("c.id_cabang as id", "c.id_cabang", "c.id_induk", "induk.nama_cabang as nama_induk", "c.kode_cabang", "c.nama_cabang", "c.alamat", "c.telepon", "c.surel", "c.status").whereNot("c.status", "deleted");
     if (req.headers["x-filter-cabang"]) {
       const parentBranchIds = req.headers["x-filter-cabang"].split(",").map(Number);
       let allBranchIds = [];
@@ -46,11 +28,7 @@ router.post("/get_data", async (req, res) => {
 
     // Urutkan berdasarkan hierarki: Pusat (null) -> Cabang Daerah -> Unit Kecamatan
     // Khusus untuk BR-PST (Kantor Pusat Demo) ditaruh paling bawah
-    query = query
-      .orderByRaw("CASE WHEN c.kode_cabang = 'BR-PST' THEN 1 ELSE 0 END ASC")
-      .orderBy("c.id_induk", "asc")
-      .orderBy("c.id_cabang", "asc");
-
+    query = query.orderByRaw("CASE WHEN c.kode_cabang = 'BR-PST' THEN 1 ELSE 0 END ASC").orderBy("c.id_induk", "asc").orderBy("c.id_cabang", "asc");
     const vaData = await query;
 
     // Calculate absolute hierarchy level for each branch
@@ -59,32 +37,35 @@ router.post("/get_data", async (req, res) => {
     for (const c of allCabangs) {
       parentMap[c.id_cabang] = c.id_induk;
     }
-
-    for (const row of vaData) {
+    for (const oRow of vaData) {
       let level = 1;
-      let curr = row.id_induk;
+      let curr = oRow.id_induk;
       while (curr) {
         level++;
         curr = parentMap[curr];
       }
-      row.level = level;
+      oRow.level = level;
     }
-
     return res.status(200).json({
       status: status.SUKSES,
       message: "Data berhasil ditarik",
       datetime: formatDateSystem(),
-      data: vaData,
+      data: vaData
     });
   } catch (error) {
     const oResult = {
       status: status.BAD_REQUEST,
       message: "Terjadi kesalahan sistem",
-      datetime: formatDateSystem(),
+      datetime: formatDateSystem()
     };
-    Logging(error, { file: "get.js", func: "get", request: oPayload, response: oResult, user: cnama_pengguna });
+    Logging(error, {
+      file: "get.js",
+      func: "get",
+      request: oPayload,
+      response: oResult,
+      user: cnama_pengguna
+    });
     return res.status(500).json(oResult);
   }
 });
-
 export default router;
