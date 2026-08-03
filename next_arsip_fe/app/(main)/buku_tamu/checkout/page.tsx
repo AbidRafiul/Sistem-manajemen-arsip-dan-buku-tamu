@@ -113,7 +113,7 @@ const CheckoutPage = () => {
             const timestamp = new Date().toISOString();
 
             const response = await putData(
-                `/buku_tamu/visit_checkout/${selectedId}`,
+                `/buku-tamu/visit-checkout/${selectedId}`,
                 {}
             );
 
@@ -207,7 +207,7 @@ const CheckoutPage = () => {
             const timestamp = new Date().toISOString();
 
             const response = await putData(
-                `/buku_tamu/visit_checkin/${idKunjungan}`,
+                `/buku-tamu/visit-checkin/${idKunjungan}`,
                 {}
             );
 
