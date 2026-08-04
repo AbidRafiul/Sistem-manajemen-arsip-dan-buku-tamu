@@ -271,7 +271,7 @@ export default function RegistrasiKunjunganPage() {
     };
 
     return (
-        <div className="p-4 surface-ground min-h-screen">
+        <div className="w-full">
             <Toast ref={toast} position="top-right" />
 
             <div className="flex flex-column md:flex-row justify-content-between md:align-items-center gap-3 mb-4">

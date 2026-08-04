@@ -26,7 +26,7 @@ export default function MonitoringView({
     onViewHistory
 }: MonitoringViewProps) {
     return (
-        <div className="p-3 md:p-4 surface-ground min-h-screen">
+        <div className="w-full">
             {/* Header Section */}
             <div className="flex flex-column md:flex-row md:align-items-center justify-content-between gap-3 mb-4">
                 <div>

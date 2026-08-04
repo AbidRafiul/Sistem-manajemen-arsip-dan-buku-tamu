@@ -105,7 +105,7 @@ const Page = () => {
     }, [session]);
 
     return (
-        <div className="p-4">
+        <div className="w-full">
             <Toast ref={toast} position="top-right" />
             <Table state={state} toast={toast} setState={setState} formik={formik} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />
             <Form formik={formik} state={state} setState={setState} toast={toast} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />

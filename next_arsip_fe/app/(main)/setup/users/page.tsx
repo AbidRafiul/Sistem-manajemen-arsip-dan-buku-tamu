@@ -340,7 +340,7 @@ const Page = () => {
 
     return (
         <>
-            <div className="p-4">
+            <div className="w-full">
                 <Toast ref={toast} position="top-right" />
 
                 <Table getNav={getNav} dataRekap={dataRekap} setDataRekap={setDataRekap} state={state} toast={toast} setState={setState} formik={formik} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />

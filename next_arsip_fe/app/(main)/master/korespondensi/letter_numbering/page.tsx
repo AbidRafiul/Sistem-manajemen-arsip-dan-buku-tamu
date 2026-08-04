@@ -238,7 +238,7 @@ const Page = () => {
   }, []);
 
   return (
-    <div className="p-4">
+    <div className="w-full">
       <Toast ref={toast} position="top-right" />
       <ConfirmDialog />
 

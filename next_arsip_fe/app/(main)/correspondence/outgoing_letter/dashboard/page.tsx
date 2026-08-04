@@ -8,7 +8,7 @@ import { Chart } from "primereact/chart";
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
 
-const apiEndpointStats = "/correspondence/outgoing-letter-dashboard-stats";
+const apiEndpointStats = "/correspondence/outgoing-letter-dashboard";
 
 interface DashboardStats {
     summary: {
@@ -81,7 +81,7 @@ const Page = () => {
     };
 
     return (
-        <div className="flex flex-column gap-4 p-4">
+        <div className="flex flex-column gap-4 w-full">
             <Toast ref={toast} position="top-right" />
 
             {/* ─── Hero / Header Section ───────────────────────────────────── */}
