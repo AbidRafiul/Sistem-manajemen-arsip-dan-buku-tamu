@@ -96,8 +96,8 @@ export async function seed(knex) {
       nama_menu: "Dokumen Menunggu Tanda Tangan",
       jalur_menu: "/correspondence/outgoing_letter/tte/pending",
       ikon_menu: "pi pi-fw pi-clock",
-      urutan: 1,
-      status_aktif: 1,
+      urutan: 2,
+      status_aktif: 0,
     }
   );
 
@@ -114,7 +114,7 @@ export async function seed(knex) {
       nama_menu: "Dokumen Tertandatangani",
       jalur_menu: "/correspondence/outgoing_letter/tte/signed",
       ikon_menu: "pi pi-fw pi-file-check",
-      urutan: 2,
+      urutan: 1,
       status_aktif: 1,
     }
   );
@@ -133,7 +133,7 @@ export async function seed(knex) {
       jalur_menu: "/correspondence/outgoing_letter/tte/verify",
       ikon_menu: "pi pi-fw pi-shield",
       urutan: 3,
-      status_aktif: 1,
+      status_aktif: 0,
     }
   );
 
@@ -151,7 +151,7 @@ export async function seed(knex) {
       jalur_menu: "/correspondence/outgoing_letter/tte/certificates",
       ikon_menu: "pi pi-fw pi-id-card",
       urutan: 4,
-      status_aktif: 1,
+      status_aktif: 0,
     }
   );
 

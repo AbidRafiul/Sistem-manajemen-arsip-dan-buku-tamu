@@ -77,6 +77,12 @@ import outgoingLetterDashboard from "./outgoing_letter_dashboard.js";
 //Endpoint POST - outgoing-file-upload
 import outgoingLetterUpload from "./outgoing_letter_upload.js";
 
+//Endpoint POST - outgoing-letter-extract-ocr
+import outgoingLetterExtractOcr from "./outgoing_letter_extract_ocr.js";
+
+//Endpoint GET/POST - outgoing-file-download
+import outgoingLetterFileDownload from "./outgoing_letter_file_download.js";
+
 //Endpoint POST - outgoing-letter-archive
 import outgoingLetterArchive from "./outgoing_letter_archive.js";
 import outgoingLetterDocument from "./outgoing_letter_document.js";
@@ -111,6 +117,8 @@ router.use("/outgoing-letter-approve", outgoingLetterApprove);
 router.use("/outgoing-letter-reject", outgoingLetterReject);
 router.use("/outgoing-letter-dashboard-stats", outgoingLetterDashboard);
 router.use("/outgoing-file-upload", outgoingLetterUpload);
+router.use("/outgoing-file-download", outgoingLetterFileDownload);
+router.use("/outgoing-letter-extract-ocr", outgoingLetterExtractOcr);
 router.use("/outgoing-letter-archive", outgoingLetterArchive);
 router.use("/outgoing-letter-document", outgoingLetterDocument);
 router.use("/outgoing-letter-tte", outgoingLetterTte);

@@ -15,7 +15,7 @@ import { Divider } from "primereact/divider";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { Tag } from "primereact/tag";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import {
     apiEndpointDelete,
     apiEndpointDetail,
@@ -198,9 +198,45 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
         id_jenis_surat: state.jenisSuratFilter || "",
         sort_by: "created_at",
         sort_order: "desc",
+        limit: 100,
     });
 
     const refreshData = () => getData(apiEndpointGet, buildPayload());
+
+    const filteredData = useMemo(() => {
+        let list = state.data || [];
+
+        if (state.statusFilter) {
+            list = list.filter(
+                (item) => String(item.status || "").toLowerCase() === String(state.statusFilter).toLowerCase()
+            );
+        }
+
+        if (state.jenisSuratFilter && Number(state.jenisSuratFilter) > 0) {
+            list = list.filter(
+                (item) => Number(item.id_jenis_surat) === Number(state.jenisSuratFilter)
+            );
+        }
+
+        if (state.searchVal && state.searchVal.trim() !== "") {
+            const query = state.searchVal.toLowerCase().trim();
+            list = list.filter((item) => {
+                return (
+                    String(item.nomor_surat || "").toLowerCase().includes(query) ||
+                    String(item.nomor_agenda || "").toLowerCase().includes(query) ||
+                    String(item.perihal || "").toLowerCase().includes(query) ||
+                    String(item.tujuan || "").toLowerCase().includes(query) ||
+                    String(item.instansi_tujuan || "").toLowerCase().includes(query) ||
+                    String(item.nama_pengirim || "").toLowerCase().includes(query) ||
+                    String(item.jabatan || "").toLowerCase().includes(query) ||
+                    String(item.nama_jenis_surat || "").toLowerCase().includes(query) ||
+                    String(item.nama_file || "").toLowerCase().includes(query)
+                );
+            });
+        }
+
+        return list;
+    }, [state.data, state.statusFilter, state.jenisSuratFilter, state.searchVal]);
 
     const fetchLetterTypes = async () => {
         try {
@@ -513,7 +549,7 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
                 </div>
 
                 <DataTable
-                    value={state.data}
+                    value={filteredData}
                     paginator
                     selectionMode="multiple"
                     rows={10}
@@ -634,19 +670,81 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
 
                         <Divider className="my-0" />
 
-                        {detailLetter?.isi_surat_final && (
+                        {(detailFiles.length > 0 || detailLetter?.isi_surat_final) && (
                             <>
                                 <div>
                                     <div className="font-bold text-900 flex align-items-center gap-2 mb-3">
-                                        <i className="pi pi-file-edit text-primary" />
-                                        Preview Surat
+                                        <i className="pi pi-file-pdf text-primary text-xl" />
+                                        <span className="text-base">Pratinjau Surat & Dokumen</span>
                                     </div>
-                                    <pre
-                                        className="m-0 p-4 surface-50 border-1 surface-border border-round-lg text-sm line-height-3"
-                                        style={{ whiteSpace: "pre-wrap", fontFamily: "Georgia, 'Times New Roman', serif" }}
-                                    >
-                                        {detailLetter.isi_surat_final}
-                                    </pre>
+
+                                    {(() => {
+                                        const file = detailFiles?.[0];
+                                        const fileId = file?.id_file_surat_keluar || file?.id_surat_keluar || detailLetter?.id_surat_keluar;
+                                        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+                                        const fileUrl = fileId
+                                            ? `${baseUrl}/api/v1/correspondence/outgoing-file-download/${fileId}`
+                                            : (file?.path_file ? (file.path_file.startsWith("http") ? file.path_file : `${baseUrl}/${file.path_file.replace(/^\/+/, '')}`) : "");
+                                        const isPdf = fileUrl && (file?.mime_type?.includes("pdf") || file?.path_file?.toLowerCase().endsWith(".pdf") || file?.nama_file?.toLowerCase().endsWith(".pdf"));
+                                        const isDocx = fileUrl && (
+                                            file?.mime_type?.includes("word") ||
+                                            file?.mime_type?.includes("officedocument") ||
+                                            file?.path_file?.toLowerCase().endsWith(".docx") ||
+                                            file?.nama_file?.toLowerCase().endsWith(".docx") ||
+                                            file?.path_file?.toLowerCase().endsWith(".doc") ||
+                                            file?.nama_file?.toLowerCase().endsWith(".doc")
+                                        );
+
+                                        if (isPdf) {
+                                            return (
+                                                <div className="border-1 surface-border border-round-lg overflow-hidden surface-50">
+                                                    <iframe
+                                                        src={fileUrl}
+                                                        className="w-full"
+                                                        style={{ height: "480px", border: "none" }}
+                                                        title="Pratinjau Dokumen Surat Keluar"
+                                                    />
+                                                </div>
+                                            );
+                                        }
+
+                                        if (isDocx || detailLetter?.isi_surat_final) {
+                                            return (
+                                                <div className="flex flex-column gap-3">
+                                                    {isDocx && (
+                                                        <div className="p-3 bg-blue-50 border-1 border-blue-200 border-round-lg flex align-items-center justify-content-between gap-3">
+                                                            <div className="flex align-items-center gap-3">
+                                                                <i className="pi pi-file-word text-blue-600 text-2xl" />
+                                                                <div>
+                                                                    <div className="font-bold text-sm text-blue-900">{file?.nama_file || "Dokumen Surat Word (.docx)"}</div>
+                                                                    <div className="text-xs text-blue-700">Berkas Microsoft Word &bull; Teks naskah otomatis di-ekstrak oleh sistem</div>
+                                                                </div>
+                                                            </div>
+                                                            {fileUrl && (
+                                                                <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="no-underline">
+                                                                    <Button icon="pi pi-download" label="Unduh Berkas .docx" size="small" severity="info" outlined />
+                                                                </a>
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    <div className="surface-card p-4 md:p-5 border-1 surface-border border-round-xl shadow-1">
+                                                        <div className="text-center font-bold text-xs text-color-secondary uppercase mb-3" style={{ letterSpacing: "0.15em" }}>
+                                                            &mdash; Pratinjau Naskah Dokumen Surat &mdash;
+                                                        </div>
+                                                        <pre
+                                                            className="m-0 text-sm text-900 line-height-4"
+                                                            style={{ whiteSpace: "pre-wrap", fontFamily: "Georgia, 'Times New Roman', serif" }}
+                                                        >
+                                                            {detailLetter?.isi_surat_final || "Isi naskah dokumen tidak tersedia."}
+                                                        </pre>
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+
+                                        return null;
+                                    })()}
                                 </div>
 
                                 <Divider className="my-0" />
@@ -693,29 +791,37 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
 
                             {detailFiles.length > 0 ? (
                                 <div className="flex flex-column gap-2">
-                                    {detailFiles.map((file, idx) => (
-                                        <div key={file.id_file_surat_keluar || idx} className="p-3 surface-50 border-round-lg border-1 surface-border flex align-items-center justify-content-between gap-3">
-                                            <div className="flex align-items-center gap-3">
-                                                <i className="pi pi-file text-primary" />
-                                                <div>
-                                                    <div className="font-semibold text-sm text-900">{file.nama_file || "Dokumen"}</div>
-                                                    <div className="text-xs text-color-secondary">
-                                                        {file.mime_type || "-"} - {formatFileSize(file.ukuran_file)}
+                                    {detailFiles.map((file, idx) => {
+                                        const fileId = file.id_file_surat_keluar || file.id_surat_keluar;
+                                        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+                                        const fileUrl = fileId
+                                            ? `${baseUrl}/api/v1/correspondence/outgoing-file-download/${fileId}`
+                                            : (file.path_file ? (file.path_file.startsWith("http") ? file.path_file : `${baseUrl}/${file.path_file.replace(/^\/+/, '')}`) : "");
+
+                                        return (
+                                            <div key={file.id_file_surat_keluar || idx} className="p-3 surface-50 border-round-lg border-1 surface-border flex align-items-center justify-content-between gap-3">
+                                                <div className="flex align-items-center gap-3">
+                                                    <i className="pi pi-file text-primary" />
+                                                    <div>
+                                                        <div className="font-semibold text-sm text-900">{file.nama_file || "Dokumen"}</div>
+                                                        <div className="text-xs text-color-secondary">
+                                                            {file.mime_type || "-"} - {formatFileSize(file.ukuran_file)}
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                {fileUrl && (
+                                                    <a 
+                                                        href={fileUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="no-underline"
+                                                    >
+                                                        <Button icon="pi pi-download" rounded text size="small" tooltip="Download File" />
+                                                    </a>
+                                                )}
                                             </div>
-                                            {file.path_file && (
-                                                <a 
-                                                    href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/${file.path_file}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="no-underline"
-                                                >
-                                                    <Button icon="pi pi-download" rounded text size="small" tooltip="Download File" />
-                                                </a>
-                                            )}
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <div className="flex flex-column align-items-center py-4 gap-2 text-color-secondary surface-50 border-round-lg">

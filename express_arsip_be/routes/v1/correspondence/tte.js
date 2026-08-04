@@ -195,7 +195,11 @@ const listDocuments = async (req, res, signedOnly = false) => {
   }
 
   if (signedOnly) {
-    query.whereNotNull("ttd_latest.id_tanda_tangan_dokumen");
+    query.where((builder) => {
+      builder
+        .whereNotNull("ttd_latest.id_tanda_tangan_dokumen")
+        .orWhereIn("tsk.status", ["disetujui", "terkirim", "selesai"]);
+    });
   } else {
     query.whereIn("tsk.status", ALLOWED_LETTER_STATUSES);
     query.whereNull("ttd_latest.id_tanda_tangan_dokumen");

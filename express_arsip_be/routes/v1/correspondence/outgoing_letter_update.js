@@ -6,6 +6,9 @@ import {
   validatePayload,
 } from "../components/tools/servertool.js";
 
+import { parseIndonesianDateToIso } from "./outgoing_letter_extract_ocr.js";
+import { signLetterAutomatically } from "../components/tools/tte_service.js";
+
 const router = express.Router();
 
 const checkReference = async ({ table, key, value, label }) => {
@@ -24,6 +27,13 @@ const outgoingLetterUpdate = async (req, res) => {
     ...(req.params || {}),
     ...(req.body || {}),
   };
+
+  if (oPayload.tanggal_surat) {
+    oPayload.tanggal_surat = parseIndonesianDateToIso(oPayload.tanggal_surat) || oPayload.tanggal_surat;
+  }
+  if (oPayload.tanggal_kirim) {
+    oPayload.tanggal_kirim = parseIndonesianDateToIso(oPayload.tanggal_kirim) || oPayload.tanggal_kirim;
+  }
 
   try {
     const oValidation = {
@@ -162,6 +172,18 @@ const outgoingLetterUpdate = async (req, res) => {
         updated_at: dNow,
       });
     });
+
+    if (oUpdate.status === "disetujui") {
+      try {
+        await signLetterAutomatically({
+          idSuratKeluar: oPayload.id_surat_keluar,
+          actorId: oPayload.updated_by || req?.auth?.id_pengguna || null,
+          req,
+        });
+      } catch (tteError) {
+        console.error("Gagal melakukan TTE otomatis saat update status disetujui:", tteError);
+      }
+    }
 
     return res.status(200).json({
       status: true,

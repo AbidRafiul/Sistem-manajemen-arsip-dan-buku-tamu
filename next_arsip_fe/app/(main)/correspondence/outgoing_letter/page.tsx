@@ -27,7 +27,7 @@ const initialValues: initValue = {
     isi_surat_final: "",
     nama_pengirim: "",
     jabatan: "",
-    status: "draft",
+    status: "menunggu_approval",
     file_surat: null,
     created_by: null,
     updated_by: null,
