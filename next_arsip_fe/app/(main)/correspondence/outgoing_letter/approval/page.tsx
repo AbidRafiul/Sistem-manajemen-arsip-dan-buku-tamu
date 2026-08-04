@@ -67,10 +67,10 @@ const Page = () => {
     }, [session]);
 
     return (
-        <div className="p-4">
+        <>
             <Toast ref={toast} position="top-right" />
             <Table getData={getData} state={state} setState={setState} toast={toast} />
-        </div>
+        </>
     );
 };
 

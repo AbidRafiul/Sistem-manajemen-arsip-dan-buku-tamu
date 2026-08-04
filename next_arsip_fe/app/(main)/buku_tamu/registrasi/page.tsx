@@ -283,11 +283,11 @@ export default function RegistrasiKunjunganPage() {
     };
 
     return (
-        <div className="p-4 surface-ground min-h-screen">
+        <>
             <Toast ref={toast} position="top-right" />
 
-            <div className="flex flex-column md:flex-row justify-content-between md:align-items-center gap-3 mb-4">
-                <h4 className="m-0 font-bold text-color">Registrasi Kunjungan</h4>
+            <div className="flex justify-content-between align-items-center mb-3">
+                <h2 className="m-0 text-900 font-bold text-2xl">Registrasi Kunjungan</h2>
                 <div className="flex flex-wrap gap-2">
                     <Button 
                         type="button" 
@@ -295,9 +295,10 @@ export default function RegistrasiKunjunganPage() {
                         label="Halaman Visitor (Publik)" 
                         severity="info" 
                         outlined 
-                        className="py-2 px-3 border-round-lg font-semibold text-sm bg-white" 
+                        size="small"
                         onClick={() => window.open('/visitor/booking', '_blank')} 
                     />
+                    <Button type="button" label="Kembali ke Monitoring" icon="pi pi-arrow-left" outlined size="small" onClick={() => router.push('/buku_tamu/monitoring')} />
                 </div>
             </div>
 
@@ -324,6 +325,6 @@ export default function RegistrasiKunjunganPage() {
                 }}
                 cardData={generatedCard}
             />
-        </div>
+        </>
     );
 }

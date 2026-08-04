@@ -260,16 +260,16 @@ const Table = ({
     return <>
         <Card className="shadow-1 border-round-2xl border-none">
             {/* Page Header */}
-            <div className="mb-4">
-                <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: '0.1em' }}>EDMS</span>
-                <h2 className="m-0 text-900 font-extrabold text-2xl mt-1 mb-2" style={{ letterSpacing: '-0.02em' }}>Archive Documents</h2>
+            <div className="mb-3">
+                                <h2 className="m-0 text-900 font-bold text-2xl mb-1">Archive Documents</h2>
                 <p className="m-0 text-color-secondary text-sm font-medium">Kelola metadata dokumen dan pantau riwayat versi serta peminjaman arsip.</p>
             </div>
 
-            <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
-                {canCreate && (
-                    <>
+            <div className="flex flex-column sm:flex-row align-items-stretch sm:align-items-center justify-content-between gap-2 mb-3">
+                <div className="flex flex-row flex-wrap align-items-center gap-2">
+                    {canCreate && (
                         <Button
+                            type="button"
                             size="small"
                             label="Tambah Dokumen"
                             icon="pi pi-plus"
@@ -297,32 +297,11 @@ const Table = ({
                                 setState(p => ({ ...p, add: true, edit: false, delete: false }));
                             }}
                         />
-                        <Divider layout="vertical" />
-                    </>
-                )}
-                <Button
-                    size="small"
-                    label="Scan & Track QR"
-                    icon="pi pi-qrcode"
-                    outlined
-                    severity="info"
-                    tooltip="Pindai Stiker QR Berkas Fisik dengan Kamera Live atau USB Scanner"
-                    tooltipOptions={{ position: 'top' }}
-                    onClick={() => setState(p => ({ ...p, trackingDialog: true, trackingCode: '', trackingResult: null }))}
-                />
-                <Divider layout="vertical" />
-                <Button
-                    size="small"
-                    label="Pencarian OCR & Teks"
-                    icon="pi pi-search-plus"
-                    outlined
-                    severity="help"
-                    onClick={() => router.push('/edms/archive_document/search')}
-                />
-                {canDelete && (
-                    <>
-                        <Divider layout="vertical" />
+                    )}
+                    {canCreate && canDelete && <Divider layout="vertical" className="hidden sm:inline" />}
+                    {canDelete && (
                         <Button
+                            type="button"
                             size="small"
                             label={`Hapus${state.selectedDocuments.length > 0 ? ` (${state.selectedDocuments.length})` : ''}`}
                             icon="pi pi-trash"
@@ -331,17 +310,42 @@ const Table = ({
                             disabled={state.selectedDocuments.length === 0}
                             onClick={() => setState((p) => ({ ...p, delete: true }))}
                         />
-                    </>
-                )}
-                <Divider layout="vertical" />
-                <Button
-                    size="small"
-                    label="Refresh"
-                    icon="pi pi-refresh"
-                    outlined
-                    loading={state.load}
-                    onClick={getDocuments}
-                />
+                    )}
+                    {(canCreate || canDelete) && <Divider layout="vertical" className="hidden sm:inline" />}
+                    <Button
+                        type="button"
+                        size="small"
+                        label="Muat Ulang"
+                        icon="pi pi-refresh"
+                        outlined
+                        loading={state.load}
+                        onClick={getDocuments}
+                    />
+                </div>
+
+                <div className="flex flex-row flex-wrap align-items-center gap-2">
+                    <Button
+                        type="button"
+                        size="small"
+                        label="Scan & Track QR"
+                        icon="pi pi-qrcode"
+                        outlined
+                        severity="info"
+                        tooltip="Pindai Stiker QR Berkas Fisik dengan Kamera Live atau USB Scanner"
+                        tooltipOptions={{ position: 'top' }}
+                        onClick={() => setState(p => ({ ...p, trackingDialog: true, trackingCode: '', trackingResult: null }))}
+                    />
+                    <Divider layout="vertical" className="hidden sm:inline" />
+                    <Button
+                        type="button"
+                        size="small"
+                        label="Pencarian OCR & Teks"
+                        icon="pi pi-search-plus"
+                        outlined
+                        severity="help"
+                        onClick={() => router.push('/edms/archive_document/search')}
+                    />
+                </div>
             </div>
 
             {/* Filter Panel */}

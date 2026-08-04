@@ -238,12 +238,12 @@ const Page = () => {
   }, []);
 
   return (
-    <div className="p-4">
+    <>
       <Toast ref={toast} position="top-right" />
       <ConfirmDialog />
 
       <div className="card shadow-2 border-round-lg p-4 bg-white">
-        <div className="flex justify-content-between align-items-start gap-3 mb-4 flex-wrap">
+        <div className="flex justify-content-between align-align-items-center gap-3 mb-4 flex-wrap">
           <div>
             <h3 className="text-2xl font-bold m-0 text-900">Master Penomoran Surat</h3>
             <p className="text-sm text-600 mt-1">Kelola format nomor surat keluar berdasarkan jenis surat.</p>
@@ -440,7 +440,7 @@ const Page = () => {
           </div>
         </form>
       </Dialog>
-    </div>
+    </>
   );
 };
 

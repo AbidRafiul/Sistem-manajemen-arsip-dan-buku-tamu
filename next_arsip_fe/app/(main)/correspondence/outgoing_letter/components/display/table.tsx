@@ -467,11 +467,11 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
         <>
             <ConfirmDialog />
             <Card className="shadow-1 border-round-2xl border-none">
-                <div className="mb-4">
+                <div className="mb-3">
                     <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: "0.1em" }}>
                         Korespondensi
                     </span>
-                    <h2 className="m-0 text-900 font-extrabold text-2xl mt-1 mb-2">
+                    <h2 className="m-0 text-900 font-bold text-2xl mb-1">
                         Data Surat Keluar
                     </h2>
                     <p className="m-0 text-color-secondary text-sm font-medium">
@@ -479,7 +479,7 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
                     </p>
                 </div>
 
-                <div className="flex flex-row flex-wrap align-items-center gap-2 mb-4">
+                <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
                     <Button
                         size="small"
                         label="Tambah Surat"
@@ -572,7 +572,7 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
                     </div>
                 ) : (
                     <div className="flex flex-column gap-4 pt-3">
-                        <div className="flex align-items-start justify-content-between gap-3 p-3 surface-50 border-round-xl border-1 surface-border">
+                        <div className="flex align-align-items-center justify-content-between gap-3 p-3 surface-50 border-round-xl border-1 surface-border">
                             <div>
                                 <h3 className="m-0 text-900 font-bold text-lg">{detailLetter?.perihal || "-"}</h3>
                                 <div className="flex gap-2 mt-2 flex-wrap text-xs text-color-secondary">
@@ -737,7 +737,7 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
                             {detailTrackings.length > 0 ? (
                                 <div className="flex flex-column gap-4 pl-3 py-2 relative" style={{ borderLeft: "2px solid var(--surface-200)" }}>
                                     {detailTrackings.map((tracking: any, idx: number) => (
-                                        <div key={tracking.id_tracking || idx} className="relative flex align-items-start gap-3">
+                                        <div key={tracking.id_tracking || idx} className="relative flex align-align-items-center gap-3">
                                             {/* Custom Icon Pin */}
                                             <div className="absolute" style={{ left: "-27px", top: "0" }}>
                                                 <i className={`${getTimelineIcon(tracking.aktivitas)} shadow-1`} style={{ fontSize: "0.85rem", padding: "0.4rem" }} />

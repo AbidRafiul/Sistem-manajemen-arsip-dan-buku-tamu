@@ -340,15 +340,13 @@ const Page = () => {
 
     return (
         <>
-            <div className="p-4">
-                <Toast ref={toast} position="top-right" />
+            <Toast ref={toast} position="top-right" />
 
-                <Table getNav={getNav} dataRekap={dataRekap} setDataRekap={setDataRekap} state={state} toast={toast} setState={setState} formik={formik} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />
-                <Print dataRekap={dataRekap} setDataRekap={setDataRekap} state={state} toast={toast} setState={setState} formik={formik} getData={getData} />
+            <Table getNav={getNav} dataRekap={dataRekap} setDataRekap={setDataRekap} state={state} toast={toast} setState={setState} formik={formik} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />
+            <Print dataRekap={dataRekap} setDataRekap={setDataRekap} state={state} toast={toast} setState={setState} formik={formik} getData={getData} />
 
-                {/* 3. KOMPONEN FORM DIPANGGIL DI SINI DENGAN PROPS YANG LENGKAP */}
-                <Form formik={formik} state={state} setState={setState} toast={toast} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />
-            </div>
+            {/* 3. KOMPONEN FORM DIPANGGIL DI SINI DENGAN PROPS YANG LENGKAP */}
+            <Form formik={formik} state={state} setState={setState} toast={toast} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />
         </>
     );
 };

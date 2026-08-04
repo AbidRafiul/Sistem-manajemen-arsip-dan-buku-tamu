@@ -68,14 +68,14 @@ const Table = ({ state, setState, formik, getData, handleDelete }: any) => {
 
   return (
     <div className="card shadow-2 border-round-lg p-4 bg-white">
-      <div className="flex justify-content-between items-start mb-4">
+      <div className="flex justify-content-between align-items-center mb-3">
         <div>
           <h3 className="text-2xl font-bold m-0 text-900">Master Template Surat</h3>
           <p className="text-sm text-600 mt-1">Kelola template surat resmi yang dapat dipakai berulang kali untuk surat keluar.</p>
         </div>
       </div>
 
-      <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
+      <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
         {canCreate && <Button type="button" size="small" label="Baru" icon="pi pi-plus" outlined severity="success" onClick={() => {
           formik.resetForm();
           setState((p: State) => ({ ...p, add: true, selectedData: [] }));

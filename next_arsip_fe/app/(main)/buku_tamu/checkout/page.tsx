@@ -329,7 +329,7 @@ const CheckoutPage = () => {
     };
  
     return (
-        <div className="p-4">
+        <>
             <Toast ref={toast} position="top-right" />
  
             <GuestDataTable
@@ -382,7 +382,7 @@ const CheckoutPage = () => {
                 onScanSuccess={handleScanSuccess}
                 loading={state.load}
             />
-        </div>
+        </>
     );
 };
 
