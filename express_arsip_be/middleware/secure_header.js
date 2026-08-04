@@ -15,7 +15,11 @@ export default function secureHeader(req, res, next) {
     "Access-Control-Allow-Headers",
     "Content-Type,Authorization,X-Requested-With,X-CSRF-Token,X-Signature,X-Timestamp,X-Credential,X-Endpoint,X-ENDPOINT,x-endpoint"
   );
-  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  if (!req.originalUrl?.toLowerCase().includes("download") && !req.originalUrl?.toLowerCase().includes("file")) {
+    res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  } else {
+    res.removeHeader("X-Frame-Options");
+  }
   res.setHeader("X-Content-Type-Options", "nosniff");
 
   const unwantedHeaders = ["x-powered-by", "server"];

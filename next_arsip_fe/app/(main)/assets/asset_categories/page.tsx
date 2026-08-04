@@ -83,20 +83,8 @@ const Page = () => {
     }, [session]);
 
     return <>
-        <div className="p-4">
-            <Toast ref={toast} position="top-right" />
-
-            {/* <input
-                type="file"
-                ref={fileInputRef}
-                accept=".xlsx,.xls"
-                onChange={handleImport}
-                style={{ display: "none" }}
-            /> */}
-
-
-            <Table getData={getData} state={state} setState={setState} formik={formik} toast={toast} />
-        </div>
+        <Toast ref={toast} position="top-right" />
+        <Table getData={getData} state={state} setState={setState} formik={formik} toast={toast} />
     </>
 }
 

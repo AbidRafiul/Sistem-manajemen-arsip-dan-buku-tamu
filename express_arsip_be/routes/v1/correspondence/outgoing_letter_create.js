@@ -7,6 +7,8 @@ import {
 } from "../components/tools/servertool.js";
 import { generateNomorSurat } from "../components/tools/letter_numbering_service.js";
 
+import { parseIndonesianDateToIso } from "./outgoing_letter_extract_ocr.js";
+
 const router = express.Router();
 const AGENDA_PREFIX = "SK";
 const AGENDA_SEQUENCE_LENGTH = 4;
@@ -106,6 +108,13 @@ const outgoingLetterCreate = async (req, res) => {
     oPayload.created_by = nCreatedBy;
     oPayload.updated_by = nUpdatedBy;
 
+    if (oPayload.tanggal_surat) {
+      oPayload.tanggal_surat = parseIndonesianDateToIso(oPayload.tanggal_surat) || oPayload.tanggal_surat;
+    }
+    if (oPayload.tanggal_kirim) {
+      oPayload.tanggal_kirim = parseIndonesianDateToIso(oPayload.tanggal_kirim) || oPayload.tanggal_kirim;
+    }
+
     const oValidation = {
       nomor_surat: Joi.string().max(100).allow(null, "").optional(),
       nomor_agenda: Joi.string().max(100).optional(),
@@ -201,7 +210,7 @@ const outgoingLetterCreate = async (req, res) => {
         .first();
       const cNomorAgenda =
         oPayload.nomor_agenda || (await generateAgendaNumber(trx));
-      const cStatus = oPayload.status || "draft";
+      const cStatus = oPayload.status || "menunggu_approval";
       const bNomorSuratAuto = oPayload.nomor_surat_auto !== false;
       const cManualNomorSurat = String(oPayload.nomor_surat || "").trim();
       const cGeneratedNomorSurat = await generateNomorSurat(trx, {
@@ -241,7 +250,14 @@ const outgoingLetterCreate = async (req, res) => {
             })
           : null);
 
+      const nIdCabang =
+        oPayload.id_cabang ||
+        req?.auth?.id_cabang ||
+        req?.headers?.["x-filter-cabang"] ||
+        1;
+
       const vaInserted = await trx("trs_surat_keluar").insert({
+        id_cabang: nIdCabang,
         nomor_surat: cNomorSurat,
         nomor_agenda: cNomorAgenda,
         tanggal_surat: oPayload.tanggal_surat,

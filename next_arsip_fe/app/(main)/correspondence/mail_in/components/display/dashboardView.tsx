@@ -188,7 +188,7 @@ const DashboardView = ({
                 {/* Left Panel: Table */}
                 <div className="col-12 lg:col-8">
                     <Card className="border-none shadow-1 border-round-2xl h-full">
-                        <div className="flex flex-column sm:flex-row align-items-start sm:align-items-center justify-content-between gap-3 mb-4">
+                        <div className="flex flex-column sm:flex-row align-align-items-center sm:align-items-center justify-content-between gap-3 mb-4">
                             <div className="flex gap-2">
                                 <Button
                                     label="Semua Surat"
@@ -282,7 +282,7 @@ const DashboardView = ({
                         </div>
                         <div className="flex flex-column gap-3">
                             {recentLetters.map((letter) => (
-                                <div className="flex align-items-start gap-3 p-2 border-round hover:surface-50 transition-colors" key={letter.surat_masuk_id}>
+                                <div className="flex align-align-items-center gap-3 p-2 border-round hover:surface-50 transition-colors" key={letter.surat_masuk_id}>
                                     <div className="flex align-items-center justify-content-center border-circle bg-blue-50 border-1 border-blue-100 flex-shrink-0" style={{ width: "2rem", height: "2rem" }}>
                                         <i className="pi pi-envelope text-blue-500 text-xs" />
                                     </div>

@@ -27,7 +27,7 @@ const initialValues: initValue = {
     isi_surat_final: "",
     nama_pengirim: "",
     jabatan: "",
-    status: "draft",
+    status: "menunggu_approval",
     file_surat: null,
     created_by: null,
     updated_by: null,
@@ -103,10 +103,10 @@ const Page = () => {
     }, [session]);
 
     return (
-        <div className="p-4">
+        <>
             <Toast ref={toast} position="top-right" />
             <Table getData={getData} state={state} setState={setState} formik={formik} toast={toast} />
-        </div>
+        </>
     );
 };
 

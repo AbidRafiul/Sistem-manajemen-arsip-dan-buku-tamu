@@ -498,8 +498,7 @@ const Page = () => {
     }, [state.searchVal, state.filterClassification, state.filterType, state.filterCategory, state.filterConfidentiality]);
 
     return <>
-        <div className="p-4">
-            <Toast ref={toast} position="top-right" />
+        <Toast ref={toast} position="top-right" />
             <Table
                 getDocuments={getDocuments}
                 getDocumentDetail={getDocumentDetail}
@@ -552,7 +551,6 @@ const Page = () => {
                     )}
                 </div>
             </Dialog>
-        </div>
     </>
 }
 

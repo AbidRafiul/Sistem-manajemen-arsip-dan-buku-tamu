@@ -20,6 +20,7 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import {
     apiEndpointCreate,
     apiEndpointDocumentDownload,
+    apiEndpointExtractOcr,
     apiEndpointGet,
     apiEndpointLetterTypeManagement,
     apiEndpointNumberingPreview,
@@ -50,8 +51,8 @@ const mediaPengirimanOptions = [
 ];
 
 const suratModeOptions = [
-    { label: "Sistem", value: "sistem" },
-    { label: "Upload PDF", value: "upload_pdf" },
+    { label: "Opsi 1: Template Sistem", value: "sistem" },
+    { label: "Opsi 2: Upload File Eksternal (PDF/Word)", value: "upload_pdf" },
 ];
 
 interface LetterTypeOption {
@@ -382,6 +383,32 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
         }
     };
 
+    const availableStatusOptions = useMemo(() => {
+        const manualOptions = [
+            { label: "Draft", value: "draft" },
+            { label: "Terkirim", value: "terkirim" },
+            { label: "Selesai", value: "selesai" },
+        ];
+
+        const currentStatus = formik.values.status;
+        if (currentStatus && !manualOptions.some((o) => o.value === currentStatus)) {
+            const autoLabels: Record<string, string> = {
+                menunggu_approval: "Menunggu Approval",
+                disetujui: "Disetujui",
+                ditolak: "Ditolak",
+            };
+            return [
+                {
+                    label: autoLabels[currentStatus] || String(currentStatus),
+                    value: currentStatus,
+                },
+                ...manualOptions,
+            ];
+        }
+
+        return manualOptions;
+    }, [formik.values.status]);
+
     const selectedTemplate = useMemo(
         () => templateOptions.find((item) => item.id_template === formik.values.id_template) || null,
         [templateOptions, formik.values.id_template]
@@ -499,7 +526,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
             const isDirectUploadRequired = suratInputMode === "upload_pdf" && !isEdit && !input.file_surat;
 
             if (isDirectUploadRequired) {
-                showError(toast, "File PDF wajib diupload untuk mode unggah langsung");
+                showError(toast, "File PDF atau Word (.docx) wajib diupload untuk Opsi Upload Eksternal");
                 return;
             }
 
@@ -590,17 +617,69 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
         }
     };
 
-    const handlePdfSelection = (event: ChangeEvent<HTMLInputElement>) => {
+    const [isOcrExtracting, setIsOcrExtracting] = useState(false);
+
+    const handleExternalFileSelection = async (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
-        if (file.type !== PDF_MIME_TYPE) {
-            showError(toast, "Upload langsung hanya menerima file PDF");
+        const ext = file.name.split('.').pop()?.toLowerCase() || '';
+        if (!['pdf', 'docx', 'doc'].includes(ext)) {
+            showError(toast, "Upload file eksternal hanya menerima format PDF atau Word (.docx)");
             clearUploadedPdf();
             return;
         }
 
         formik.setFieldValue("file_surat", file);
+        setIsOcrExtracting(true);
+
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const res = await formUpload(
+                apiEndpointExtractOcr,
+                formData,
+                {}
+            );
+            const meta = res?.data?.data;
+
+            if (meta) {
+                const hasExtractedData = Boolean(
+                    meta.nomor_surat || meta.perihal || meta.tanggal_surat || meta.tujuan_surat || meta.isi_surat
+                );
+
+                if (hasExtractedData) {
+                    showSuccess(toast, "Ekstraksi OCR berhasil. Data form telah terisi otomatis.");
+                    if (meta.nomor_surat) {
+                        formik.setFieldValue("nomor_surat", meta.nomor_surat);
+                        setNomorSuratAuto(false);
+                    }
+                    if (meta.perihal) {
+                        formik.setFieldValue("perihal", meta.perihal);
+                    }
+                    if (meta.tanggal_surat) {
+                        formik.setFieldValue("tanggal_surat", meta.tanggal_surat);
+                    }
+                    if (meta.tujuan_surat) {
+                        formik.setFieldValue("tujuan", meta.tujuan_surat);
+                    }
+                    if (meta.isi_surat) {
+                        formik.setFieldValue("isi_surat", meta.isi_surat);
+                    }
+                } else {
+                    showError(
+                        toast,
+                        "Berkas terdeteksi tanpa naskah teks terstruktur. Silakan isi form data surat secara manual."
+                    );
+                }
+            }
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Gagal meng-ekstrak OCR metadata. Anda tetap dapat memasukkan data secara manual.");
+        } finally {
+            setIsOcrExtracting(false);
+        }
     };
 
     const uploadDirectPdf = async (idSuratKeluar: number, file?: File | null) => {
@@ -627,6 +706,9 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
     useEffect(() => {
         if (state.add && !state.edit) {
             setNomorSuratAuto(true);
+            if (!formik.values.status || formik.values.status === "draft") {
+                formik.setFieldValue("status", "menunggu_approval");
+            }
         }
     }, [state.add, state.edit]);
 
@@ -815,19 +897,39 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                     </div>
 
                     <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                        <label className="font-semibold text-900">Mode Input Surat</label>
-                        <SelectButton
-                            value={suratInputMode}
-                            onChange={(e) => {
-                                if (e.value) setSuratInputMode(e.value as "sistem" | "upload_pdf");
-                            }}
-                            options={suratModeOptions}
-                            optionLabel="label"
-                            optionValue="value"
-                            className="w-full"
-                        />
-                        <small className="text-color-secondary">
-                            Pilih sistem jika surat dibangun dari template aplikasi, atau upload PDF jika perusahaan sudah punya file jadi.
+                        <label className="font-semibold text-900" style={{ fontFamily: "inherit" }}>Mode Input Surat</label>
+                        <div className="surface-100 border-1 surface-border p-1 border-round-xl flex align-items-center w-full gap-1">
+                            <button
+                                type="button"
+                                onClick={() => setSuratInputMode("sistem")}
+                                style={{ fontFamily: "inherit" }}
+                                className={`flex-1 py-2 px-3 border-round-lg text-center border-none cursor-pointer transition-all transition-duration-200 flex align-items-center justify-content-center gap-2 select-none ${
+                                    suratInputMode === "sistem"
+                                        ? "bg-white text-primary shadow-1 font-semibold"
+                                        : "bg-transparent text-600 hover:text-900 font-medium"
+                                }`}
+                            >
+                                <i className="pi pi-file-edit text-sm" />
+                                <span className="text-sm whitespace-nowrap">Opsi 1: Template Sistem</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setSuratInputMode("upload_pdf")}
+                                style={{ fontFamily: "inherit" }}
+                                className={`flex-1 py-2 px-3 border-round-lg text-center border-none cursor-pointer transition-all transition-duration-200 flex align-items-center justify-content-center gap-2 select-none ${
+                                    suratInputMode === "upload_pdf"
+                                        ? "bg-white text-primary shadow-1 font-semibold"
+                                        : "bg-transparent text-600 hover:text-900 font-medium"
+                                }`}
+                            >
+                                <i className="pi pi-upload text-sm" />
+                                <span className="text-sm whitespace-nowrap">Opsi 2: Upload File (PDF/Word)</span>
+                            </button>
+                        </div>
+                        <small className="text-color-secondary" style={{ fontFamily: "inherit" }}>
+                            {suratInputMode === "sistem"
+                                ? "Surat dibangun menggunakan template aplikasi otomatis."
+                                : "Metadata surat di-ekstrak langsung dari berkas PDF / Word yang Anda upload."}
                         </small>
                     </div>
 
@@ -888,7 +990,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                             id="status"
                             className="w-full"
                             value={formik.values.status}
-                            options={statusOptions}
+                            options={availableStatusOptions}
                             onChange={(e) => formik.setFieldValue("status", e.value)}
                             placeholder="Pilih status"
                         />
@@ -972,26 +1074,29 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                         </div>
                     ) : (
                         <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="file_surat" className="font-semibold text-900">Upload PDF Surat</label>
+                            <label htmlFor="file_surat" className="font-semibold text-900">
+                                Upload File Eksternal Surat (PDF / Word)
+                            </label>
                             <input
                                 ref={fileInputRef}
                                 id="file_surat"
                                 type="file"
-                                accept={PDF_MIME_TYPE}
+                                accept=".pdf,.docx,.doc,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                                 style={{ display: "none" }}
-                                onChange={handlePdfSelection}
+                                onChange={handleExternalFileSelection}
                             />
                             <div className="flex align-items-stretch gap-2">
                                 <InputText
                                     className="w-full"
-                                    value={formik.values.file_surat?.name || "Belum ada file PDF dipilih"}
+                                    value={formik.values.file_surat?.name || "Belum ada file PDF/Word dipilih"}
                                     readOnly
                                 />
                                 <Button
                                     type="button"
-                                    icon="pi pi-upload"
+                                    icon={isOcrExtracting ? "pi pi-spin pi-spinner" : "pi pi-upload"}
                                     outlined
-                                    aria-label="Pilih file PDF"
+                                    aria-label="Pilih file eksternal"
+                                    disabled={isOcrExtracting}
                                     onClick={() => fileInputRef.current?.click()}
                                 />
                                 <Button
@@ -999,15 +1104,17 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                                     icon="pi pi-times"
                                     severity="secondary"
                                     outlined
-                                    aria-label="Hapus file PDF"
-                                    disabled={!formik.values.file_surat}
+                                    aria-label="Hapus file eksternal"
+                                    disabled={!formik.values.file_surat || isOcrExtracting}
                                     onClick={clearUploadedPdf}
                                 />
                             </div>
                             <small className="text-color-secondary">
-                                {formik.values.file_surat
-                                    ? `PDF siap diupload (${formatFileSize(formik.values.file_surat.size)})`
-                                    : "Hanya file PDF yang diterima untuk upload langsung."}
+                                {isOcrExtracting
+                                    ? "Sedang meng-ekstrak metadata OCR dari file..."
+                                    : formik.values.file_surat
+                                    ? `File eksternal siap (${formatFileSize(formik.values.file_surat.size)}). Metadata form telah terisi otomatis.`
+                                    : "Pilih file PDF atau Word (.docx) eksternal. Sistem akan meng-ekstrak metadata secara otomatis."}
                             </small>
                         </div>
                     )}

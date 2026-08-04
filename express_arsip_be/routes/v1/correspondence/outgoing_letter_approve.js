@@ -2,6 +2,7 @@ import express from "express";
 import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { Logging, validatePayload } from "../components/tools/servertool.js";
+import { signLetterAutomatically } from "../components/tools/tte_service.js";
 
 const router = express.Router();
 
@@ -77,9 +78,24 @@ const outgoingLetterApprove = async (req, res) => {
       });
     });
 
+    // 3. Otomatis proses TTE & Tempel Stempel Visual + QR Code ke PDF Surat
+    let tteResult = null;
+    try {
+      tteResult = await signLetterAutomatically({
+        idSuratKeluar: oPayload.id_surat_keluar,
+        actorId: nActorId,
+        req,
+      });
+    } catch (tteError) {
+      console.error("Gagal melakukan TTE otomatis saat approval:", tteError);
+    }
+
     return res.status(200).json({
       status: true,
-      message: "Surat keluar berhasil disetujui",
+      message: tteResult
+        ? "Surat keluar berhasil disetujui dan Tanda Tangan Elektronik (TTE) otomatis tertempel"
+        : "Surat keluar berhasil disetujui",
+      tte: tteResult,
     });
   } catch (error) {
     const oResult = {

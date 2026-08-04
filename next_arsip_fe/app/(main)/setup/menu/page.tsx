@@ -168,7 +168,7 @@ const MenuPage = () => {
     }, [session]);
 
     return (
-        <div className="p-4">
+        <>
             <Toast ref={toast} position="top-right" />
             
             <Table 
@@ -190,7 +190,7 @@ const MenuPage = () => {
                 handleSave={handleSave} 
                 handleDelete={handleDelete} 
             />
-        </div>
+        </>
     );
 };
 

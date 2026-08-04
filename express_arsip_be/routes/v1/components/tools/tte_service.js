@@ -4,7 +4,7 @@ import path from "path";
 
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { pdflibAddPlaceholder } from "@signpdf/placeholder-pdf-lib";
-import signpdf from "@signpdf/signpdf";
+import { SignPdf } from "@signpdf/signpdf";
 import { P12Signer } from "@signpdf/signer-p12";
 import QRCode from "qrcode";
 import forge from "node-forge";
@@ -129,10 +129,78 @@ const uploadPdfBuffer = async (buffer, fileName, { idCabang = null, moduleName =
   });
 };
 
-const loadP12Signer = async ({ lokasiKeystore, password }) => {
-  const resolved = path.isAbsolute(lokasiKeystore)
+const generateDevKeystore = async (targetFilePath, password = "") => {
+  let finalPath = targetFilePath;
+  if (!/\.(p12|pfx)$/i.test(finalPath)) {
+    finalPath = path.join(finalPath, "dev_keystore.p12");
+  }
+
+  try {
+    await fs.stat(finalPath);
+    return finalPath;
+  } catch (e) {
+    // File does not exist, create self-signed certificate
+  }
+
+  const keys = forge.pki.rsa.generateKeyPair(2048);
+  const cert = forge.pki.createCertificate();
+  cert.publicKey = keys.publicKey;
+  cert.serialNumber = String(Date.now());
+  cert.validity.notBefore = new Date();
+  cert.validity.notAfter = new Date();
+  cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 10);
+
+  const attrs = [
+    { name: "commonName", value: "Sertifikat Elektronik (Development TTE)" },
+    { name: "organizationName", value: "Sistem Manajemen Arsip & Buku Tamu" },
+    { name: "countryName", value: "ID" },
+  ];
+  cert.setSubject(attrs);
+  cert.setIssuer(attrs);
+  cert.sign(keys.privateKey, forge.md.sha256.create());
+
+  const p12Asn1 = forge.pkcs12.toPkcs12Asn1(keys.privateKey, [cert], password || "");
+  const p12Der = forge.asn1.toDer(p12Asn1).getBytes();
+  const p12Buffer = Buffer.from(p12Der, "binary");
+
+  await fs.mkdir(path.dirname(finalPath), { recursive: true });
+  await fs.writeFile(finalPath, p12Buffer);
+  return finalPath;
+};
+
+const resolveKeystoreFilePath = async (lokasiKeystore, password = "") => {
+  if (!lokasiKeystore) {
+    throw new Error("Lokasi keystore sertifikat belum dikonfigurasi");
+  }
+
+  let resolved = path.isAbsolute(lokasiKeystore)
     ? lokasiKeystore
     : path.resolve(process.cwd(), lokasiKeystore);
+
+  try {
+    const stat = await fs.stat(resolved);
+    if (stat.isDirectory()) {
+      const files = await fs.readdir(resolved);
+      const p12File = files.find((f) => f.endsWith(".p12") || f.endsWith(".pfx"));
+      if (p12File) {
+        resolved = path.join(resolved, p12File);
+      } else {
+        resolved = await generateDevKeystore(resolved, password);
+      }
+    }
+  } catch (err) {
+    if (err.code === "ENOENT") {
+      resolved = await generateDevKeystore(resolved, password);
+    } else {
+      throw err;
+    }
+  }
+
+  return resolved;
+};
+
+const loadP12Signer = async ({ lokasiKeystore, password }) => {
+  const resolved = await resolveKeystoreFilePath(lokasiKeystore, password);
   const p12Buffer = await fs.readFile(resolved);
   return new P12Signer(p12Buffer, { passphrase: password || "" });
 };
@@ -150,168 +218,360 @@ const buildVisibleSignatureBlock = async ({
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const pageWidth = page.getWidth();
   const pageHeight = page.getHeight();
+  const margin = 48;
 
-  const rect = posisi?.widgetRect || DEFAULT_SIGNATURE_RECT;
-  const [x1, y1, x2, y2] = rect;
-  const boxWidth = Math.max(120, x2 - x1);
-  const boxHeight = Math.max(70, y2 - y1);
-  const blockX = Math.max(24, Math.min(x1, pageWidth - boxWidth - 24));
-  const blockY = Math.max(24, Math.min(y1, pageHeight - boxHeight - 24));
+  // 1. Generate QR Code Barcode
   const qrDataUrl = await QRCode.toDataURL(tokenVerifikasi || signerName || "tte", {
     margin: 0,
-    width: 96,
+    width: 120,
   });
 
-  const qrImage = await pdfDoc.embedPng(qrDataUrl.split(",")[1] ? Buffer.from(qrDataUrl.split(",")[1], "base64") : Buffer.from(qrDataUrl, "base64"));
-
-  page.drawRectangle({
-    x: blockX,
-    y: blockY,
-    width: boxWidth,
-    height: boxHeight,
-    borderColor: rgb(0.32, 0.38, 0.55),
-    borderWidth: 1,
-    color: rgb(0.98, 0.99, 1),
-  });
-
-  page.drawText("Ditandatangani secara elektronik oleh", {
-    x: blockX + 12,
-    y: blockY + boxHeight - 18,
-    size: 8.5,
-    font: fontRegular,
-    color: rgb(0.28, 0.28, 0.32),
-  });
-
-  page.drawText(normalizeString(signerName || "-"), {
-    x: blockX + 12,
-    y: blockY + boxHeight - 32,
-    size: 10.5,
-    font: fontBold,
-    color: rgb(0.08, 0.12, 0.22),
-  });
-
-  drawParagraphs(
-    page,
-    fontRegular,
-    `${normalizeString(signerTitle || "-")}\n${formatDateSystem(signingTime, "dd MMM yyyy HH:mm")}\nKode: ${normalizeString(tokenVerifikasi || "-")}`,
-    blockX + 12,
-    blockY + boxHeight - 46,
-    boxWidth - 104,
-    7.5,
-    9,
-    rgb(0.16, 0.16, 0.16),
+  const qrImage = await pdfDoc.embedPng(
+    qrDataUrl.split(",")[1] ? Buffer.from(qrDataUrl.split(",")[1], "base64") : Buffer.from(qrDataUrl, "base64")
   );
 
+  // 2. Determine QR Code Barcode Position (Right inside Signature Block)
+  const qrWidth = 60;
+  const qrHeight = 60;
+
+  let qrX = pageWidth - margin - 150;
+  let qrY = 100;
+
+  if (posisi?.posisi_x && posisi?.posisi_y) {
+    qrX = Number(posisi.posisi_x);
+    qrY = Number(posisi.posisi_y);
+  } else if (posisi?.widgetRect) {
+    const [x1, y1, x2, y2] = posisi.widgetRect;
+    qrX = x1 + (x2 - x1 - qrWidth) / 2;
+    qrY = y1 + (y2 - y1 - qrHeight) / 2;
+  }
+
+  // Draw Barcode QR Code directly inside the Signature Block
   page.drawImage(qrImage, {
-    x: blockX + boxWidth - 84,
-    y: blockY + 10,
-    width: 64,
-    height: 64,
+    x: qrX,
+    y: qrY,
+    width: qrWidth,
+    height: qrHeight,
   });
 
-  return [blockX, blockY, blockX + boxWidth, blockY + boxHeight];
+  // 3. Draw TTE Info Line at bottom footer margin
+  const footerY = 22;
+  const formattedDate = signingTime ? formatDateSystem(signingTime, "dd MMM yyyy HH:mm") : "-";
+
+  page.drawLine({
+    start: { x: margin, y: footerY + 14 },
+    end: { x: pageWidth - margin, y: footerY + 14 },
+    thickness: 0.5,
+    color: rgb(0.8, 0.8, 0.84),
+  });
+
+  const footerText = `Dokumen ini telah ditandatangani secara elektronik oleh ${normalizeString(signerName || "Superadmin SIAB")} (${normalizeString(signerTitle || "DIREKTUR")}) pada ${formattedDate}. Kode Verifikasi: ${normalizeString(tokenVerifikasi || "-")}`;
+
+  page.drawText(footerText, {
+    x: margin,
+    y: footerY,
+    size: 7,
+    font: fontRegular,
+    color: rgb(0.35, 0.35, 0.4),
+  });
+
+  return [qrX, qrY, qrX + qrWidth, qrY + qrHeight];
+};
+
+const getLogoBuffer = async () => {
+  const possiblePaths = [
+    path.resolve(process.cwd(), "../next_arsip_fe/public/marstech-logo.png"),
+    path.resolve(process.cwd(), "next_arsip_fe/public/marstech-logo.png"),
+    path.resolve(process.cwd(), "public/marstech-logo.png"),
+  ];
+
+  for (const p of possiblePaths) {
+    try {
+      return await fs.readFile(p);
+    } catch (e) {
+      // ignore
+    }
+  }
+  return null;
 };
 
 const generatePdfFromSurat = async (surat, { signerName = "", signerTitle = "" } = {}) => {
   const pdfDoc = await PDFDocument.create();
   let page = pdfDoc.addPage([DEFAULT_PAGE_WIDTH, DEFAULT_PAGE_HEIGHT]);
-  const titleFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-  const bodyFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontItalic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
 
   const margin = 48;
   const contentWidth = DEFAULT_PAGE_WIDTH - margin * 2;
 
-  page.drawText("SURAT KELUAR", {
-    x: margin,
-    y: DEFAULT_PAGE_HEIGHT - 56,
-    size: 16,
-    font: titleFont,
-    color: rgb(0.09, 0.14, 0.28),
+  // Logo Kop Surat
+  try {
+    const logoBuffer = await getLogoBuffer();
+    if (logoBuffer) {
+      const logoImg = await pdfDoc.embedPng(logoBuffer);
+      page.drawImage(logoImg, {
+        x: margin,
+        y: DEFAULT_PAGE_HEIGHT - 82,
+        width: 54,
+        height: 54,
+      });
+    }
+  } catch (e) {
+    // ignore logo load error
+  }
+
+  // Header Title & Address Kop Surat
+  const headerX = margin + 64;
+  page.drawText("PT. MARSTECH GLOBAL", {
+    x: headerX,
+    y: DEFAULT_PAGE_HEIGHT - 38,
+    size: 14,
+    font: fontBold,
+    color: rgb(0, 0.2, 0.45),
   });
 
-  const metaLines = [
-    `Nomor Surat: ${surat?.nomor_surat || "-"}`,
-    `Nomor Agenda: ${surat?.nomor_agenda || "-"}`,
-    `Tanggal Surat: ${surat?.tanggal_surat || "-"}`,
-    `Perihal: ${surat?.perihal || "-"}`,
-    `Tujuan: ${surat?.tujuan || "-"}`,
-    `Instansi Tujuan: ${surat?.instansi_tujuan || "-"}`,
-    `Media Pengiriman: ${surat?.media_pengiriman || "-"}`,
-  ];
+  page.drawText("JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR", {
+    x: headerX,
+    y: DEFAULT_PAGE_HEIGHT - 51,
+    size: 7.5,
+    font: fontRegular,
+    color: rgb(0.2, 0.2, 0.2),
+  });
 
-  let cursorY = DEFAULT_PAGE_HEIGHT - 92;
-  cursorY = drawParagraphs(
-    page,
-    bodyFont,
-    metaLines.join("\n"),
-    margin,
-    cursorY,
-    contentWidth,
-    11,
-    15,
-    rgb(0.15, 0.15, 0.15),
-  );
+  page.drawText("Telp. 0351-2812555  |  E-mail: info@marstech.co.id  |  Web: www.marstech.co.id", {
+    x: headerX,
+    y: DEFAULT_PAGE_HEIGHT - 63,
+    size: 7.5,
+    font: fontRegular,
+    color: rgb(0.2, 0.2, 0.2),
+  });
 
-  cursorY -= 8;
+  page.drawText("SIUP : 503.4/ 29 - MIKRO/ 401.106/ 2018  |  TDP : 13.13.1.47.00655", {
+    x: headerX,
+    y: DEFAULT_PAGE_HEIGHT - 74,
+    size: 7,
+    font: fontItalic,
+    color: rgb(0.4, 0.4, 0.4),
+  });
+
+  // Double Line Separator Kop Surat
   page.drawLine({
-    start: { x: margin, y: cursorY },
-    end: { x: DEFAULT_PAGE_WIDTH - margin, y: cursorY },
-    thickness: 1,
-    color: rgb(0.84, 0.86, 0.9),
+    start: { x: margin, y: DEFAULT_PAGE_HEIGHT - 90 },
+    end: { x: DEFAULT_PAGE_WIDTH - margin, y: DEFAULT_PAGE_HEIGHT - 90 },
+    thickness: 2,
+    color: rgb(0, 0.2, 0.45),
+  });
+  page.drawLine({
+    start: { x: margin, y: DEFAULT_PAGE_HEIGHT - 93 },
+    end: { x: DEFAULT_PAGE_WIDTH - margin, y: DEFAULT_PAGE_HEIGHT - 93 },
+    thickness: 0.75,
+    color: rgb(0.3, 0.3, 0.3),
   });
 
-  cursorY -= 24;
-  const bodyText = normalizeString(
-    surat?.isi_surat_final ||
-      surat?.isi_surat ||
-      [
-        surat?.perihal ? `Perihal: ${surat.perihal}` : "",
-        surat?.tujuan ? `Tujuan: ${surat.tujuan}` : "",
-        surat?.instansi_tujuan ? `Instansi Tujuan: ${surat.instansi_tujuan}` : "",
-        "",
-        "Dokumen ini disiapkan untuk penandatanganan elektronik internal.",
-      ]
-        .filter(Boolean)
-        .join("\n"),
-  );
+  // Metadata Block
+  let cursorY = DEFAULT_PAGE_HEIGHT - 118;
+  const tglSurat = surat?.tanggal_surat ? formatDateSystem(surat.tanggal_surat, "dd MMMM yyyy") : "-";
 
-  const bodyLines = splitText(bodyText);
-  for (const paragraph of bodyLines) {
-    const wrapped = wrapLine(paragraph || " ", bodyFont, 11, contentWidth);
+  page.drawText(`Nomor        : ${surat?.nomor_surat || "-"}`, {
+    x: margin,
+    y: cursorY,
+    size: 10,
+    font: fontRegular,
+    color: rgb(0.1, 0.1, 0.1),
+  });
+
+  page.drawText(`Madiun, ${tglSurat}`, {
+    x: DEFAULT_PAGE_WIDTH - margin - 150,
+    y: cursorY,
+    size: 10,
+    font: fontRegular,
+    color: rgb(0.1, 0.1, 0.1),
+  });
+  cursorY -= 15;
+
+  page.drawText(`Lampiran   : -`, {
+    x: margin,
+    y: cursorY,
+    size: 10,
+    font: fontRegular,
+    color: rgb(0.1, 0.1, 0.1),
+  });
+  cursorY -= 15;
+
+  page.drawText(`Perihal        : ${surat?.perihal || "-"}`, {
+    x: margin,
+    y: cursorY,
+    size: 10,
+    font: fontBold,
+    color: rgb(0.1, 0.1, 0.1),
+  });
+  cursorY -= 22;
+
+  page.drawText("Kepada Yth.", {
+    x: margin,
+    y: cursorY,
+    size: 10,
+    font: fontRegular,
+    color: rgb(0.1, 0.1, 0.1),
+  });
+  cursorY -= 14;
+
+  page.drawText(normalizeString(surat?.tujuan || "Tempat"), {
+    x: margin,
+    y: cursorY,
+    size: 10,
+    font: fontBold,
+    color: rgb(0.1, 0.1, 0.1),
+  });
+  cursorY -= 14;
+
+  if (surat?.instansi_tujuan) {
+    page.drawText(normalizeString(surat.instansi_tujuan), {
+      x: margin,
+      y: cursorY,
+      size: 10,
+      font: fontRegular,
+      color: rgb(0.3, 0.3, 0.3),
+    });
+    cursorY -= 14;
+  }
+
+  page.drawText("di Tempat", {
+    x: margin,
+    y: cursorY,
+    size: 10,
+    font: fontRegular,
+    color: rgb(0.1, 0.1, 0.1),
+  });
+  cursorY -= 24;
+
+  page.drawText("Dengan hormat,", {
+    x: margin,
+    y: cursorY,
+    size: 10,
+    font: fontRegular,
+    color: rgb(0.1, 0.1, 0.1),
+  });
+  cursorY -= 18;
+
+const extractCleanBodyText = (surat) => {
+  if (surat?.isi_surat && String(surat.isi_surat).trim() !== "") {
+    return String(surat.isi_surat).trim();
+  }
+
+  let text = String(surat?.isi_surat_final || "").trim();
+  if (!text) {
+    return surat?.perihal ? `Mengenai ${surat.perihal}.` : "Demikian surat ini disampaikan untuk dipergunakan sebagaimana mestinya.";
+  }
+
+  const hIdx = text.toLowerCase().indexOf("dengan hormat");
+  if (hIdx >= 0) {
+    text = text.slice(hIdx).replace(/^dengan hormat,?\s*/i, "").trim();
+  }
+
+  text = text
+    .replace(/nomor\s*:\s*[\w\/-]+\s*/gim, "")
+    .replace(/lampiran\s*:\s*[-a-zA-Z0-9\s]+\s*/gim, "")
+    .replace(/lamp\s*:\s*[-a-zA-Z0-9\s]+\s*/gim, "")
+    .replace(/perihal\s*:\s*[^\r\n]+\s*/gim, "")
+    .replace(/kepada yth\.?\s*[^\r\n]+\s*/gim, "")
+    .replace(/di tempat\s*/gim, "")
+    .replace(/dengan hormat,?\s*/gim, "")
+    .replace(/demikian surat ini dibuat[\s\S]*$/i, "")
+    .replace(/demikian surat [\s\S]*?terima kasih\.?[\s\S]*$/i, "")
+    .replace(/demikian [\s\S]*$/i, "")
+    .replace(/hormat kami,?[\s\S]*$/i, "")
+    .replace(/superadmin[\s\S]*$/i, "")
+    .replace(/direktur[\s\S]*$/i, "")
+    .trim();
+
+  return text || (surat?.perihal ? `Mengenai ${surat.perihal}.` : "Demikian surat ini disampaikan untuk dipergunakan sebagaimana mestinya.");
+};
+
+  // Body Content
+  const bodyText = extractCleanBodyText(surat);
+
+  const paragraphs = splitText(bodyText);
+  for (const para of paragraphs) {
+    const wrapped = wrapLine(para || " ", fontRegular, 10, contentWidth);
     for (const line of wrapped) {
-      if (cursorY < 108) {
+      if (cursorY < 180) {
         page = pdfDoc.addPage([DEFAULT_PAGE_WIDTH, DEFAULT_PAGE_HEIGHT]);
-        cursorY = DEFAULT_PAGE_HEIGHT - 56;
+        cursorY = DEFAULT_PAGE_HEIGHT - 60;
       }
       page.drawText(line, {
         x: margin,
         y: cursorY,
-        size: 11,
-        font: bodyFont,
+        size: 10,
+        font: fontRegular,
         color: rgb(0.1, 0.1, 0.1),
       });
       cursorY -= 15;
     }
-    cursorY -= 4;
+    cursorY -= 6;
   }
 
-  const previewPage = pdfDoc.getPages()[pdfDoc.getPageCount() - 1];
-  if (signerName || signerTitle) {
-    previewPage.drawText(`Penanda tangan: ${normalizeString(signerName || "-")}`, {
-      x: margin,
-      y: 78,
-      size: 8.5,
-      font: bodyFont,
-      color: rgb(0.35, 0.35, 0.38),
-    });
-    previewPage.drawText(normalizeString(signerTitle || "-"), {
-      x: margin,
-      y: 66,
-      size: 8.5,
-      font: bodyFont,
-      color: rgb(0.35, 0.35, 0.38),
-    });
+  if (cursorY < 230) {
+    page = pdfDoc.addPage([DEFAULT_PAGE_WIDTH, DEFAULT_PAGE_HEIGHT]);
+    cursorY = DEFAULT_PAGE_HEIGHT - 60;
   }
+
+  cursorY -= 12;
+  page.drawText("Demikian surat ini dibuat untuk dipergunakan sebagaimana mestinya.", {
+    x: margin,
+    y: cursorY,
+    size: 10,
+    font: fontRegular,
+    color: rgb(0.1, 0.1, 0.1),
+  });
+
+  // Signature Block - Fixed at Bottom Right
+  const sigX = DEFAULT_PAGE_WIDTH - margin - 180;
+  const finalSignerTitle = normalizeString(signerTitle || surat?.jabatan || "DIREKTUR");
+  const finalSignerName = normalizeString(signerName || surat?.nama_pengirim || "BOSTANUL ASY'ARI");
+
+  page.drawText(`Madiun, ${tglSurat}`, {
+    x: sigX,
+    y: 215,
+    size: 10,
+    font: fontRegular,
+    color: rgb(0.1, 0.1, 0.1),
+  });
+
+  page.drawText("Hormat kami,", {
+    x: sigX,
+    y: 198,
+    size: 10,
+    font: fontRegular,
+    color: rgb(0.1, 0.1, 0.1),
+  });
+
+  page.drawText("PT. MARSTECH GLOBAL", {
+    x: sigX,
+    y: 183,
+    size: 10,
+    font: fontBold,
+    color: rgb(0, 0.2, 0.45),
+  });
+
+  page.drawText(finalSignerTitle, {
+    x: sigX,
+    y: 168,
+    size: 10,
+    font: fontBold,
+    color: rgb(0.1, 0.1, 0.1),
+  });
+
+  // Space Y: 100 to 160 is reserved for Barcode QR Code
+
+  page.drawText(finalSignerName, {
+    x: sigX,
+    y: 84,
+    size: 10.5,
+    font: fontBold,
+    color: rgb(0, 0.2, 0.45),
+  });
 
   return Buffer.from(await pdfDoc.save());
 };
@@ -376,7 +636,7 @@ const resolveCertificateMaterial = async (certificateRecord = {}) => {
   const lokasiKeystore =
     certificateRecord.lokasi_keystore ||
     process.env.TTE_INTERNAL_KEYSTORE_PATH ||
-    "";
+    "TTE";
   const password =
     process.env.TTE_INTERNAL_KEYSTORE_PASSWORD ||
     certificateRecord.password_keystore ||
@@ -386,11 +646,8 @@ const resolveCertificateMaterial = async (certificateRecord = {}) => {
     throw new Error("Lokasi keystore sertifikat belum dikonfigurasi");
   }
 
-  const keystoreBuffer = await fs.readFile(
-    path.isAbsolute(lokasiKeystore)
-      ? lokasiKeystore
-      : path.resolve(process.cwd(), lokasiKeystore),
-  );
+  const resolved = await resolveKeystoreFilePath(lokasiKeystore, password);
+  const keystoreBuffer = await fs.readFile(resolved);
 
   const p12Asn1 = forge.asn1.fromDer(toBinaryString(keystoreBuffer), { parseAllBytes: false });
   const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, false, password);
@@ -754,6 +1011,189 @@ const recordSignatureLog = async ({
   });
 };
 
+const selectSigningPosition = async (surat) => {
+  const templateId = surat?.id_template || null;
+  const byTemplate = templateId
+    ? await DB("mst_posisi_tanda_tangan")
+        .where("status", "aktif")
+        .where("id_template", templateId)
+        .orderBy("is_default", "desc")
+        .first()
+    : null;
+
+  if (byTemplate) return byTemplate;
+
+  const defaultPosition = await DB("mst_posisi_tanda_tangan")
+    .where("status", "aktif")
+    .where("is_default", 1)
+    .first();
+
+  return defaultPosition || { widgetRect: DEFAULT_SIGNATURE_RECT, halaman: 1 };
+};
+
+const signLetterAutomatically = async ({ idSuratKeluar, actorId = null, req = null }) => {
+  const surat = await DB("trs_surat_keluar as tsk")
+    .leftJoin("mst_jenis_surat as mjs", "tsk.id_jenis_surat", "mjs.jenis_surat_id")
+    .leftJoin("mst_template_surat as mts", "tsk.id_template", "mts.id_template")
+    .select("tsk.*", "mjs.nama_jenis_surat", "mts.nama_template")
+    .where("tsk.id_surat_keluar", idSuratKeluar)
+    .first();
+
+  if (!surat) {
+    throw new Error("Surat keluar tidak ditemukan");
+  }
+
+  const activeFile = await DB("trs_file_surat_keluar")
+    .where("id_surat_keluar", idSuratKeluar)
+    .where("status", "active")
+    .orderBy("tanggal_upload", "desc")
+    .first();
+
+  let baseBuffer = null;
+  const isPdfFile = activeFile?.path_file && (
+    activeFile.path_file.toLowerCase().endsWith(".pdf") ||
+    activeFile.nama_file?.toLowerCase().endsWith(".pdf") ||
+    activeFile.mime_type?.includes("pdf")
+  );
+
+  if (isPdfFile) {
+    try {
+      baseBuffer = await loadObjectBuffer(activeFile.path_file);
+    } catch (e) {
+      baseBuffer = await generatePdfFromSurat(surat);
+    }
+  } else {
+    baseBuffer = await generatePdfFromSurat(surat);
+  }
+
+  let certificate = await getCertificateRecord({ idPengguna: actorId });
+  if (!certificate) {
+    const dNow = new Date();
+    const [insertedId] = await DB("mst_sertifikat_elektronik").insert({
+      id_pengguna: actorId || null,
+      nama_sertifikat: "Sertifikat Digital Internal",
+      alias_sertifikat: "TTE Internal SIAB",
+      nomor_seri: `CERT-${Date.now()}`,
+      subjek_sertifikat: "CN=Sistem SIAB, O=PT Marstech Global, C=ID",
+      penerbit_sertifikat: "Internal SIAB CA",
+      algoritma_tanda_tangan: "RSA-SHA256",
+      algoritma_hash: "SHA-256",
+      lokasi_keystore: "TTE",
+      berlaku_mulai: dNow,
+      berlaku_sampai: new Date(dNow.getTime() + 365 * 10 * 24 * 3600 * 1000),
+      status_sertifikat: "aktif",
+      created_at: dNow,
+      updated_at: dNow,
+    });
+    certificate = await DB("mst_sertifikat_elektronik").where("id_sertifikat_elektronik", insertedId).first();
+  }
+
+  const certMaterial = await resolveCertificateMaterial(certificate);
+  const posisi = await selectSigningPosition(surat);
+  const signingTime = new Date();
+  const tokenVerifikasi = crypto.randomUUID();
+
+  const actorUser = actorId ? await DB("mst_pengguna").where("id_pengguna", actorId).first() : null;
+  const signerName = actorUser?.nama_lengkap || actorUser?.nama_pengguna || surat.nama_pengirim || "Superadmin SIAB";
+  const signerTitle = actorUser?.jabatan || surat.jabatan || "DIREKTUR";
+
+  const provider = createSigningProvider();
+  const signedBuffer = await provider.tandatanganiDokumen({
+    pdfBuffer: baseBuffer,
+    lokasiKeystore: certMaterial.lokasiKeystore,
+    password: certMaterial.password,
+    signerName,
+    signerTitle,
+    tokenVerifikasi,
+    posisi,
+    signingTime,
+    reason: `Disetujui dan Ditandatangani secara elektronik oleh ${signerName}`,
+    contactInfo: actorUser?.nama_pengguna || "siab-tte",
+    location: "Indonesia",
+    appName: "Sistem Arsip SIAB",
+  });
+
+  const hashDokumen = sha256Hex(signedBuffer);
+  const cleanNomor = String(surat.nomor_surat || `surat-keluar-${surat.id_surat_keluar}`).replace(/[\\/:*?"<>|]+/g, "-");
+  const signedFileName = `${cleanNomor}-surat${idSuratKeluar}-${Date.now()}-ttd.pdf`;
+  const signedPath = await uploadPdfBuffer(signedBuffer, signedFileName, {
+    idCabang: surat.id_cabang || req?.auth?.id_cabang || null,
+    moduleName: "tte/signed",
+  });
+
+  const existingSignatures = await DB("trs_tanda_tangan_dokumen")
+    .where("id_surat_keluar", idSuratKeluar)
+    .where("status_tanda_tangan", "aktif")
+    .count({ total: "id_tanda_tangan_dokumen" });
+  const urutan = Number(existingSignatures?.[0]?.total || 0) + 1;
+
+  await DB.transaction(async (trx) => {
+    await trx("trs_file_surat_keluar")
+      .where("id_surat_keluar", idSuratKeluar)
+      .where("status", "active")
+      .update({
+        status: "nonactive",
+        updated_at: new Date(),
+      });
+
+    await trx("trs_file_surat_keluar").insert({
+      id_surat_keluar: idSuratKeluar,
+      nama_file: signedFileName,
+      path_file: signedPath,
+      mime_type: "application/pdf",
+      ukuran_file: signedBuffer.length,
+      tanggal_upload: new Date(),
+      status: "active",
+      created_by: actorId || null,
+      updated_by: actorId || null,
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
+
+    await trx("trs_tanda_tangan_dokumen").insert({
+      id_surat_keluar: idSuratKeluar,
+      id_pengguna: actorId || null,
+      id_sertifikat_elektronik: certificate?.id_sertifikat_elektronik || null,
+      id_versi_dokumen: urutan,
+      urutan_tanda_tangan: urutan,
+      nomor_seri_sertifikat: certificate?.nomor_seri || "CERT-AUTO",
+      subjek_sertifikat: certificate?.subjek_sertifikat || "CN=Sistem SIAB",
+      penerbit_sertifikat: certificate?.penerbit_sertifikat || "Internal SIAB CA",
+      algoritma_tanda_tangan: certificate?.algoritma_tanda_tangan || "RSA-SHA256",
+      algoritma_hash: certificate?.algoritma_hash || "SHA-256",
+      hash_dokumen: hashDokumen,
+      lokasi_dokumen: signedPath,
+      token_verifikasi: tokenVerifikasi,
+      waktu_tanda_tangan: signingTime,
+      status_tanda_tangan: "aktif",
+      created_by: actorId || null,
+      created_at: signingTime,
+    });
+  });
+
+  await recordSignatureLog({
+    idSuratKeluar: idSuratKeluar,
+    idPengguna: actorId || null,
+    aksi: "tanda_tangan_otomatis_approval",
+    statusSebelum: surat.status,
+    statusSesudah: "disetujui",
+    req,
+    metadata: {
+      path_file: signedPath,
+      nama_file: signedFileName,
+      token_verifikasi: tokenVerifikasi,
+      signer: signerName,
+    },
+  });
+
+  return {
+    signedFileName,
+    signedPath,
+    tokenVerifikasi,
+    signerName,
+  };
+};
+
 export {
   assertMenuPermission,
   buildCertificatePayload,
@@ -772,6 +1212,7 @@ export {
   recordSignatureLog,
   resolveCertificateMaterial,
   sha256Hex,
+  signLetterAutomatically,
   uploadPdfBuffer,
   verifyPdfBuffer,
 };
@@ -798,7 +1239,8 @@ export class PenyediaTandaTanganInternal extends PenyediaTandaTangan {
     });
 
     const prepared = await preparePdfForSignature(parameter.pdfBuffer, parameter);
-    const signed = await signpdf.sign(prepared, signer, parameter.signingTime || new Date());
+    const signerEngine = new SignPdf();
+    const signed = await signerEngine.sign(prepared, signer, parameter.signingTime || new Date());
     return Buffer.from(signed);
   }
 

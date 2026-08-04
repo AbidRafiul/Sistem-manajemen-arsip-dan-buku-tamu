@@ -147,11 +147,11 @@ const Page = () => {
   }, [session]);
 
   return (
-    <div className="p-4">
+    <>
       <Toast ref={toast} position="top-right" />
       <Table state={state} setState={setState} formik={formik} getData={getData} handleDelete={handleDelete} />
       <Form state={state} setState={setState} formik={formik} handleDelete={handleDelete} />
-    </div>
+    </>
   );
 };
 

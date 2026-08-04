@@ -82,7 +82,7 @@ export default function MetricCards({ data, isLoading }: MetricCardsProps) {
                     style={{ transition: 'all 0.2s ease-in-out' }}
                 >
                     <Card className="shadow-1 border-round-2xl border-none h-full hover:shadow-3 hover:-translate-y-1 transition-all transition-duration-200" pt={{ body: { className: 'p-4' }, content: { className: 'p-0 m-0' } }}>
-                        <div className="flex justify-content-between align-items-start">
+                        <div className="flex justify-content-between align-align-items-center">
                             <div>
                                 <span className="block text-color-secondary font-semibold text-sm mb-2">{oMetric.label}</span>
                                 <div className="text-900 font-extrabold text-3xl mb-2" style={{ letterSpacing: '-0.02em' }}>{oMetric.value}</div>

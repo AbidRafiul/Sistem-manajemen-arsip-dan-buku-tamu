@@ -67,12 +67,60 @@ const getFileBuffer = async (relativeFilePath) => {
 /**
  * Extract text from PDF Buffer using pdf-parse
  */
+export const extractPdfRawStrings = (fileBuffer) => {
+  try {
+    const str = fileBuffer.toString("binary");
+    const matches = [];
+
+    const regTj = /\(([^()]{2,200})\)\s*Tj/g;
+    let m;
+    while ((m = regTj.exec(str)) !== null) {
+      matches.push(m[1]);
+    }
+
+    const regTJ = /\[([^\[\]]{2,500})\]\s*TJ/g;
+    while ((m = regTJ.exec(str)) !== null) {
+      const innerStr = m[1].replace(/\(([^()]+)\)/g, "$1 ");
+      matches.push(innerStr);
+    }
+
+    return matches.join(" ").replace(/\\([()])/g, "$1").replace(/\s+/g, " ").trim();
+  } catch (err) {
+    return "";
+  }
+};
+
 export const extractTextFromPDF = async (fileBuffer) => {
-  const parser = new PDFParse({ data: fileBuffer });
-  const data = await parser.getText();
+  let text = "";
+  let numPages = 1;
+
+  try {
+    const uint8Data = new Uint8Array(
+      fileBuffer.buffer,
+      fileBuffer.byteOffset,
+      fileBuffer.byteLength
+    );
+    const parser = new PDFParse({ data: uint8Data });
+    const data = await parser.getText();
+    if (data && data.text) {
+      text = String(data.text).trim();
+      text = text.replace(/--\s*\d+\s*of\s*\d+\s*--/gi, "").trim();
+    }
+    if (data && data.total) numPages = data.total;
+  } catch (err) {
+    console.warn("[PDFParse Warning]:", err.message);
+  }
+
+  if (text.replace(/\s+/g, "").length < 15) {
+    const rawText = extractPdfRawStrings(fileBuffer);
+    if (rawText.length > text.length) {
+      text = rawText;
+    }
+  }
+
   return {
-    text: data && data.text ? String(data.text).trim() : "",
-    numPages: (data && data.total) || 1,
+    text: text ? text.trim() : "",
+    numPages: numPages || 1,
   };
 };
 
@@ -162,21 +210,7 @@ export const processDocumentContent = async (
       const pdfRes = await extractTextFromPDF(fileBuffer);
       extractedText = pdfRes.text;
       numPages = pdfRes.numPages;
-
-      // If PDF text is very minimal (less than 30 chars), it's likely a scanned image PDF
-      if (extractedText.replace(/\s+/g, "").length < 30) {
-        sumber = "ocr_pdf";
-        try {
-          const imgRes = await ocrFromImage(fileBuffer, lang);
-          if (imgRes.text.length > extractedText.length) {
-            extractedText = imgRes.text;
-          }
-        } catch (ocrErr) {
-          console.warn("[OCR PDF Fallback Warning]:", ocrErr.message);
-        }
-      } else {
-        sumber = "pdf_parse";
-      }
+      sumber = "pdf_parse";
     } else if ([".png", ".jpg", ".jpeg", ".bmp", ".webp", ".tiff"].includes(ext)) {
       sumber = "ocr_gambar";
       const imgRes = await ocrFromImage(fileBuffer, lang);

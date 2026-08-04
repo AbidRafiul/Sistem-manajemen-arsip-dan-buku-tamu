@@ -23,7 +23,9 @@ const isBypassed = (url) => {
     lower.includes("/buku_tamu/visit_data/branches") ||
     lower.includes("/visit_checkin") ||
     lower.includes("/visit_booking") ||
-    lower.includes("/visit_data/users")
+    lower.includes("/visit_data/users") ||
+    lower.includes("/outgoing-file-download") ||
+    lower.includes("/incoming-file-download")
   );
 };
 
@@ -300,7 +302,11 @@ export const validateAccessToken = async (req, res, next) => {
     return next();
   }
 
-  const cHeader = req.headers["authorization"];
+  let cHeader = req.headers["authorization"];
+  if (!cHeader && req.query?.token) {
+    cHeader = "Bearer " + req.query.token;
+    req.headers["authorization"] = cHeader;
+  }
   const cToken = cHeader && cHeader.split(" ")[1];
 
   if (

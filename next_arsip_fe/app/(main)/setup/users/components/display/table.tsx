@@ -118,14 +118,14 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
     return (
         <>
             <div className="card">
-                <div className="flex justify-content-between items-start mb-4">
+                <div className="flex justify-content-between align-items-center mb-3">
                     <div>
-                        <h3 className="text-2xl font-semibold">Manajemen Pengguna</h3>
+                        <h2 className="m-0 text-900 font-bold text-2xl mb-1">Manajemen Pengguna</h2>
                     </div>
                 </div>
 
-                <div className="flex flex-row flex-wrap items-center justify-content-between gap-2 mb-4">
-                    <div className="flex flex-row flex-wrap items-center gap-2">
+                <div className="flex flex-row flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <div className="flex flex-row flex-wrap align-items-center gap-2">
                         <Button
                             size="small"
                             label="Baru"
@@ -184,7 +184,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                         <Button size="small" label="Muat Ulang" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
                     </div>
 
-                    <div className="flex flex-row flex-wrap items-center gap-2">
+                    <div className="flex flex-row flex-wrap align-items-center gap-2">
                         <ExcelBulkAction
                             title="Data Pengguna"
                             data={state.data}

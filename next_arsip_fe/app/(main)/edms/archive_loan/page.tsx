@@ -182,8 +182,7 @@ const Page = () => {
     }, [state.submittedData]);
 
     return <>
-        <div className="p-4">
-            <Toast ref={toast} position="top-right" />
+        <Toast ref={toast} position="top-right" />
             <Table
                 getLoans={getLoans}
                 handleApproveReject={handleApproveReject}
@@ -193,7 +192,6 @@ const Page = () => {
                 formik={formik}
                 toast={toast}
             />
-        </div>
     </>
 }
 
