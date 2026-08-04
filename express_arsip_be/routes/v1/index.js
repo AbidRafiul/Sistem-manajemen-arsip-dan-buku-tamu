@@ -1,10 +1,15 @@
 import express from "express";
+// Auth
 import AccessToken from "./auth/token_get.js";
 import Login from "./auth/login.js";
+import ResetPassword from "./auth/reset_password.js";
+import ProfileGet from "./auth/profile_get.js";
+import ProfileUpdate from "./auth/profile_update.js";
+
+// Modul-Modul Aplikasi
 import Setup from "./setup/index.js";
 import Function from "./components/index.js";
 import MasterData from "./master/index.js";
-import ResetPassword from "./auth/reset_password.js";
 import ArsipDokumen from "./arsip_dokumen/index.js";
 import SuratMasuk from "./correspondence/index.js"
 import BukuTamu from "./buku_tamu/index.js"
@@ -24,6 +29,8 @@ const router = express.Router();
 router.use("/auth/token", AccessToken);
 router.use("/auth/login", [validateAccessToken], Login);
 router.use("/auth/reset-password", [validateAccessToken], ResetPassword);
+router.use("/auth/profile", [validateAccessToken], ProfileGet);
+router.use("/auth/profile/update", [validateAccessToken], ProfileUpdate);
 
 // Modul-Modul Aplikasi
 router.use("/verifikasi-dokumen", VerifikasiDokumen);

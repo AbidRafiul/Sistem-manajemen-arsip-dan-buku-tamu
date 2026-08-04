@@ -91,16 +91,19 @@ const Page = () => {
   const handleSave = async (input: initValue) => {
     setState((p) => ({ ...p, load: true }));
     try {
-      const body = {
+      const body: any = {
         kode_template: input.kode_template,
         nama_template: input.nama_template,
         jenis_surat_id: input.jenis_surat_id || null,
         deskripsi: input.deskripsi,
         isi_template: input.isi_template,
         status: input.status,
-        created_by: session?.user?.IdPengguna || session?.user?.id || null,
         updated_by: session?.user?.IdPengguna || session?.user?.id || null,
       };
+
+      if (!input.id) {
+        body.created_by = session?.user?.IdPengguna || session?.user?.id || null;
+      }
 
       if (input.id) {
         await putData(`${apiEndpoint}/${input.id}`, body);
