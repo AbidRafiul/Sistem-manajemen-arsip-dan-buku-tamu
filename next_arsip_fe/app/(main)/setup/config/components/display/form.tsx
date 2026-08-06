@@ -105,57 +105,9 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                                         </div>
                                         {isFormFieldInvalid('msNamaPerusahaan') ? getFormErrorMessage('msNamaPerusahaan') : ''}
                                     </div>
-                                    <div className="flex flex-column gap-2 w-full">
-                                        <label htmlFor="msEmailPerusahaan">Email Perusahaan</label>
-                                        <div className="p-inputgroup">
-                                            <InputText
-                                                style={{ width: '100%' }}
-                                                id="msEmailPerusahaan"
-                                                name="msEmailPerusahaan"
-                                                value={formik.values.msEmailPerusahaan}
-                                                onChange={(e) => {
-                                                    formik.setFieldValue('msEmailPerusahaan', e.target.value);
-                                                }}
-                                                className={isFormFieldInvalid('msEmailPerusahaan') ? 'p-invalid' : ''}
-                                            />
-                                        </div>
-                                        {isFormFieldInvalid('msEmailPerusahaan') ? getFormErrorMessage('msEmailPerusahaan') : ''}
-                                    </div>
+
                                 </div>
-                                <div className="flex gap-2 w-full">
-                                    <div className="flex flex-column gap-2 w-full">
-                                        <label htmlFor="msWebsitePerusahaan">Website Perusahaan</label>
-                                        <div className="p-inputgroup">
-                                            <InputText
-                                                style={{ width: '100%' }}
-                                                id="msWebsitePerusahaan"
-                                                name="msWebsitePerusahaan"
-                                                value={formik.values.msWebsitePerusahaan}
-                                                onChange={(e) => {
-                                                    formik.setFieldValue('msWebsitePerusahaan', e.target.value);
-                                                }}
-                                                className={isFormFieldInvalid('msWebsitePerusahaan') ? 'p-invalid' : ''}
-                                            />
-                                        </div>
-                                        {isFormFieldInvalid('msWebsitePerusahaan') ? getFormErrorMessage('msWebsitePerusahaan') : ''}
-                                    </div>
-                                    <div className="flex flex-column gap-2 w-full">
-                                        <label htmlFor="msNomorIzin">Nomor Izin (SIUP / TDP)</label>
-                                        <div className="p-inputgroup">
-                                            <InputText
-                                                style={{ width: '100%' }}
-                                                id="msNomorIzin"
-                                                name="msNomorIzin"
-                                                value={formik.values.msNomorIzin}
-                                                onChange={(e) => {
-                                                    formik.setFieldValue('msNomorIzin', e.target.value);
-                                                }}
-                                                className={isFormFieldInvalid('msNomorIzin') ? 'p-invalid' : ''}
-                                            />
-                                        </div>
-                                        {isFormFieldInvalid('msNomorIzin') ? getFormErrorMessage('msNomorIzin') : ''}
-                                    </div>
-                                </div>
+
                                 <div className="flex flex-column gap-2 w-full">
                                     <label htmlFor="msAlamatPerusahaan">Alamat Perusahaan</label>
                                     <div className="p-inputgroup">

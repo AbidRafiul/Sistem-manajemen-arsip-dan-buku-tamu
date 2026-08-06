@@ -113,15 +113,13 @@ const ProfilePage = () => {
             <Toast ref={toast} />
             <div className="col-12">
                 <div className="card">
-                    <div className="flex flex-column mb-4 text-left">
-                        <span className="font-bold text-2xl text-900 mb-2">Profil Saya</span>
-                        <span className="text-color-secondary">Kelola informasi pribadi dan keamanan akun Anda.</span>
+                    <div className="flex flex-column mb-5 text-left pb-4 border-bottom-1 surface-border">
+                        <span className="font-bold text-3xl text-900 mb-2" style={{ letterSpacing: '-0.5px' }}>Profil Saya</span>
+                        <span className="text-color-secondary text-lg">Kelola informasi pribadi dan keamanan akun Anda.</span>
                     </div>
 
-                    <div className="flex justify-content-center w-full mt-4">
-                        <div className="surface-0 p-5 shadow-1 border-1 border-round w-full lg:w-8 xl:w-7" style={{ borderColor: 'var(--surface-border)' }}>
-                            <ProfileForm formik={formik} state={state} setState={setState} />
-                        </div>
+                    <div className="w-full xl:w-9 mt-4">
+                        <ProfileForm formik={formik} state={state} setState={setState} />
                     </div>
                 </div>
             </div>

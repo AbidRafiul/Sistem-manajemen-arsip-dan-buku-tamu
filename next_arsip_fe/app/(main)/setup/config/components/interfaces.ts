@@ -13,9 +13,6 @@ export interface initValue {
     msKotaPerusahaan: string;
     msTeleponPerusahaan: string;
     msNamaPimpinan: string;
-    msEmailPerusahaan: string;
-    msWebsitePerusahaan: string;
-    msNomorIzin: string;
     msLogoPerusahaan?: any;
 }
 

@@ -310,8 +310,7 @@ const generatePdfFromSurat = async (surat, { signerName = "", signerTitle = "" }
   const contentWidth = DEFAULT_PAGE_WIDTH - margin * 2;
 
   const vaData = await DB("config").whereIn("kode", [
-    "msNamaPerusahaan", "msAlamatPerusahaan", "msTeleponPerusahaan", "msLogoPerusahaan",
-    "msEmailPerusahaan", "msWebsitePerusahaan", "msNomorIzin"
+    "msNamaPerusahaan", "msAlamatPerusahaan", "msTeleponPerusahaan", "msLogoPerusahaan"
   ]).select("kode", "keterangan");
   const configMap = {};
   vaData.forEach(row => { configMap[row.kode] = row.keterangan; });
@@ -319,9 +318,6 @@ const generatePdfFromSurat = async (surat, { signerName = "", signerTitle = "" }
   const companyName = configMap["msNamaPerusahaan"] || "PT. MARSTECH GLOBAL";
   const companyAddress = configMap["msAlamatPerusahaan"] || "JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR";
   const companyPhone = configMap["msTeleponPerusahaan"] || "0351-2812555";
-  const companyEmail = configMap["msEmailPerusahaan"] || "info@marstech.co.id";
-  const companyWeb = configMap["msWebsitePerusahaan"] || "www.marstech.co.id";
-  const companySiup = configMap["msNomorIzin"] || "SIUP : 503.4/ 29 - MIKRO/ 401.106/ 2018  |  TDP : 13.13.1.47.00655";
 
   // Logo Kop Surat
   try {
@@ -357,20 +353,12 @@ const generatePdfFromSurat = async (surat, { signerName = "", signerTitle = "" }
     color: rgb(0.2, 0.2, 0.2),
   });
 
-  page.drawText(`Telp. ${companyPhone}  |  E-mail: ${companyEmail}  |  Web: ${companyWeb}`, {
+  page.drawText(`Telp. ${companyPhone}`, {
     x: headerX,
     y: DEFAULT_PAGE_HEIGHT - 63,
     size: 7.5,
     font: fontRegular,
     color: rgb(0.2, 0.2, 0.2),
-  });
-
-  page.drawText(companySiup, {
-    x: headerX,
-    y: DEFAULT_PAGE_HEIGHT - 74,
-    size: 7,
-    font: fontItalic,
-    color: rgb(0.4, 0.4, 0.4),
   });
 
   // Double Line Separator Kop Surat

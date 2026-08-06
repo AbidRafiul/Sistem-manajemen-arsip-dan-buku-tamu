@@ -213,8 +213,7 @@ const buildPdfPreviewUrl = async (values: initValue) => {
     try {
         const res = await postData("/setup/config-data", {
             kode: [
-                "msNamaPerusahaan", "msAlamatPerusahaan", "msTeleponPerusahaan",
-                "msEmailPerusahaan", "msWebsitePerusahaan", "msNomorIzin", "msLogoPerusahaan"
+                "msNamaPerusahaan", "msAlamatPerusahaan", "msTeleponPerusahaan", "msLogoPerusahaan"
             ]
         });
         config = res.data?.data || {};
@@ -224,8 +223,7 @@ const buildPdfPreviewUrl = async (values: initValue) => {
 
     const cName = config.msNamaPerusahaan || "PT. MARSTECH GLOBAL";
     const cAddress = config.msAlamatPerusahaan || "JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR";
-    const cContact = `Telp. ${config.msTeleponPerusahaan || "0351-2812555"} E-mail. ${config.msEmailPerusahaan || "info@marstech.co.id"} web. ${config.msWebsitePerusahaan || "www.marstech.co.id"}`;
-    const cLicense = config.msNomorIzin || "SIUP : 503.4/ 29 - MIKRO/ 401.106/ 2018 TDP : 13.13.1.47.00655";
+    const cContact = `Telp. ${config.msTeleponPerusahaan || "0351-2812555"}`;
     const cLogoUrl = config.msLogoPerusahaan 
         ? `${process.env.NEXT_PUBLIC_API_DIR_PATH?.replace('/api', '') || ''}/uploads/config/logo_perusahaan/${config.msLogoPerusahaan}` 
         : COMPANY_LOGO_URL;
@@ -248,10 +246,9 @@ const buildPdfPreviewUrl = async (values: initValue) => {
     doc.setFontSize(16);
     doc.text(cName, pageWidth / 2 + 8, 15, { align: "center" });
     doc.setFontSize(10);
-    doc.text(cAddress, pageWidth / 2 + 8, 21, { align: "center" });
+    doc.text(cAddress, pageWidth / 2 + 8, 22, { align: "center" });
     doc.setFontSize(9);
-    doc.text(cContact, pageWidth / 2 + 8, 26, { align: "center" });
-    doc.text(cLicense, pageWidth / 2 + 8, 31, { align: "center" });
+    doc.text(cContact, pageWidth / 2 + 8, 28, { align: "center" });
     doc.setLineWidth(0.8);
     doc.line(18, 36, 190, 36);
 

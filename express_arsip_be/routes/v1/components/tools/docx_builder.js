@@ -137,8 +137,7 @@ const makeHeaderXml = (hasLogo, cfg) => `
         <w:tcPr><w:tcW w:w="7600" w:type="dxa" /></w:tcPr>
         ${makeParagraphXml(cfg.COMPANY_NAME, { align: "center", bold: true, size: 32, spacingAfter: 20 })}
         ${makeParagraphXml(cfg.COMPANY_ADDRESS, { align: "center", bold: true, size: 20, spacingAfter: 10 })}
-        ${makeParagraphXml(cfg.COMPANY_CONTACT, { align: "center", bold: true, size: 18, spacingAfter: 10 })}
-        ${makeParagraphXml(cfg.COMPANY_LICENSE, { align: "center", bold: true, size: 18, spacingAfter: 0 })}
+        ${makeParagraphXml(cfg.COMPANY_CONTACT, { align: "center", bold: true, size: 18, spacingAfter: 0 })}
       </w:tc>
     </w:tr>
   </w:tbl>
@@ -198,21 +197,15 @@ const makeSignatureXml = (letter, hasLogo, cfg) => {
 
 export const buildDocxBufferFromText = async (title, body, letter = {}) => {
   const vaData = await DB("config").whereIn("kode", [
-    "msNamaPerusahaan", "msAlamatPerusahaan", "msTeleponPerusahaan", "msNamaPimpinan", "msLogoPerusahaan",
-    "msEmailPerusahaan", "msWebsitePerusahaan", "msNomorIzin"
+    "msNamaPerusahaan", "msAlamatPerusahaan", "msTeleponPerusahaan", "msNamaPimpinan", "msLogoPerusahaan"
   ]).select("kode", "keterangan");
   const configMap = {};
   vaData.forEach(row => { configMap[row.kode] = row.keterangan; });
 
-  const email = configMap["msEmailPerusahaan"] || "info@marstech.co.id";
-  const web = configMap["msWebsitePerusahaan"] || "www.marstech.co.id";
-  const siup = configMap["msNomorIzin"] || "SIUP : 503.4/ 29 - MIKRO/ 401.106/ 2018 TDP : 13.13.1.47.00655";
-
   const cfg = {
     COMPANY_NAME: configMap["msNamaPerusahaan"] || "PT. MARSTECH GLOBAL",
     COMPANY_ADDRESS: configMap["msAlamatPerusahaan"] || "JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR",
-    COMPANY_CONTACT: `Telp. ${configMap["msTeleponPerusahaan"] || "0351-2812555"} E-mail. ${email} web. ${web}`,
-    COMPANY_LICENSE: siup,
+    COMPANY_CONTACT: `Telp. ${configMap["msTeleponPerusahaan"] || "0351-2812555"}`,
     SIGNER_NAME: configMap["msNamaPimpinan"] || "BOSTANUL ASY'ARI",
     SIGNER_TITLE: "DIREKTUR",
   };
