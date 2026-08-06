@@ -2,20 +2,13 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import PizZip from "pizzip";
+import DB from "../../../../core/config/knex.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const LOGO_PATH = path.resolve(__dirname, "../../../../assets/marstech-logo.png");
 
-const COMPANY_NAME = "PT. MARSTECH GLOBAL";
-const COMPANY_ADDRESS =
-  "JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR";
-const COMPANY_CONTACT =
-  "Telp. 0351-2812555 E-mail. info@marstech.co.id web. www.marstech.co.id";
-const COMPANY_LICENSE =
-  "SIUP : 503.4/ 29 - MIKRO/ 401.106/ 2018 TDP : 13.13.1.47.00655";
-const SIGNER_NAME = "BOSTANUL ASY'ARI";
-const SIGNER_TITLE = "DIREKTUR";
+// Konfigurasi dinamis akan diambil melalui tabel config
 
 const escapeXml = (value) =>
   String(value || "")
@@ -125,7 +118,7 @@ const makeImageXml = (relationshipId, widthEmu = 914400, heightEmu = 762000) => 
   </w:p>
 `;
 
-const makeHeaderXml = (hasLogo) => `
+const makeHeaderXml = (hasLogo, cfg) => `
   <w:tbl>
     <w:tblPr>
       <w:tblW w:w="0" w:type="auto" />
@@ -142,10 +135,9 @@ const makeHeaderXml = (hasLogo) => `
       </w:tc>
       <w:tc>
         <w:tcPr><w:tcW w:w="7600" w:type="dxa" /></w:tcPr>
-        ${makeParagraphXml(COMPANY_NAME, { align: "center", bold: true, size: 32, spacingAfter: 20 })}
-        ${makeParagraphXml(COMPANY_ADDRESS, { align: "center", bold: true, size: 20, spacingAfter: 10 })}
-        ${makeParagraphXml(COMPANY_CONTACT, { align: "center", bold: true, size: 18, spacingAfter: 10 })}
-        ${makeParagraphXml(COMPANY_LICENSE, { align: "center", bold: true, size: 18, spacingAfter: 0 })}
+        ${makeParagraphXml(cfg.COMPANY_NAME, { align: "center", bold: true, size: 32, spacingAfter: 20 })}
+        ${makeParagraphXml(cfg.COMPANY_ADDRESS, { align: "center", bold: true, size: 20, spacingAfter: 10 })}
+        ${makeParagraphXml(cfg.COMPANY_CONTACT, { align: "center", bold: true, size: 18, spacingAfter: 0 })}
       </w:tc>
     </w:tr>
   </w:tbl>
@@ -174,9 +166,9 @@ const makeBodyXml = (body) =>
     )
     .join("");
 
-const makeSignatureXml = (letter, hasLogo) => {
-  const signerName = letter?.nama_pengirim || SIGNER_NAME;
-  const signerTitle = letter?.jabatan || SIGNER_TITLE;
+const makeSignatureXml = (letter, hasLogo, cfg) => {
+  const signerName = letter?.nama_pengirim || cfg.SIGNER_NAME;
+  const signerTitle = letter?.jabatan || cfg.SIGNER_TITLE;
 
   return `
   <w:tbl>
@@ -194,7 +186,7 @@ const makeSignatureXml = (letter, hasLogo) => {
         <w:tcPr><w:tcW w:w="3600" w:type="dxa" /></w:tcPr>
         ${makeParagraphXml(`Madiun, ${formatDateId(letter.tanggal_surat)}`, { align: "center", size: 24, spacingAfter: 220 })}
         ${hasLogo ? makeImageXml("rIdLogo", 780000, 650000) : makeParagraphXml("", { spacingAfter: 500 })}
-        ${makeParagraphXml(COMPANY_NAME, { align: "center", bold: true, italic: true, size: 16, spacingAfter: 260 })}
+        ${makeParagraphXml(cfg.COMPANY_NAME, { align: "center", bold: true, italic: true, size: 16, spacingAfter: 260 })}
         ${makeParagraphXml(signerName, { align: "center", bold: true, size: 20, spacingAfter: 20 })}
         ${makeParagraphXml(signerTitle, { align: "center", bold: true, size: 20, spacingAfter: 0 })}
       </w:tc>
@@ -203,9 +195,34 @@ const makeSignatureXml = (letter, hasLogo) => {
 `;
 };
 
-export const buildDocxBufferFromText = (title, body, letter = {}) => {
+export const buildDocxBufferFromText = async (title, body, letter = {}) => {
+  const vaData = await DB("config").whereIn("kode", [
+    "msNamaPerusahaan", "msAlamatPerusahaan", "msTeleponPerusahaan", "msNamaPimpinan", "msLogoPerusahaan"
+  ]).select("kode", "keterangan");
+  const configMap = {};
+  vaData.forEach(row => { configMap[row.kode] = row.keterangan; });
+
+  const cfg = {
+    COMPANY_NAME: configMap["msNamaPerusahaan"] || "PT. MARSTECH GLOBAL",
+    COMPANY_ADDRESS: configMap["msAlamatPerusahaan"] || "JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR",
+    COMPANY_CONTACT: `Telp. ${configMap["msTeleponPerusahaan"] || "0351-2812555"}`,
+    SIGNER_NAME: configMap["msNamaPimpinan"] || "BOSTANUL ASY'ARI",
+    SIGNER_TITLE: "DIREKTUR",
+  };
+
   const zip = new PizZip();
-  const logoBuffer = fs.existsSync(LOGO_PATH) ? fs.readFileSync(LOGO_PATH) : null;
+  let logoBuffer = null;
+  const dbLogoName = configMap["msLogoPerusahaan"];
+  if (dbLogoName) {
+      const dbLogoPath = path.resolve(process.cwd(), "public/uploads/config/logo_perusahaan", dbLogoName);
+      if (fs.existsSync(dbLogoPath)) {
+          logoBuffer = fs.readFileSync(dbLogoPath);
+      }
+  }
+  if (!logoBuffer && fs.existsSync(LOGO_PATH)) {
+      logoBuffer = fs.readFileSync(LOGO_PATH);
+  }
+
   const bodyOnly = buildBodyOnly(body);
 
   zip.file(
@@ -287,7 +304,7 @@ export const buildDocxBufferFromText = (title, body, letter = {}) => {
   xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
   mc:Ignorable="w14 wp14">
   <w:body>
-    ${makeHeaderXml(Boolean(logoBuffer))}
+    ${makeHeaderXml(Boolean(logoBuffer), cfg)}
     ${makeInfoRowXml("Nomor", letter.nomor_surat)}
     ${makeInfoRowXml("Perihal", letter.perihal)}
     ${makeInfoRowXml("Lamp", "-")}
@@ -298,8 +315,8 @@ export const buildDocxBufferFromText = (title, body, letter = {}) => {
     ${makeParagraphXml("di Tempat", { bold: true, size: 24, spacingAfter: 220 })}
     ${makeBodyXml(bodyOnly)}
     ${makeParagraphXml("", { spacingAfter: 260 })}
-    ${makeSignatureXml(letter, Boolean(logoBuffer))}
-    ${makeParagraphXml(`${COMPANY_NAME} - ${letter.perihal || "Surat Keluar"}`, { bold: true, italic: true, size: 16, spacingAfter: 0 })}
+    ${makeSignatureXml(letter, Boolean(logoBuffer), cfg)}
+    ${makeParagraphXml(`${cfg.COMPANY_NAME} - ${letter.perihal || "Surat Keluar"}`, { bold: true, italic: true, size: 16, spacingAfter: 0 })}
     <w:sectPr>
       <w:pgSz w:w="11906" w:h="16838"/>
       <w:pgMar w:top="720" w:right="1260" w:bottom="720" w:left="1620" w:header="708" w:footer="708" w:gutter="0"/>

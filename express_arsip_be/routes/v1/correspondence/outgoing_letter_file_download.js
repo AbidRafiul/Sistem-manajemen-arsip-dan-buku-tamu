@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import DB from "../../../core/config/knex.js";
+import { status, datetime } from "../components/tools/general.js";
 import { downloadFileFromMinio } from "../../../core/components/tools/minio_helper.js";
 
 const router = express.Router();
@@ -57,8 +58,9 @@ const outgoingLetterFileDownload = async (req, res) => {
 
     if (!oFile) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "File surat keluar tidak ditemukan",
+        datetime: datetime(),
       });
     }
 
@@ -95,8 +97,9 @@ const outgoingLetterFileDownload = async (req, res) => {
 
     if (!bIsLocalUploadPath || !fs.existsSync(cAbsolutePath)) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "File tidak ditemukan di MinIO maupun di server lokal",
+        datetime: datetime(),
       });
     }
 
@@ -107,8 +110,9 @@ const outgoingLetterFileDownload = async (req, res) => {
     console.error("[Outgoing File Download Error]:", error);
 
     return res.status(500).json({
-      status: false,
-      message: "File surat keluar gagal dibuka",
+      status: status.BAD_REQUEST,
+        message: "File surat keluar gagal dibuka",
+        datetime: datetime(),
       error: error.message,
     });
   }

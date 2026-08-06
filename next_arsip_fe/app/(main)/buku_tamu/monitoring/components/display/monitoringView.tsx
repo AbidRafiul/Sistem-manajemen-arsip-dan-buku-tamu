@@ -60,6 +60,7 @@ export default function MonitoringView({
                 }
             `}</style>
 
+
             {/* Header Section */}
             <div className="flex flex-column md:flex-row md:align-items-center justify-content-between gap-3">
                 <div>

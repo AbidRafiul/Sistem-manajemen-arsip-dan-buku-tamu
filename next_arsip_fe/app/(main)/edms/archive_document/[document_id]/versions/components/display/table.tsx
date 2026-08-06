@@ -11,10 +11,8 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Tag } from "primereact/tag";
 import { Toast } from "primereact/toast";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
-import getData from "@/lib/axios/getData";
 import { showError } from "@/lib/tools/generalTools";
 import { DetailData, VersionData } from "../../../../components/interfaces";
-import { apiEndpointContentGet } from "../../../../components/endpoints";
 
 interface TableProps {
     load: boolean;
@@ -40,6 +38,7 @@ interface TableProps {
     submitRejection: () => Promise<void>;
     fetchDocumentDetail: () => Promise<void>;
     handleFetchPreviewUrl: (fileName: string) => Promise<void>;
+    fetchOcrText: (version: VersionData) => Promise<string>;
     previewUrl: string;
     isPreviewVisible: boolean;
     setIsPreviewVisible: (visible: boolean) => void;
@@ -72,6 +71,7 @@ const Table: React.FC<TableProps> = ({
     submitRejection,
     fetchDocumentDetail,
     handleFetchPreviewUrl,
+    fetchOcrText,
     previewUrl,
     isPreviewVisible,
     setIsPreviewVisible,
@@ -98,16 +98,9 @@ const Table: React.FC<TableProps> = ({
         setOcrLoad(true);
         setSelectedOcrVersion(version.nomor_versi);
         try {
-            const res = await getData(apiEndpointContentGet, {
-                kode_dokumen: detailData.document.kode_dokumen,
-                id_versi: version.id_versi
-            });
-            if (res.data?.status === 'success') {
-                setOcrText(res.data.data?.konten_teks || 'Teks belum diekstrak atau dokumen kosong.');
-                setIsOcrDialogVisible(true);
-            } else {
-                showError(toast, res.data?.message || 'Gagal mengambil hasil OCR');
-            }
+            const text = await fetchOcrText(version);
+            setOcrText(text || 'Teks belum diekstrak atau dokumen kosong.');
+            setIsOcrDialogVisible(true);
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || 'Hasil OCR / ekstraksi teks belum tersedia');

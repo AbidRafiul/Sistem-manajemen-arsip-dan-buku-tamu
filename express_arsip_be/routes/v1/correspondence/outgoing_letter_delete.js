@@ -1,6 +1,7 @@
 import express from "express";
 import Joi from "joi";
 import DB from "../../../core/config/knex.js";
+import { status, datetime } from "../components/tools/general.js";
 import {
   Logging,
   validatePayload,
@@ -34,7 +35,7 @@ const outgoingLetterDelete = async (req, res) => {
 
     if (cValidate) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidate,
       });
     }
@@ -46,7 +47,7 @@ const outgoingLetterDelete = async (req, res) => {
 
       if (!oUser) {
         return res.status(400).json({
-          status: false,
+          status: status.BAD_REQUEST,
           message: "User pengubah tidak ditemukan",
         });
       }
@@ -59,7 +60,7 @@ const outgoingLetterDelete = async (req, res) => {
 
     if (!oLetter) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Surat keluar tidak ditemukan",
       });
     }
@@ -88,12 +89,12 @@ const outgoingLetterDelete = async (req, res) => {
     });
 
     return res.status(200).json({
-      status: true,
+      status: status.SUKSES,
       message: "Surat keluar berhasil dihapus",
     });
   } catch (error) {
     const oResult = {
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Surat keluar gagal dihapus",
     };
 
@@ -101,7 +102,7 @@ const outgoingLetterDelete = async (req, res) => {
       file: cFile,
       func: cFunc,
       request: JSON.stringify(oPayload),
-      response: oResult.message,
+      response: oResult,
       user: req?.auth?.nama_pengguna || "",
     });
 

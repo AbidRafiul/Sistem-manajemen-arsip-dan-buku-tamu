@@ -34,7 +34,7 @@ const createRetentionSchedule = async (req, res) => {
         tahun_retensi: Joi.number().required().label("Tahun Retensi"),
         tindakan_retensi: Joi.string().max(255).required().label("Tindakan Retensi"),
         deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
-
+        status: Joi.string().optional().allow(null, "").label("Status"),
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
@@ -43,6 +43,7 @@ const createRetentionSchedule = async (req, res) => {
         "number.base": "{#label} harus berupa angka",
       },
       oPayload,
+      { allowUnknown: true }
     );
 
     if (cValidation) {
@@ -84,9 +85,8 @@ const createRetentionSchedule = async (req, res) => {
       nama_retensi: oPayload.nama_retensi,
       tahun_retensi: oPayload.tahun_retensi,
       tindakan_retensi: oPayload.tindakan_retensi,
-
       deskripsi: oPayload.deskripsi || null,
-      status: "active",
+      status: oPayload.status || "active",
       created_at: dNow,
       updated_at: dNow,
     });

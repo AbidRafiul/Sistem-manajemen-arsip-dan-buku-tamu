@@ -5,7 +5,7 @@ import { Logging, getDescendantBranchIds } from "../../../components/tools/serve
 
 const router = express.Router();
 
-router.post("/get_data", async (req, res) => {
+router.post("/get-data", async (req, res) => {
   const oPayload = req.body;
   const cnama_pengguna = req?.auth?.nama_pengguna || "";
 
@@ -24,22 +24,22 @@ router.post("/get_data", async (req, res) => {
 
 
     if (req.headers["x-filter-cabang"]) {
-      const parentBranchIds = req.headers["x-filter-cabang"].split(",").map(Number);
-      let allBranchIds = [];
+      const vaParentBranchIds = req.headers["x-filter-cabang"].split(",").map(Number);
+      let vaAllBranchIds = [];
       if (req.headers["x-exact-cabang"] === 'true') {
-        allBranchIds = parentBranchIds;
+        vaAllBranchIds = vaParentBranchIds;
       } else {
-        for (const bId of parentBranchIds) {
-          if (!isNaN(bId)) {
-            const descendantIds = await getDescendantBranchIds(DB, bId);
-            allBranchIds.push(...descendantIds);
+        for (const nBranchId of vaParentBranchIds) {
+          if (!isNaN(nBranchId)) {
+            const descendantIds = await getDescendantBranchIds(DB, nBranchId);
+            vaAllBranchIds.push(...descendantIds);
           }
         }
       }
-      if (allBranchIds.length > 0) {
+      if (vaAllBranchIds.length > 0) {
         query = query
           .join("mst_departemen", "mst_divisi.id_departemen", "mst_departemen.id_departemen")
-          .whereIn("mst_departemen.id_cabang", allBranchIds);
+          .whereIn("mst_departemen.id_cabang", vaAllBranchIds);
       }
     }
     if (req.headers["x-filter-departemen"]) {

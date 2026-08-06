@@ -3,6 +3,7 @@ import multer from "multer";
 import PizZip from "pizzip";
 import { extractTextFromPDF, ocrFromImage } from "../../../core/components/ocr_service.js";
 import { Logging } from "../components/tools/servertool.js";
+import { status, datetime } from "../components/tools/general.js";
 
 const router = express.Router();
 const upload = multer({
@@ -183,7 +184,7 @@ const extractOcrMetadataHandler = async (req, res) => {
 
     if (!oFile) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "File berkas surat eksternal wajib diupload",
       });
     }
@@ -242,7 +243,7 @@ const extractOcrMetadataHandler = async (req, res) => {
       extractedText = parseDocxText(oFile.buffer);
     } else {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Format file tidak didukung. Harap upload file PDF atau Word (.docx)",
       });
     }
@@ -250,7 +251,7 @@ const extractOcrMetadataHandler = async (req, res) => {
     const metadata = extractMetadataFromText(extractedText);
 
     return res.status(200).json({
-      status: true,
+      status: status.SUKSES,
       message: "Berhasil meng-ekstrak metadata dari file eksternal",
       data: {
         ...metadata,
@@ -262,7 +263,7 @@ const extractOcrMetadataHandler = async (req, res) => {
   } catch (error) {
     await Logging(error, { file: cFile, func: cFunc });
     return res.status(500).json({
-      status: false,
+      status: status.BAD_REQUEST,
       message: error.message || "Gagal meng-ekstrak metadata dari file eksternal",
     });
   }

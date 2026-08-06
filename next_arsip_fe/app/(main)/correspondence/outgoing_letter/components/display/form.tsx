@@ -1,13 +1,9 @@
 'use client'
 
-import getDataRequest from "@/lib/axios/getData";
-import formUpload from "@/lib/axios/formData";
-import postData from "@/lib/axios/postData";
-import putData from "@/lib/axios/putData";
 import { showError, showSuccess } from "@/lib/tools/generalTools";
-import axios from "axios";
 import jsPDF from "jspdf";
 import dynamic from "next/dynamic";
+import postData from "@/lib/axios/postData";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import { Dialog } from "primereact/dialog";
@@ -17,17 +13,7 @@ import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { SelectButton } from "primereact/selectbutton";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
-import {
-    apiEndpointCreate,
-    apiEndpointDocumentDownload,
-    apiEndpointExtractOcr,
-    apiEndpointGet,
-    apiEndpointLetterTypeManagement,
-    apiEndpointNumberingPreview,
-    apiEndpointTemplateSurat,
-    apiEndpointUpdate,
-    apiEndpointUpload,
-} from "../endpoints";
+import { apiEndpointGet } from "../endpoints";
 import { FormProps, initValue } from "../interfaces";
 import { mapOutgoingLetterPayload } from "../mappers";
 
@@ -74,10 +60,6 @@ interface TemplateOption {
 
 const INTERCEPTOR_BASE_URL = process.env.NEXT_PUBLIC_API_DIR_PATH || "/api/interceptor";
 const COMPANY_LOGO_URL = "/marstech-logo.png";
-const COMPANY_NAME = "PT. MARSTECH GLOBAL";
-const COMPANY_ADDRESS = "JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR";
-const COMPANY_CONTACT = "Telp. 0351-2812555 E-mail. info@marstech.co.id web. www.marstech.co.id";
-const COMPANY_LICENSE = "SIUP : 503.4/ 29 - MIKRO/ 401.106/ 2018 TDP : 13.13.1.47.00655";
 const SIGNER_NAME = "BOSTANUL ASY'ARI";
 const SIGNER_TITLE = "DIREKTUR";
 const PDF_MIME_TYPE = "application/pdf";
@@ -132,15 +114,28 @@ const formatFileSize = (size?: number | null) => {
 };
 
 const loadImageAsDataUrl = async (url: string) => {
-    const response = await fetch(url);
-    const blob = await response.blob();
-
-    return await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result || ""));
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
+    if (!url) return "";
+    if (url.startsWith("data:image/")) return url;
+    
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Gagal mengambil gambar");
+        
+        const contentType = response.headers.get("content-type");
+        if (contentType && !contentType.startsWith("image/")) {
+            throw new Error("Bukan format gambar");
+        }
+        
+        const blob = await response.blob();
+        return await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ""));
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    } catch (error) {
+        throw error;
+    }
 };
 
 const getFilterHeaders = () => {
@@ -226,28 +221,49 @@ const buildFinalLetterText = (values: initValue) => [
 ].filter((line, index, lines) => line || lines[index - 1] !== "").join("\n");
 
 const buildPdfPreviewUrl = async (values: initValue) => {
+    // Fetch config
+    let config: any = {};
+    try {
+        const res = await postData("/setup/config-data", {
+            kode: [
+                "msNamaPerusahaan", "msAlamatPerusahaan", "msTeleponPerusahaan", "msLogoPerusahaan"
+            ]
+        });
+        config = res.data?.data || {};
+    } catch (error) {
+        console.error("Gagal mengambil konfigurasi:", error);
+    }
+
+    const cName = config.msNamaPerusahaan || "PT. MARSTECH GLOBAL";
+    const cAddress = config.msAlamatPerusahaan || "JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR";
+    const cContact = `Telp. ${config.msTeleponPerusahaan || "0351-2812555"}`;
+    const cLogoUrl = config.msLogoPerusahaan 
+        ? `${process.env.NEXT_PUBLIC_API_DIR_PATH?.replace('/api', '') || ''}/uploads/config/logo_perusahaan/${config.msLogoPerusahaan}` 
+        : COMPANY_LOGO_URL;
+
     const doc = new jsPDF({
         orientation: "p",
         unit: "mm",
         format: "a4",
         putOnlyUsedFonts: true,
     });
-    const logoDataUrl = await loadImageAsDataUrl(COMPANY_LOGO_URL);
+    const logoDataUrl = await loadImageAsDataUrl(cLogoUrl).catch(() => null) || await loadImageAsDataUrl(COMPANY_LOGO_URL).catch(() => null);
     const pageWidth = 210;
     const marginX = 32;
     const maxWidth = 156;
     const lineHeight = 6;
     let cursorY = 43;
 
-    doc.addImage(logoDataUrl, "PNG", 24, 9, 28, 24);
+    if (logoDataUrl) {
+        doc.addImage(logoDataUrl, "PNG", 24, 9, 28, 24);
+    }
     doc.setFont("times", "bold");
     doc.setFontSize(16);
-    doc.text(COMPANY_NAME, pageWidth / 2 + 8, 15, { align: "center" });
+    doc.text(cName, pageWidth / 2 + 8, 15, { align: "center" });
     doc.setFontSize(10);
-    doc.text(COMPANY_ADDRESS, pageWidth / 2 + 8, 21, { align: "center" });
+    doc.text(cAddress, pageWidth / 2 + 8, 22, { align: "center" });
     doc.setFontSize(9);
-    doc.text(COMPANY_CONTACT, pageWidth / 2 + 8, 26, { align: "center" });
-    doc.text(COMPANY_LICENSE, pageWidth / 2 + 8, 31, { align: "center" });
+    doc.text(cContact, pageWidth / 2 + 8, 28, { align: "center" });
     doc.setLineWidth(0.8);
     doc.line(18, 36, 190, 36);
 
@@ -304,10 +320,12 @@ const buildPdfPreviewUrl = async (values: initValue) => {
     doc.setFont("times", "normal");
     doc.setFontSize(11);
     doc.text(`Madiun, ${formatDateId(values.tanggal_surat) || "-"}`, 142, signatureY);
-    doc.addImage(logoDataUrl, "PNG", 145, signatureY + 9, 26, 21);
+    if (logoDataUrl) {
+        doc.addImage(logoDataUrl, "PNG", 145, signatureY + 9, 26, 21);
+    }
     doc.setFont("times", "bolditalic");
     doc.setFontSize(8);
-    doc.text(COMPANY_NAME, 158, signatureY + 13, { align: "center" });
+    doc.text(cName, 158, signatureY + 13, { align: "center" });
     doc.setFont("times", "bold");
     doc.setFontSize(9);
     doc.text(values.nama_pengirim || SIGNER_NAME, 158, signatureY + 35, { align: "center" });
@@ -315,7 +333,7 @@ const buildPdfPreviewUrl = async (values: initValue) => {
 
     doc.setFont("times", "bolditalic");
     doc.setFontSize(8);
-    doc.text(`${COMPANY_NAME} - ${values.perihal || "Surat Keluar"}`, marginX, 282);
+    doc.text(`${cName} - ${values.perihal || "Surat Keluar"}`, marginX, 282);
 
     return URL.createObjectURL(doc.output("blob"));
 };
@@ -345,7 +363,7 @@ const renderTemplateContent = (
     return (templateContent || "").replace(/{{\s*([\w_]+)\s*}}/g, (_, key) => replacements[key] || "");
 };
 
-const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
+const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploadPdf, apiDownloadDocx, apiExtractOcr, apiGetLetterTypes, apiGetTemplates, apiGetNomorPreview }: FormProps) => {
     const [letterTypeOptions, setLetterTypeOptions] = useState<LetterTypeOption[]>([]);
     const [templateOptions, setTemplateOptions] = useState<TemplateOption[]>([]);
     const [nomorPreviewLoading, setNomorPreviewLoading] = useState(false);
@@ -358,8 +376,8 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
 
     const getLetterTypeOptions = async () => {
         try {
-            const res = await getDataRequest(apiEndpointLetterTypeManagement);
-            setLetterTypeOptions(res.data?.data || []);
+            const data = await apiGetLetterTypes?.();
+            setLetterTypeOptions(data || []);
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || "Jenis surat gagal diambil");
@@ -368,8 +386,8 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
 
     const getTemplateOptions = async () => {
         try {
-            const res = await getDataRequest(apiEndpointTemplateSurat);
-            const templates = (res.data?.data || [])
+            const data = await apiGetTemplates?.();
+            const templates = (data || [])
                 .map((item: any) => ({
                     ...item,
                     id_template: item.id_template || item.id,
@@ -473,21 +491,13 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
 
         setDownloadLoading(true);
         try {
-            const endpoint = `${apiEndpointDocumentDownload}/${formik.values.id_surat_keluar}`;
-            const response = await axios.get(INTERCEPTOR_BASE_URL, {
-                responseType: "blob",
-                headers: {
-                    "X-ENDPOINT": endpoint,
-                    "x-response-type": "blob",
-                    "x-custom-header": JSON.stringify({
-                        "X-Level": "1",
-                        ...getFilterHeaders(),
-                    }),
-                },
+            const response = await apiDownloadDocx?.(formik.values.id_surat_keluar, {
+                "X-Level": "1",
+                ...getFilterHeaders(),
             });
 
-            const blob = new Blob([response.data], {
-                type: response.headers["content-type"] || "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            const blob = new Blob([response?.data], {
+                type: response?.headers?.["content-type"] || "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             });
             const url = URL.createObjectURL(blob);
             const filename =
@@ -542,12 +552,10 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
             );
             payload.nomor_surat_auto = nomorSuratAuto;
 
-            const response = isEdit
-                ? await putData(`${apiEndpointUpdate}/${input.id_surat_keluar}`, payload)
-                : await postData(apiEndpointCreate, payload);
+            const response = await apiSaveLetter?.(payload, isEdit, input.id_surat_keluar);
 
             const savedId = Number(
-                response.data?.data?.id_surat_keluar || input.id_surat_keluar || 0
+                response?.data?.data?.id_surat_keluar || input.id_surat_keluar || 0
             );
             let uploadErrorMessage = "";
 
@@ -573,7 +581,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                     toast,
                     shouldUploadPdf
                         ? "Surat keluar dan PDF berhasil disimpan"
-                        : (response.data?.message || "Surat keluar berhasil disimpan")
+                        : (response?.data?.message || "Surat keluar berhasil disimpan")
                 );
             }
             formik.resetForm();
@@ -637,11 +645,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
             const formData = new FormData();
             formData.append("file", file);
 
-            const res = await formUpload(
-                apiEndpointExtractOcr,
-                formData,
-                {}
-            );
+            const res = await apiExtractOcr?.(formData);
             const meta = res?.data?.data;
 
             if (meta) {
@@ -695,7 +699,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
         const uploadedBy = getUserId(state);
         if (uploadedBy) formData.append("uploaded_by", String(uploadedBy));
 
-        await formUpload(apiEndpointUpload, formData, {});
+        await apiUploadPdf?.(idSuratKeluar, formData);
     };
 
     useEffect(() => {
@@ -771,15 +775,13 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
             setNomorPreviewLoading(true);
 
             try {
-                const res = await postData(apiEndpointNumberingPreview, {
+                const nomorSurat = (await apiGetNomorPreview?.({
                     jenis_surat_id: formik.values.id_jenis_surat,
                     tanggal_surat: formik.values.tanggal_surat,
                     id_unit_kerja: currentUnitKerjaId,
-                });
+                })) || "";
 
                 if (cancelled) return;
-
-                const nomorSurat = res.data?.data?.nomor_surat || "";
                 if (nomorSurat && (nomorSuratAuto || !formik.values.nomor_surat)) {
                     formik.setFieldValue("nomor_surat", nomorSurat);
                     setNomorSuratAuto(true);

@@ -149,6 +149,7 @@ const HistoryPage = () => {
 
     return (
         <>
+
             <Toast ref={toast} position="top-right" />
 
             <div className="card p-5 mb-4 border-round-xl shadow-1">

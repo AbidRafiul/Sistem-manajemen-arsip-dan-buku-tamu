@@ -79,6 +79,7 @@ export interface OutgoingLetterFile {
     updated_at: string;
 }
 
+
 export interface OutgoingLetterDetailData {
     surat: Record<string, any> | null;
     files: OutgoingLetterFile[];
@@ -108,6 +109,13 @@ export interface State {
     };
     session: Session | null;
     submittedData: initValue | null;
+    config?: {
+        COMPANY_NAME: string;
+        COMPANY_ADDRESS: string;
+        COMPANY_CONTACT: string;
+        COMPANY_LICENSE: string;
+        COMPANY_LOGO: string;
+    };
 }
 
 export interface TableProps {
@@ -116,12 +124,24 @@ export interface TableProps {
     formik: FormikProps<initValue>;
     getData: (apiEndpoint: string, payload?: Record<string, any>) => Promise<void>;
     toast: RefObject<Toast>;
+    handleSave?: (input: initValue) => Promise<void>;
+    downloadDocx?: (idSuratKeluar: number, nomorSurat: string) => Promise<void>;
+    getLetterTypeOptions?: () => Promise<any[]>;
+    getTemplateOptions?: () => Promise<any[]>;
+    loadNomorPreview?: (idJenisSurat: number, tanggalSurat: string, currentUnitKerjaId: number | null) => Promise<string | null>;
+    handleFileUpload?: (file: File, idSuratKeluar: number, uploadedBy: number | null) => Promise<void>;
+    executeArchiveLetter?: (idSuratKeluar: number, pic: string, createdBy: number | null) => Promise<void>;
+    reloadDetail?: (idSuratKeluar: number) => Promise<void>;
+    handleDeleteLetter?: (letters: TableData[]) => Promise<void>;
+    
+    // New exact API handlers for Dumb Component architecture
+    apiSaveLetter?: (payload: any, isEdit: boolean, idSuratKeluar: number | null) => Promise<any>;
+    apiUploadPdf?: (idSuratKeluar: number, formData: FormData) => Promise<any>;
+    apiDownloadDocx?: (idSuratKeluar: number, headers: any) => Promise<Blob | any>;
+    apiExtractOcr?: (formData: FormData) => Promise<any>;
+    apiGetLetterTypes?: () => Promise<any[]>;
+    apiGetTemplates?: () => Promise<any[]>;
+    apiGetNomorPreview?: (payload: any) => Promise<string>;
 }
 
-export interface FormProps {
-    state: State;
-    setState: React.Dispatch<React.SetStateAction<State>>;
-    formik: FormikProps<initValue>;
-    toast: RefObject<Toast>;
-    getData: (apiEndpoint: string, payload?: Record<string, any>) => Promise<void>;
-}
+export interface FormProps extends TableProps {}

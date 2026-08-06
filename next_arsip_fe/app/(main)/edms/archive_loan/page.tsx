@@ -164,6 +164,32 @@ const Page = () => {
         }
     };
 
+    const handleScan = async (codeStr: string) => {
+        const cleanCode = codeStr.trim();
+        if (!cleanCode) return;
+
+        try {
+            const res = await getData(`/arsip-dokumen/qr/scan?qr_code=${encodeURIComponent(cleanCode)}`);
+            if (res.data?.status === 'success' && res.data?.data?.document) {
+                const doc = res.data.data.document;
+                
+                // Cek apakah dokumen sedang dipinjam
+                const isBorrowed = state.data.some(loan => loan.kode_dokumen === doc.kode_dokumen && loan.status === 'borrowed');
+                if (isBorrowed) {
+                    showError(toast, `Dokumen ${doc.nomor_dokumen} sedang dipinjam dan tidak dapat dipilih`);
+                } else {
+                    formik?.setFieldValue('kode_dokumen', doc.kode_dokumen);
+                    showSuccess(toast, `Dokumen ${doc.nomor_dokumen} terpilih`);
+                }
+            } else {
+                showError(toast, res.data?.message || 'Dokumen tidak ditemukan');
+            }
+        } catch (error: any) {
+            const msg = error.response?.data?.message || error.message || 'QR Code tidak terdaftar';
+            showError(toast, msg);
+        }
+    };
+
     useEffect(() => {
         if (session) {
             setState((prev) => ({
@@ -183,6 +209,7 @@ const Page = () => {
 
     return <>
         <Toast ref={toast} position="top-right" />
+
             <Table
                 getLoans={getLoans}
                 handleApproveReject={handleApproveReject}
@@ -191,6 +218,7 @@ const Page = () => {
                 setState={setState}
                 formik={formik}
                 toast={toast}
+                handleScan={handleScan}
             />
     </>
 }

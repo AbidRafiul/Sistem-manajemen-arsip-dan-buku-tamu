@@ -1,7 +1,8 @@
 import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
-import { applyMultiTenantFilter } from "../components/tools/filterHelper.js";
+import { applyMultiTenantFilter } from "../components/tools/filter_helper.js";
+import { status, datetime } from "../components/tools/general.js";
 
 const router = express.Router();
 
@@ -54,6 +55,8 @@ const incomingLetterData = async (req, res) => {
 
     if (oPayload.status) {
       oQuery.where("til.status", oPayload.status);
+    } else {
+      oQuery.whereNot("til.status", "dihapus");
     }
 
     if (oPayload.start_date && oPayload.end_date) {
@@ -66,7 +69,7 @@ const incomingLetterData = async (req, res) => {
     const vaData = await oQuery;
 
     return res.status(200).json({
-      status: true,
+      status: status.SUKSES,
       message: "Data surat masuk berhasil diambil",
       data: vaData,
     });
@@ -80,7 +83,7 @@ const incomingLetterData = async (req, res) => {
     });
 
     return res.status(500).json({
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Data surat masuk gagal diambil",
       error: error.message,
     });

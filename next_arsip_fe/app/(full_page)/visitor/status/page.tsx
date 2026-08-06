@@ -6,7 +6,7 @@ import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Tag } from 'primereact/tag';
 import Link from 'next/link';
-import axios from 'axios';
+import postData from '@/lib/axios/postData';
 
 interface BookingData {
     nama_tamu: string;
@@ -42,7 +42,7 @@ export default function VisitorStatusPage() {
         setLoading(true);
         setErrorMsg('');
         try {
-            const response = await axios.post("http://localhost:8000/api/v1/buku_tamu/visit_booking/status", {
+            const response = await postData("/buku-tamu/visit-booking/status", {
                 VisitCode: visitCode.trim()
             });
 
@@ -440,3 +440,4 @@ function styleOverrides() {
         `}</style>
     );
 }
+

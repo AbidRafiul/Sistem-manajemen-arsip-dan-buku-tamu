@@ -8,57 +8,37 @@ import { Dialog } from 'primereact/dialog';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Dropdown } from 'primereact/dropdown';
 import { Tag } from 'primereact/tag';
-import { apiEndpointExpiredGet, apiEndpointProposalCreate, apiEndpointDocumentCategoryGet } from './endpoints';
-import getData from '@/lib/axios/getData';
-import postData from '@/lib/axios/postData';
 import { showError, showSuccess } from '@/lib/tools/generalTools';
 
 interface ExpiredTableProps {
     toast: React.RefObject<any>;
-    onProposalCreated: () => void;
+    data: any[];
+    categories: any[];
+    loading: boolean;
+    fetchExpiredData: (category: string) => void;
+    proposeDestruction: (kode: string, alasan: string) => Promise<boolean>;
+    refreshProposals: () => void;
 }
 
-export default function ExpiredTable({ toast, onProposalCreated }: ExpiredTableProps) {
-    const [data, setData] = useState<any[]>([]);
-    const [categories, setCategories] = useState<any[]>([]);
+export default function ExpiredTable({ 
+    toast, 
+    data, 
+    categories, 
+    loading, 
+    fetchExpiredData, 
+    proposeDestruction, 
+    refreshProposals 
+}: ExpiredTableProps) {
     const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [searchVal, setSearchVal] = useState<string>('');
-    const [loading, setLoading] = useState<boolean>(false);
     const [dialogVisible, setDialogVisible] = useState<boolean>(false);
     const [selectedDoc, setSelectedDoc] = useState<any>(null);
     const [reason, setReason] = useState<string>('');
     const [submitting, setSubmitting] = useState<boolean>(false);
 
-    const getExpiredDocuments = async () => {
-        setLoading(true);
-        try {
-            let url = apiEndpointExpiredGet;
-            const params = {} as any;
-            if (selectedCategory) {
-                params.kode_kategori_dokumen = selectedCategory;
-            }
-            const res = await getData(url, params);
-            setData(res.data?.data || []);
-        } catch (error: any) {
-            showError(toast, error?.response?.data?.message || 'Gagal memuat dokumen kedaluwarsa');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const getCategories = async () => {
-        try {
-            const res = await getData(apiEndpointDocumentCategoryGet);
-            setCategories(res.data?.data || []);
-        } catch (error) {
-            console.error("Gagal mengambil data kategori:", error);
-        }
-    };
-
     useEffect(() => {
-        getExpiredDocuments();
-        getCategories();
-    }, [selectedCategory]);
+        fetchExpiredData(selectedCategory);
+    }, [selectedCategory, fetchExpiredData]);
 
     const handleProposeDestruction = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -69,18 +49,14 @@ export default function ExpiredTable({ toast, onProposalCreated }: ExpiredTableP
 
         setSubmitting(true);
         try {
-            const res = await postData(apiEndpointProposalCreate, {
-                kode_dokumen: selectedDoc.kode_dokumen,
-                alasan_usulan: reason
-            });
-            showSuccess(toast, res.data?.message || 'Proposal pemusnahan berhasil diajukan');
+            await proposeDestruction(selectedDoc.kode_dokumen, reason);
             setDialogVisible(false);
             setSelectedDoc(null);
             setReason('');
-            getExpiredDocuments();
-            onProposalCreated();
+            fetchExpiredData(selectedCategory);
+            refreshProposals();
         } catch (error: any) {
-            showError(toast, error?.response?.data?.message || 'Gagal mengajukan proposal pemusnahan');
+            // Error handled by parent
         } finally {
             setSubmitting(false);
         }

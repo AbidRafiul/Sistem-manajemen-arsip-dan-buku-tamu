@@ -278,12 +278,16 @@ const buildVisibleSignatureBlock = async ({
   return [qrX, qrY, qrX + qrWidth, qrY + qrHeight];
 };
 
-const getLogoBuffer = async () => {
-  const possiblePaths = [
+const getLogoBuffer = async (dbLogoName) => {
+  const possiblePaths = [];
+  if (dbLogoName) {
+    possiblePaths.push(path.resolve(process.cwd(), "public/uploads/config/logo_perusahaan", dbLogoName));
+  }
+  possiblePaths.push(
     path.resolve(process.cwd(), "../next_arsip_fe/public/marstech-logo.png"),
     path.resolve(process.cwd(), "next_arsip_fe/public/marstech-logo.png"),
-    path.resolve(process.cwd(), "public/marstech-logo.png"),
-  ];
+    path.resolve(process.cwd(), "public/marstech-logo.png")
+  );
 
   for (const p of possiblePaths) {
     try {
@@ -305,9 +309,19 @@ const generatePdfFromSurat = async (surat, { signerName = "", signerTitle = "" }
   const margin = 48;
   const contentWidth = DEFAULT_PAGE_WIDTH - margin * 2;
 
+  const vaData = await DB("config").whereIn("kode", [
+    "msNamaPerusahaan", "msAlamatPerusahaan", "msTeleponPerusahaan", "msLogoPerusahaan"
+  ]).select("kode", "keterangan");
+  const configMap = {};
+  vaData.forEach(row => { configMap[row.kode] = row.keterangan; });
+
+  const companyName = configMap["msNamaPerusahaan"] || "PT. MARSTECH GLOBAL";
+  const companyAddress = configMap["msAlamatPerusahaan"] || "JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR";
+  const companyPhone = configMap["msTeleponPerusahaan"] || "0351-2812555";
+
   // Logo Kop Surat
   try {
-    const logoBuffer = await getLogoBuffer();
+    const logoBuffer = await getLogoBuffer(configMap["msLogoPerusahaan"]);
     if (logoBuffer) {
       const logoImg = await pdfDoc.embedPng(logoBuffer);
       page.drawImage(logoImg, {
@@ -323,7 +337,7 @@ const generatePdfFromSurat = async (surat, { signerName = "", signerTitle = "" }
 
   // Header Title & Address Kop Surat
   const headerX = margin + 64;
-  page.drawText("PT. MARSTECH GLOBAL", {
+  page.drawText(companyName, {
     x: headerX,
     y: DEFAULT_PAGE_HEIGHT - 38,
     size: 14,
@@ -331,7 +345,7 @@ const generatePdfFromSurat = async (surat, { signerName = "", signerTitle = "" }
     color: rgb(0, 0.2, 0.45),
   });
 
-  page.drawText("JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR", {
+  page.drawText(companyAddress, {
     x: headerX,
     y: DEFAULT_PAGE_HEIGHT - 51,
     size: 7.5,
@@ -339,20 +353,12 @@ const generatePdfFromSurat = async (surat, { signerName = "", signerTitle = "" }
     color: rgb(0.2, 0.2, 0.2),
   });
 
-  page.drawText("Telp. 0351-2812555  |  E-mail: info@marstech.co.id  |  Web: www.marstech.co.id", {
+  page.drawText(`Telp. ${companyPhone}`, {
     x: headerX,
     y: DEFAULT_PAGE_HEIGHT - 63,
     size: 7.5,
     font: fontRegular,
     color: rgb(0.2, 0.2, 0.2),
-  });
-
-  page.drawText("SIUP : 503.4/ 29 - MIKRO/ 401.106/ 2018  |  TDP : 13.13.1.47.00655", {
-    x: headerX,
-    y: DEFAULT_PAGE_HEIGHT - 74,
-    size: 7,
-    font: fontItalic,
-    color: rgb(0.4, 0.4, 0.4),
   });
 
   // Double Line Separator Kop Surat
@@ -547,7 +553,7 @@ const extractCleanBodyText = (surat) => {
     color: rgb(0.1, 0.1, 0.1),
   });
 
-  page.drawText("PT. MARSTECH GLOBAL", {
+  page.drawText(companyName, {
     x: sigX,
     y: 183,
     size: 10,
@@ -878,7 +884,7 @@ const chooseBaseDocumentBuffer = async (surat, { preferSigned = true } = {}) => 
 const assertMenuPermission = async (req, res, menuPaths = [], actionKey = "canView") => {
   const roleId = req?.auth?.peranId;
   if (!roleId) {
-    return res.status(401).json({ status: false, message: "Autentikasi tidak ditemukan" });
+    return res.status(401).json({ status: status.BAD_REQUEST, message: "Autentikasi tidak ditemukan" });
   }
 
   const menus = await DB("mst_menu as m")
@@ -890,7 +896,7 @@ const assertMenuPermission = async (req, res, menuPaths = [], actionKey = "canVi
 
   if (!menus || menus.length === 0) {
     return res.status(403).json({
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Anda tidak memiliki akses ke menu ini",
     });
   }
@@ -905,7 +911,7 @@ const assertMenuPermission = async (req, res, menuPaths = [], actionKey = "canVi
 
   if (!allowed[actionKey]) {
     return res.status(403).json({
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Hak akses tidak mencukupi",
     });
   }
@@ -915,9 +921,9 @@ const assertMenuPermission = async (req, res, menuPaths = [], actionKey = "canVi
 
 const buildCertificatePayload = async (payload = {}, req = null) => {
   const now = new Date();
-  const resolvedUserId = payload.id_pengguna || getUserId(req);
+  const nResolvedUserId = payload.id_pengguna || getUserId(req);
   return {
-    id_pengguna: resolvedUserId || null,
+    id_pengguna: nResolvedUserId || null,
     nama_sertifikat: normalizeString(payload.nama_sertifikat),
     alias_sertifikat: normalizeString(payload.alias_sertifikat || payload.nama_sertifikat),
     nomor_seri: normalizeString(payload.nomor_seri),
@@ -1068,13 +1074,16 @@ const signLetterAutomatically = async ({ idSuratKeluar, actorId = null, req = nu
 
   let certificate = await getCertificateRecord({ idPengguna: actorId });
   if (!certificate) {
+    const confName = await DB("config").where("kode", "msNamaPerusahaan").first();
+    const cName = confName ? confName.keterangan : "Perusahaan";
+
     const dNow = new Date();
     const [insertedId] = await DB("mst_sertifikat_elektronik").insert({
       id_pengguna: actorId || null,
       nama_sertifikat: "Sertifikat Digital Internal",
       alias_sertifikat: "TTE Internal SIAB",
       nomor_seri: `CERT-${Date.now()}`,
-      subjek_sertifikat: "CN=Sistem SIAB, O=PT Marstech Global, C=ID",
+      subjek_sertifikat: `CN=Sistem SIAB, O=${cName}, C=ID`,
       penerbit_sertifikat: "Internal SIAB CA",
       algoritma_tanda_tangan: "RSA-SHA256",
       algoritma_hash: "SHA-256",

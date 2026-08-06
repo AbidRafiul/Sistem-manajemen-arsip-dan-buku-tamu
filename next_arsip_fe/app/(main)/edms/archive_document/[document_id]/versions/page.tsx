@@ -16,6 +16,7 @@ import {
     apiEndpointVersionRollback,
     apiEndpointVersionUpload,
     apiEndpointDocumentPreview,
+    apiEndpointContentGet
 } from "../../components/endpoints";
 import { DetailData, VersionData } from "../../components/interfaces";
 import Table from "./components/display/table";
@@ -196,12 +197,25 @@ const Page = () => {
         }
     };
 
+    const fetchOcrText = async (version: VersionData): Promise<string> => {
+        if (!detailData?.document?.kode_dokumen) return '';
+        const res = await getData(apiEndpointContentGet, {
+            kode_dokumen: detailData.document.kode_dokumen,
+            id_versi: version.id_versi
+        });
+        if (res.data?.status === 'success') {
+            return res.data.data?.konten_teks || '';
+        }
+        throw new Error(res.data?.message || 'Gagal mengambil hasil OCR');
+    };
+
     useEffect(() => {
         fetchDocumentDetail();
     }, [documentId]);
 
     return (
         <>
+
             <Toast ref={toast} position="top-right" />
             <Table
                 load={load}
@@ -227,6 +241,7 @@ const Page = () => {
                 submitRejection={submitRejection}
                 fetchDocumentDetail={fetchDocumentDetail}
                 handleFetchPreviewUrl={handleFetchPreviewUrl}
+                fetchOcrText={fetchOcrText}
                 previewUrl={previewUrl}
                 isPreviewVisible={isPreviewVisible}
                 setIsPreviewVisible={setIsPreviewVisible}

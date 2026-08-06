@@ -11,11 +11,11 @@ import { Tag } from 'primereact/tag';
 import { State } from "@/app/(main)/buku_tamu/checkout/components/interfaces";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
 import { usePermissions } from '@/hooks/usePermissions';
-import { useSession } from 'next-auth/react';
 
 interface TableProps {
     state: State;
     setState: React.Dispatch<React.SetStateAction<State>>;
+    session?: any;
     onCheckout: (row: any) => void;
     onDetail: (row: any) => void;
     onFilterStatus: (value: string) => void;
@@ -29,6 +29,7 @@ interface TableProps {
 export default function GuestDataTable({
     state,
     setState,
+    session,
     onCheckout,
     onDetail,
     onFilterStatus,
@@ -38,7 +39,6 @@ export default function GuestDataTable({
     onCheckin,
     onScanQR
 }: TableProps) {
-    const { data: session } = useSession();
     const roleCode = (session?.user as any)?.roleCode;
     const isSuperadmin = roleCode === 'SUPERADMIN';
     const statusOptions = [

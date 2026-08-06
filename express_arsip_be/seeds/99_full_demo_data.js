@@ -33,12 +33,12 @@ const insertIfMissing = async (knex, tableName, keyColumn, row) => {
   if (!exists) await knex(tableName).insert(row);
 };
 
-const seedUserRole = async (knex, userId, roleId, dNow) => {
+const seedUserRole = async (knex, nUserId, roleId, dNow) => {
   const existing = await knex("mst_pengguna_peran")
-    .where("id_pengguna", userId)
+    .where("id_pengguna", nUserId)
     .first();
   const payload = {
-    id_pengguna: userId,
+    id_pengguna: nUserId,
     id_peran: roleId,
     peran_utama: 1,
     status: "active",

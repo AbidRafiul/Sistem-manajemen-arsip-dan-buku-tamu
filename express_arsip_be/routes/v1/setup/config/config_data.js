@@ -13,10 +13,10 @@ router.post("/", async (req, res) => {
   try {
     const cValidation = await validatePayload(
       {
-        Kode: Joi.array()
+        kode: Joi.array()
           .items(Joi.string().required())
           .required()
-          .label("Kode"),
+          .label("kode"),
       },
       {
         "array.base": "{#label} harus berupa array",
@@ -41,7 +41,7 @@ router.post("/", async (req, res) => {
       return res.status(422).json(oResult);
     }
     const vaData = await DB("config")
-      .whereIn("kode", oPayload.Kode)
+      .whereIn("kode", oPayload.kode)
       .select("kode", "keterangan");
 
     if (!vaData || vaData.length < 1) {
@@ -67,8 +67,12 @@ router.post("/", async (req, res) => {
       oFormatted[row.kode] = row.keterangan;
 
       if (row.kode == "msLogoPerusahaan") {
-        oFormatted["msLogoPerusahaan"] =
-          `${process.env.APP_SERVER}:${process.env.APP_PORT}/uploads/config/logo_perusahaan/${row.keterangan}`;
+        if (row.keterangan) {
+          oFormatted["msLogoPerusahaan"] =
+            `${process.env.APP_SERVER}:${process.env.APP_PORT}/uploads/config/logo_perusahaan/${row.keterangan}`;
+        } else {
+          oFormatted["msLogoPerusahaan"] = null;
+        }
       }
     });
 

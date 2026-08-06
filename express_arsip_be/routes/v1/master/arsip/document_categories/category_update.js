@@ -35,13 +35,13 @@ const updateDocumentCategory = async (req, res) => {
         nama_kategori_dokumen: Joi.string().max(255).required().label("Nama Kategori"),
         deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
         status: Joi.string().optional().allow(null, "").label("Status"),
-
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
         "any.required": "{#label} wajib diisi",
       },
       oPayload,
+      { allowUnknown: true }
     );
 
     if (cValidation) {
@@ -81,6 +81,7 @@ const updateDocumentCategory = async (req, res) => {
         kode_klasifikasi: oPayload.kode_klasifikasi,
         kode_kategori_dokumen: oPayload.kode_kategori_dokumen,
         nama_kategori_dokumen: oPayload.nama_kategori_dokumen,
+        status: oPayload.status || "active",
         deskripsi: oPayload.deskripsi || null,
         updated_at: new Date(),
       });

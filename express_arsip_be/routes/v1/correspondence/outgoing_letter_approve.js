@@ -2,6 +2,7 @@ import express from "express";
 import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { Logging, validatePayload } from "../components/tools/servertool.js";
+import { status, datetime } from "../components/tools/general.js";
 import { signLetterAutomatically } from "../components/tools/tte_service.js";
 
 const router = express.Router();
@@ -28,8 +29,9 @@ const outgoingLetterApprove = async (req, res) => {
 
     if (cValidate) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidate,
+        datetime: datetime(),
       });
     }
 
@@ -40,15 +42,17 @@ const outgoingLetterApprove = async (req, res) => {
 
     if (!oLetter) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Surat keluar tidak ditemukan",
+        datetime: datetime(),
       });
     }
 
     if (oLetter.status !== "menunggu_approval") {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Surat keluar tidak sedang menunggu approval (status saat ini: " + oLetter.status + ")",
+        datetime: datetime(),
       });
     }
 
@@ -91,23 +95,25 @@ const outgoingLetterApprove = async (req, res) => {
     }
 
     return res.status(200).json({
-      status: true,
-      message: tteResult
-        ? "Surat keluar berhasil disetujui dan Tanda Tangan Elektronik (TTE) otomatis tertempel"
-        : "Surat keluar berhasil disetujui",
-      tte: tteResult,
+      status: status.SUKSES,
+        message: tteResult 
+          ? "Surat keluar berhasil disetujui dan Tanda Tangan Elektronik (TTE) otomatis tertempel" 
+          : "Surat keluar berhasil disetujui",
+        datetime: datetime(),
+        tte: tteResult,
     });
   } catch (error) {
     const oResult = {
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Surat keluar gagal disetujui",
+      datetime: datetime(),
     };
 
     await Logging(error, {
       file: cFile,
       func: cFunc,
       request: JSON.stringify(oPayload),
-      response: oResult.message,
+      response: oResult,
       user: req?.auth?.nama_pengguna || "",
     });
 

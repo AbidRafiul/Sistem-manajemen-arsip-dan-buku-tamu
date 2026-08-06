@@ -34,13 +34,14 @@ const updateConfidentialityLevel = async (req, res) => {
         nama_tingkat_kerahasiaan: Joi.string().max(255).required().label("Nama Kerahasiaan"),
         tingkat_kerahasiaan: Joi.number().required().label("Level (Angka)"),
         deskripsi: Joi.string().max(255).optional().allow(null, "").label("Deskripsi"),
-
+        status: Joi.string().optional().allow(null, "").label("Status"),
       },
       {
         "string.empty": "{#label} tidak boleh kosong",
         "any.required": "{#label} wajib diisi",
       },
       oPayload,
+      { allowUnknown: true }
     );
 
     if (cValidation) {
@@ -67,7 +68,7 @@ const updateConfidentialityLevel = async (req, res) => {
         kode_tingkat_kerahasiaan: oPayload.kode_tingkat_kerahasiaan,
         nama_tingkat_kerahasiaan: oPayload.nama_tingkat_kerahasiaan,
         tingkat_kerahasiaan: oPayload.tingkat_kerahasiaan,
-
+        status: oPayload.status || "active",
         deskripsi: oPayload.deskripsi || null,
         updated_at: new Date(),
       });

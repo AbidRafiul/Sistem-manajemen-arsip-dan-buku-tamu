@@ -22,7 +22,6 @@ const getDocumentCategory = async (req, res) => {
         "nama_kategori_dokumen",
         "deskripsi",
         "status"
-
       )
       .where("status", "active")
       .orderBy("created_at", "desc");

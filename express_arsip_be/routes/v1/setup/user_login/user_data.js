@@ -42,17 +42,17 @@ router.post("/", async (req, res) => {
       );
 
     if (req.headers["x-filter-cabang"]) {
-      const parentBranchIds = req.headers["x-filter-cabang"].split(",").map(Number);
-      let allBranchIds = [];
+      const vaParentBranchIds = req.headers["x-filter-cabang"].split(",").map(Number);
+      let vaAllBranchIds = [];
       if (req.headers["x-exact-cabang"] === 'true') {
-        allBranchIds = parentBranchIds;
+        vaAllBranchIds = vaParentBranchIds;
       } else {
-        for (const bId of parentBranchIds) {
-          const descendantIds = await getDescendantBranchIds(DB, bId);
-          allBranchIds = allBranchIds.concat(descendantIds);
+        for (const nBranchId of vaParentBranchIds) {
+          const descendantIds = await getDescendantBranchIds(DB, nBranchId);
+          vaAllBranchIds = vaAllBranchIds.concat(descendantIds);
         }
       }
-      query = query.whereIn("mu.id_cabang", allBranchIds);
+      query = query.whereIn("mu.id_cabang", vaAllBranchIds);
     }
     if (req.headers["x-filter-departemen"]) {
       query = query.where("mu.id_departemen", req.headers["x-filter-departemen"]);

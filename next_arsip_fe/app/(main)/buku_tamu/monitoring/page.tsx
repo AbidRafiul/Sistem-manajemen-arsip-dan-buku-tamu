@@ -30,7 +30,7 @@ const MonitoringPage: React.FC = () => {
                 setStats(response.data.data);
             }
 
-            const resActive = await postData('/buku_tamu/visit_data', { Status: 'in', limit: 5 });
+            const resActive = await postData('/buku-tamu/visit-data', { Status: 'in', limit: 5 });
             if (resActive?.data?.data?.rows) {
                 setActiveGuests(resActive.data.data.rows);
             }
@@ -88,3 +88,4 @@ const MonitoringPage: React.FC = () => {
 };
 
 export default MonitoringPage;
+

@@ -7,8 +7,6 @@ import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
 import { Divider } from "primereact/divider";
 import { useState } from "react";
-import getData from "@/lib/axios/getData";
-import { showError, showSuccess } from "@/lib/tools/generalTools";
 import { FormProps, initValue } from "../interfaces";
 
 const Form = ({
@@ -16,37 +14,17 @@ const Form = ({
     setState,
     formik,
     toast,
+    handleScan
 }: FormProps) => {
 
     const [qrScanInput, setQrScanInput] = useState('');
     const [qrScanLoading, setQrScanLoading] = useState(false);
 
-    const handleScan = async (codeStr: string) => {
-        const cleanCode = codeStr.trim();
-        if (!cleanCode) return;
-
-        setQrScanLoading(true);
-        try {
-            const res = await getData(`/arsip-dokumen/qr/scan?qr_code=${encodeURIComponent(cleanCode)}`);
-            if (res.data?.status === 'success' && res.data?.data?.document) {
-                const doc = res.data.data.document;
-                
-                // Cek apakah dokumen sedang dipinjam
-                const isBorrowed = state.data.some(loan => loan.kode_dokumen === doc.kode_dokumen && loan.status === 'borrowed');
-                if (isBorrowed) {
-                    showError(toast, `Dokumen ${doc.nomor_dokumen} sedang dipinjam dan tidak dapat dipilih`);
-                } else {
-                    formik?.setFieldValue('kode_dokumen', doc.kode_dokumen);
-                    showSuccess(toast, `Dokumen ${doc.nomor_dokumen} terpilih`);
-                    setQrScanInput('');
-                }
-            } else {
-                showError(toast, res.data?.message || 'Dokumen tidak ditemukan');
-            }
-        } catch (error: any) {
-            const msg = error.response?.data?.message || error.message || 'QR Code tidak terdaftar';
-            showError(toast, msg);
-        } finally {
+    const onScan = async (codeStr: string) => {
+        if (handleScan) {
+            setQrScanLoading(true);
+            await handleScan(codeStr);
+            setQrScanInput('');
             setQrScanLoading(false);
         }
     };
@@ -54,7 +32,7 @@ const Form = ({
     const handleQrScanKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            handleScan(qrScanInput);
+            onScan(qrScanInput);
         }
     };
 
@@ -111,7 +89,7 @@ const Form = ({
                         {qrScanLoading ? (
                             <Button type="button" icon="pi pi-spin pi-spinner" disabled />
                         ) : (
-                            <Button type="button" icon="pi pi-qrcode" onClick={() => handleScan(qrScanInput)} />
+                            <Button type="button" icon="pi pi-qrcode" onClick={() => onScan(qrScanInput)} disabled={!qrScanInput.trim()} />
                         )}
                     </div>
                     <small className="text-xs text-color-secondary">Gunakan alat pemindai (scanner) USB atau masukkan kode manual dan tekan Enter.</small>

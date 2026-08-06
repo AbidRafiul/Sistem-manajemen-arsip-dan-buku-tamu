@@ -69,15 +69,7 @@ const Form = ({ state, setState, formik, handleDelete, handleSave }: any) => {
                             {getFormErrorMessage('status')}
                         </div>
                     </div>
-                    <div className="flex md:flex-row flex-column gap-2 w-full">
-                        <div className="flex flex-column gap-2 w-full md:w-6">
-                            <label htmlFor="status" className="font-bold">Status</label>
-                            <div className="p-inputgroup">
-                                <Dropdown id="status" name="status" value={formik?.values.status} options={[{ label: "Aktif", value: "active" }, { label: "Tidak Aktif", value: "nonactive" }]} onChange={formik?.handleChange} className={isFormFieldInvalid('status') ? 'p-invalid w-full' : 'w-full'} />
-                            </div>
-                            {getFormErrorMessage('status')}
-                        </div>
-                    </div>
+
                     <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} className="mt-2" loading={state?.load} disabled={state?.load} />
                 </form>
             </Dialog>

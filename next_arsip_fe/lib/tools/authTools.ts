@@ -44,7 +44,7 @@ const authOptions = {
         error: '/auth/login',
         signOut: '/auth/login'
     },
-    secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || 'random',
+    secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
     session: {
         strategy: 'jwt' as const,
         maxAge: 7 * 24 * 60 * 60

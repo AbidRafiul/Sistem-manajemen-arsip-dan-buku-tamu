@@ -5,6 +5,7 @@ import {
   Logging,
   validatePayload,
 } from "../components/tools/servertool.js";
+import { status, datetime } from "../components/tools/general.js";
 import { generateNomorSurat } from "../components/tools/letter_numbering_service.js";
 
 import { parseIndonesianDateToIso } from "./outgoing_letter_extract_ocr.js";
@@ -160,8 +161,9 @@ const outgoingLetterCreate = async (req, res) => {
 
     if (cValidate) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidate,
+        datetime: datetime(),
       });
     }
 
@@ -197,8 +199,9 @@ const outgoingLetterCreate = async (req, res) => {
 
       if (cReferenceError) {
         return res.status(400).json({
-          status: false,
-          message: cReferenceError,
+          status: status.BAD_REQUEST,
+        message: cReferenceError,
+        datetime: datetime(),
         });
       }
     }
@@ -295,8 +298,9 @@ const outgoingLetterCreate = async (req, res) => {
     });
 
     return res.status(201).json({
-      status: true,
-      message: "Surat keluar berhasil dibuat",
+      status: status.SUKSES,
+        message: "Surat keluar berhasil dibuat",
+        datetime: datetime(),
       data: {
         id_surat_keluar: nOutgoingLetterId,
       },
@@ -304,21 +308,23 @@ const outgoingLetterCreate = async (req, res) => {
   } catch (error) {
     if (String(error.message || "").includes("konfigurasi penomoran")) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: error.message,
+        datetime: datetime(),
       });
     }
 
     const oResult = {
-      status: false,
-      message: "Surat keluar gagal dibuat",
+      status: status.BAD_REQUEST,
+        message: "Surat keluar gagal dibuat",
+        datetime: datetime(),
     };
 
     await Logging(error, {
       file: cFile,
       func: cFunc,
       request: JSON.stringify(oPayload),
-      response: oResult.message,
+      response: oResult,
       user: req?.auth?.nama_pengguna || "",
     });
 

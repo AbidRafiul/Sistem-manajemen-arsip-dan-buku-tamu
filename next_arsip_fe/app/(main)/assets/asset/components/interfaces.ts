@@ -58,15 +58,17 @@ export interface TableProps {
     setState: React.Dispatch<React.SetStateAction<State>>;
     formik: FormikProps<initValue>
     getData: (apiEndpoint: string) => Promise<void>;
-    toast: RefObject<Toast>
+    toast: RefObject<Toast>;
+    handleDelete?: () => Promise<void>;
 }
 
 export interface FormProps {
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>;
     formik: FormikProps<initValue>
-    toast: RefObject<Toast>
+    toast: RefObject<Toast>;
     getData: (apiEndpoint: string) => Promise<void>;
+    handleDelete?: () => Promise<void>;
 }
 
 export type StatusType = 'operational' | 'maintenance' | 'down';

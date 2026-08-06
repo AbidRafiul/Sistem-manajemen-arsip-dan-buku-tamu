@@ -47,7 +47,11 @@ router.post("/update", async (req, res) => {
     if (!nUpdated) return res.status(404).json({ message: "Data tidak ditemukan", datetime: formatDateSystem() });
     return res.status(200).json({ status: status.SUKSES, message: "Berhasil diupdate!", datetime: formatDateSystem() });
   } catch (error) {
-    const oResult = { status: status.BAD_REQUEST, message: "Gagal mengupdate", datetime: datetime() };
+    let errorMessage = "Gagal mengupdate";
+    if (error.code === 'ER_DUP_ENTRY') {
+      errorMessage = "Kode Divisi sudah digunakan oleh divisi lain";
+    }
+    const oResult = { status: status.BAD_REQUEST, message: errorMessage, datetime: datetime() };
     Logging(error, { file: "update.js", func: "update", request: oPayload, response: oResult, user: cnama_pengguna });
     return res.status(500).json(oResult);
   }

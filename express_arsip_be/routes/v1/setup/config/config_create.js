@@ -20,15 +20,15 @@ const upload = multer({
 
 router.post("/", upload.any(), async (req, res) => {
   const oPayload = req.body;
-  const files = req.files;
+  const vaFiles = req.files;
   const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
     console.log(oPayload);
     const cValidation = await validatePayload(
       {
-        Kode: Joi.string().required().label("Kode"),
-        Keterangan: Joi.string().required().label("Keterangan"),
+        kode: Joi.string().required().label("kode"),
+        keterangan: Joi.string().required().label("keterangan"),
       },
       {
         "any.required": "{#label} wajib diisi",
@@ -55,13 +55,13 @@ router.post("/", upload.any(), async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    let { Kode, Keterangan } = oPayload;
+    let { kode, keterangan } = oPayload;
 
-    Kode = JSON.parse(Kode);
-    Keterangan = JSON.parse(Keterangan);
-    console.log(files);
+    kode = JSON.parse(kode);
+    keterangan = JSON.parse(keterangan);
+    console.log(vaFiles);
 
-    if (Kode.length !== Keterangan.length) {
+    if (kode.length !== keterangan.length) {
       const oResult = {
         status: status.BAD_REQUEST,
         message: "Jumlah data kode dan keterangan tidak sama.",
@@ -83,9 +83,9 @@ router.post("/", upload.any(), async (req, res) => {
       .first();
 
     let filename = oldData?.keterangan || "";
-    const file = files[0];
+    const oFile = vaFiles[0];
 
-    if (file) {
+    if (oFile) {
       const uploadDir = path.join(
         process.cwd(),
         "public",
@@ -98,7 +98,7 @@ router.post("/", upload.any(), async (req, res) => {
       }
 
       const ext =
-        path.extname(file.originalname) || mimeToExt[file.mimetype] || "";
+        path.extname(oFile.originalname) || mimeToExt[oFile.mimetype] || "";
       filename = `logo_perusahaan${ext}`;
       const filepath = path.join(uploadDir, filename);
 
@@ -108,15 +108,15 @@ router.post("/", upload.any(), async (req, res) => {
         fs.unlinkSync(oldPath);
       }
 
-      fs.renameSync(file.path, filepath);
+      fs.renameSync(oFile.path, filepath);
     }
 
-    Kode.push("msLogoPerusahaan");
-    Keterangan.push(filename);
+    kode.push("msLogoPerusahaan");
+    keterangan.push(filename);
 
-    for (let i = 0; i < Kode.length; i++) {
-      const cKode = Kode[i];
-      const cKeterangan = Keterangan[i] ?? null;
+    for (let i = 0; i < kode.length; i++) {
+      const cKode = kode[i];
+      const cKeterangan = keterangan[i] ?? null;
 
       const existing = await DB("config")
         .select("keterangan")

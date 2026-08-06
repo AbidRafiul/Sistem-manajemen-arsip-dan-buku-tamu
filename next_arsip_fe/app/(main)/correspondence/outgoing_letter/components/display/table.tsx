@@ -1,8 +1,5 @@
 'use client'
 
-import deleteData from "@/lib/axios/deleteData";
-import getDataRequest from "@/lib/axios/getData";
-import postData from "@/lib/axios/postData";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
 import { showError, showSuccess } from "@/lib/tools/generalTools";
 import { Button } from "primereact/button";
@@ -16,15 +13,8 @@ import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { Tag } from "primereact/tag";
 import { useEffect, useState, useRef, useMemo } from "react";
-import {
-    apiEndpointDelete,
-    apiEndpointDetail,
-    apiEndpointGet,
-    apiEndpointLetterTypeManagement,
-    apiEndpointUpload,
-    apiEndpointArchive,
-} from "../endpoints";
-import formUpload from "@/lib/axios/formData";
+import { apiEndpointGet } from "../endpoints";
+
 import { TableData, TableProps } from "../interfaces";
 import Form, { extractIsiSuratFromFinal } from "./form";
 
@@ -62,25 +52,14 @@ const formatDate = (date?: string | null) => {
 
 const formatFileSize = (size?: number | null) => {
     if (!size || size <= 0) return "-";
-
     if (size < 1024) return `${size} B`;
-
     const kb = size / 1024;
     if (kb < 1024) return `${kb.toFixed(1)} KB`;
-
     return `${(kb / 1024).toFixed(1)} MB`;
 };
 
-const getUploadErrorMessage = (error: any) => {
-    const response = error?.response?.data || error;
-    const detail = String(response?.error || response?.message || "");
 
-    if (/ECONNREFUSED.*127\.0\.0\.1:9000/i.test(detail) || /ECONNREFUSED.*9000/i.test(detail)) {
-        return "File gagal diunggah karena server penyimpanan lampiran (MinIO) belum aktif.";
-    }
 
-    return response?.message || "File gagal diunggah";
-};
 
 const getTimelineIcon = (aktivitas: string) => {
     switch (aktivitas) {
@@ -106,16 +85,38 @@ const getTimelineLabel = (aktivitas: string, status: string) => {
     }
 };
 
-const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
-    const [letterTypeOptions, setLetterTypeOptions] = useState<LetterTypeOption[]>([]);
+const Table = ({ 
+    state, 
+    setState, 
+    formik, 
+    getData, 
+    toast,
+    handleSave,
+    downloadDocx,
+    getLetterTypeOptions,
+    getTemplateOptions,
+    loadNomorPreview,
+    handleFileUpload,
+    executeArchiveLetter,
+    reloadDetail,
+    handleDeleteLetter,
+    apiSaveLetter,
+    apiUploadPdf,
+    apiDownloadDocx,
+    apiExtractOcr,
+    apiGetLetterTypes,
+    apiGetTemplates,
+    apiGetNomorPreview
+}: TableProps) => {
     const [uploading, setUploading] = useState(false);
     const [archiving, setArchiving] = useState(false);
+    const [letterTypeOptions, setLetterTypeOptions] = useState<any[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const onFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         const detailLetter = state.detailData?.surat;
-        if (!file || !detailLetter) return;
+        if (!file || !detailLetter || !handleFileUpload) return;
 
         if (file.type !== "application/pdf") {
             showError(toast, "File surat keluar harus berupa PDF");
@@ -124,47 +125,29 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
         }
 
         setUploading(true);
-        const formData = new FormData();
-        formData.append("id_surat_keluar", String(detailLetter.id_surat_keluar));
-        formData.append("nomor_surat", detailLetter.nomor_surat || "");
-        formData.append("perihal", detailLetter.perihal || "");
-        formData.append("File", file);
-        const uploadedBy = getUserId(state);
-        if (uploadedBy) formData.append("uploaded_by", String(uploadedBy));
 
         try {
-            await formUpload(apiEndpointUpload, formData, {});
-            showSuccess(toast, "File berhasil diunggah");
-            // Reload details
-            const res = await getDataRequest(`${apiEndpointDetail}/${detailLetter.id_surat_keluar}`);
-            setState((p) => ({ ...p, detailData: res.data?.data || null }));
+            await handleFileUpload(file, detailLetter.id_surat_keluar, Number(getUserId(state)) || null);
+            if (reloadDetail) await reloadDetail(detailLetter.id_surat_keluar);
             await refreshData();
-        } catch (error: any) {
-            showError(toast, getUploadErrorMessage(error));
         } finally {
             setUploading(false);
         }
     };
 
-    const executeArchiveLetter = async () => {
+    const onArchiveLetter = async () => {
         const detailLetter = state.detailData?.surat;
-        if (!detailLetter?.id_surat_keluar) return;
+        if (!detailLetter?.id_surat_keluar || !executeArchiveLetter) return;
 
         setArchiving(true);
         try {
-            const res = await postData(apiEndpointArchive, {
-                id_surat_keluar: detailLetter.id_surat_keluar,
-                nama_pic: state.session?.user?.name || "Sekretariat",
-                created_by: getUserId(state),
-            });
-            showSuccess(toast, res.data?.message || "Surat keluar berhasil diarsipkan");
-            // Reload details
-            const resDetail = await getDataRequest(`${apiEndpointDetail}/${detailLetter.id_surat_keluar}`);
-            setState((p) => ({ ...p, detailData: resDetail.data?.data || null }));
+            await executeArchiveLetter(
+                detailLetter.id_surat_keluar, 
+                state.session?.user?.name || "Sekretariat", 
+                Number(getUserId(state)) || null
+            );
+            if (reloadDetail) await reloadDetail(detailLetter.id_surat_keluar);
             await refreshData();
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || "Surat keluar gagal diarsipkan");
         } finally {
             setArchiving(false);
         }
@@ -188,7 +171,7 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
             rejectLabel: "Batal",
             acceptClassName: "p-button-success",
             rejectClassName: "p-button-secondary p-button-outlined",
-            accept: executeArchiveLetter,
+            accept: onArchiveLetter,
         });
     };
 
@@ -239,31 +222,21 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
     }, [state.data, state.statusFilter, state.jenisSuratFilter, state.searchVal]);
 
     const fetchLetterTypes = async () => {
-        try {
-            const res = await getDataRequest(apiEndpointLetterTypeManagement);
+        if (getLetterTypeOptions) {
+            const data = await getLetterTypeOptions();
             setLetterTypeOptions([
                 { jenis_surat_id: 0, nama_jenis_surat: "Semua Jenis" },
-                ...(res.data?.data || []),
+                ...data,
             ]);
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || "Jenis surat gagal diambil");
         }
     };
 
     const openDetail = async (rowData: TableData) => {
         setState((p) => ({ ...p, detail: true, detailLoad: true, detailData: null }));
-
-        try {
-            const res = await getDataRequest(`${apiEndpointDetail}/${rowData.id_surat_keluar}`);
-            setState((p) => ({ ...p, detailData: res.data?.data || null }));
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || "Detail surat keluar gagal diambil");
-            setState((p) => ({ ...p, detail: false, detailData: null }));
-        } finally {
-            setState((p) => ({ ...p, detailLoad: false }));
+        if (reloadDetail) {
+            await reloadDetail(rowData.id_surat_keluar);
         }
+        setState((p) => ({ ...p, detailLoad: false }));
     };
 
     const confirmDelete = (letters: TableData[]) => {
@@ -281,20 +254,10 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
             acceptClassName: "p-button-danger",
             rejectClassName: "p-button-secondary p-button-outlined",
             accept: async () => {
+                if (!handleDeleteLetter) return;
                 setState((p) => ({ ...p, load: true }));
                 try {
-                    for (const letter of letters) {
-                        await deleteData(`${apiEndpointDelete}/${letter.id_surat_keluar}`, {
-                            updated_by: getUserId(state),
-                        });
-                    }
-
-                    showSuccess(toast, "Surat keluar berhasil dihapus");
-                    setState((p) => ({ ...p, selectedLetters: [] }));
-                    await refreshData();
-                } catch (error: any) {
-                    const e = error?.response?.data || error;
-                    showError(toast, e?.message || "Surat keluar gagal dihapus");
+                    await handleDeleteLetter(letters);
                 } finally {
                     setState((p) => ({ ...p, load: false }));
                 }
@@ -586,7 +549,25 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
                 </DataTable>
             </Card>
 
-            <Form getData={getData} toast={toast} state={state} setState={setState} formik={formik} />
+            <Form 
+                getData={getData} 
+                toast={toast} 
+                state={state} 
+                setState={setState} 
+                formik={formik} 
+                handleSave={handleSave}
+                downloadDocx={downloadDocx}
+                getLetterTypeOptions={getLetterTypeOptions}
+                getTemplateOptions={getTemplateOptions}
+                loadNomorPreview={loadNomorPreview}
+                apiSaveLetter={apiSaveLetter}
+                apiUploadPdf={apiUploadPdf}
+                apiDownloadDocx={apiDownloadDocx}
+                apiExtractOcr={apiExtractOcr}
+                apiGetLetterTypes={apiGetLetterTypes}
+                apiGetTemplates={apiGetTemplates}
+                apiGetNomorPreview={apiGetNomorPreview}
+            />
 
             <Dialog
                 header={
@@ -767,7 +748,7 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
                                                         type="file"
                                                         ref={fileInputRef}
                                                         style={{ display: "none" }}
-                                                        onChange={handleFileUpload}
+                                                        onChange={onFileUpload}
                                                         accept="application/pdf"
                                                     />
                                                     <Button
@@ -822,6 +803,7 @@ const Table = ({ state, setState, formik, getData, toast }: TableProps) => {
                                             </div>
                                         );
                                     })}
+
                                 </div>
                             ) : (
                                 <div className="flex flex-column align-items-center py-4 gap-2 text-color-secondary surface-50 border-round-lg">

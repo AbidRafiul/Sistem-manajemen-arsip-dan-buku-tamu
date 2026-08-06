@@ -29,6 +29,7 @@ const Table = ({
     handleApproveReject,
     handleReturn,
     toast,
+    handleScan
 }: TableProps) => {
     const permissions = usePermissions();
     const { canCreate, canUpdate, canDelete, canApprove } = permissions;
@@ -261,7 +262,7 @@ const Table = ({
             </DataTable>
         </Card>
 
-        <Form state={state} setState={setState} formik={formik} toast={toast} />
+        <Form state={state} setState={setState} formik={formik} toast={toast} handleScan={handleScan} />
 
         {/* Loan Detail Dialog */}
         <Dialog

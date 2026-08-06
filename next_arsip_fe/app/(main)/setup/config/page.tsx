@@ -7,12 +7,13 @@ import { useFormik } from 'formik';
 import { initValue, NavState, State } from './components/interfaces';
 import { FilterMatchMode } from 'primereact/api';
 import Form from './components/display/form';
-// import { useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import formUpload from '@/lib/axios/formData';
+import { apiEndpointCreate, apiEndpointGet } from './components/endpoints';
 
 const Page = () => {
     const toast = useRef<Toast>(null);
-    // const { data: session } = useSession()
-    const session: any = { user: { name: 'Superadmin', role: 'admin', IdPengguna: 1 } };
+    const { data: session } = useSession();
 
     const [state, setState] = useState<State>({
         load: false,
@@ -43,8 +44,39 @@ const Page = () => {
 
             return errors;
         },
-        onSubmit: (data) => {
-            setState((p) => ({ ...p, submittedData: data }));
+        onSubmit: async (data) => {
+            setState((p) => ({ ...p, load: true }));
+
+            try {
+                const oHeaders = {
+                    'X-Level': '1'
+                };
+
+                const formData = new FormData();
+                const { msLogoPerusahaan, ...rest } = data;
+
+                const key = Object.keys(rest);
+                const keterangan = Object.values(rest);
+
+                formData.append('kode', JSON.stringify(key));
+                formData.append('keterangan', JSON.stringify(keterangan));
+
+                if (msLogoPerusahaan) {
+                    formData.append('msLogoPerusahaan', msLogoPerusahaan);
+                }
+
+                const vaData = await formUpload(apiEndpointCreate, formData, oHeaders);
+                const res = vaData.data;
+
+                showSuccess(toast, res.data?.message || 'Konfigurasi berhasil disimpan');
+                
+                await getData(apiEndpointGet);
+            } catch (error: any) {
+                const e = error?.response?.data || error;
+                showError(toast, e?.message || 'Terjadi kesalahan yang tidak terduga');
+            } finally {
+                setState((p) => ({ ...p, load: false, submittedData: null }));
+            }
         }
     });
 
@@ -52,7 +84,7 @@ const Page = () => {
         setState((p) => ({ ...p, load: true }));
         try {
             const res = await postData(apiEndpoint, {
-                Kode: ['msNamaPerusahaan', 'msAlamatPerusahaan', 'msKotaPerusahaan', 'msTeleponPerusahaan', 'msNamaPimpinan', 'msLogoPerusahaan']
+                kode: ['msNamaPerusahaan', 'msAlamatPerusahaan', 'msKotaPerusahaan', 'msTeleponPerusahaan', 'msNamaPimpinan', 'msLogoPerusahaan']
             });
 
             const { msLogoPerusahaan, ...vaValues } = res.data?.data || {};
@@ -79,6 +111,10 @@ const Page = () => {
             }));
         }
     }, [session]);
+
+    useEffect(() => {
+        getData(apiEndpointGet);
+    }, []);
 
     return (
         <>

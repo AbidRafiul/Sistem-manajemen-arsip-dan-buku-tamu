@@ -73,7 +73,7 @@ const MenuPage = () => {
             const headers = { Authorization: `Bearer ${token}` };
 
             Promise.all([
-                postData('/master/organisasi/roles/get_data', {}, headers),
+                postData('/master/organisasi/roles/get-data', {}, headers),
                 postData(apiEndpointGetMenu, {}, headers)
             ]).then(([resRoles, resMenus]) => {
                 setState((prev: any) => ({
@@ -169,6 +169,7 @@ const MenuPage = () => {
 
     return (
         <>
+
             <Toast ref={toast} position="top-right" />
             
             <Table 
