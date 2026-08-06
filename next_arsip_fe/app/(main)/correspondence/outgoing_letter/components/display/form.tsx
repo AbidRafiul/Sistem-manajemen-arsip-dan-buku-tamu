@@ -114,15 +114,28 @@ const formatFileSize = (size?: number | null) => {
 };
 
 const loadImageAsDataUrl = async (url: string) => {
-    const response = await fetch(url);
-    const blob = await response.blob();
-
-    return await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result || ""));
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
+    if (!url) return "";
+    if (url.startsWith("data:image/")) return url;
+    
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Gagal mengambil gambar");
+        
+        const contentType = response.headers.get("content-type");
+        if (contentType && !contentType.startsWith("image/")) {
+            throw new Error("Bukan format gambar");
+        }
+        
+        const blob = await response.blob();
+        return await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ""));
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    } catch (error) {
+        throw error;
+    }
 };
 
 const getFilterHeaders = () => {
@@ -234,14 +247,16 @@ const buildPdfPreviewUrl = async (values: initValue) => {
         format: "a4",
         putOnlyUsedFonts: true,
     });
-    const logoDataUrl = await loadImageAsDataUrl(cLogoUrl).catch(() => null) || await loadImageAsDataUrl(COMPANY_LOGO_URL);
+    const logoDataUrl = await loadImageAsDataUrl(cLogoUrl).catch(() => null) || await loadImageAsDataUrl(COMPANY_LOGO_URL).catch(() => null);
     const pageWidth = 210;
     const marginX = 32;
     const maxWidth = 156;
     const lineHeight = 6;
     let cursorY = 43;
 
-    doc.addImage(logoDataUrl, "PNG", 24, 9, 28, 24);
+    if (logoDataUrl) {
+        doc.addImage(logoDataUrl, "PNG", 24, 9, 28, 24);
+    }
     doc.setFont("times", "bold");
     doc.setFontSize(16);
     doc.text(cName, pageWidth / 2 + 8, 15, { align: "center" });
@@ -305,7 +320,9 @@ const buildPdfPreviewUrl = async (values: initValue) => {
     doc.setFont("times", "normal");
     doc.setFontSize(11);
     doc.text(`Madiun, ${formatDateId(values.tanggal_surat) || "-"}`, 142, signatureY);
-    doc.addImage(logoDataUrl, "PNG", 145, signatureY + 9, 26, 21);
+    if (logoDataUrl) {
+        doc.addImage(logoDataUrl, "PNG", 145, signatureY + 9, 26, 21);
+    }
     doc.setFont("times", "bolditalic");
     doc.setFontSize(8);
     doc.text(cName, 158, signatureY + 13, { align: "center" });

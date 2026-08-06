@@ -15,7 +15,7 @@ const upload = multer({
     fileSize: 50 * 1024 * 1024
   }
 });
-const SORT_COLUMNS = {
+const oSortColumns = {
   id_surat_keluar: "tsk.id_surat_keluar",
   nomor_surat: "tsk.nomor_surat",
   nomor_agenda: "tsk.nomor_agenda",
@@ -70,7 +70,7 @@ const listDocuments = async (req, res, signedOnly = false) => {
   const nLimit = Math.min(toPositiveNumber(oPayload.limit, 10), 100);
   const nOffset = (nPage - 1) * nLimit;
   const cKeyword = oPayload.keyword || oPayload.search || "";
-  const cSortBy = SORT_COLUMNS[oPayload.sort_by] || SORT_COLUMNS.waktu_tanda_tangan;
+  const cSortBy = oSortColumns[oPayload.sort_by] || oSortColumns.waktu_tanda_tangan;
   const cSortOrder = String(oPayload.sort_order || "desc").toLowerCase() === "asc" ? "asc" : "desc";
   const latestFileSubquery = getLatestFileSubquery();
   const latestSignatureSubquery = getSignatureSubquery();

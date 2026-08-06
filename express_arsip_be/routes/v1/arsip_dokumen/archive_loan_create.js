@@ -5,6 +5,8 @@ const createArchiveLoan = async (req, res) => {
   const oPayload = req.body;
 
   try {
+    console.log("=== CREATE ARCHIVE LOAN ===");
+    console.log("PAYLOAD:", req.body);
     const cKodeDokumen = oPayload.kode_dokumen;
     const cBorrowerName = oPayload.nama_peminjam;
     const dLoanDate = oPayload.tanggal_pinjam;

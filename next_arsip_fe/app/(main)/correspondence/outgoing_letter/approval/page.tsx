@@ -160,7 +160,15 @@ const Page = () => {
     return (
         <>
             <Toast ref={toast} position="top-right" />
-            <Table getData={getData} state={state} setState={setState} toast={toast} />
+            <Table 
+                getData={getData} 
+                state={state} 
+                setState={setState} 
+                toast={toast} 
+                fetchLetterTypes={fetchLetterTypes}
+                fetchDetail={fetchDetail}
+                handleProcessApproval={handleProcessApproval}
+            />
         </>
 
     );

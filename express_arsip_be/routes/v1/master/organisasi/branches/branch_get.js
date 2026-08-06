@@ -9,20 +9,20 @@ router.post("/get-data", async (req, res) => {
   try {
     let query = DB("mst_cabang as c").leftJoin("mst_cabang as induk", "c.id_induk", "induk.id_cabang").select("c.id_cabang as id", "c.id_cabang", "c.id_induk", "induk.nama_cabang as nama_induk", "c.kode_cabang", "c.nama_cabang", "c.alamat", "c.telepon", "c.surel", "c.status").whereNot("c.status", "deleted");
     if (req.headers["x-filter-cabang"]) {
-      const parentBranchIds = req.headers["x-filter-cabang"].split(",").map(Number);
-      let allBranchIds = [];
+      const vaParentBranchIds = req.headers["x-filter-cabang"].split(",").map(Number);
+      let vaAllBranchIds = [];
       if (req.headers["x-exact-cabang"] === 'true') {
-        allBranchIds = parentBranchIds;
+        vaAllBranchIds = vaParentBranchIds;
       } else {
-        for (const bId of parentBranchIds) {
-          if (!isNaN(bId)) {
-            const descendantIds = await getDescendantBranchIds(DB, bId);
-            allBranchIds.push(...descendantIds);
+        for (const nBranchId of vaParentBranchIds) {
+          if (!isNaN(nBranchId)) {
+            const descendantIds = await getDescendantBranchIds(DB, nBranchId);
+            vaAllBranchIds.push(...descendantIds);
           }
         }
       }
-      if (allBranchIds.length > 0) {
-        query = query.whereIn("c.id_cabang", allBranchIds);
+      if (vaAllBranchIds.length > 0) {
+        query = query.whereIn("c.id_cabang", vaAllBranchIds);
       }
     }
 

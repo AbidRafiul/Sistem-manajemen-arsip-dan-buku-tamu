@@ -59,8 +59,8 @@ router.post("/", async (req, res) => {
         datetime: datetime(),
       });
 
-    const userId = Number(oPayload.id_pengguna);
-    if (!Number.isFinite(userId)) {
+    const nUserId = Number(oPayload.id_pengguna);
+    if (!Number.isFinite(nUserId)) {
       return res.status(422).json({
         status: status.BAD_REQUEST,
         message: "id_pengguna tidak valid",
@@ -75,7 +75,7 @@ router.post("/", async (req, res) => {
           .where("nama_pengguna", oPayload.nama_pengguna)
           .orWhere("telepon", oPayload.telepon);
       })
-      .whereNot("id_pengguna", userId)
+      .whereNot("id_pengguna", nUserId)
       .first();
 
     if (existingUser) {
@@ -92,7 +92,7 @@ router.post("/", async (req, res) => {
     const peranCode = req?.auth?.peranCode;
     if (peranCode !== "SUPERADMIN") {
       // 1. Pastikan user yang diedit memang berada di cabang yang sama!
-      const userToUpdate = await DB("mst_pengguna").where("id_pengguna", userId).first();
+      const userToUpdate = await DB("mst_pengguna").where("id_pengguna", nUserId).first();
       if (!userToUpdate) {
         return res.status(404).json({ status: status.NOT_FOUND, message: "Pengguna tidak ditemukan", datetime: datetime() });
       }
@@ -143,17 +143,17 @@ router.post("/", async (req, res) => {
     // TRANSAKSI UPDATE
     await DB.transaction(async (trx) => {
       // 1. Update mst_pengguna
-      await trx("mst_pengguna").where("id_pengguna", userId).update(oDataUser);
+      await trx("mst_pengguna").where("id_pengguna", nUserId).update(oDataUser);
 
       // 2. Update/insert mst_pengguna_peran berdasarkan id_pengguna
       const roleId = Number(oPayload.id_peran) || null;
       if (roleId) {
         const existingRole = await trx("mst_pengguna_peran")
-          .where("id_pengguna", userId)
+          .where("id_pengguna", nUserId)
           .first();
 
         if (existingRole) {
-          await trx("mst_pengguna_peran").where("id_pengguna", userId).update({
+          await trx("mst_pengguna_peran").where("id_pengguna", nUserId).update({
             id_peran: roleId,
             peran_utama: 1,
             status: "active",
@@ -161,7 +161,7 @@ router.post("/", async (req, res) => {
           });
         } else {
           await trx("mst_pengguna_peran").insert({
-            id_pengguna: userId,
+            id_pengguna: nUserId,
             id_peran: roleId,
             peran_utama: 1,
             status: "active",
@@ -175,7 +175,7 @@ router.post("/", async (req, res) => {
       const activeRole = await trx("mst_pengguna_peran as ur")
         .leftJoin("mst_peran as r", "ur.id_peran", "r.id_peran")
         .select("r.nama_peran", "r.kode_peran")
-        .where("ur.id_pengguna", userId)
+        .where("ur.id_pengguna", nUserId)
         .where("ur.status", "active")
         .orderBy("ur.peran_utama", "desc")
         .first();
@@ -193,7 +193,7 @@ router.post("/", async (req, res) => {
       if (navigation?.menu) {
         await trx("navigasi_pengguna")
           .insert({
-            id_pengguna: userId,
+            id_pengguna: nUserId,
             menu: navigation.menu,
             created_at: formatDateSystem(),
             updated_at: formatDateSystem(),

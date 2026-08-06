@@ -107,7 +107,6 @@ export async function seed(knex) {
     {
       id_menu_induk: idSuratKeluar,
       kode_menu: "SK_DASHBOARD",
-      nama_menu: "Dashboard Outgoing Letter", // let's translate or use "Dashboard Surat Keluar" as request
       nama_menu: "Dashboard Surat Keluar",
       jalur_menu: "/correspondence/outgoing_letter/dashboard",
       ikon_menu: "pi pi-fw pi-chart-bar",

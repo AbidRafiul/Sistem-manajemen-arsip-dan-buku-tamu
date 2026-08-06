@@ -23,20 +23,20 @@ router.post("/get-data", async (req, res) => {
       .where("status", "active");
 
     if (req.headers["x-filter-cabang"]) {
-      const parentBranchIds = req.headers["x-filter-cabang"].split(",").map(Number);
-      let allBranchIds = [];
+      const vaParentBranchIds = req.headers["x-filter-cabang"].split(",").map(Number);
+      let vaAllBranchIds = [];
       if (req.headers["x-exact-cabang"] === 'true') {
-        allBranchIds = parentBranchIds;
+        vaAllBranchIds = vaParentBranchIds;
       } else {
-        for (const bId of parentBranchIds) {
-          if (!isNaN(bId)) {
-            const descendantIds = await getDescendantBranchIds(DB, bId);
-            allBranchIds.push(...descendantIds);
+        for (const nBranchId of vaParentBranchIds) {
+          if (!isNaN(nBranchId)) {
+            const descendantIds = await getDescendantBranchIds(DB, nBranchId);
+            vaAllBranchIds.push(...descendantIds);
           }
         }
       }
-      if (allBranchIds.length > 0) {
-        query = query.whereIn("id_cabang", allBranchIds);
+      if (vaAllBranchIds.length > 0) {
+        query = query.whereIn("id_cabang", vaAllBranchIds);
       }
     }
     if (req.headers["x-filter-departemen"]) {

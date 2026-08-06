@@ -58,8 +58,14 @@ const loadImageAsDataUrl = async (url: string) => {
     
     try {
         const response = await fetch(url);
+        if (!response.ok) throw new Error("Gagal mengambil gambar");
+        
+        const contentType = response.headers.get("content-type");
+        if (contentType && !contentType.startsWith("image/")) {
+            throw new Error("Bukan format gambar");
+        }
+        
         const blob = await response.blob();
-
         return await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(String(reader.result || ""));

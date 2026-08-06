@@ -921,9 +921,9 @@ const assertMenuPermission = async (req, res, menuPaths = [], actionKey = "canVi
 
 const buildCertificatePayload = async (payload = {}, req = null) => {
   const now = new Date();
-  const resolvedUserId = payload.id_pengguna || getUserId(req);
+  const nResolvedUserId = payload.id_pengguna || getUserId(req);
   return {
-    id_pengguna: resolvedUserId || null,
+    id_pengguna: nResolvedUserId || null,
     nama_sertifikat: normalizeString(payload.nama_sertifikat),
     alias_sertifikat: normalizeString(payload.alias_sertifikat || payload.nama_sertifikat),
     nomor_seri: normalizeString(payload.nomor_seri),

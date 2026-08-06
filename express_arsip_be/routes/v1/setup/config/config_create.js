@@ -20,7 +20,7 @@ const upload = multer({
 
 router.post("/", upload.any(), async (req, res) => {
   const oPayload = req.body;
-  const files = req.files;
+  const vaFiles = req.files;
   const nama_pengguna = req?.auth?.nama_pengguna || "";
 
   try {
@@ -59,7 +59,7 @@ router.post("/", upload.any(), async (req, res) => {
 
     kode = JSON.parse(kode);
     keterangan = JSON.parse(keterangan);
-    console.log(files);
+    console.log(vaFiles);
 
     if (kode.length !== keterangan.length) {
       const oResult = {
@@ -83,9 +83,9 @@ router.post("/", upload.any(), async (req, res) => {
       .first();
 
     let filename = oldData?.keterangan || "";
-    const file = files[0];
+    const oFile = vaFiles[0];
 
-    if (file) {
+    if (oFile) {
       const uploadDir = path.join(
         process.cwd(),
         "public",
@@ -98,7 +98,7 @@ router.post("/", upload.any(), async (req, res) => {
       }
 
       const ext =
-        path.extname(file.originalname) || mimeToExt[file.mimetype] || "";
+        path.extname(oFile.originalname) || mimeToExt[oFile.mimetype] || "";
       filename = `logo_perusahaan${ext}`;
       const filepath = path.join(uploadDir, filename);
 
@@ -108,7 +108,7 @@ router.post("/", upload.any(), async (req, res) => {
         fs.unlinkSync(oldPath);
       }
 
-      fs.renameSync(file.path, filepath);
+      fs.renameSync(oFile.path, filepath);
     }
 
     kode.push("msLogoPerusahaan");

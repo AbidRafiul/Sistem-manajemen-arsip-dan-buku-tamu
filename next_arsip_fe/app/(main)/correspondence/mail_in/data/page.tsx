@@ -230,9 +230,21 @@ const Page = () => {
     return (
         <>
             <Toast ref={toast} position="top-right" />
-            <Table getData={getData} state={state} setState={setState} formik={formik} toast={toast} />
+            <Table 
+                getData={getData} 
+                state={state} 
+                setState={setState} 
+                formik={formik} 
+                toast={toast} 
+                handleSave={handleSave}
+                handleDelete={handleDelete}
+                getLetterTypeOptions={getLetterTypeOptions}
+                openDetail={openDetail}
+                reloadDetail={reloadDetail}
+                executeArchiveLetter={executeArchiveLetter}
+                getFileBlob={getFileBlob}
+            />
         </>
-
     );
 };
 
