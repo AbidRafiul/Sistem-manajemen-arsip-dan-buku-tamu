@@ -208,8 +208,8 @@ const Page = () => {
     }, [state.submittedData]);
 
     return <>
-        <div className="w-full">
-            <Toast ref={toast} position="top-right" />
+        <Toast ref={toast} position="top-right" />
+
             <Table
                 getLoans={getLoans}
                 handleApproveReject={handleApproveReject}
@@ -220,7 +220,6 @@ const Page = () => {
                 toast={toast}
                 handleScan={handleScan}
             />
-        </div>
     </>
 }
 

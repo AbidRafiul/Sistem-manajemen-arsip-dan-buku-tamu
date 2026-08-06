@@ -2,6 +2,7 @@ import express from "express";
 import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { validatePayload, Logging } from "../components/tools/servertool.js";
+import { status, datetime } from "../components/tools/general.js";
 const router = express.Router();
 const AGENDA_PREFIX = "AGD";
 const AGENDA_SEQUENCE_LENGTH = 4;
@@ -55,7 +56,7 @@ const incomingLetterCreate = async (req, res) => {
     });
     if (cValidate) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidate
       });
     }
@@ -98,7 +99,7 @@ const incomingLetterCreate = async (req, res) => {
       const oData = await DB(oReference.table).where(oReference.key, value).first();
       if (!oData) {
         return res.status(400).json({
-          status: false,
+          status: status.BAD_REQUEST,
           message: `${oReference.label} tidak ditemukan`
         });
       }
@@ -144,7 +145,7 @@ const incomingLetterCreate = async (req, res) => {
       return nId;
     });
     return res.status(201).json({
-      status: true,
+      status: status.SUKSES,
       message: "Surat masuk berhasil dibuat",
       data: {
         surat_masuk_id: nIncomingLetterId
@@ -153,7 +154,7 @@ const incomingLetterCreate = async (req, res) => {
   } catch (error) {
     console.log(error);
     const oResult = {
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Surat masuk gagal dibuat",
       error: error.message
     };

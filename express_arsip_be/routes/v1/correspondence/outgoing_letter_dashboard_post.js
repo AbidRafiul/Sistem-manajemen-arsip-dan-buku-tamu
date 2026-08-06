@@ -2,6 +2,7 @@ import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { applyMultiTenantFilter } from "../components/tools/filter_helper.js";
+import { status, datetime } from "../components/tools/general.js";
 
 const router = express.Router();
 
@@ -90,7 +91,7 @@ const outgoingLetterDashboardStats = async (req, res) => {
     }
 
     return res.status(200).json({
-      status: true,
+      status: status.SUKSES,
       message: "Statistik dashboard surat keluar berhasil diambil",
       data: {
         summary: {
@@ -141,7 +142,7 @@ const outgoingLetterDashboardStats = async (req, res) => {
     });
   } catch (error) {
     const oResult = {
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Statistik dashboard surat keluar gagal diambil",
       error: error.message
     };

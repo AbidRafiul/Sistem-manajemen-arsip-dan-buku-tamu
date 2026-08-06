@@ -2,6 +2,7 @@ import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { applyMultiTenantFilter } from "../components/tools/filter_helper.js";
+import { status, datetime } from "../components/tools/general.js";
 
 const router = express.Router();
 
@@ -120,7 +121,7 @@ const outgoingLetterData = async (req, res) => {
     const vaData = await oQuery.orderBy(cSortBy, cSortOrder).limit(nLimit).offset(nOffset);
 
     return res.status(200).json({
-      status: true,
+      status: status.SUKSES,
       message: "Data surat keluar berhasil diambil",
       data: vaData,
       pagination: {
@@ -132,7 +133,7 @@ const outgoingLetterData = async (req, res) => {
     });
   } catch (error) {
     const oResult = {
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Data surat keluar gagal diambil",
     };
 
@@ -140,7 +141,7 @@ const outgoingLetterData = async (req, res) => {
       file: cFile,
       func: cFunc,
       request: JSON.stringify(oPayload),
-      response: oResult.message,
+      response: oResult,
       user: req?.auth?.nama_pengguna || "",
     });
 

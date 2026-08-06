@@ -2,13 +2,14 @@ import express from "express";
 import DB from "../../../core/config/knex.js";
 import { buildDocxBufferFromText } from "../components/tools/docx_builder.js";
 import { Logging } from "../components/tools/servertool.js";
+import { status, datetime } from "../components/tools/general.js";
 const router = express.Router();
 router.get("/:id_surat_keluar", async (req, res) => {
   try {
     const surat = await DB("trs_surat_keluar as tsk").leftJoin("mst_jenis_surat as mjs", "tsk.id_jenis_surat", "mjs.jenis_surat_id").leftJoin("mst_template_surat as mts", "tsk.id_template", "mts.id_template").select("tsk.id_surat_keluar", "tsk.nomor_surat", "tsk.nomor_agenda", "tsk.tanggal_surat", "tsk.perihal", "tsk.tujuan", "tsk.instansi_tujuan", "tsk.media_pengiriman", "tsk.isi_surat_final", "tsk.nama_pengirim", "tsk.jabatan", "mts.nama_template", "mjs.nama_jenis_surat").where("tsk.id_surat_keluar", req.params.id_surat_keluar).first();
     if (!surat) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Surat keluar tidak ditemukan"
       });
     }
@@ -19,7 +20,7 @@ router.get("/:id_surat_keluar", async (req, res) => {
     return res.status(200).send(buffer);
   } catch (error) {
     const oResult = {
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Dokumen surat keluar gagal dibuat"
     };
     Logging(error, {

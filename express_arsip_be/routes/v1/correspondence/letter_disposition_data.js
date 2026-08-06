@@ -3,6 +3,7 @@ import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { validatePayload, Logging } from "../components/tools/servertool.js";
 import { applyMultiTenantFilter } from "../components/tools/filter_helper.js";
+import { status, datetime } from "../components/tools/general.js";
 const router = express.Router();
 const letterDispositionData = async (req, res) => {
   try {
@@ -25,7 +26,7 @@ const letterDispositionData = async (req, res) => {
     });
     if (cValidate) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidate
       });
     }
@@ -52,14 +53,14 @@ const letterDispositionData = async (req, res) => {
     applyMultiTenantFilter(oQuery, req, 'kepada_pengguna');
     const vaData = await oQuery;
     return res.status(200).json({
-      status: true,
+      status: status.SUKSES,
       message: "Data disposisi surat berhasil diambil",
       data: vaData
     });
   } catch (error) {
     console.log(error);
     const oResult = {
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Data disposisi surat gagal diambil",
       error: error.message
     };

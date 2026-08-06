@@ -1,9 +1,9 @@
 'use client'
 
-
 import { showError, showSuccess } from "@/lib/tools/generalTools";
 import jsPDF from "jspdf";
 import dynamic from "next/dynamic";
+import postData from "@/lib/axios/postData";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import { Dialog } from "primereact/dialog";
@@ -13,12 +13,10 @@ import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { SelectButton } from "primereact/selectbutton";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
-import {
-    apiEndpointDocumentDownload,
-
-} from "../endpoints";
+import { apiEndpointGet } from "../endpoints";
 import { FormProps, initValue } from "../interfaces";
 import { mapOutgoingLetterPayload } from "../mappers";
+
 const PDFViewer = dynamic(() => import("@/app/components/print_components/pdfViewer"), { ssr: false });
 
 const statusOptions = [
@@ -39,8 +37,8 @@ const mediaPengirimanOptions = [
 ];
 
 const suratModeOptions = [
-    { label: "Sistem", value: "sistem" },
-    { label: "Upload PDF", value: "upload_pdf" },
+    { label: "Opsi 1: Template Sistem", value: "sistem" },
+    { label: "Opsi 2: Upload File Eksternal (PDF/Word)", value: "upload_pdf" },
 ];
 
 interface LetterTypeOption {
@@ -61,6 +59,7 @@ interface TemplateOption {
 }
 
 const INTERCEPTOR_BASE_URL = process.env.NEXT_PUBLIC_API_DIR_PATH || "/api/interceptor";
+const COMPANY_LOGO_URL = "/marstech-logo.png";
 const SIGNER_NAME = "BOSTANUL ASY'ARI";
 const SIGNER_TITLE = "DIREKTUR";
 const PDF_MIME_TYPE = "application/pdf";
@@ -115,22 +114,15 @@ const formatFileSize = (size?: number | null) => {
 };
 
 const loadImageAsDataUrl = async (url: string) => {
-    if (!url) return "";
-    if (url.startsWith("data:image/")) return url;
-    
-    try {
-        const response = await fetch(url);
-        const blob = await response.blob();
+    const response = await fetch(url);
+    const blob = await response.blob();
 
-        return await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(String(reader.result || ""));
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
-    } catch {
-        return "";
-    }
+    return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
 };
 
 const getFilterHeaders = () => {
@@ -196,7 +188,7 @@ export const extractIsiSuratFromFinal = (value?: string | null) => {
     return text;
 };
 
-export const buildFinalLetterText = (values: initValue) => [
+const buildFinalLetterText = (values: initValue) => [
     `Nomor    : ${values.nomor_surat || "-"}`,
     "Lampiran : -",
     `Perihal  : ${values.perihal || "-"}`,
@@ -215,13 +207,28 @@ export const buildFinalLetterText = (values: initValue) => [
     values.jabatan || SIGNER_TITLE,
 ].filter((line, index, lines) => line || lines[index - 1] !== "").join("\n");
 
-const buildPdfPreviewUrl = async (values: initValue, config?: any) => {
-    const cfg = {
-        COMPANY_NAME: config?.COMPANY_NAME || "PT. MARSTECH GLOBAL",
-        COMPANY_ADDRESS: config?.COMPANY_ADDRESS || "JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR",
-        COMPANY_CONTACT: config?.COMPANY_CONTACT || "Telp. 0351-2812555 E-mail. info@marstech.co.id web. www.marstech.co.id",
-        COMPANY_LICENSE: config?.COMPANY_LICENSE || "SIUP : 503.4/ 29 - MIKRO/ 401.106/ 2018 TDP : 13.13.1.47.00655"
-    };
+const buildPdfPreviewUrl = async (values: initValue) => {
+    // Fetch config
+    let config: any = {};
+    try {
+        const res = await postData("/setup/config-data", {
+            kode: [
+                "msNamaPerusahaan", "msAlamatPerusahaan", "msTeleponPerusahaan",
+                "msEmailPerusahaan", "msWebsitePerusahaan", "msNomorIzin", "msLogoPerusahaan"
+            ]
+        });
+        config = res.data?.data || {};
+    } catch (error) {
+        console.error("Gagal mengambil konfigurasi:", error);
+    }
+
+    const cName = config.msNamaPerusahaan || "PT. MARSTECH GLOBAL";
+    const cAddress = config.msAlamatPerusahaan || "JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR";
+    const cContact = `Telp. ${config.msTeleponPerusahaan || "0351-2812555"} E-mail. ${config.msEmailPerusahaan || "info@marstech.co.id"} web. ${config.msWebsitePerusahaan || "www.marstech.co.id"}`;
+    const cLicense = config.msNomorIzin || "SIUP : 503.4/ 29 - MIKRO/ 401.106/ 2018 TDP : 13.13.1.47.00655";
+    const cLogoUrl = config.msLogoPerusahaan 
+        ? `${process.env.NEXT_PUBLIC_API_DIR_PATH?.replace('/api', '') || ''}/uploads/config/logo_perusahaan/${config.msLogoPerusahaan}` 
+        : COMPANY_LOGO_URL;
 
     const doc = new jsPDF({
         orientation: "p",
@@ -229,35 +236,22 @@ const buildPdfPreviewUrl = async (values: initValue, config?: any) => {
         format: "a4",
         putOnlyUsedFonts: true,
     });
-    
-    let logoDataUrl = "";
-    const img = config?.COMPANY_LOGO || "";
-    if (img?.trim()) {
-        if (img.startsWith("data:image/")) {
-            logoDataUrl = img;
-        } else {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_DIR_PATH?.replace('/api/v1', '') || "";
-            logoDataUrl = await loadImageAsDataUrl(`${apiUrl}/uploads/config/logo_perusahaan/${img}`);
-        }
-    }
-
+    const logoDataUrl = await loadImageAsDataUrl(cLogoUrl).catch(() => null) || await loadImageAsDataUrl(COMPANY_LOGO_URL);
     const pageWidth = 210;
     const marginX = 32;
     const maxWidth = 156;
     const lineHeight = 6;
     let cursorY = 43;
 
-    if (logoDataUrl) {
-        doc.addImage(logoDataUrl, "PNG", 18, 9, 0, 24); // height 24, auto width
-    }
+    doc.addImage(logoDataUrl, "PNG", 24, 9, 28, 24);
     doc.setFont("times", "bold");
-    doc.setFontSize(14);
-    doc.text(cfg.COMPANY_NAME, pageWidth / 2, 15, { align: "center" });
+    doc.setFontSize(16);
+    doc.text(cName, pageWidth / 2 + 8, 15, { align: "center" });
+    doc.setFontSize(10);
+    doc.text(cAddress, pageWidth / 2 + 8, 21, { align: "center" });
     doc.setFontSize(9);
-    doc.text(cfg.COMPANY_ADDRESS, pageWidth / 2, 21, { align: "center" });
-    doc.setFontSize(8);
-    doc.text(cfg.COMPANY_CONTACT, pageWidth / 2, 26, { align: "center" });
-    doc.text(cfg.COMPANY_LICENSE, pageWidth / 2, 31, { align: "center" });
+    doc.text(cContact, pageWidth / 2 + 8, 26, { align: "center" });
+    doc.text(cLicense, pageWidth / 2 + 8, 31, { align: "center" });
     doc.setLineWidth(0.8);
     doc.line(18, 36, 190, 36);
 
@@ -314,20 +308,18 @@ const buildPdfPreviewUrl = async (values: initValue, config?: any) => {
     doc.setFont("times", "normal");
     doc.setFontSize(11);
     doc.text(`Madiun, ${formatDateId(values.tanggal_surat) || "-"}`, 142, signatureY);
-    if (logoDataUrl) {
-        doc.addImage(logoDataUrl, "PNG", 145, signatureY + 9, 26, 21);
-    }
+    doc.addImage(logoDataUrl, "PNG", 145, signatureY + 9, 26, 21);
     doc.setFont("times", "bolditalic");
     doc.setFontSize(8);
-    doc.text(cfg.COMPANY_NAME, 158, signatureY + 13, { align: "center" });
+    doc.text(cName, 158, signatureY + 13, { align: "center" });
     doc.setFont("times", "bold");
     doc.setFontSize(9);
     doc.text(values.nama_pengirim || SIGNER_NAME, 158, signatureY + 35, { align: "center" });
     doc.text(values.jabatan || SIGNER_TITLE, 158, signatureY + 41, { align: "center" });
 
     doc.setFont("times", "bolditalic");
-    doc.setFontSize(7);
-    doc.text(`${cfg.COMPANY_NAME} - ${values.perihal || "Surat Keluar"}`, marginX, 282);
+    doc.setFontSize(8);
+    doc.text(`${cName} - ${values.perihal || "Surat Keluar"}`, marginX, 282);
 
     return URL.createObjectURL(doc.output("blob"));
 };
@@ -357,17 +349,7 @@ const renderTemplateContent = (
     return (templateContent || "").replace(/{{\s*([\w_]+)\s*}}/g, (_, key) => replacements[key] || "");
 };
 
-const Form = ({ 
-    state, 
-    setState, 
-    formik, 
-    toast,
-    handleSave,
-    downloadDocx,
-    getLetterTypeOptions,
-    getTemplateOptions,
-    loadNomorPreview
-}: FormProps) => {
+const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploadPdf, apiDownloadDocx, apiExtractOcr, apiGetLetterTypes, apiGetTemplates, apiGetNomorPreview }: FormProps) => {
     const [letterTypeOptions, setLetterTypeOptions] = useState<LetterTypeOption[]>([]);
     const [templateOptions, setTemplateOptions] = useState<TemplateOption[]>([]);
     const [nomorPreviewLoading, setNomorPreviewLoading] = useState(false);
@@ -378,19 +360,58 @@ const Form = ({
     const [downloadLoading, setDownloadLoading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const fetchLetterTypeOptions = async () => {
-        if (getLetterTypeOptions) {
-            const data = await getLetterTypeOptions();
-            setLetterTypeOptions(data);
+    const getLetterTypeOptions = async () => {
+        try {
+            const data = await apiGetLetterTypes?.();
+            setLetterTypeOptions(data || []);
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Jenis surat gagal diambil");
         }
     };
 
-    const fetchTemplateOptions = async () => {
-        if (getTemplateOptions) {
-            const data = await getTemplateOptions();
-            setTemplateOptions(data);
+    const getTemplateOptions = async () => {
+        try {
+            const data = await apiGetTemplates?.();
+            const templates = (data || [])
+                .map((item: any) => ({
+                    ...item,
+                    id_template: item.id_template || item.id,
+                }))
+                .filter((item: TemplateOption) => item.status === "active");
+
+            setTemplateOptions(templates);
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Template surat gagal diambil");
         }
     };
+
+    const availableStatusOptions = useMemo(() => {
+        const manualOptions = [
+            { label: "Draft", value: "draft" },
+            { label: "Terkirim", value: "terkirim" },
+            { label: "Selesai", value: "selesai" },
+        ];
+
+        const currentStatus = formik.values.status;
+        if (currentStatus && !manualOptions.some((o) => o.value === currentStatus)) {
+            const autoLabels: Record<string, string> = {
+                menunggu_approval: "Menunggu Approval",
+                disetujui: "Disetujui",
+                ditolak: "Ditolak",
+            };
+            return [
+                {
+                    label: autoLabels[currentStatus] || String(currentStatus),
+                    value: currentStatus,
+                },
+                ...manualOptions,
+            ];
+        }
+
+        return manualOptions;
+    }, [formik.values.status]);
 
     const selectedTemplate = useMemo(
         () => templateOptions.find((item) => item.id_template === formik.values.id_template) || null,
@@ -435,7 +456,7 @@ const Form = ({
 
     const generatePdfPreview = async () => {
         try {
-            const pdfUrl = await buildPdfPreviewUrl(formik.values, state.config);
+            const pdfUrl = await buildPdfPreviewUrl(formik.values);
 
             if (pdfPreviewUrl) {
                 URL.revokeObjectURL(pdfPreviewUrl);
@@ -448,31 +469,126 @@ const Form = ({
         }
     };
 
-    const handleDownloadDocx = async () => {
-        if (!formik.values.id_surat_keluar || !downloadDocx) {
+    const downloadDocx = async () => {
+        if (!formik.values.id_surat_keluar) {
             showError(toast, "Simpan surat terlebih dahulu sebelum mengunduh DOCX");
             return;
         }
 
         setDownloadLoading(true);
         try {
-            await downloadDocx(formik.values.id_surat_keluar, formik.values.nomor_surat || "surat-keluar");
+            const response = await apiDownloadDocx?.(formik.values.id_surat_keluar, {
+                "X-Level": "1",
+                ...getFilterHeaders(),
+            });
+
+            const blob = new Blob([response?.data], {
+                type: response?.headers?.["content-type"] || "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            });
+            const url = URL.createObjectURL(blob);
+            const filename =
+                getFilenameFromDisposition(response.headers["content-disposition"]) ||
+                `${String(formik.values.nomor_surat || "surat-keluar").replace(/[^\w.-]+/g, "_")}.docx`;
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+        } catch (error: any) {
+            let message = error?.response?.data?.message || error?.message || "Dokumen gagal diunduh";
+
+            if (error?.response?.data instanceof Blob) {
+                try {
+                    const text = await error.response.data.text();
+                    const parsed = JSON.parse(text);
+                    message = parsed?.message || message;
+                } catch {
+                    message = "Dokumen gagal diunduh";
+                }
+            }
+
+            showError(toast, message);
         } finally {
             setDownloadLoading(false);
         }
     };
 
-    const onSubmit = async (input: initValue) => {
-        if (handleSave) {
-            setState((p) => ({ ...p, load: true }));
-            try {
-                await handleSave(input);
-            } finally {
-                setState((p) => ({ ...p, load: false, submittedData: null }));
+    const handleSave = async (input: initValue) => {
+        setState((p) => ({ ...p, load: true }));
+
+        try {
+            const isEdit = Boolean(state.edit);
+            const shouldUploadPdf = suratInputMode === "upload_pdf" && Boolean(input.file_surat);
+            const isDirectUploadRequired = suratInputMode === "upload_pdf" && !isEdit && !input.file_surat;
+
+            if (isDirectUploadRequired) {
+                showError(toast, "File PDF atau Word (.docx) wajib diupload untuk Opsi Upload Eksternal");
+                return;
             }
+
+            const isiSuratFinal = buildFinalLetterText(input);
+            const payload = mapOutgoingLetterPayload(
+                {
+                    ...input,
+                    isi_surat_final: isiSuratFinal,
+                    created_by: input.created_by || getUserId(state) as number | null,
+                    updated_by: getUserId(state) as number | null,
+                },
+                isEdit
+            );
+            payload.nomor_surat_auto = nomorSuratAuto;
+
+            const response = await apiSaveLetter?.(payload, isEdit, input.id_surat_keluar);
+
+            const savedId = Number(
+                response?.data?.data?.id_surat_keluar || input.id_surat_keluar || 0
+            );
+            let uploadErrorMessage = "";
+
+            if (shouldUploadPdf && savedId > 0) {
+                try {
+                    await uploadDirectPdf(savedId, input.file_surat);
+                } catch (uploadError: any) {
+                    const uploadResponse = uploadError?.response?.data || uploadError;
+                    uploadErrorMessage =
+                        uploadResponse?.message ||
+                        uploadError?.message ||
+                        "PDF surat gagal diunggah";
+                }
+            }
+
+            if (uploadErrorMessage) {
+                showError(
+                    toast,
+                    `Surat keluar tersimpan, tetapi ${uploadErrorMessage}`
+                );
+            } else {
+                showSuccess(
+                    toast,
+                    shouldUploadPdf
+                        ? "Surat keluar dan PDF berhasil disimpan"
+                        : (response?.data?.message || "Surat keluar berhasil disimpan")
+                );
+            }
+            formik.resetForm();
+            clearUploadedPdf();
+            setSuratInputMode("sistem");
+            setState((p) => ({
+                ...p,
+                add: false,
+                edit: false,
+                detail: false,
+                detailData: null,
+                selectedLetters: [],
+            }));
+            await getData(apiEndpointGet);
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Surat keluar gagal disimpan");
+        } finally {
+            setState((p) => ({ ...p, load: false, submittedData: null }));
         }
     };
-
 
     const isFormFieldInvalid = (name: keyof initValue) =>
         Boolean(formik.touched[name] && formik.errors[name]);
@@ -489,34 +605,100 @@ const Form = ({
 
     const clearUploadedPdf = () => {
         formik.setFieldValue("file_surat", null);
+
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
     };
 
-    const handlePdfSelection = (event: ChangeEvent<HTMLInputElement>) => {
+    const [isOcrExtracting, setIsOcrExtracting] = useState(false);
+
+    const handleExternalFileSelection = async (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
-        if (file.type !== "application/pdf") {
-            showError(toast, "Upload langsung hanya menerima file PDF");
+        const ext = file.name.split('.').pop()?.toLowerCase() || '';
+        if (!['pdf', 'docx', 'doc'].includes(ext)) {
+            showError(toast, "Upload file eksternal hanya menerima format PDF atau Word (.docx)");
             clearUploadedPdf();
             return;
         }
 
         formik.setFieldValue("file_surat", file);
+        setIsOcrExtracting(true);
+
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const res = await apiExtractOcr?.(formData);
+            const meta = res?.data?.data;
+
+            if (meta) {
+                const hasExtractedData = Boolean(
+                    meta.nomor_surat || meta.perihal || meta.tanggal_surat || meta.tujuan_surat || meta.isi_surat
+                );
+
+                if (hasExtractedData) {
+                    showSuccess(toast, "Ekstraksi OCR berhasil. Data form telah terisi otomatis.");
+                    if (meta.nomor_surat) {
+                        formik.setFieldValue("nomor_surat", meta.nomor_surat);
+                        setNomorSuratAuto(false);
+                    }
+                    if (meta.perihal) {
+                        formik.setFieldValue("perihal", meta.perihal);
+                    }
+                    if (meta.tanggal_surat) {
+                        formik.setFieldValue("tanggal_surat", meta.tanggal_surat);
+                    }
+                    if (meta.tujuan_surat) {
+                        formik.setFieldValue("tujuan", meta.tujuan_surat);
+                    }
+                    if (meta.isi_surat) {
+                        formik.setFieldValue("isi_surat", meta.isi_surat);
+                    }
+                } else {
+                    showError(
+                        toast,
+                        "Berkas terdeteksi tanpa naskah teks terstruktur. Silakan isi form data surat secara manual."
+                    );
+                }
+            }
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Gagal meng-ekstrak OCR metadata. Anda tetap dapat memasukkan data secara manual.");
+        } finally {
+            setIsOcrExtracting(false);
+        }
     };
 
+    const uploadDirectPdf = async (idSuratKeluar: number, file?: File | null) => {
+        const selectedFile = file || formik.values.file_surat;
+        if (!selectedFile) return;
 
+        const formData = new FormData();
+        formData.append("id_surat_keluar", String(idSuratKeluar));
+        formData.append("nomor_surat", formik.values.nomor_surat || "");
+        formData.append("perihal", formik.values.perihal || "");
+        formData.append("File", selectedFile);
+
+        const uploadedBy = getUserId(state);
+        if (uploadedBy) formData.append("uploaded_by", String(uploadedBy));
+
+        await apiUploadPdf?.(idSuratKeluar, formData);
+    };
 
     useEffect(() => {
-        if (state.submittedData) onSubmit(state.submittedData);
+        if (state.submittedData) handleSave(state.submittedData);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.submittedData]);
 
     useEffect(() => {
         if (state.add && !state.edit) {
             setNomorSuratAuto(true);
+            if (!formik.values.status || formik.values.status === "draft") {
+                formik.setFieldValue("status", "menunggu_approval");
+            }
         }
     }, [state.add, state.edit]);
 
@@ -575,21 +757,20 @@ const Form = ({
 
         let cancelled = false;
 
-        const fetchNomorPreview = async () => {
+        const loadNomorPreview = async () => {
             setNomorPreviewLoading(true);
 
             try {
-                if (loadNomorPreview && !cancelled) {
-                    const nomorSurat = await loadNomorPreview(
-                        formik.values.id_jenis_surat as number,
-                        formik.values.tanggal_surat,
-                        currentUnitKerjaId
-                    );
-                    
-                    if (nomorSurat && (nomorSuratAuto || !formik.values.nomor_surat)) {
-                        formik.setFieldValue("nomor_surat", nomorSurat);
-                        setNomorSuratAuto(true);
-                    }
+                const nomorSurat = (await apiGetNomorPreview?.({
+                    jenis_surat_id: formik.values.id_jenis_surat,
+                    tanggal_surat: formik.values.tanggal_surat,
+                    id_unit_kerja: currentUnitKerjaId,
+                })) || "";
+
+                if (cancelled) return;
+                if (nomorSurat && (nomorSuratAuto || !formik.values.nomor_surat)) {
+                    formik.setFieldValue("nomor_surat", nomorSurat);
+                    setNomorSuratAuto(true);
                 }
             } catch (error: any) {
                 if (!cancelled) {
@@ -604,7 +785,7 @@ const Form = ({
             }
         };
 
-        fetchNomorPreview();
+        loadNomorPreview();
 
         return () => {
             cancelled = true;
@@ -645,8 +826,8 @@ const Form = ({
     }, [pdfPreviewUrl]);
 
     useEffect(() => {
-        fetchLetterTypeOptions();
-        fetchTemplateOptions();
+        getLetterTypeOptions();
+        getTemplateOptions();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -704,19 +885,39 @@ const Form = ({
                     </div>
 
                     <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                        <label className="font-semibold text-900">Mode Input Surat</label>
-                        <SelectButton
-                            value={suratInputMode}
-                            onChange={(e) => {
-                                if (e.value) setSuratInputMode(e.value as "sistem" | "upload_pdf");
-                            }}
-                            options={suratModeOptions}
-                            optionLabel="label"
-                            optionValue="value"
-                            className="w-full"
-                        />
-                        <small className="text-color-secondary">
-                            Pilih sistem jika surat dibangun dari template aplikasi, atau upload PDF jika perusahaan sudah punya file jadi.
+                        <label className="font-semibold text-900" style={{ fontFamily: "inherit" }}>Mode Input Surat</label>
+                        <div className="surface-100 border-1 surface-border p-1 border-round-xl flex align-items-center w-full gap-1">
+                            <button
+                                type="button"
+                                onClick={() => setSuratInputMode("sistem")}
+                                style={{ fontFamily: "inherit" }}
+                                className={`flex-1 py-2 px-3 border-round-lg text-center border-none cursor-pointer transition-all transition-duration-200 flex align-items-center justify-content-center gap-2 select-none ${
+                                    suratInputMode === "sistem"
+                                        ? "bg-white text-primary shadow-1 font-semibold"
+                                        : "bg-transparent text-600 hover:text-900 font-medium"
+                                }`}
+                            >
+                                <i className="pi pi-file-edit text-sm" />
+                                <span className="text-sm whitespace-nowrap">Opsi 1: Template Sistem</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setSuratInputMode("upload_pdf")}
+                                style={{ fontFamily: "inherit" }}
+                                className={`flex-1 py-2 px-3 border-round-lg text-center border-none cursor-pointer transition-all transition-duration-200 flex align-items-center justify-content-center gap-2 select-none ${
+                                    suratInputMode === "upload_pdf"
+                                        ? "bg-white text-primary shadow-1 font-semibold"
+                                        : "bg-transparent text-600 hover:text-900 font-medium"
+                                }`}
+                            >
+                                <i className="pi pi-upload text-sm" />
+                                <span className="text-sm whitespace-nowrap">Opsi 2: Upload File (PDF/Word)</span>
+                            </button>
+                        </div>
+                        <small className="text-color-secondary" style={{ fontFamily: "inherit" }}>
+                            {suratInputMode === "sistem"
+                                ? "Surat dibangun menggunakan template aplikasi otomatis."
+                                : "Metadata surat di-ekstrak langsung dari berkas PDF / Word yang Anda upload."}
                         </small>
                     </div>
 
@@ -777,7 +978,7 @@ const Form = ({
                             id="status"
                             className="w-full"
                             value={formik.values.status}
-                            options={statusOptions}
+                            options={availableStatusOptions}
                             onChange={(e) => formik.setFieldValue("status", e.value)}
                             placeholder="Pilih status"
                         />
@@ -861,26 +1062,29 @@ const Form = ({
                         </div>
                     ) : (
                         <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="file_surat" className="font-semibold text-900">Upload PDF Surat</label>
+                            <label htmlFor="file_surat" className="font-semibold text-900">
+                                Upload File Eksternal Surat (PDF / Word)
+                            </label>
                             <input
                                 ref={fileInputRef}
                                 id="file_surat"
                                 type="file"
-                                accept={PDF_MIME_TYPE}
+                                accept=".pdf,.docx,.doc,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                                 style={{ display: "none" }}
-                                onChange={handlePdfSelection}
+                                onChange={handleExternalFileSelection}
                             />
                             <div className="flex align-items-stretch gap-2">
                                 <InputText
                                     className="w-full"
-                                    value={formik.values.file_surat?.name || "Belum ada file PDF dipilih"}
+                                    value={formik.values.file_surat?.name || "Belum ada file PDF/Word dipilih"}
                                     readOnly
                                 />
                                 <Button
                                     type="button"
-                                    icon="pi pi-upload"
+                                    icon={isOcrExtracting ? "pi pi-spin pi-spinner" : "pi pi-upload"}
                                     outlined
-                                    aria-label="Pilih file PDF"
+                                    aria-label="Pilih file eksternal"
+                                    disabled={isOcrExtracting}
                                     onClick={() => fileInputRef.current?.click()}
                                 />
                                 <Button
@@ -888,15 +1092,17 @@ const Form = ({
                                     icon="pi pi-times"
                                     severity="secondary"
                                     outlined
-                                    aria-label="Hapus file PDF"
-                                    disabled={!formik.values.file_surat}
+                                    aria-label="Hapus file eksternal"
+                                    disabled={!formik.values.file_surat || isOcrExtracting}
                                     onClick={clearUploadedPdf}
                                 />
                             </div>
                             <small className="text-color-secondary">
-                                {formik.values.file_surat
-                                    ? `PDF siap diupload (${formatFileSize(formik.values.file_surat.size)})`
-                                    : "Hanya file PDF yang diterima untuk upload langsung."}
+                                {isOcrExtracting
+                                    ? "Sedang meng-ekstrak metadata OCR dari file..."
+                                    : formik.values.file_surat
+                                    ? `File eksternal siap (${formatFileSize(formik.values.file_surat.size)}). Metadata form telah terisi otomatis.`
+                                    : "Pilih file PDF atau Word (.docx) eksternal. Sistem akan meng-ekstrak metadata secara otomatis."}
                             </small>
                         </div>
                     )}
@@ -940,38 +1146,40 @@ const Form = ({
                         />
                     </div>
 
-                    <div className="col-12 flex flex-column gap-2 mb-2">
-                        <div className="flex align-items-center justify-content-between gap-2 flex-wrap">
-                            <label htmlFor="isi_surat_final" className="font-semibold text-900">Preview Naskah Final</label>
-                            <div className="flex align-items-center gap-2 flex-wrap">
-                                <Button
-                                    type="button"
-                                    size="small"
-                                    icon="pi pi-sync"
-                                    label="Terapkan Data"
-                                    outlined
-                                    disabled={!selectedTemplate}
-                                    onClick={applyTemplateToPreview}
-                                />
-                                <Button
-                                    type="button"
-                                    size="small"
-                                    icon="pi pi-file-pdf"
-                                    label="Preview PDF"
-                                    outlined
-                                    disabled={!formik.values.isi_surat_final && !formik.values.isi_surat}
-                                    onClick={generatePdfPreview}
-                                />
-                                <Button
-                                    type="button"
-                                    size="small"
-                                    icon="pi pi-download"
-                                    label="Unduh DOCX"
-                                    outlined
-                                    loading={downloadLoading}
-                                    disabled={!formik.values.id_surat_keluar || downloadLoading}
-                                    onClick={handleDownloadDocx}
-                                />
+                    {suratInputMode === "sistem" && (
+                        <div className="col-12 flex flex-column gap-2 mb-2">
+                            <div className="flex align-items-center justify-content-between gap-2 flex-wrap">
+                                <label htmlFor="isi_surat_final" className="font-semibold text-900">Preview Naskah Final</label>
+                                <div className="flex align-items-center gap-2 flex-wrap">
+                                    <Button
+                                        type="button"
+                                        size="small"
+                                        icon="pi pi-sync"
+                                        label="Terapkan Data"
+                                        outlined
+                                        disabled={!selectedTemplate}
+                                        onClick={applyTemplateToPreview}
+                                    />
+                                    <Button
+                                        type="button"
+                                        size="small"
+                                        icon="pi pi-file-pdf"
+                                        label="Preview PDF"
+                                        outlined
+                                        disabled={!formik.values.isi_surat_final && !formik.values.isi_surat}
+                                        onClick={generatePdfPreview}
+                                    />
+                                    <Button
+                                        type="button"
+                                        size="small"
+                                        icon="pi pi-download"
+                                        label="Unduh DOCX"
+                                        outlined
+                                        loading={downloadLoading}
+                                        disabled={!formik.values.id_surat_keluar}
+                                        onClick={downloadDocx}
+                                    />
+                                </div>
                             </div>
                             <InputTextarea
                                 id="isi_surat_final"
@@ -982,7 +1190,7 @@ const Form = ({
                                 autoResize
                             />
                         </div>
-                </div>
+                    )}
                 </div>
 
                 <Divider className="my-2" />

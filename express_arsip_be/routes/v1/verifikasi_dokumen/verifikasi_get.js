@@ -1,6 +1,7 @@
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { loadObjectBuffer, verifyPdfBuffer } from "../components/tools/tte_service.js";
+import { status, datetime } from "../components/tools/general.js";
 
 const getVerifikasiDokumen = async (req, res) => {
   const token = req.params.token_verifikasi;
@@ -8,7 +9,7 @@ const getVerifikasiDokumen = async (req, res) => {
   try {
     if (!token) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Token verifikasi wajib diisi",
       });
     }
@@ -30,7 +31,7 @@ const getVerifikasiDokumen = async (req, res) => {
 
     if (!signature) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Dokumen tanda tangan tidak ditemukan",
       });
     }
@@ -45,7 +46,7 @@ const getVerifikasiDokumen = async (req, res) => {
       .first();
 
     return res.status(200).json({
-      status: true,
+      status: status.SUKSES,
       message: "Verifikasi dokumen berhasil diambil",
       data: {
         dokumen_tertandatangan: verification.dokumen_tertandatangan,
@@ -76,7 +77,7 @@ const getVerifikasiDokumen = async (req, res) => {
     });
 
     return res.status(500).json({
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Verifikasi dokumen gagal diambil",
     });
   }

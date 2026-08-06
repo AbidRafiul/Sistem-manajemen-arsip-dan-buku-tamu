@@ -2,6 +2,7 @@ import express from "express";
 import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { validatePayload, Logging } from "../components/tools/servertool.js";
+import { status, datetime } from "../components/tools/general.js";
 const router = express.Router();
 const incomingLetterDetail = async (req, res) => {
   try {
@@ -22,14 +23,14 @@ const incomingLetterDetail = async (req, res) => {
     });
     if (cValidate) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidate
       });
     }
     const oLetter = await DB("trs_surat_masuk as til").leftJoin("mst_jenis_surat as mlt", "til.jenis_surat_id", "mlt.jenis_surat_id").select("til.surat_masuk_id", "til.nomor_agenda", "til.nomor_surat", "til.tanggal_surat", "til.tanggal_diterima", "til.nama_pengirim", "til.instansi_pengirim", "til.perihal", "til.keterangan_lampiran", "til.jenis_surat_id", "mlt.nama_jenis_surat", "til.jenis_dokumen_id", "til.klasifikasi_arsip_id", "til.tingkat_kerahasiaan_id", "til.status", "til.created_by", "til.updated_by", "til.created_at", "til.updated_at").where("til.surat_masuk_id", oPayload.surat_masuk_id).first();
     if (!oLetter) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Surat masuk tidak ditemukan"
       });
     }
@@ -38,7 +39,7 @@ const incomingLetterDetail = async (req, res) => {
     const vaTrackings = await DB("trs_tracking_surat_masuk").select("tracking_surat_masuk_id", "surat_masuk_id", "disposisi_surat_id", "nama_aksi", "dari_pengguna_id", "kepada_pengguna_id", "status_sebelumnya", "status_saat_ini", "catatan", "processed_at", "created_by", "created_at", "updated_at").where("surat_masuk_id", oPayload.surat_masuk_id).orderBy("processed_at", "desc");
     const oArchivedDocument = await DB("trs_dokumen").select("id_dokumen", "kode_dokumen", "nama_dokumen", "nomor_dokumen", "tanggal", "status", "created_at").where("nomor_dokumen", oLetter.nomor_agenda).where("status", "active").first();
     return res.status(200).json({
-      status: true,
+      status: status.SUKSES,
       message: "Detail surat masuk berhasil diambil",
       data: {
         surat: oLetter,
@@ -52,7 +53,7 @@ const incomingLetterDetail = async (req, res) => {
   } catch (error) {
     console.log(error);
     const oResult = {
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Detail surat masuk gagal diambil",
       error: error.message
     };

@@ -168,7 +168,8 @@ const MenuPage = () => {
     }, [session]);
 
     return (
-        <div className="w-full">
+        <>
+
             <Toast ref={toast} position="top-right" />
             
             <Table 
@@ -190,7 +191,7 @@ const MenuPage = () => {
                 handleSave={handleSave} 
                 handleDelete={handleDelete} 
             />
-        </div>
+        </>
     );
 };
 

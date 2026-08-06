@@ -296,7 +296,8 @@ const CheckoutPage = () => {
     };
  
     return (
-        <div className="w-full">
+        <>
+
             <Toast ref={toast} position="top-right" />
  
             <GuestDataTable
@@ -350,7 +351,7 @@ const CheckoutPage = () => {
                 onScanSuccess={handleScanSuccess}
                 loading={state.load}
             />
-        </div>
+        </>
     );
 };
 

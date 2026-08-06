@@ -67,14 +67,14 @@ const Table = ({ state, setState, formik, handleDelete, getData, toast }: TableP
 
     return (
         <div className="card">
-            <div className="flex justify-content-between items-start mb-4">
+            <div className="flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h3 className="text-2xl font-semibold">Manajemen Cabang{titleSuffix}</h3>
+                    <h2 className="m-0 text-900 font-bold text-2xl mb-1">Manajemen Cabang{titleSuffix}</h2>
                 </div>
             </div>
 
-            <div className="flex flex-row flex-wrap items-center justify-content-between gap-2 mb-4">
-                <div className="flex flex-row flex-wrap items-center gap-2">
+            <div className="flex flex-row flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                <div className="flex flex-row flex-wrap align-items-center gap-2">
                     {canCreate && (
                         <Button size="small" label="Baru" icon="pi pi-plus" outlined severity="success" onClick={() => {
                             formik.resetForm();

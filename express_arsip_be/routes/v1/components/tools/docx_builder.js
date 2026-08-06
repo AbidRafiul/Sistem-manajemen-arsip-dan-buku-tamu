@@ -198,16 +198,21 @@ const makeSignatureXml = (letter, hasLogo, cfg) => {
 
 export const buildDocxBufferFromText = async (title, body, letter = {}) => {
   const vaData = await DB("config").whereIn("kode", [
-    "msNamaPerusahaan", "msAlamatPerusahaan", "msTeleponPerusahaan", "msNamaPimpinan", "msLogoPerusahaan"
+    "msNamaPerusahaan", "msAlamatPerusahaan", "msTeleponPerusahaan", "msNamaPimpinan", "msLogoPerusahaan",
+    "msEmailPerusahaan", "msWebsitePerusahaan", "msNomorIzin"
   ]).select("kode", "keterangan");
   const configMap = {};
   vaData.forEach(row => { configMap[row.kode] = row.keterangan; });
 
+  const email = configMap["msEmailPerusahaan"] || "info@marstech.co.id";
+  const web = configMap["msWebsitePerusahaan"] || "www.marstech.co.id";
+  const siup = configMap["msNomorIzin"] || "SIUP : 503.4/ 29 - MIKRO/ 401.106/ 2018 TDP : 13.13.1.47.00655";
+
   const cfg = {
     COMPANY_NAME: configMap["msNamaPerusahaan"] || "PT. MARSTECH GLOBAL",
     COMPANY_ADDRESS: configMap["msAlamatPerusahaan"] || "JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR",
-    COMPANY_CONTACT: `Telp. ${configMap["msTeleponPerusahaan"] || "0351-2812555"} E-mail. info@marstech.co.id web. www.marstech.co.id`,
-    COMPANY_LICENSE: "SIUP : 503.4/ 29 - MIKRO/ 401.106/ 2018 TDP : 13.13.1.47.00655",
+    COMPANY_CONTACT: `Telp. ${configMap["msTeleponPerusahaan"] || "0351-2812555"} E-mail. ${email} web. ${web}`,
+    COMPANY_LICENSE: siup,
     SIGNER_NAME: configMap["msNamaPimpinan"] || "BOSTANUL ASY'ARI",
     SIGNER_TITLE: "DIREKTUR",
   };

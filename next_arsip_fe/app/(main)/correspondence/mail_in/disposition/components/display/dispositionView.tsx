@@ -239,7 +239,7 @@ const DispositionView = ({
         <>
             {/* ─── Page Header ──────────────────────────────────────────────── */}
             <Card className="shadow-1 border-round-2xl border-none mb-4">
-                <div className="flex flex-column md:flex-row md:align-items-start justify-content-between gap-3 mb-4">
+                <div className="flex flex-column md:flex-row md:align-align-items-center justify-content-between gap-3 mb-4">
                     <div>
                         <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: "0.1em" }}>Mail In · Korespondensi</span>
                         <h2 className="m-0 text-900 font-extrabold text-2xl mt-1 mb-2" style={{ letterSpacing: "-0.02em" }}>Workflow Disposisi</h2>
@@ -340,7 +340,7 @@ const DispositionView = ({
                                 { step: "3", label: "Proses Unit", desc: "Unit tujuan memproses surat", icon: "pi pi-cog", bg: "#FFF7ED", color: "#EA580C" },
                                 { step: "4", label: "Teruskan / Selesai", desc: "Delegasi lanjutan atau penyelesaian", icon: "pi pi-check-circle", bg: "#F0FDF4", color: "#16A34A" },
                             ].map((s) => (
-                                <div key={s.step} className="flex align-items-start gap-3">
+                                <div key={s.step} className="flex align-align-items-center gap-3">
                                     <div className="flex align-items-center justify-content-center border-round-lg flex-shrink-0" style={{ width: "2.5rem", height: "2.5rem", background: s.bg, color: s.color }}>
                                         <i className={`${s.icon} text-sm`} />
                                     </div>

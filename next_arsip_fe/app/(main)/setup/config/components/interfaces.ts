@@ -8,12 +8,15 @@ import { DataRekap } from "@/types/print-tools";
 
 
 export interface initValue {
-    msNamaPerusahaan: string,
-    msAlamatPerusahaan: string,
-    msKotaPerusahaan: string,
-    msTeleponPerusahaan: string,
-    msNamaPimpinan: string,
-    msLogoPerusahaan: string,
+    msNamaPerusahaan: string;
+    msAlamatPerusahaan: string;
+    msKotaPerusahaan: string;
+    msTeleponPerusahaan: string;
+    msNamaPimpinan: string;
+    msEmailPerusahaan: string;
+    msWebsitePerusahaan: string;
+    msNomorIzin: string;
+    msLogoPerusahaan?: any;
 }
 
 export interface NavState {

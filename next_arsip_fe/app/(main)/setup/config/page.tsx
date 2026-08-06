@@ -36,6 +36,9 @@ const Page = () => {
             msKotaPerusahaan: '',
             msTeleponPerusahaan: '',
             msNamaPimpinan: '',
+            msEmailPerusahaan: '',
+            msWebsitePerusahaan: '',
+            msNomorIzin: '',
             msLogoPerusahaan: ''
         },
         validate: (data: initValue) => {
@@ -84,7 +87,7 @@ const Page = () => {
         setState((p) => ({ ...p, load: true }));
         try {
             const res = await postData(apiEndpoint, {
-                kode: ['msNamaPerusahaan', 'msAlamatPerusahaan', 'msKotaPerusahaan', 'msTeleponPerusahaan', 'msNamaPimpinan', 'msLogoPerusahaan']
+                kode: ['msNamaPerusahaan', 'msAlamatPerusahaan', 'msKotaPerusahaan', 'msTeleponPerusahaan', 'msNamaPimpinan', 'msEmailPerusahaan', 'msWebsitePerusahaan', 'msNomorIzin', 'msLogoPerusahaan']
             });
 
             const { msLogoPerusahaan, ...vaValues } = res.data?.data || {};

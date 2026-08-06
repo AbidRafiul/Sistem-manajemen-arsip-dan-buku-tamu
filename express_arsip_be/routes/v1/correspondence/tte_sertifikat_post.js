@@ -7,6 +7,7 @@ import { getPresignedUrlFromMinio, MINIO_BUCKET_NAME } from "../../../core/compo
 import { Logging, validatePayload } from "../components/tools/servertool.js";
 import { applyMultiTenantFilter } from "../components/tools/filter_helper.js";
 import { assertMenuPermission, buildCertificatePayload, chooseBaseDocumentBuffer, createSigningProvider, generatePdfFromSurat, getCertificateRecord, getUserId, loadObjectBuffer, recordSignatureLog, resolveCertificateMaterial, sha256Hex, uploadPdfBuffer, verifyPdfBuffer } from "../components/tools/tte_service.js";
+import { status, datetime } from "../components/tools/general.js";
 const router = express.Router();
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -112,7 +113,7 @@ const listDocuments = async (req, res, signedOnly = false) => {
     dokumen_tte_url: row.path_file ? await buildFileUrl(row.path_file) : null
   })));
   return res.status(200).json({
-    status: true,
+    status: status.SUKSES,
     message: signedOnly ? "Dokumen tertandatangani berhasil diambil" : "Dokumen menunggu tanda tangan berhasil diambil",
     data: vaData,
     pagination: {
@@ -169,14 +170,14 @@ router.post("/sertifikat-elektronik", async (req, res) => {
     });
     if (cValidation) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidation
       });
     }
     const insertPayload = await buildCertificatePayload(oPayload, req);
     const vaInserted = await DB("mst_sertifikat_elektronik").insert(insertPayload);
     return res.status(201).json({
-      status: true,
+      status: status.SUKSES,
       message: "Sertifikat elektronik berhasil disimpan",
       data: {
         id_sertifikat_elektronik: Array.isArray(vaInserted) ? vaInserted[0] : vaInserted
@@ -191,7 +192,7 @@ router.post("/sertifikat-elektronik", async (req, res) => {
       user: req?.auth?.nama_pengguna || ""
     });
     return res.status(500).json({
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Sertifikat elektronik gagal disimpan",
       error: error.message
     });

@@ -133,6 +133,15 @@ export interface TableProps {
     executeArchiveLetter?: (idSuratKeluar: number, pic: string, createdBy: number | null) => Promise<void>;
     reloadDetail?: (idSuratKeluar: number) => Promise<void>;
     handleDeleteLetter?: (letters: TableData[]) => Promise<void>;
+    
+    // New exact API handlers for Dumb Component architecture
+    apiSaveLetter?: (payload: any, isEdit: boolean, idSuratKeluar: number | null) => Promise<any>;
+    apiUploadPdf?: (idSuratKeluar: number, formData: FormData) => Promise<any>;
+    apiDownloadDocx?: (idSuratKeluar: number, headers: any) => Promise<Blob | any>;
+    apiExtractOcr?: (formData: FormData) => Promise<any>;
+    apiGetLetterTypes?: () => Promise<any[]>;
+    apiGetTemplates?: () => Promise<any[]>;
+    apiGetNomorPreview?: (payload: any) => Promise<string>;
 }
 
 export interface FormProps extends TableProps {}

@@ -7,6 +7,7 @@ import { getPresignedUrlFromMinio, MINIO_BUCKET_NAME } from "../../../core/compo
 import { Logging, validatePayload } from "../components/tools/servertool.js";
 import { applyMultiTenantFilter } from "../components/tools/filter_helper.js";
 import { assertMenuPermission, buildCertificatePayload, chooseBaseDocumentBuffer, createSigningProvider, generatePdfFromSurat, getCertificateRecord, getUserId, loadObjectBuffer, recordSignatureLog, resolveCertificateMaterial, sha256Hex, uploadPdfBuffer, verifyPdfBuffer } from "../components/tools/tte_service.js";
+import { status, datetime } from "../components/tools/general.js";
 const router = express.Router();
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -112,7 +113,7 @@ const listDocuments = async (req, res, signedOnly = false) => {
     dokumen_tte_url: row.path_file ? await buildFileUrl(row.path_file) : null
   })));
   return res.status(200).json({
-    status: true,
+    status: status.SUKSES,
     message: signedOnly ? "Dokumen tertandatangani berhasil diambil" : "Dokumen menunggu tanda tangan berhasil diambil",
     data: vaData,
     pagination: {
@@ -159,7 +160,7 @@ router.get("/surat-keluar/:id_surat_keluar/riwayat-tanda-tangan", async (req, re
     });
     if (cValidation) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidation
       });
     }
@@ -167,7 +168,7 @@ router.get("/surat-keluar/:id_surat_keluar/riwayat-tanda-tangan", async (req, re
     const verifications = await getVerificationHistory(oPayload.id_surat_keluar);
     const logs = await DB("trs_log_tanda_tangan as tlog").leftJoin("mst_pengguna as u", "tlog.id_pengguna", "u.id_pengguna").select("tlog.*", "u.nama_lengkap as nama_pengguna", "u.nama_pengguna as username_pengguna").where("tlog.id_surat_keluar", oPayload.id_surat_keluar).orderBy("tlog.dibuat_pada", "asc");
     return res.status(200).json({
-      status: true,
+      status: status.SUKSES,
       message: "Riwayat tanda tangan berhasil diambil",
       data: {
         signatures,
@@ -184,7 +185,7 @@ router.get("/surat-keluar/:id_surat_keluar/riwayat-tanda-tangan", async (req, re
       user: req?.auth?.nama_pengguna || ""
     });
     return res.status(500).json({
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Riwayat tanda tangan gagal diambil"
     });
   }

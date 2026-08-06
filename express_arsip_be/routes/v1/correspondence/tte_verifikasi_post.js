@@ -7,6 +7,7 @@ import { getPresignedUrlFromMinio, MINIO_BUCKET_NAME } from "../../../core/compo
 import { Logging, validatePayload } from "../components/tools/servertool.js";
 import { applyMultiTenantFilter } from "../components/tools/filter_helper.js";
 import { assertMenuPermission, buildCertificatePayload, chooseBaseDocumentBuffer, createSigningProvider, generatePdfFromSurat, getCertificateRecord, getUserId, loadObjectBuffer, recordSignatureLog, resolveCertificateMaterial, sha256Hex, uploadPdfBuffer, verifyPdfBuffer } from "../components/tools/tte_service.js";
+import { status, datetime } from "../components/tools/general.js";
 const router = express.Router();
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -112,7 +113,7 @@ const listDocuments = async (req, res, signedOnly = false) => {
     dokumen_tte_url: row.path_file ? await buildFileUrl(row.path_file) : null
   })));
   return res.status(200).json({
-    status: true,
+    status: status.SUKSES,
     message: signedOnly ? "Dokumen tertandatangani berhasil diambil" : "Dokumen menunggu tanda tangan berhasil diambil",
     data: vaData,
     pagination: {
@@ -159,7 +160,7 @@ router.post("/verifikasi", upload.single("file"), async (req, res) => {
     });
     if (cValidation) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidation
       });
     }
@@ -171,7 +172,7 @@ router.post("/verifikasi", upload.single("file"), async (req, res) => {
       signatureRow = await DB("trs_tanda_tangan_dokumen").where("id_tanda_tangan_dokumen", oPayload.id_tanda_tangan_dokumen).first();
       if (!signatureRow) {
         return res.status(404).json({
-          status: false,
+          status: status.BAD_REQUEST,
           message: "Dokumen tanda tangan tidak ditemukan"
         });
       }
@@ -180,7 +181,7 @@ router.post("/verifikasi", upload.single("file"), async (req, res) => {
       signatureRow = await DB("trs_tanda_tangan_dokumen").where("token_verifikasi", oPayload.token_verifikasi).first();
       if (!signatureRow) {
         return res.status(404).json({
-          status: false,
+          status: status.BAD_REQUEST,
           message: "Token verifikasi tidak ditemukan"
         });
       }
@@ -189,14 +190,14 @@ router.post("/verifikasi", upload.single("file"), async (req, res) => {
       const currentFile = await getCurrentActiveFile(oPayload.id_surat_keluar);
       if (!currentFile) {
         return res.status(404).json({
-          status: false,
+          status: status.BAD_REQUEST,
           message: "Dokumen aktif tidak ditemukan"
         });
       }
       pdfBuffer = await loadObjectBuffer(currentFile.path_file);
     } else {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Pilih file, id_tanda_tangan_dokumen, token_verifikasi, atau id_surat_keluar"
       });
     }
@@ -222,7 +223,7 @@ router.post("/verifikasi", upload.single("file"), async (req, res) => {
     };
     await DB("trs_verifikasi_dokumen").insert(verificationInsert);
     return res.status(200).json({
-      status: true,
+      status: status.SUKSES,
       message: "Verifikasi dokumen berhasil dilakukan",
       data: verification
     });
@@ -235,7 +236,7 @@ router.post("/verifikasi", upload.single("file"), async (req, res) => {
       user: req?.auth?.nama_pengguna || ""
     });
     return res.status(500).json({
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Verifikasi dokumen gagal dilakukan",
       error: error.message
     });

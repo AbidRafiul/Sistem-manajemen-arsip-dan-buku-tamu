@@ -150,11 +150,12 @@ const Page = () => {
   }, [session]);
 
   return (
-    <div className="w-full">
+    <>
+
       <Toast ref={toast} position="top-right" />
       <Table state={state} setState={setState} formik={formik} getData={getData} handleDelete={handleDelete} />
       <Form state={state} setState={setState} formik={formik} handleDelete={handleDelete} />
-    </div>
+    </>
   );
 };
 

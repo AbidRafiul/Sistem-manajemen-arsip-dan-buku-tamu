@@ -214,7 +214,8 @@ const Page = () => {
     }, [documentId]);
 
     return (
-        <div className="w-full">
+        <>
+
             <Toast ref={toast} position="top-right" />
             <Table
                 load={load}
@@ -248,7 +249,7 @@ const Page = () => {
                 router={router}
                 toast={toast}
             />
-        </div>
+        </>
     );
 };
 

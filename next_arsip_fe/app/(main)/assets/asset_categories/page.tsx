@@ -140,25 +140,9 @@ const Page = () => {
     }, [session]);
 
     return <>
-        <div className="w-full">
-            <Toast ref={toast} position="top-right" />
+        <Toast ref={toast} position="top-right" />
+        <Table getData={getData} state={state} setState={setState} formik={formik} toast={toast} />
 
-            {/* <input
-                type="file"
-                ref={fileInputRef}
-                accept=".xlsx,.xls"
-                onChange={handleImport}
-                style={{ display: "none" }}
-            /> */}
-
-
-            {/* Pass handleDelete as prop to Table or pass via state if needed, but Table renders Form. 
-                Wait, Table doesn't accept handleDelete prop. Form accepts it? No, Form uses state. 
-                Let's add handleDelete as a property in FormProps or TableProps? 
-                Actually, the standard way in this repo is to pass it as `handleDelete` or put it in `state`.
-                Since Form and Table are children, we can pass `handleDelete` to Table. */}
-            <Table getData={getData} state={state} setState={setState} formik={formik} toast={toast} handleDelete={handleDelete} />
-        </div>
     </>
 }
 

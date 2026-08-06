@@ -3,6 +3,7 @@ import Joi from "joi";
 import { v4 as uuidv4 } from "uuid";
 import DB from "../../../core/config/knex.js";
 import { validatePayload, Logging } from "../components/tools/servertool.js";
+import { status, datetime } from "../components/tools/general.js";
 const router = express.Router();
 const buildDocumentFilePath = (filePath = "") => {
   const cNormalizedPath = String(filePath).replace(/\\/g, "/").replace(/^\/+/, "");
@@ -30,28 +31,28 @@ const outgoingLetterArchive = async (req, res) => {
     });
     if (cValidate) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidate
       });
     }
     const oLetter = await DB("trs_surat_keluar").where("id_surat_keluar", oPayload.id_surat_keluar).first();
     if (!oLetter) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Surat keluar tidak ditemukan"
       });
     }
     const oActiveFile = await DB("trs_file_surat_keluar").where("id_surat_keluar", oPayload.id_surat_keluar).where("status", "active").orderBy("created_at", "desc").orderBy("id_file_surat_keluar", "desc").first();
     if (!oActiveFile) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Upload file surat terlebih dahulu sebelum diarsipkan"
       });
     }
     const oExistingDocument = await DB("trs_dokumen").where("nomor_dokumen", oLetter.nomor_agenda).where("status", "active").first();
     if (oExistingDocument) {
       return res.status(200).json({
-        status: true,
+        status: status.SUKSES,
         message: "Surat keluar sudah pernah diarsipkan",
         data: {
           id_dokumen: oExistingDocument.id_dokumen,
@@ -121,14 +122,14 @@ const outgoingLetterArchive = async (req, res) => {
       };
     });
     return res.status(201).json({
-      status: true,
+      status: status.SUKSES,
       message: "Surat keluar berhasil diarsipkan menjadi dokumen",
       data: oResult
     });
   } catch (error) {
     console.log(error);
     const oResult = {
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Surat keluar gagal diarsipkan",
       error: error.message
     };

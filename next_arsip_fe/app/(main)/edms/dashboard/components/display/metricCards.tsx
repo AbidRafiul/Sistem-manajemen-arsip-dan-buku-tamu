@@ -62,7 +62,7 @@ export default function MetricCards({ metrics, isLoading }: MetricCardsProps) {
                             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}
                     >
-                        <div className="flex justify-content-between align-items-start">
+                        <div className="flex justify-content-between align-align-items-center">
                             <div>
                                 <span className="text-sm font-bold text-color-secondary uppercase tracking-wider block" style={{ letterSpacing: '0.05em' }}>
                                     {card.title}

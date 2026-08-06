@@ -7,6 +7,7 @@ import { getPresignedUrlFromMinio, MINIO_BUCKET_NAME } from "../../../core/compo
 import { Logging, validatePayload } from "../components/tools/servertool.js";
 import { applyMultiTenantFilter } from "../components/tools/filter_helper.js";
 import { assertMenuPermission, buildCertificatePayload, chooseBaseDocumentBuffer, createSigningProvider, generatePdfFromSurat, getCertificateRecord, getUserId, loadObjectBuffer, recordSignatureLog, resolveCertificateMaterial, sha256Hex, uploadPdfBuffer, verifyPdfBuffer } from "../components/tools/tte_service.js";
+import { status, datetime } from "../components/tools/general.js";
 const router = express.Router();
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -93,7 +94,10 @@ const listDocuments = async (req, res, signedOnly = false) => {
     });
   }
   if (signedOnly) {
-    query.whereNotNull("ttd_latest.id_tanda_tangan_dokumen");
+    query.where(builder => {
+      builder.whereNotNull("ttd_latest.id_tanda_tangan_dokumen")
+        .orWhereIn("tsk.status", ["disetujui", "terkirim", "selesai"]);
+    });
   } else {
     query.whereIn("tsk.status", ALLOWED_LETTER_STATUSES);
     query.whereNull("ttd_latest.id_tanda_tangan_dokumen");
@@ -112,7 +116,7 @@ const listDocuments = async (req, res, signedOnly = false) => {
     dokumen_tte_url: row.path_file ? await buildFileUrl(row.path_file) : null
   })));
   return res.status(200).json({
-    status: true,
+    status: status.SUKSES,
     message: signedOnly ? "Dokumen tertandatangani berhasil diambil" : "Dokumen menunggu tanda tangan berhasil diambil",
     data: vaData,
     pagination: {
@@ -156,7 +160,7 @@ router.get("/signed", async (req, res) => {
       user: req?.auth?.nama_pengguna || ""
     });
     return res.status(500).json({
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Dokumen tertandatangani gagal diambil"
     });
   }

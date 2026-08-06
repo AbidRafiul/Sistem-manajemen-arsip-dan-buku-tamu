@@ -4,20 +4,21 @@ import fs from "fs";
 import DB from "../../../core/config/knex.js";
 import { downloadFileFromMinio } from "../../../core/components/tools/minio_helper.js";
 import { Logging } from "../components/tools/servertool.js";
+import { status, datetime } from "../components/tools/general.js";
 const router = express.Router();
 const incomingLetterFileDownload = async (req, res) => {
   try {
     const nFileId = req.query.file_surat_masuk_id || req.query.incoming_letter_file_id || req.body?.file_surat_masuk_id || req.body?.incoming_letter_file_id;
     if (!nFileId) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "file_surat_masuk_id wajib diisi"
       });
     }
     const oFile = await DB("trs_file_surat_masuk").where("file_surat_masuk_id", nFileId).where("status", "active").first();
     if (!oFile) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "File surat masuk tidak ditemukan"
       });
     }
@@ -40,7 +41,7 @@ const incomingLetterFileDownload = async (req, res) => {
     const bIsLocalUploadPath = cRelativePath !== "" && !cRelativePath.startsWith("..") && !path.isAbsolute(cRelativePath);
     if (!bIsLocalUploadPath || !fs.existsSync(cAbsolutePath)) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "File tidak ditemukan di MinIO maupun server lokal"
       });
     }
@@ -50,7 +51,7 @@ const incomingLetterFileDownload = async (req, res) => {
   } catch (error) {
     console.log(error);
     const oResult = {
-      status: false,
+      status: status.BAD_REQUEST,
       message: "File surat masuk gagal dibuka",
       error: error.message
     };

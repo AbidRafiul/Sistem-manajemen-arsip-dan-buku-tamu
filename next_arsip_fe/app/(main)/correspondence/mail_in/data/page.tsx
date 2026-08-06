@@ -228,23 +228,11 @@ const Page = () => {
     }, [session]);
 
     return (
-        <div className="w-full">
+        <>
             <Toast ref={toast} position="top-right" />
-            <Table 
-                getData={getData} 
-                state={state} 
-                setState={setState} 
-                formik={formik} 
-                toast={toast} 
-                handleSave={handleSave}
-                handleDelete={handleDelete}
-                getLetterTypeOptions={getLetterTypeOptions}
-                openDetail={openDetail}
-                reloadDetail={reloadDetail}
-                executeArchiveLetter={executeArchiveLetter}
-                getFileBlob={getFileBlob}
-            />
-        </div>
+            <Table getData={getData} state={state} setState={setState} formik={formik} toast={toast} />
+        </>
+
     );
 };
 

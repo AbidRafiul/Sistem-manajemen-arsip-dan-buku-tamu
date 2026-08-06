@@ -2,6 +2,7 @@ import express from "express";
 import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { validatePayload, Logging } from "../components/tools/servertool.js";
+import { status, datetime } from "../components/tools/general.js";
 const router = express.Router();
 const incomingLetterDelete = async (req, res) => {
   try {
@@ -22,14 +23,14 @@ const incomingLetterDelete = async (req, res) => {
     });
     if (cValidate) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidate
       });
     }
     const oLetter = await DB("trs_surat_masuk").where("surat_masuk_id", oPayload.surat_masuk_id).first();
     if (!oLetter) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Surat masuk tidak ditemukan"
       });
     }
@@ -50,13 +51,13 @@ const incomingLetterDelete = async (req, res) => {
       });
     });
     return res.status(200).json({
-      status: true,
+      status: status.SUKSES,
       message: "Surat masuk berhasil dihapus"
     });
   } catch (error) {
     console.log(error);
     const oResult = {
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Surat masuk gagal dihapus",
       error: error.message
     };

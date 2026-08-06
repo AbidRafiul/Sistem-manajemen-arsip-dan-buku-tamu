@@ -66,14 +66,21 @@ const Page = () => {
         setState((p) => ({ ...p, load: true }));
 
         try {
-            const [res, logo, nama, alamat, telepon, izin] = await Promise.all([
+            const [res, logo, nama, alamat, telepon, email, web, izin] = await Promise.all([
                 getDataRequest(apiEndpoint, payload),
                 postData("/function/db-config", { Key: "msLogoPerusahaan" }),
                 postData("/function/db-config", { Key: "msNamaPerusahaan" }),
                 postData("/function/db-config", { Key: "msAlamatPerusahaan" }),
                 postData("/function/db-config", { Key: "msTeleponPerusahaan" }),
-                postData("/function/db-config", { Key: "msIzinPerusahaan" }),
+                postData("/function/db-config", { Key: "msEmailPerusahaan" }),
+                postData("/function/db-config", { Key: "msWebsitePerusahaan" }),
+                postData("/function/db-config", { Key: "msNomorIzin" }),
             ]);
+            
+            const tlp = telepon.data?.data || "0351-2812555";
+            const eml = email.data?.data || "info@marstech.co.id";
+            const wb = web.data?.data || "www.marstech.co.id";
+
             setState((p) => ({
                 ...p,
                 data: res.data?.data || [],
@@ -81,7 +88,7 @@ const Page = () => {
                     COMPANY_LOGO: logo.data?.data || "",
                     COMPANY_NAME: nama.data?.data || "PT. MARSTECH GLOBAL",
                     COMPANY_ADDRESS: alamat.data?.data || "JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR",
-                    COMPANY_CONTACT: telepon.data?.data || "Telp. 0351-2812555 E-mail. info@marstech.co.id web. www.marstech.co.id",
+                    COMPANY_CONTACT: `Telp. ${tlp} E-mail. ${eml} web. ${wb}`,
                     COMPANY_LICENSE: izin.data?.data || "SIUP : 503.4/ 29 - MIKRO/ 401.106/ 2018 TDP : 13.13.1.47.00655"
                 }
             }));
@@ -159,18 +166,11 @@ const Page = () => {
     }, [session]);
 
     return (
-        <div className="w-full">
+        <>
             <Toast ref={toast} position="top-right" />
-            <Table 
-                getData={getData} 
-                state={state} 
-                setState={setState} 
-                toast={toast} 
-                fetchLetterTypes={fetchLetterTypes}
-                fetchDetail={fetchDetail}
-                handleProcessApproval={handleProcessApproval}
-            />
-        </div>
+            <Table getData={getData} state={state} setState={setState} toast={toast} />
+        </>
+
     );
 };
 

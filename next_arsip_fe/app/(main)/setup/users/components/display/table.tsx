@@ -118,14 +118,14 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
     return (
         <>
             <div className="card">
-                <div className="flex justify-content-between items-start mb-4">
+                <div className="flex justify-content-between align-items-center mb-3">
                     <div>
-                        <h3 className="text-2xl font-semibold">Manajemen Pengguna</h3>
+                        <h2 className="m-0 text-900 font-bold text-2xl mb-1">Manajemen Pengguna</h2>
                     </div>
                 </div>
 
-                <div className="flex flex-row flex-wrap items-center justify-content-between gap-2 mb-4">
-                    <div className="flex flex-row flex-wrap items-center gap-2">
+                <div className="flex flex-row flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <div className="flex flex-row flex-wrap align-items-center gap-2">
                         <Button
                             size="small"
                             label="Baru"
@@ -184,7 +184,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                         <Button size="small" label="Muat Ulang" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
                     </div>
 
-                    <div className="flex flex-row flex-wrap items-center gap-2">
+                    <div className="flex flex-row flex-wrap align-items-center gap-2">
                         <ExcelBulkAction
                             title="Data Pengguna"
                             data={state.data}
@@ -221,32 +221,32 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                                 };
                             })}
                             customPayloadMap={(item) => {
-                                const branch = state.masterData?.branches?.find((b: any) => 
-                                    String(b.nama_cabang || '').toLowerCase() === String(item.nama_cabang || '').toLowerCase() || 
+                                const branch = state.masterData?.branches?.find((b: any) =>
+                                    String(b.nama_cabang || '').toLowerCase() === String(item.nama_cabang || '').toLowerCase() ||
                                     String(b.kode_cabang || '').toLowerCase() === String(item.nama_cabang || '').toLowerCase() ||
                                     String(b.id_cabang) === String(item.nama_cabang)
                                 );
-                                const dept = state.masterData?.departments?.find((d: any) => 
-                                    String(d.nama_departemen || '').toLowerCase() === String(item.nama_departemen || '').toLowerCase() || 
+                                const dept = state.masterData?.departments?.find((d: any) =>
+                                    String(d.nama_departemen || '').toLowerCase() === String(item.nama_departemen || '').toLowerCase() ||
                                     String(d.kode_departemen || '').toLowerCase() === String(item.nama_departemen || '').toLowerCase() ||
                                     String(d.id_departemen) === String(item.nama_departemen)
                                 );
-                                const div = state.masterData?.divisions?.find((d: any) => 
-                                    String(d.nama_divisi || '').toLowerCase() === String(item.nama_divisi || '').toLowerCase() || 
+                                const div = state.masterData?.divisions?.find((d: any) =>
+                                    String(d.nama_divisi || '').toLowerCase() === String(item.nama_divisi || '').toLowerCase() ||
                                     String(d.kode_divisi || '').toLowerCase() === String(item.nama_divisi || '').toLowerCase() ||
                                     String(d.id_divisi) === String(item.nama_divisi)
                                 );
-                                const workUnit = state.masterData?.workUnits?.find((w: any) => 
-                                    String(w.nama_unit_kerja || '').toLowerCase() === String(item.nama_unit_kerja || '').toLowerCase() || 
+                                const workUnit = state.masterData?.workUnits?.find((w: any) =>
+                                    String(w.nama_unit_kerja || '').toLowerCase() === String(item.nama_unit_kerja || '').toLowerCase() ||
                                     String(w.kode_unit_kerja || '').toLowerCase() === String(item.nama_unit_kerja || '').toLowerCase() ||
                                     String(w.id_unit_kerja) === String(item.nama_unit_kerja)
                                 );
-                                const position = state.masterData?.positions?.find((p: any) => 
-                                    String(p.nama_jabatan || '').toLowerCase() === String(item.nama_jabatan || '').toLowerCase() || 
+                                const position = state.masterData?.positions?.find((p: any) =>
+                                    String(p.nama_jabatan || '').toLowerCase() === String(item.nama_jabatan || '').toLowerCase() ||
                                     String(p.kode_jabatan || '').toLowerCase() === String(item.nama_jabatan || '').toLowerCase() ||
                                     String(p.id_jabatan) === String(item.nama_jabatan)
                                 );
-                                const role = state.masterData?.roles?.find((r: any) => 
+                                const role = state.masterData?.roles?.find((r: any) =>
                                     String(r.nama_peran || '').toLowerCase() === String(item.peran_role || '').toLowerCase() ||
                                     String(r.id_peran) === String(item.peran_role)
                                 );

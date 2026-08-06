@@ -313,7 +313,7 @@ const Table: React.FC<TableProps> = ({
 
             <div className="border-1 border-dashed surface-border p-4 flex flex-column gap-3 surface-50 mb-4">
                 <div className="font-semibold text-lg text-color mb-1">Unggah Versi Baru</div>
-                <div className="flex flex-column md:flex-row gap-3 align-items-end">
+                <div className="flex flex-column md:flex-row gap-3 align-align-items-end">
                     <div className="flex-1 w-full">
                         <label className="block text-color-secondary mb-1 text-sm font-semibold">Pilih File</label>
                         <input
@@ -377,7 +377,7 @@ const Table: React.FC<TableProps> = ({
             >
                 <div className="flex flex-column gap-3 pt-2">
                     <div className="p-3 border-round-lg border-1 bg-green-50 border-green-100">
-                        <div className="flex align-items-start gap-3">
+                        <div className="flex align-align-items-center gap-3">
                             <i className="pi pi-file-check text-green-600 text-2xl mt-1" />
                             <div>
                                 <div className="font-semibold text-900 mb-1">

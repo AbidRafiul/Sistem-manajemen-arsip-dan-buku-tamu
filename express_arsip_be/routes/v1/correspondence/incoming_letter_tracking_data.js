@@ -2,6 +2,7 @@ import express from "express";
 import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { validatePayload, Logging } from "../components/tools/servertool.js";
+import { status, datetime } from "../components/tools/general.js";
 const router = express.Router();
 const incomingLetterTrackingData = async (req, res) => {
   try {
@@ -22,20 +23,20 @@ const incomingLetterTrackingData = async (req, res) => {
     });
     if (cValidate) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidate
       });
     }
     const oLetter = await DB("trs_surat_masuk").select("surat_masuk_id", "nomor_agenda", "nomor_surat", "perihal", "nama_pengirim", "status").where("surat_masuk_id", oPayload.surat_masuk_id).first();
     if (!oLetter) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Surat masuk tidak ditemukan"
       });
     }
     const vaData = await DB("trs_tracking_surat_masuk as tilt").leftJoin("trs_disposisi_surat as tld", "tilt.disposisi_surat_id", "tld.disposisi_surat_id").select("tilt.tracking_surat_masuk_id", "tilt.surat_masuk_id", "tilt.disposisi_surat_id", "tilt.nama_aksi", "tilt.dari_pengguna_id", "tilt.kepada_pengguna_id", "tilt.status_sebelumnya", "tilt.status_saat_ini", "tilt.catatan", "tilt.processed_at", "tilt.created_by", "tilt.created_at", "tilt.updated_at", "tld.disposisi_induk_id", "tld.instruksi", "tld.catatan_disposisi", "tld.batas_waktu", "tld.status as status_disposisi").where("tilt.surat_masuk_id", oPayload.surat_masuk_id).orderBy("tilt.processed_at", "asc");
     return res.status(200).json({
-      status: true,
+      status: status.SUKSES,
       message: "Tracking surat masuk berhasil diambil",
       data: {
         letter: oLetter,
@@ -45,7 +46,7 @@ const incomingLetterTrackingData = async (req, res) => {
   } catch (error) {
     console.log(error);
     const oResult = {
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Tracking surat masuk gagal diambil",
       error: error.message
     };

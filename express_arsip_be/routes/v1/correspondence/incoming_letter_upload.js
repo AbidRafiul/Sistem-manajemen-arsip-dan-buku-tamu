@@ -3,6 +3,7 @@ import multer from "multer";
 import DB from "../../../core/config/knex.js";
 import { removeFileFromMinio, uploadFileToMinio, getMinioPrefix } from "../../../core/components/tools/minio_helper.js";
 import { Logging } from "../components/tools/servertool.js";
+import { status, datetime } from "../components/tools/general.js";
 const router = express.Router();
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -26,20 +27,20 @@ const incomingLetterUpload = async (req, res) => {
     const oFile = req.file;
     if (!oPayload.surat_masuk_id) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "id surat masuk wajib diisi"
       });
     }
     if (!oFile) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "File wajib diupload"
       });
     }
     const oLetter = await DB("trs_surat_masuk").where("surat_masuk_id", oPayload.surat_masuk_id).first();
     if (!oLetter) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Surat masuk tidak ditemukan"
       });
     }
@@ -122,7 +123,7 @@ const incomingLetterUpload = async (req, res) => {
       }
     }
     return res.status(201).json({
-      status: true,
+      status: status.SUKSES,
       message: vaReplacedFiles.length > 0 ? "File surat masuk berhasil diganti" : "File surat masuk berhasil diupload",
       data: {
         file_surat_masuk_id: vaInserted[0],
@@ -140,7 +141,7 @@ const incomingLetterUpload = async (req, res) => {
       } catch (cleanupError) {}
     }
     const oResult = {
-      status: false,
+      status: status.BAD_REQUEST,
       message: "File surat masuk gagal diupload",
       error: error.message
     };

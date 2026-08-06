@@ -169,20 +169,9 @@ const Page = () => {
     }, []);
 
     return <>
-        <div className="w-full">
-            <Toast ref={toast} position="top-right" />
+        <Toast ref={toast} position="top-right" />
+        <Table getData={getData} state={state} setState={setState} formik={formik} toast={toast} />
 
-            {/* <input
-                type="file"
-                ref={fileInputRef}
-                accept=".xlsx,.xls"
-                onChange={handleImport}
-                style={{ display: "none" }}
-            /> */}
-
-
-            <Table getData={getData} state={state} setState={setState} formik={formik} toast={toast} handleDelete={handleDelete} />
-        </div>
     </>
 }
 

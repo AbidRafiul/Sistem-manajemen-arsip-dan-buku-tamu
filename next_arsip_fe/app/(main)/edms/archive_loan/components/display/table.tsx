@@ -188,13 +188,12 @@ const Table = ({
     return <>
         <Card className="shadow-1 border-round-2xl border-none">
             {/* Page Header */}
-            <div className="mb-4">
-                <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: '0.1em' }}>EDMS</span>
-                <h2 className="m-0 text-900 font-extrabold text-2xl mt-1 mb-2" style={{ letterSpacing: '-0.02em' }}>Archive Loans</h2>
+            <div className="mb-3">
+                                <h2 className="m-0 text-900 font-bold text-2xl mb-1">Archive Loans</h2>
                 <p className="m-0 text-color-secondary text-sm font-medium">Kelola peminjaman dokumen fisik arsip dan monitor keterlambatan pengembalian.</p>
             </div>
 
-            <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
+            <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
                 {canCreate && (
                     <>
                         <Button
@@ -219,7 +218,7 @@ const Table = ({
             </div>
 
             {/* Status Tabs */}
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-3">
                 {tabs.map((tab) => (
                     <Button
                         key={tab.value}

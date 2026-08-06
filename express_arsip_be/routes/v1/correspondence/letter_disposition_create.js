@@ -61,7 +61,7 @@ const letterDispositionCreate = async (req, res) => {
     });
     if (cValidate) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidate
       });
     }
@@ -70,7 +70,7 @@ const letterDispositionCreate = async (req, res) => {
     const trackingTable = await getExistingTable(["trs_tracking_surat_masuk", "trx_incoming_letter_trackings"]);
     if (!letterTable || !dispositionTable) {
       return res.status(500).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Tabel surat masuk atau disposisi belum tersedia"
       });
     }
@@ -82,13 +82,13 @@ const letterDispositionCreate = async (req, res) => {
     const oLetter = await DB(letterTable).where(letterIdColumn, oPayload.surat_masuk_id).first();
     if (!oLetter) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Surat masuk tidak ditemukan"
       });
     }
     if (oLetter[letterStatusColumn] === "selesai") {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Surat masuk sudah selesai dan tidak dapat didisposisikan"
       });
     }
@@ -105,7 +105,7 @@ const letterDispositionCreate = async (req, res) => {
     const invalidReference = references.find(reference => !reference.valid);
     if (invalidReference) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: `${invalidReference.label} tidak ditemukan`
       });
     }
@@ -122,7 +122,7 @@ const letterDispositionCreate = async (req, res) => {
       const oParentDisposition = await DB(dispositionTable).where(dispositionIdColumn, oPayload.disposisi_induk_id).where(dispositionLetterIdColumn, oPayload.surat_masuk_id).first();
       if (!oParentDisposition) {
         return res.status(404).json({
-          status: false,
+          status: status.BAD_REQUEST,
           message: "Parent disposisi tidak ditemukan pada surat ini"
         });
       }
@@ -205,7 +205,7 @@ Silakan buka sistem Arsip Digital Anda untuk melihat lampiran fisik surat dan me
       console.error("[WA Gateway] Gagal mengirim WA Disposisi:", waErr.message);
     }
     return res.status(201).json({
-      status: true,
+      status: status.SUKSES,
       message: "Disposisi surat berhasil dibuat",
       data: {
         disposisi_surat_id: nDispositionId,
@@ -216,7 +216,7 @@ Silakan buka sistem Arsip Digital Anda untuk melihat lampiran fisik surat dan me
   } catch (error) {
     console.log(error);
     const oResult = {
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Disposisi surat gagal dibuat",
       error: error.message
     };

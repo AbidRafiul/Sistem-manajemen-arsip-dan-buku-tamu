@@ -29,8 +29,8 @@ const router = express.Router();
 router.use("/auth/token", AccessToken);
 router.use("/auth/login", [validateAccessToken], Login);
 router.use("/auth/reset-password", [validateAccessToken], ResetPassword);
-router.use("/auth/profile", [validateAccessToken], ProfileGet);
-router.use("/auth/profile/update", [validateAccessToken], ProfileUpdate);
+router.use("/auth/profile", [validateAccessToken, validateSignature, contextMiddleware], ProfileGet);
+router.use("/auth/profile/update", [validateAccessToken, validateSignature, contextMiddleware], ProfileUpdate);
 
 // Modul-Modul Aplikasi
 router.use("/verifikasi-dokumen", VerifikasiDokumen);

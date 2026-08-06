@@ -286,13 +286,13 @@ const Table = ({
             <ConfirmDialog />
             <Card className="shadow-1 border-round-2xl border-none">
                 {/* Page Header */}
-                <div className="mb-4">
+                <div className="mb-3">
                     <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: "0.1em" }}>Korespondensi</span>
-                    <h2 className="m-0 text-900 font-extrabold text-2xl mt-1 mb-2" style={{ letterSpacing: "-0.02em" }}>Surat Masuk</h2>
+                    <h2 className="m-0 text-900 font-bold text-2xl mb-1" style={{ letterSpacing: "-0.02em" }}>Surat Masuk</h2>
                     <p className="m-0 text-color-secondary text-sm font-medium">Kelola seluruh surat masuk, upload file, dan pantau status disposisi.</p>
                 </div>
 
-                <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
+                <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
                     {canCreate && (
                         <>
                             <Button
@@ -406,7 +406,7 @@ const Table = ({
                 ) : (
                     <div className="flex flex-column gap-4 pt-3">
                         {/* Header info */}
-                        <div className="flex align-items-start justify-content-between gap-3 p-3 surface-50 border-round-xl border-1 surface-border">
+                        <div className="flex align-align-items-center justify-content-between gap-3 p-3 surface-50 border-round-xl border-1 surface-border">
                             <div>
                                 <h3 className="m-0 text-900 font-bold text-lg">{detailLetter?.perihal || "-"}</h3>
                                 <div className="flex gap-2 mt-2 flex-wrap">
@@ -417,7 +417,7 @@ const Table = ({
                                     )}
                                 </div>
                             </div>
-                            <div className="flex flex-column align-items-end gap-2">
+                            <div className="flex flex-column align-align-items-end gap-2">
                                 {detailLetter?.status && statusTemplate({ status: detailLetter.status } as TableData)}
                                 {archivedDocument ? (
                                     <Button
@@ -477,7 +477,7 @@ const Table = ({
                                         <div className="flex flex-column gap-2">
                                             {detailFiles.map((file) => (
                                                 <div key={file.file_surat_masuk_id} className="p-3 surface-50 border-round-lg border-1 surface-border">
-                                                    <div className="flex justify-content-between align-items-start gap-2">
+                                                    <div className="flex justify-content-between align-align-items-center gap-2">
                                                         <div className="flex align-items-center gap-2">
                                                             <div className="flex align-items-center justify-content-center border-round" style={{ width: "2rem", height: "2rem", background: "#EEF2FF", color: "#4F46E5", flexShrink: 0 }}>
                                                                 <i className="pi pi-file text-sm" />

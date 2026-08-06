@@ -3,6 +3,7 @@ import Joi from "joi";
 import { v4 as uuidv4 } from "uuid";
 import DB from "../../../core/config/knex.js";
 import { validatePayload, Logging } from "../components/tools/servertool.js";
+import { status, datetime } from "../components/tools/general.js";
 const router = express.Router();
 const getCodeById = async (trx, table, idField, codeField, idValue) => {
   if (!idValue) return null;
@@ -35,28 +36,28 @@ const incomingLetterArchive = async (req, res) => {
     });
     if (cValidate) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidate
       });
     }
     const oLetter = await DB("trs_surat_masuk").where("surat_masuk_id", oPayload.surat_masuk_id).first();
     if (!oLetter) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Surat masuk tidak ditemukan"
       });
     }
     const oActiveFile = await DB("trs_file_surat_masuk").where("surat_masuk_id", oPayload.surat_masuk_id).where("status", "active").orderBy("created_at", "desc").orderBy("file_surat_masuk_id", "desc").first();
     if (!oActiveFile) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Upload file surat terlebih dahulu sebelum diarsipkan"
       });
     }
     const oExistingDocument = await DB("trs_dokumen").where("nomor_dokumen", oLetter.nomor_agenda).where("status", "active").first();
     if (oExistingDocument) {
       return res.status(200).json({
-        status: true,
+        status: status.SUKSES,
         message: "Surat masuk sudah pernah diarsipkan",
         data: {
           id_dokumen: oExistingDocument.id_dokumen,
@@ -126,14 +127,14 @@ const incomingLetterArchive = async (req, res) => {
       };
     });
     return res.status(201).json({
-      status: true,
+      status: status.SUKSES,
       message: "Surat masuk berhasil diarsipkan menjadi dokumen",
       data: oResult
     });
   } catch (error) {
     console.log(error);
     const oResult = {
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Surat masuk gagal diarsipkan",
       error: error.message
     };

@@ -5,6 +5,10 @@ import {
   Logging,
   validatePayload,
 } from "../components/tools/servertool.js";
+import { status, datetime } from "../components/tools/general.js";
+
+import { parseIndonesianDateToIso } from "./outgoing_letter_extract_ocr.js";
+import { signLetterAutomatically } from "../components/tools/tte_service.js";
 
 const router = express.Router();
 
@@ -24,6 +28,13 @@ const outgoingLetterUpdate = async (req, res) => {
     ...(req.params || {}),
     ...(req.body || {}),
   };
+
+  if (oPayload.tanggal_surat) {
+    oPayload.tanggal_surat = parseIndonesianDateToIso(oPayload.tanggal_surat) || oPayload.tanggal_surat;
+  }
+  if (oPayload.tanggal_kirim) {
+    oPayload.tanggal_kirim = parseIndonesianDateToIso(oPayload.tanggal_kirim) || oPayload.tanggal_kirim;
+  }
 
   try {
     const oValidation = {
@@ -71,8 +82,9 @@ const outgoingLetterUpdate = async (req, res) => {
 
     if (cValidate) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidate,
+        datetime: datetime(),
       });
     }
 
@@ -83,8 +95,9 @@ const outgoingLetterUpdate = async (req, res) => {
 
     if (!oLetter) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Surat keluar tidak ditemukan",
+        datetime: datetime(),
       });
     }
 
@@ -114,8 +127,9 @@ const outgoingLetterUpdate = async (req, res) => {
 
       if (cReferenceError) {
         return res.status(400).json({
-          status: false,
-          message: cReferenceError,
+          status: status.BAD_REQUEST,
+        message: cReferenceError,
+        datetime: datetime(),
         });
       }
     }
@@ -163,21 +177,35 @@ const outgoingLetterUpdate = async (req, res) => {
       });
     });
 
+    if (oUpdate.status === "disetujui") {
+      try {
+        await signLetterAutomatically({
+          idSuratKeluar: oPayload.id_surat_keluar,
+          actorId: oPayload.updated_by || req?.auth?.id_pengguna || null,
+          req,
+        });
+      } catch (tteError) {
+        console.error("Gagal melakukan TTE otomatis saat update status disetujui:", tteError);
+      }
+    }
+
     return res.status(200).json({
-      status: true,
-      message: "Surat keluar berhasil diupdate",
+      status: status.SUKSES,
+        message: "Surat keluar berhasil diupdate",
+        datetime: datetime(),
     });
   } catch (error) {
     const oResult = {
-      status: false,
-      message: "Surat keluar gagal diupdate",
+      status: status.BAD_REQUEST,
+        message: "Surat keluar gagal diupdate",
+        datetime: datetime(),
     };
 
     await Logging(error, {
       file: cFile,
       func: cFunc,
       request: JSON.stringify(oPayload),
-      response: oResult.message,
+      response: oResult,
       user: req?.auth?.nama_pengguna || "",
     });
 

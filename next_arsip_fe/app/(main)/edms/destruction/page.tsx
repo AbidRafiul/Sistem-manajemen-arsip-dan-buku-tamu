@@ -102,13 +102,13 @@ export default function DestructionPage() {
     }, [fetchCategories]);
 
     return (
-        <div className="w-full">
+        <>
+
             <Toast ref={toast} position="top-right" />
             
-            <div className="mb-4">
-                <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: '0.1em' }}>EDMS</span>
-                <h2 className="m-0 text-900 font-extrabold text-2xl mt-1 mb-2" style={{ letterSpacing: '-0.02em' }}>Pemusnahan & Retensi Arsip</h2>
-                <p className="m-0 text-color-secondary text-sm font-medium">Pantau arsip yang telah habis masa retensinya, ajukan usulan pemusnahan, dan tinjau berkas berita acara pemusnahan.</p>
+            <div className="mb-3">
+                <h2 className="m-0 text-900 font-bold text-2xl mb-1">Pemusnahan & Retensi Arsip</h2>
+                <p className="m-0 text-color-secondary text-sm">Pantau arsip yang telah habis masa retensinya, ajukan usulan pemusnahan, dan tinjau berkas berita acara pemusnahan.</p>
             </div>
 
             <Card className="border-none shadow-1 border-round-2xl overflow-hidden" pt={{ body: { className: 'p-0' }, content: { className: 'p-0' } }}>
@@ -140,6 +140,6 @@ export default function DestructionPage() {
                     </TabPanel>
                 </TabView>
             </Card>
-        </div>
+        </>
     );
 }
