@@ -35,7 +35,45 @@ const incomingLetterDetail = async (req, res) => {
       });
     }
     const vaFiles = await DB("trs_file_surat_masuk").select("file_surat_masuk_id", "surat_masuk_id", "path_file", "nama_file", "tipe_mime_file", "ukuran_file", "uploaded_by", "status", "created_at", "updated_at").where("surat_masuk_id", oPayload.surat_masuk_id).where("status", "active").orderBy("created_at", "desc").orderBy("file_surat_masuk_id", "desc").limit(1);
-    const vaDispositions = await DB("trs_disposisi_surat as tld").leftJoin("mst_instruksi_disposisi as mdi", "tld.instruksi_disposisi_id", "mdi.instruksi_disposisi_id").select("tld.disposisi_surat_id", "tld.surat_masuk_id", "tld.disposisi_induk_id", "tld.dari_pengguna_id", "tld.kepada_pengguna_id", "tld.instruksi_disposisi_id", "mdi.nama_instruksi", "tld.instruksi", "tld.catatan_disposisi", "tld.batas_waktu", "tld.status", "tld.received_at", "tld.processed_at", "tld.completed_at", "tld.created_by", "tld.updated_by", "tld.created_at", "tld.updated_at").where("tld.surat_masuk_id", oPayload.surat_masuk_id).orderBy("tld.created_at", "desc");
+    const getTableColumns = async (tableName) => {
+      try {
+        const [cols] = await DB.raw(`SHOW COLUMNS FROM \`${tableName}\``);
+        return cols.map((col) => col.Field);
+      } catch (error) {
+        return [];
+      }
+    };
+    const pickColumn = (columns, candidates) => {
+      return candidates.find((column) => columns.includes(column)) || null;
+    };
+    const cols = await getTableColumns("trs_disposisi_surat");
+    const fromCol = pickColumn(cols, ["from_user_id", "dari_pengguna_id", "from_id_pengguna"]) || "from_user_id";
+    const toCol = pickColumn(cols, ["to_user_id", "kepada_pengguna_id", "to_id_pengguna"]) || "to_user_id";
+
+    const vaDispositions = await DB("trs_disposisi_surat as tld")
+      .leftJoin("mst_instruksi_disposisi as mdi", "tld.instruksi_disposisi_id", "mdi.instruksi_disposisi_id")
+      .select(
+        "tld.disposisi_surat_id",
+        "tld.surat_masuk_id",
+        "tld.disposisi_induk_id",
+        `tld.${fromCol} as dari_pengguna_id`,
+        `tld.${toCol} as kepada_pengguna_id`,
+        "tld.instruksi_disposisi_id",
+        "mdi.nama_instruksi",
+        "tld.instruksi",
+        "tld.catatan_disposisi",
+        "tld.batas_waktu",
+        "tld.status",
+        "tld.received_at",
+        "tld.processed_at",
+        "tld.completed_at",
+        "tld.created_by",
+        "tld.updated_by",
+        "tld.created_at",
+        "tld.updated_at"
+      )
+      .where("tld.surat_masuk_id", oPayload.surat_masuk_id)
+      .orderBy("tld.created_at", "desc");
     const vaTrackings = await DB("trs_tracking_surat_masuk").select("tracking_surat_masuk_id", "surat_masuk_id", "disposisi_surat_id", "nama_aksi", "dari_pengguna_id", "kepada_pengguna_id", "status_sebelumnya", "status_saat_ini", "catatan", "processed_at", "created_by", "created_at", "updated_at").where("surat_masuk_id", oPayload.surat_masuk_id).orderBy("processed_at", "desc");
     const oArchivedDocument = await DB("trs_dokumen").select("id_dokumen", "kode_dokumen", "nama_dokumen", "nomor_dokumen", "tanggal", "status", "created_at").where("nomor_dokumen", oLetter.nomor_agenda).where("status", "active").first();
     return res.status(200).json({

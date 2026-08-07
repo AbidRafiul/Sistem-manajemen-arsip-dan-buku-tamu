@@ -287,7 +287,6 @@ export default function RegistrasiKunjunganPage() {
                         size="small"
                         onClick={() => window.open('/visitor/booking', '_blank')} 
                     />
-                    <Button type="button" label="Kembali ke Monitoring" icon="pi pi-arrow-left" outlined size="small" onClick={() => router.push('/buku_tamu/monitoring')} />
                 </div>
             </div>
 

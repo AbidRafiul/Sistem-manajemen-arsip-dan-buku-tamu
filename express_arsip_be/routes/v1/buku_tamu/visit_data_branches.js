@@ -7,8 +7,9 @@ import { getDescendantBranchIds, Logging } from "../components/tools/servertool.
 const router = express.Router();
 router.post("/branches", async (req, res) => {
   try {
+    const oPayload = req.body || {};
     let query = DB("mst_cabang").select("id_cabang as id", "nama_cabang as name", "id_induk").whereNot("status", "deleted");
-    if (req.headers["x-filter-cabang"]) {
+    if (!oPayload.is_public && !oPayload.isPublic && !oPayload.all && req.headers["x-filter-cabang"]) {
       query = query.whereIn("id_cabang", req.headers["x-filter-cabang"].split(",").map(Number));
     }
     const listCabang = await query;

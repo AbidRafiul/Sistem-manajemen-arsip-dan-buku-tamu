@@ -3,6 +3,7 @@ import Joi from "joi";
 import { formatDateSystem } from "../components/tools/general.js";
 import { Logging, validatePayload } from "../components/tools/servertool.js";
 import DB from "../../../core/config/knex.js";
+import { createNotification } from "../components/tools/notification_helper.js";
 
 const router = express.Router();
 
@@ -49,6 +50,43 @@ router.put("/:id", async (req, res) => {
     await DB("trs_kunjungan")
       .where("id_kunjungan", id)
       .update(oDataUpdate);
+
+    // Kirim notifikasi real-time saat tamu check-out
+    try {
+      const cGuestName = checkKunjungan.nama_tamu || "Seorang tamu";
+      const notifMsg = `Tamu ${cGuestName} telah check-out (selesai berkunjung)`;
+
+      if (checkKunjungan.id_user_host) {
+        await createNotification({
+          id_pengguna: checkKunjungan.id_user_host,
+          judul: "Tamu Check-Out",
+          pesan: notifMsg,
+          tipe: "kunjungan",
+          tautan: "/buku_tamu/monitoring",
+        });
+      }
+
+      const superadmins = await DB("mst_pengguna as p")
+        .join("mst_pengguna_peran as pp", "p.id_pengguna", "pp.id_pengguna")
+        .join("mst_peran as r", "pp.id_peran", "r.id_peran")
+        .whereIn("r.kode_peran", ["SUPERADMIN", "SA"])
+        .andWhere("p.status", "active")
+        .select("p.id_pengguna");
+
+      for (const sa of superadmins) {
+        if (sa.id_pengguna !== Number(checkKunjungan.id_user_host)) {
+          await createNotification({
+            id_pengguna: sa.id_pengguna,
+            judul: "Tamu Check-Out",
+            pesan: notifMsg,
+            tipe: "kunjungan",
+            tautan: "/buku_tamu/monitoring",
+          });
+        }
+      }
+    } catch (notifErr) {
+      console.error("Gagal membuat notifikasi checkout:", notifErr.message);
+    }
 
     return res.status(200).json({
       status: "00",

@@ -13,27 +13,17 @@ router.post("/", async (req, res) => {
     const page = parseInt(oPayload.page || 1, 10) || 1;
     const limit = parseInt(oPayload.limit || 20, 10) || 20;
     const offset = (page - 1) * limit;
-    const q = DB("trs_kunjungan as t").select("t.*", "mp.nama_tujuan_kunjungan as VisitPurposeName", "u.nama_lengkap as HostFullname", "c.nama_cabang as BranchName").leftJoin("mst_tujuan_kunjungan as mp", "t.id_tujuan_kunjungan", "mp.id_tujuan_kunjungan").leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna").leftJoin("mst_cabang as c", "u.id_cabang", "c.id_cabang");
-    const qCount = DB("trs_kunjungan as t").leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna").count({
-      total: '*'
-    });
+    const q = DB("trs_kunjungan as t")
+      .select("t.*", "mp.nama_tujuan_kunjungan as VisitPurposeName", "u.nama_lengkap as HostFullname", "c.nama_cabang as BranchName")
+      .leftJoin("mst_tujuan_kunjungan as mp", "t.id_tujuan_kunjungan", "mp.id_tujuan_kunjungan")
+      .leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna")
+      .leftJoin("mst_cabang as c", DB.raw("COALESCE(t.id_cabang, u.id_cabang)"), "c.id_cabang");
+    const qCount = DB("trs_kunjungan as t")
+      .leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna")
+      .count({ total: '*' });
 
-    // Multi-tenancy: isolasi data berdasarkan cabang host
-    applyMultiTenantFilter(q, req, 'u');
-    applyMultiTenantFilter(qCount, req, 'u');
-
-    // Filter berdasarkan cabang (Isolasi Cabang / Hirarki Perusahaan)
-    if (req.auth?.peranCode !== "SUPERADMIN") {
-      const userBranchId = req.auth?.id_cabang || 1;
-      const branchIds = await getDescendantBranchIds(DB, userBranchId);
-      q.whereIn("u.id_cabang", branchIds);
-      qCount.whereIn("u.id_cabang", branchIds);
-    } else if (oPayload.BranchId || oPayload.id_cabang) {
-      const filterBranchId = oPayload.BranchId || oPayload.id_cabang;
-      const branchIds = await getDescendantBranchIds(DB, filterBranchId);
-      q.whereIn("u.id_cabang", branchIds);
-      qCount.whereIn("u.id_cabang", branchIds);
-    } else if (req.headers["x-filter-cabang"]) {
+    // Multi-tenancy: filter berdasarkan cabang tujuan kunjungan atau cabang host
+    if (req.headers["x-filter-cabang"]) {
       const vaParentBranchIds = req.headers["x-filter-cabang"].split(",").map(Number);
       let vaAllBranchIds = [];
       if (req.headers["x-exact-cabang"] === 'true') {
@@ -47,9 +37,19 @@ router.post("/", async (req, res) => {
         }
       }
       if (vaAllBranchIds.length > 0) {
-        q.whereIn("u.id_cabang", vaAllBranchIds);
-        qCount.whereIn("u.id_cabang", vaAllBranchIds);
+        q.whereIn(DB.raw("COALESCE(t.id_cabang, u.id_cabang)"), vaAllBranchIds);
+        qCount.whereIn(DB.raw("COALESCE(t.id_cabang, u.id_cabang)"), vaAllBranchIds);
       }
+    } else if (req.auth?.peranCode !== "SUPERADMIN") {
+      const userBranchId = req.auth?.id_cabang || 1;
+      const branchIds = await getDescendantBranchIds(DB, userBranchId);
+      q.whereIn(DB.raw("COALESCE(t.id_cabang, u.id_cabang)"), branchIds);
+      qCount.whereIn(DB.raw("COALESCE(t.id_cabang, u.id_cabang)"), branchIds);
+    } else if (oPayload.BranchId || oPayload.id_cabang) {
+      const filterBranchId = oPayload.BranchId || oPayload.id_cabang;
+      const branchIds = await getDescendantBranchIds(DB, filterBranchId);
+      q.whereIn(DB.raw("COALESCE(t.id_cabang, u.id_cabang)"), branchIds);
+      qCount.whereIn(DB.raw("COALESCE(t.id_cabang, u.id_cabang)"), branchIds);
     }
     if (oPayload.Status) {
       q.where("t.status", oPayload.Status);

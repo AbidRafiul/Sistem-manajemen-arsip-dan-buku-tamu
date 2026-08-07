@@ -107,7 +107,7 @@ export default function VisitorBookingPage() {
         };
         const fetchBranches = async () => {
             try {
-                const response = await postData("/buku-tamu/visit-data/branches", {});
+                const response = await postData("/buku-tamu/visit-data/branches", { is_public: true });
                 if (response.data?.status === '00' && Array.isArray(response.data?.data)) {
                     const formatted = groupBranches(response.data.data);
                     setBranches(formatted);

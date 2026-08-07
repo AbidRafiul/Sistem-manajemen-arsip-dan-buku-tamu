@@ -290,6 +290,14 @@ router.post(
       }
 
       try {
+        const GuestName = nama_tamu || oPayload.GuestName || oPayload.nama_tamu || "";
+        const GuestCompany = instansi_tamu || oPayload.GuestCompany || oPayload.instansi_tamu || "";
+        const VisitPurposeId = id_tujuan_kunjungan || oPayload.VisitPurposeId || oPayload.id_tujuan_kunjungan;
+        const HostName = nama_host || oPayload.HostName || oPayload.nama_host || "";
+        const PhoneNumber = nomor_telepon || oPayload.PhoneNumber || oPayload.nomor_telepon || "";
+        const CheckInTime = waktu_masuk || oPayload.CheckInTime || oPayload.waktu_masuk || "";
+        const VisitNotes = catatan_kunjungan || oPayload.VisitNotes || oPayload.catatan_kunjungan || "";
+
         let purposeName = "Kunjungan";
         if (VisitPurposeId) {
           const purposeObj = await DB("mst_tujuan_kunjungan").where("id_tujuan_kunjungan", VisitPurposeId).first();
@@ -388,10 +396,14 @@ ${closingMsg}`;
             await sendWhatsAppMessage(oHost.telepon, waHost);
           }
 
+          const cGuestName = nama_tamu || "Seorang tamu";
+          const cGuestCompany = instansi_tamu && instansi_tamu !== "-" ? ` (${instansi_tamu})` : "";
+          const notifMsg = `${cGuestName}${cGuestCompany} mendaftarkan rencana kunjungan`;
+
           await createNotification({
             id_pengguna: resolvedHostUserId,
             judul: "Rencana Kunjungan Baru",
-            pesan: `${GuestName || "Seorang tamu"} (${GuestCompany || "Instansi tidak diketahui"}) mendaftarkan rencana kunjungan`,
+            pesan: notifMsg,
             tipe: "kunjungan",
             tautan: "/buku_tamu/monitoring",
           });
@@ -408,13 +420,17 @@ ${closingMsg}`;
               await createNotification({
                 id_pengguna: sa.id_pengguna,
                 judul: "Rencana Kunjungan Baru",
-                pesan: `${GuestName || "Seorang tamu"} (${GuestCompany || "Instansi tidak diketahui"}) mendaftarkan rencana kunjungan`,
+                pesan: notifMsg,
                 tipe: "kunjungan",
                 tautan: "/buku_tamu/monitoring",
               });
             }
           }
         } else {
+          const cGuestName = nama_tamu || "Seorang tamu";
+          const cGuestCompany = instansi_tamu && instansi_tamu !== "-" ? ` (${instansi_tamu})` : "";
+          const notifMsg = `${cGuestName}${cGuestCompany} mendaftarkan rencana kunjungan`;
+
           // If no host is selected, notify all active users in the target branch
           const branchUsers = await DB("mst_pengguna")
             .where("id_cabang", targetBranchId)
@@ -437,7 +453,7 @@ ${closingMsg}`;
             await createNotification({
               id_pengguna: userId,
               judul: "Rencana Kunjungan Baru",
-              pesan: `${GuestName || "Seorang tamu"} (${GuestCompany || "Instansi tidak diketahui"}) mendaftarkan rencana kunjungan`,
+              pesan: notifMsg,
               tipe: "kunjungan",
               tautan: "/buku_tamu/monitoring",
             });
