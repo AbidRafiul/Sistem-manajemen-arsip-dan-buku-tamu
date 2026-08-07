@@ -3,7 +3,7 @@
 import { showError, showSuccess } from "@/lib/tools/generalTools";
 import jsPDF from "jspdf";
 import dynamic from "next/dynamic";
-import postData from "@/lib/axios/postData";
+
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import { Dialog } from "primereact/dialog";
@@ -220,18 +220,15 @@ const buildFinalLetterText = (values: initValue) => [
     values.jabatan || SIGNER_TITLE,
 ].filter((line, index, lines) => line || lines[index - 1] !== "").join("\n");
 
-const buildPdfPreviewUrl = async (values: initValue) => {
+const buildPdfPreviewUrl = async (values: initValue, apiGetConfig?: (payload: any) => Promise<any>) => {
     // Fetch config
     let config: any = {};
-    try {
-        const res = await postData("/setup/config-data", {
+    if (apiGetConfig) {
+        config = await apiGetConfig({
             kode: [
                 "msNamaPerusahaan", "msAlamatPerusahaan", "msTeleponPerusahaan", "msLogoPerusahaan"
             ]
         });
-        config = res.data?.data || {};
-    } catch (error) {
-        console.error("Gagal mengambil konfigurasi:", error);
     }
 
     const cName = config.msNamaPerusahaan || "PT. MARSTECH GLOBAL";
@@ -363,7 +360,7 @@ const renderTemplateContent = (
     return (templateContent || "").replace(/{{\s*([\w_]+)\s*}}/g, (_, key) => replacements[key] || "");
 };
 
-const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploadPdf, apiDownloadDocx, apiExtractOcr, apiGetLetterTypes, apiGetTemplates, apiGetNomorPreview }: FormProps) => {
+const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploadPdf, apiDownloadDocx, apiExtractOcr, apiGetLetterTypes, apiGetTemplates, apiGetNomorPreview, apiGetConfig }: FormProps) => {
     const [letterTypeOptions, setLetterTypeOptions] = useState<LetterTypeOption[]>([]);
     const [templateOptions, setTemplateOptions] = useState<TemplateOption[]>([]);
     const [nomorPreviewLoading, setNomorPreviewLoading] = useState(false);
@@ -470,7 +467,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
 
     const generatePdfPreview = async () => {
         try {
-            const pdfUrl = await buildPdfPreviewUrl(formik.values);
+            const pdfUrl = await buildPdfPreviewUrl(formik.values, apiGetConfig);
 
             if (pdfPreviewUrl) {
                 URL.revokeObjectURL(pdfPreviewUrl);

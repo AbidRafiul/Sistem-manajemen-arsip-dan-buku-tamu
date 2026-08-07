@@ -567,6 +567,7 @@ const Table = ({
                 apiGetLetterTypes={apiGetLetterTypes}
                 apiGetTemplates={apiGetTemplates}
                 apiGetNomorPreview={apiGetNomorPreview}
+                apiGetConfig={apiGetConfig}
             />
 
             <Dialog

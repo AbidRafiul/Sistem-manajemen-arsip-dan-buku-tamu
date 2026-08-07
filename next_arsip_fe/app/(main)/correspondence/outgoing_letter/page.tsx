@@ -160,6 +160,16 @@ const Page = () => {
         return res.data?.data?.nomor_surat || "";
     };
 
+    const apiGetConfig = async (payload: any) => {
+        try {
+            const res = await postData("/setup/config-data", payload);
+            return res.data?.data || {};
+        } catch (error) {
+            console.error("Gagal mengambil konfigurasi:", error);
+            return {};
+        }
+    };
+
     return (
         <>
             <Toast ref={toast} position="top-right" />
@@ -176,6 +186,7 @@ const Page = () => {
                 apiGetLetterTypes={apiGetLetterTypes}
                 apiGetTemplates={apiGetTemplates}
                 apiGetNomorPreview={apiGetNomorPreview}
+                apiGetConfig={apiGetConfig}
             />
         </>
     );
