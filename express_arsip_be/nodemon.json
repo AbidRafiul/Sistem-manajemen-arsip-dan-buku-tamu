@@ -1,0 +1,22 @@
+{
+  "watch": ["server.js", "app.js", "routes", "core", "middleware"],
+  "ignore": [
+    "uploads/*",
+    "temp/*",
+    "public/*",
+    "assets/*",
+    "tests/*",
+    "seeds/*",
+    "migrations/*",
+    "node_modules/*",
+    "*.log",
+    "*.tmp",
+    "*.png",
+    "*.jpg",
+    "*.jpeg",
+    "*.pdf",
+    "*.docx",
+    "*.xlsx"
+  ],
+  "ext": "js,mjs,cjs,json"
+}

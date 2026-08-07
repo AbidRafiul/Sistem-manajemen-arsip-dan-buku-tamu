@@ -1,90 +1,94 @@
 import express from "express";
 import multer from "multer";
 import DB from "../../../core/config/knex.js";
-import { removeFileFromMinio, uploadFileToMinio, getMinioPrefix } from "../../../core/components/tools/minio_helper.js";
+import {
+  removeFileFromMinio,
+  uploadFileToMinio,
+  getMinioPrefix,
+} from "../../../core/components/tools/minio_helper.js";
 import { Logging } from "../components/tools/servertool.js";
-import { status, datetime } from "../components/tools/general.js";
+import { status } from "../components/tools/general.js";
+import { insertIncomingLetterTracking } from "../components/tools/tracking_helper.js";
+
 const router = express.Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 50 * 1024 * 1024
+    fileSize: 50 * 1024 * 1024,
   },
-  fileFilter: (req, file, cb) => {
-    const vaAllowedMimeTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "image/jpeg", "image/png"];
-    if (!vaAllowedMimeTypes.includes(file.mimetype)) {
-      return cb(new Error("Format file tidak didukung"));
-    }
-    cb(null, true);
-  }
 });
+
 const incomingLetterUpload = async (req, res) => {
-  const cBucketName = process.env.MINIO_BUCKET_NAME || "arsip-bucket";
   let cObjectName = null;
+  let cBucketName = null;
   let bObjectPersisted = false;
+  let vaReplacedFiles = [];
+  let vaInserted = [];
+
   try {
     const oPayload = req.body || {};
     const oFile = req.file;
-    if (!oPayload.surat_masuk_id) {
+
+    if (!oPayload.surat_masuk_id || !oFile) {
       return res.status(400).json({
         status: status.BAD_REQUEST,
-        message: "id surat masuk wajib diisi"
+        message: "surat_masuk_id dan File wajib diisi",
       });
     }
-    if (!oFile) {
-      return res.status(400).json({
-        status: status.BAD_REQUEST,
-        message: "File wajib diupload"
-      });
-    }
-    const oLetter = await DB("trs_surat_masuk").where("surat_masuk_id", oPayload.surat_masuk_id).first();
+
+    const oLetter = await DB("trs_surat_masuk as sm")
+      .leftJoin("mst_cabang as c", "sm.id_cabang", "c.id_cabang")
+      .leftJoin("mst_unit_kerja as uk", "sm.id_unit_kerja", "uk.id_unit_kerja")
+      .select(
+        "sm.*",
+        "c.kode_cabang",
+        "c.nama_cabang",
+        "uk.kode_unit_kerja",
+        "uk.nama_unit_kerja"
+      )
+      .where("sm.surat_masuk_id", oPayload.surat_masuk_id)
+      .first();
+
     if (!oLetter) {
       return res.status(404).json({
         status: status.BAD_REQUEST,
-        message: "Surat masuk tidak ditemukan"
+        message: "Surat masuk tidak ditemukan",
       });
     }
 
-    // Ambil detail pengunggah (untuk struktur folder hirarki MinIO)
-    let uploaderIdCabang = null,
-      uploaderIdDept = null,
-      uploaderIdDiv = null,
-      uploaderIdUnit = null;
-    const uploaderId = oPayload.uploaded_by || oPayload.UploadedBy || req?.auth?.id_pengguna;
-    if (uploaderId) {
-      const uploader = await DB("mst_pengguna").select("id_cabang", "id_departemen", "id_divisi", "id_unit_kerja").where("id_pengguna", uploaderId).first();
-      if (uploader) {
-        uploaderIdCabang = uploader.id_cabang;
-        uploaderIdDept = uploader.id_departemen;
-        uploaderIdDiv = uploader.id_divisi;
-        uploaderIdUnit = uploader.id_unit_kerja;
-      }
-    }
-
-    // Fallback
-    if (!uploaderIdCabang && req.context && req.context.id_cabang) {
-      uploaderIdCabang = req.context.id_cabang;
-    }
-    const minioPrefix = await getMinioPrefix(uploaderIdCabang, uploaderIdDept, uploaderIdDiv, uploaderIdUnit);
-    cObjectName = await uploadFileToMinio(cBucketName, oFile, {
-      idCabang: uploaderIdCabang,
-      modul: "korespondensi/surat-masuk",
-      nomorDokumen: oPayload.nomor_surat,
-      namaDokumen: oPayload.perihal,
-      version: "V1",
-      customFolderPath: `${minioPrefix}/korespondensi/surat-masuk`
+    const oUploadResult = await uploadFileToMinio(oFile, {
+      idCabang: oLetter.id_cabang,
+      idUnitKerja: oLetter.id_unit_kerja,
+      subFolder: "korespondensi/surat-masuk",
+      customPrefix: getMinioPrefix(
+        oLetter.nama_cabang || oLetter.kode_cabang,
+        oLetter.nama_unit_kerja || oLetter.kode_unit_kerja
+      ),
+      referenceNumber: oLetter.nomor_surat || oLetter.nomor_agenda,
     });
+
+    cObjectName = oUploadResult.objectName;
+    cBucketName = oUploadResult.bucketName;
+
     const dNow = new Date();
-    let vaInserted;
-    let vaReplacedFiles = [];
-    await DB.transaction(async trx => {
-      vaReplacedFiles = await trx("trs_file_surat_masuk").select("file_surat_masuk_id", "path_file").where("surat_masuk_id", oPayload.surat_masuk_id).where("status", "active").forUpdate();
+
+    await DB.transaction(async (trx) => {
+      vaReplacedFiles = await trx("trs_file_surat_masuk")
+        .select("file_surat_masuk_id", "path_file")
+        .where("surat_masuk_id", oPayload.surat_masuk_id)
+        .where("status", "active")
+        .forUpdate();
+
       if (vaReplacedFiles.length > 0) {
-        await trx("trs_file_surat_masuk").where("surat_masuk_id", oPayload.surat_masuk_id).where("status", "active").update({
-          status: "nonactive",
-          updated_at: dNow
-        });
+        await trx("trs_file_surat_masuk")
+          .where("surat_masuk_id", oPayload.surat_masuk_id)
+          .where("status", "active")
+          .update({
+            status: "nonactive",
+            updated_at: dNow,
+          });
       }
+
       vaInserted = await trx("trs_file_surat_masuk").insert({
         surat_masuk_id: oPayload.surat_masuk_id,
         path_file: cObjectName,
@@ -94,9 +98,10 @@ const incomingLetterUpload = async (req, res) => {
         uploaded_by: oPayload.uploaded_by || oPayload.UploadedBy || null,
         status: "active",
         created_at: dNow,
-        updated_at: dNow
+        updated_at: dNow,
       });
-      await trx("trs_tracking_surat_masuk").insert({
+
+      await insertIncomingLetterTracking(trx, {
         surat_masuk_id: oPayload.surat_masuk_id,
         disposisi_surat_id: null,
         nama_aksi: "file_surat_diupload",
@@ -104,56 +109,79 @@ const incomingLetterUpload = async (req, res) => {
         kepada_pengguna_id: null,
         status_sebelumnya: oLetter.status,
         status_saat_ini: oLetter.status,
-        catatan: vaReplacedFiles.length > 0 ? `File surat diganti dengan ${oFile.originalname}` : `File ${oFile.originalname} berhasil diupload`,
+        catatan:
+          vaReplacedFiles.length > 0
+            ? `File surat diganti dengan ${oFile.originalname}`
+            : `File ${oFile.originalname} berhasil diupload`,
         processed_at: dNow,
         created_by: oPayload.uploaded_by || oPayload.UploadedBy || null,
         created_at: dNow,
-        updated_at: dNow
+        updated_at: dNow,
       });
     });
+
     bObjectPersisted = true;
+
     for (const oReplacedFile of vaReplacedFiles) {
       const cReplacedPath = oReplacedFile.path_file?.replace(/\\/g, "/");
-      const bIsLegacyLocalFile = !cReplacedPath || /^\/?uploads\/surat_masuk\//.test(cReplacedPath);
+      const bIsLegacyLocalFile =
+        !cReplacedPath || /^\/?uploads\/surat_masuk\//.test(cReplacedPath);
+
       if (bIsLegacyLocalFile) continue;
+
       try {
-        await removeFileFromMinio(cBucketName, cReplacedPath.replace(/^\/+/, ""));
+        await removeFileFromMinio(
+          cBucketName,
+          cReplacedPath.replace(/^\/+/, "")
+        );
       } catch (cleanupError) {
-        console.error(`Gagal menghapus file lama ${cReplacedPath} dari MinIO:`, cleanupError.message);
+        console.error(
+          `Gagal menghapus file lama ${cReplacedPath} dari MinIO:`,
+          cleanupError.message
+        );
       }
     }
+
     return res.status(201).json({
       status: status.SUKSES,
-      message: vaReplacedFiles.length > 0 ? "File surat masuk berhasil diganti" : "File surat masuk berhasil diupload",
+      message:
+        vaReplacedFiles.length > 0
+          ? "File surat masuk berhasil diganti"
+          : "File surat masuk berhasil diupload",
       data: {
         file_surat_masuk_id: vaInserted[0],
         path_file: cObjectName,
         nama_file: oFile.originalname,
         tipe_mime_file: oFile.mimetype,
-        ukuran_file: oFile.size
-      }
+        ukuran_file: oFile.size,
+      },
     });
   } catch (error) {
     console.log(error);
+
     if (cObjectName && !bObjectPersisted) {
       try {
         await removeFileFromMinio(cBucketName, cObjectName);
       } catch (cleanupError) {}
     }
+
     const oResult = {
       status: status.BAD_REQUEST,
       message: "File surat masuk gagal diupload",
-      error: error.message
+      error: error.message,
     };
+
     Logging(error, {
       file: "incoming_letter_upload.js",
       func: "handler",
       request: req.body || {},
       response: oResult,
-      user: ""
+      user: "",
     });
+
     return res.status(500).json(oResult);
   }
 };
+
 router.post("/", upload.single("File"), incomingLetterUpload);
 export default router;

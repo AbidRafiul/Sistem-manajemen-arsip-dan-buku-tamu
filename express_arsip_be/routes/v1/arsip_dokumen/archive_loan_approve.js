@@ -1,5 +1,6 @@
 import Knex from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+import { createNotification } from "../components/tools/notification_helper.js";
 
 const approveArchiveLoan = async (req, res) => {
   const oPayload = req.body;
@@ -83,6 +84,45 @@ const approveArchiveLoan = async (req, res) => {
     await Knex("trs_peminjaman_arsip")
       .where("id_peminjaman", nLoanId)
       .update(oData);
+
+    try {
+      const actionText = cStatus === "approved" ? "DISETUJUI" : "DITOLAK";
+      const targetUser = await Knex("mst_pengguna")
+        .where("nama_lengkap", oLoan.nama_peminjam)
+        .orWhere("nama_pengguna", oLoan.nama_peminjam)
+        .first();
+
+      if (targetUser) {
+        await createNotification({
+          id_pengguna: targetUser.id_pengguna,
+          judul: `Peminjaman Arsip ${actionText}`,
+          pesan: `Permohonan pinjaman arsip Anda untuk dokumen ${oLoan.kode_dokumen} telah ${actionText.toLowerCase()}.`,
+          tipe: "peminjaman_arsip",
+          tautan: "/edms/archive_loan",
+        });
+      }
+
+      const superadmins = await Knex("mst_pengguna as p")
+        .join("mst_pengguna_peran as pp", "p.id_pengguna", "pp.id_pengguna")
+        .join("mst_peran as r", "pp.id_peran", "r.id_peran")
+        .whereIn("r.kode_peran", ["SUPERADMIN", "SA"])
+        .andWhere("p.status", "active")
+        .select("p.id_pengguna");
+
+      for (const sa of superadmins) {
+        if (!targetUser || sa.id_pengguna !== targetUser.id_pengguna) {
+          await createNotification({
+            id_pengguna: sa.id_pengguna,
+            judul: `Peminjaman Arsip ${actionText}`,
+            pesan: `Pinjaman arsip ${oLoan.nama_peminjam} untuk dokumen ${oLoan.kode_dokumen} telah ${actionText.toLowerCase()}.`,
+            tipe: "peminjaman_arsip",
+            tautan: "/edms/archive_loan",
+          });
+        }
+      }
+    } catch (notifError) {
+      console.error("Gagal mengirim notifikasi approval peminjaman:", notifError);
+    }
 
     const oResult = {
       status: "success",

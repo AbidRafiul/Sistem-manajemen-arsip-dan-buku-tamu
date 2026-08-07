@@ -4,6 +4,7 @@ import DB from "../../../core/config/knex.js";
 import { formatDateSystem } from "../components/tools/general.js";
 import { Logging } from "../components/tools/servertool.js";
 import { sendWhatsAppMessage } from "../../../core/components/tools/wa_helper.js";
+import { createNotification } from "../components/tools/notification_helper.js";
 
 const router = express.Router();
 
@@ -96,6 +97,41 @@ Terima kasih atas perhatian Anda.`;
       } catch (waErr) {
         console.error("[WA Gateway] Gagal kirim notifikasi approval:", waErr.message);
       }
+    }
+
+    try {
+      const actionText = action === "approved" ? "DISETUJUI" : "DITOLAK";
+
+      if (visitData && visitData.id_user_host) {
+        await createNotification({
+          id_pengguna: visitData.id_user_host,
+          judul: `Kunjungan Tamu ${actionText}`,
+          pesan: `Rencana kunjungan ${visitData.nama_tamu} telah ${actionText.toLowerCase()} oleh Admin.`,
+          tipe: "kunjungan",
+          tautan: "/buku_tamu/monitoring",
+        });
+      }
+
+      const superadmins = await DB("mst_pengguna as p")
+        .join("mst_pengguna_peran as pp", "p.id_pengguna", "pp.id_pengguna")
+        .join("mst_peran as r", "pp.id_peran", "r.id_peran")
+        .whereIn("r.kode_peran", ["SUPERADMIN", "SA"])
+        .andWhere("p.status", "active")
+        .select("p.id_pengguna");
+
+      for (const sa of superadmins) {
+        if (sa.id_pengguna !== Number(visitData?.id_user_host || 0)) {
+          await createNotification({
+            id_pengguna: sa.id_pengguna,
+            judul: `Kunjungan Tamu ${actionText}`,
+            pesan: `Rencana kunjungan ${visitData?.nama_tamu || 'Tamu'} telah ${actionText.toLowerCase()} oleh Admin.`,
+            tipe: "kunjungan",
+            tautan: "/buku_tamu/monitoring",
+          });
+        }
+      }
+    } catch (notifError) {
+      console.error("Gagal mengirim notifikasi approval:", notifError);
     }
 
     return res.status(200).json({
