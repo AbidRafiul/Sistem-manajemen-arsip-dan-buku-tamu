@@ -28,7 +28,7 @@ async function postData(endpoint: string, data = {}, customHeader = {}) {
                     const parsed = JSON.parse(savedFilter);
                     if (parsed.id_cabang) {
                         filterHeaders['x-filter-cabang'] = String(parsed.id_cabang);
-                        filterHeaders['x-exact-cabang'] = 'true';
+                        if (parsed.exact_cabang) filterHeaders['x-exact-cabang'] = 'true';
                     }
                     if (parsed.id_departemen) filterHeaders['x-filter-departemen'] = String(parsed.id_departemen);
                     if (parsed.id_divisi) filterHeaders['x-filter-divisi'] = String(parsed.id_divisi);

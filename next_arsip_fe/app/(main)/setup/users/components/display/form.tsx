@@ -83,6 +83,7 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                                     value={formik?.values.nama_lengkap}
                                     style={{ padding: '1rem' }}
                                     placeholder="nama_lengkap"
+                                    autoComplete="off"
                                     onChange={(e) => formik?.setFieldValue('nama_lengkap', e.target.value)}
                                     className={isFormFieldInvalid('nama_lengkap') ? 'p-invalid' : ''}
                                 />
@@ -98,6 +99,7 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                                     value={formik?.values.nama_pengguna}
                                     style={{ padding: '1rem' }}
                                     placeholder="nama_pengguna"
+                                    autoComplete="off"
                                     onChange={(e) => formik?.setFieldValue('nama_pengguna', e.target.value)}
                                     className={isFormFieldInvalid('nama_pengguna') ? 'p-invalid' : ''}
                                 />
@@ -116,6 +118,7 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                                     keyfilter={'int'}
                                     value={formik?.values.telepon}
                                     style={{ padding: '1rem' }}
+                                    autoComplete="off"
                                     onChange={(e) => formik?.setFieldValue('telepon', e.target.value)}
                                     placeholder="089222333444"
                                     className={isFormFieldInvalid('telepon') ? 'p-invalid' : ''}
@@ -133,6 +136,7 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                                 name="kata_sandi"
                                 toggleMask
                                 value={formik?.values.kata_sandi}
+                                autoComplete="new-password"
                                 onChange={(e) => formik?.setFieldValue('kata_sandi', e.target.value)}
                                 className={isFormFieldInvalid('kata_sandi') ? 'p-invalid w-full' : 'w-full'}
                                 inputClassName="w-full"

@@ -126,25 +126,46 @@ export default function RegistrasiKunjunganPage() {
             const rCode = (session.user as any).roleCode;
             const isSA = rCode === 'SUPERADMIN';
             const bId = (session.user as any).id_cabang;
-            console.log("SESSION LOADED:", { rCode, isSA, bId, disableBranchSelect });
-            if (!isSA && bId) {
-                const branchIdNum = Number(bId);
-                setFormData((prev) => ({ ...prev, id_cabang: branchIdNum }));
-                fetchHosts(branchIdNum);
-            } else if (isSA) {
-                if (typeof window !== 'undefined') {
-                    try {
-                        const saved = localStorage.getItem('globalFilter');
-                        if (saved) {
-                            const parsed = JSON.parse(saved);
-                            if (parsed.id_cabang) {
-                                const branchIdNum = Number(parsed.id_cabang);
-                                setFormData((prev) => ({ ...prev, id_cabang: branchIdNum }));
-                                fetchHosts(branchIdNum);
+
+            const loadHostForBranch = () => {
+                if (!isSA && bId) {
+                    const branchIdNum = Number(bId);
+                    setFormData((prev) => ({ ...prev, id_cabang: branchIdNum }));
+                    fetchHosts(branchIdNum);
+                } else if (isSA) {
+                    if (typeof window !== 'undefined') {
+                        try {
+                            const saved = localStorage.getItem('globalFilter');
+                            if (saved) {
+                                const parsed = JSON.parse(saved);
+                                if (parsed.id_cabang) {
+                                    const branchIdNum = Number(parsed.id_cabang);
+                                    setFormData((prev) => ({ ...prev, id_cabang: branchIdNum }));
+                                    fetchHosts(branchIdNum);
+                                } else {
+                                    // Jika tidak ada filter, kosongkan
+                                    setFormData((prev) => ({ ...prev, id_cabang: null as any }));
+                                    setHostUserOptions([]);
+                                }
                             }
-                        }
-                    } catch (e) {}
+                        } catch (e) {}
+                    }
                 }
+            };
+
+            // Panggil saat pertama kali komponen dirender / session berubah
+            loadHostForBranch();
+
+            // Tangkap event jika pengguna mengubah filter cabang di header (Pusat Surabaya -> Pusat Jakarta dsb)
+            const handleGlobalFilterChanged = () => {
+                loadHostForBranch();
+            };
+
+            if (typeof window !== 'undefined') {
+                window.addEventListener('globalFilterChanged', handleGlobalFilterChanged);
+                return () => {
+                    window.removeEventListener('globalFilterChanged', handleGlobalFilterChanged);
+                };
             }
         }
     }, [session]);

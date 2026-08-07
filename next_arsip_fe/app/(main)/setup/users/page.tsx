@@ -161,14 +161,10 @@ const Page = () => {
 
             const myIdPengguna = (session as any)?.user?.IdPengguna || (session as any)?.user?.id || '';
 
-            // Bypass filter cabang agar dropdown menampilkan seluruh data organisasi
+            // Membiarkan filter mengalir sesuai context dari Global Branch Switcher
             const bypassFilters: Record<string, string> = {
                 'x-uniqueid': String(myIdPengguna),
-                'x-timestamp': new Date().toISOString(),
-                'x-filter-cabang': '',
-                'x-filter-departemen': '',
-                'x-filter-divisi': '',
-                'x-filter-unit-kerja': ''
+                'x-timestamp': new Date().toISOString()
             };
 
             vaEndpoints.forEach((oItem) => {
