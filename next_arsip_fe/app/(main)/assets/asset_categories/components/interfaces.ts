@@ -43,6 +43,7 @@ export interface TableProps {
     formik: FormikProps<initValue>
     toast: RefObject<Toast>
     getData: (apiEndpoint: string) => Promise<void>;
+    handleDelete?: () => Promise<void>;
 }
 
 export interface FormProps {
@@ -51,6 +52,7 @@ export interface FormProps {
     formik: FormikProps<initValue>
     toast: RefObject<Toast>
     getData: (apiEndpoint: string) => Promise<void>;
+    handleDelete?: () => Promise<void>;
 }
 
 export interface RoleColors {

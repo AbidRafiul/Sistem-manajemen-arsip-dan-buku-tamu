@@ -1,7 +1,8 @@
 import express from "express";
 import Joi from "joi";
 import DB from "../../../core/config/knex.js";
-import { validatePayload } from "../components/tools/servertool.js";
+import { validatePayload, Logging } from "../components/tools/servertool.js";
+import { status } from "../components/tools/general.js";
 import { createNotification } from "../components/tools/notification_helper.js";
 import { insertIncomingLetterTracking } from "../components/tools/tracking_helper.js";
 
@@ -35,7 +36,6 @@ const generateAgendaNumber = async (trx) => {
     AGENDA_SEQUENCE_LENGTH,
     "0"
   );
-
   return `${cPrefix}${cNextSequence}`;
 };
 
@@ -80,7 +80,7 @@ const incomingLetterCreate = async (req, res) => {
 
     if (cValidate) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidate,
       });
     }
@@ -126,7 +126,6 @@ const incomingLetterCreate = async (req, res) => {
 
     for (const oReference of vaReferenceChecks) {
       const value = oPayload[oReference.field];
-
       if (value === undefined || value === null || value === "") {
         continue;
       }
@@ -137,7 +136,7 @@ const incomingLetterCreate = async (req, res) => {
 
       if (!oData) {
         return res.status(400).json({
-          status: false,
+          status: status.BAD_REQUEST,
           message: `${oReference.label} tidak ditemukan`,
         });
       }
@@ -209,8 +208,8 @@ const incomingLetterCreate = async (req, res) => {
           .select("p.id_pengguna");
 
         const targetUserIds = new Set([
-          ...usersInBranch.map(u => u.id_pengguna),
-          ...superadmins.map(u => u.id_pengguna)
+          ...usersInBranch.map((u) => u.id_pengguna),
+          ...superadmins.map((u) => u.id_pengguna),
         ]);
 
         for (const userId of targetUserIds) {
@@ -228,7 +227,7 @@ const incomingLetterCreate = async (req, res) => {
     }
 
     return res.status(201).json({
-      status: true,
+      status: status.SUKSES,
       message: "Surat masuk berhasil dibuat",
       data: {
         surat_masuk_id: nIncomingLetterId,
@@ -236,15 +235,21 @@ const incomingLetterCreate = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
-    return res.status(500).json({
-      status: false,
+    const oResult = {
+      status: status.BAD_REQUEST,
       message: "Surat masuk gagal dibuat",
       error: error.message,
+    };
+    Logging(error, {
+      file: "incoming_letter_create.js",
+      func: "handler",
+      request: req.body || {},
+      response: oResult,
+      user: "",
     });
+    return res.status(500).json(oResult);
   }
 };
 
 router.post("/", incomingLetterCreate);
-
 export default router;

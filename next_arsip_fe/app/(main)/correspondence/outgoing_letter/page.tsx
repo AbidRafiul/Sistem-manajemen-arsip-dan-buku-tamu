@@ -1,6 +1,10 @@
 'use client'
 
 import getDataRequest from "@/lib/axios/getData";
+import formUpload from "@/lib/axios/formData";
+import postData from "@/lib/axios/postData";
+import putData from "@/lib/axios/putData";
+import axios from "axios";
 import { showError } from "@/lib/tools/generalTools";
 import { useFormik } from "formik";
 import { useSession } from "next-auth/react";
@@ -10,6 +14,16 @@ import { useEffect, useRef, useState } from "react";
 import Table from "./components/display/table";
 import { initValue, State } from "./components/interfaces";
 import { mapOutgoingLetterRow } from "./components/mappers";
+import {
+    apiEndpointCreate,
+    apiEndpointDocumentDownload,
+    apiEndpointExtractOcr,
+    apiEndpointLetterTypeManagement,
+    apiEndpointNumberingPreview,
+    apiEndpointTemplateSurat,
+    apiEndpointUpdate,
+    apiEndpointUpload,
+} from "./components/endpoints";
 
 const initialValues: initValue = {
     id_surat_keluar: null,
@@ -27,7 +41,7 @@ const initialValues: initValue = {
     isi_surat_final: "",
     nama_pengirim: "",
     jabatan: "",
-    status: "draft",
+    status: "menunggu_approval",
     file_surat: null,
     created_by: null,
     updated_by: null,
@@ -102,11 +116,68 @@ const Page = () => {
         }
     }, [session]);
 
+    const apiSaveLetter = async (payload: any, isEdit: boolean, idSuratKeluar: number | null) => {
+        if (isEdit) {
+            return await putData(`${apiEndpointUpdate}/${idSuratKeluar}`, payload);
+        }
+        return await postData(apiEndpointCreate, payload);
+    };
+
+    const apiUploadPdf = async (idSuratKeluar: number, formData: FormData) => {
+        return await formUpload(apiEndpointUpload, formData, {});
+    };
+
+    const apiDownloadDocx = async (idSuratKeluar: number, headers: any) => {
+        const endpoint = `${apiEndpointDocumentDownload}/${idSuratKeluar}`;
+        const INTERCEPTOR_BASE_URL = process.env.NEXT_PUBLIC_API_DIR_PATH || "/api/interceptor";
+        
+        return await axios.get(INTERCEPTOR_BASE_URL, {
+            responseType: "blob",
+            headers: {
+                "X-ENDPOINT": endpoint,
+                "x-response-type": "blob",
+                "x-custom-header": JSON.stringify(headers),
+            },
+        });
+    };
+
+    const apiExtractOcr = async (formData: FormData) => {
+        return await formUpload(apiEndpointExtractOcr, formData, {});
+    };
+
+    const apiGetLetterTypes = async () => {
+        const res = await getDataRequest(apiEndpointLetterTypeManagement);
+        return res.data?.data || [];
+    };
+
+    const apiGetTemplates = async () => {
+        const res = await getDataRequest(apiEndpointTemplateSurat);
+        return res.data?.data || [];
+    };
+
+    const apiGetNomorPreview = async (payload: any) => {
+        const res = await postData(apiEndpointNumberingPreview, payload);
+        return res.data?.data?.nomor_surat || "";
+    };
+
     return (
-        <div className="p-4">
+        <>
             <Toast ref={toast} position="top-right" />
-            <Table getData={getData} state={state} setState={setState} formik={formik} toast={toast} />
-        </div>
+            <Table 
+                getData={getData} 
+                state={state} 
+                setState={setState} 
+                formik={formik} 
+                toast={toast} 
+                apiSaveLetter={apiSaveLetter}
+                apiUploadPdf={apiUploadPdf}
+                apiDownloadDocx={apiDownloadDocx}
+                apiExtractOcr={apiExtractOcr}
+                apiGetLetterTypes={apiGetLetterTypes}
+                apiGetTemplates={apiGetTemplates}
+                apiGetNomorPreview={apiGetNomorPreview}
+            />
+        </>
     );
 };
 

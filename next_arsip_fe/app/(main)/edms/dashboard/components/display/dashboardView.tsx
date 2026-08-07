@@ -15,7 +15,7 @@ interface DashboardViewProps {
 export default function DashboardView({ state, onRefresh }: DashboardViewProps) {
 
     return (
-        <div className="p-3 md:p-4 surface-ground min-h-screen">
+        <div className="flex flex-column gap-4">
             {/* Styles for pulse indicator and card animation */}
             <style jsx global>{`
                 @keyframes pulse-live {
@@ -38,7 +38,7 @@ export default function DashboardView({ state, onRefresh }: DashboardViewProps) 
             `}</style>
 
             {/* Header Section */}
-            <div className="flex flex-column md:flex-row md:align-items-center justify-content-between gap-3 mb-4">
+            <div className="flex flex-column md:flex-row md:align-items-center justify-content-between gap-3">
                 <div>
                     <div className="flex align-items-center gap-2 mb-1">
                         <span className="live-pulse-indigo" />
@@ -46,9 +46,9 @@ export default function DashboardView({ state, onRefresh }: DashboardViewProps) 
                             Live Monitoring Arsip
                         </span>
                     </div>
-                    <h1 className="m-0 text-900 font-extrabold text-3xl mb-1 mt-1" style={{ letterSpacing: '-0.02em' }}>
+                    <h2 className="m-0 text-900 font-bold text-2xl mb-1">
                         Dashboard Kearsipan (EDMS)
-                    </h1>
+                    </h2>
                     <p className="m-0 text-color-secondary font-medium text-sm">
                         Ringkasan statistik berkas, peminjaman aktif, dan sebaran dokumen berdasarkan jenis.
                     </p>
@@ -58,23 +58,19 @@ export default function DashboardView({ state, onRefresh }: DashboardViewProps) 
                     <Button
                         type="button"
                         icon={`pi pi-refresh ${state.load ? 'pi-spin' : ''}`}
-                        label="Refresh Data"
-                        outlined
-                        severity="secondary"
-                        className="py-2 px-3 border-round-lg font-semibold text-sm bg-white"
+                        label="Segarkan"
+                        className="p-button-outlined p-button-sm border-round-lg text-xs"
                         onClick={onRefresh}
-                        loading={state.load}
+                        disabled={state.load}
                     />
                 </div>
             </div>
 
-            {/* Metric Cards Section */}
-            <div className="mb-4">
-                <MetricCards metrics={state.metrics} isLoading={state.load} />
-            </div>
+            {/* Metric Cards */}
+            <MetricCards metrics={state.metrics} isLoading={state.load} />
 
             {/* Charts Section */}
-            <div className="grid mb-4">
+            <div className="grid">
                 <div className="col-12 lg:col-7">
                     <AnalyticsChart weeklyTrend={state.weeklyTrend} isLoading={state.load} />
                 </div>
@@ -84,7 +80,7 @@ export default function DashboardView({ state, onRefresh }: DashboardViewProps) 
             </div>
 
             {/* Borrowed Documents Section */}
-            <div className="mb-4">
+            <div>
                 <BorrowedList list={state.borrowedList} isLoading={state.load} />
             </div>
         </div>

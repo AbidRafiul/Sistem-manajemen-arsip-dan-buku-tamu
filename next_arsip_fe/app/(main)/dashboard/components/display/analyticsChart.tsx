@@ -53,7 +53,7 @@ export default function AnalyticsChart({ chartData, isLoading }: AnalyticsChartP
 
     return (
         <Card className="shadow-1 border-round-2xl border-none h-full" pt={{ body: { className: 'p-4 flex flex-column h-full' }, content: { className: 'flex-1 p-0 m-0' } }}>
-            <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-start mb-4 gap-3">
+            <div className="flex flex-column md:flex-row md:justify-content-between md:align-align-items-center mb-4 gap-3">
                 <div>
                     <h2 className="m-0 text-900 font-bold text-xl mb-1" style={{ letterSpacing: '-0.02em' }}>Aktivitas Mingguan</h2>
                     <p className="m-0 text-color-secondary text-sm font-medium">Tren unggah dokumen dan aktivitas sistem selama 7 hari terakhir.</p>

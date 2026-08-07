@@ -11,10 +11,8 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Tag } from "primereact/tag";
 import { Toast } from "primereact/toast";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
-import getData from "@/lib/axios/getData";
 import { showError } from "@/lib/tools/generalTools";
 import { DetailData, VersionData } from "../../../../components/interfaces";
-import { apiEndpointContentGet } from "../../../../components/endpoints";
 
 interface TableProps {
     load: boolean;
@@ -40,6 +38,7 @@ interface TableProps {
     submitRejection: () => Promise<void>;
     fetchDocumentDetail: () => Promise<void>;
     handleFetchPreviewUrl: (fileName: string) => Promise<void>;
+    fetchOcrText: (version: VersionData) => Promise<string>;
     previewUrl: string;
     isPreviewVisible: boolean;
     setIsPreviewVisible: (visible: boolean) => void;
@@ -72,6 +71,7 @@ const Table: React.FC<TableProps> = ({
     submitRejection,
     fetchDocumentDetail,
     handleFetchPreviewUrl,
+    fetchOcrText,
     previewUrl,
     isPreviewVisible,
     setIsPreviewVisible,
@@ -98,16 +98,9 @@ const Table: React.FC<TableProps> = ({
         setOcrLoad(true);
         setSelectedOcrVersion(version.nomor_versi);
         try {
-            const res = await getData(apiEndpointContentGet, {
-                kode_dokumen: detailData.document.kode_dokumen,
-                id_versi: version.id_versi
-            });
-            if (res.data?.status === 'success') {
-                setOcrText(res.data.data?.konten_teks || 'Teks belum diekstrak atau dokumen kosong.');
-                setIsOcrDialogVisible(true);
-            } else {
-                showError(toast, res.data?.message || 'Gagal mengambil hasil OCR');
-            }
+            const text = await fetchOcrText(version);
+            setOcrText(text || 'Teks belum diekstrak atau dokumen kosong.');
+            setIsOcrDialogVisible(true);
         } catch (error: any) {
             const e = error?.response?.data || error;
             showError(toast, e?.message || 'Hasil OCR / ekstraksi teks belum tersedia');
@@ -320,7 +313,7 @@ const Table: React.FC<TableProps> = ({
 
             <div className="border-1 border-dashed surface-border p-4 flex flex-column gap-3 surface-50 mb-4">
                 <div className="font-semibold text-lg text-color mb-1">Unggah Versi Baru</div>
-                <div className="flex flex-column md:flex-row gap-3 align-items-end">
+                <div className="flex flex-column md:flex-row gap-3 align-align-items-end">
                     <div className="flex-1 w-full">
                         <label className="block text-color-secondary mb-1 text-sm font-semibold">Pilih File</label>
                         <input
@@ -384,7 +377,7 @@ const Table: React.FC<TableProps> = ({
             >
                 <div className="flex flex-column gap-3 pt-2">
                     <div className="p-3 border-round-lg border-1 bg-green-50 border-green-100">
-                        <div className="flex align-items-start gap-3">
+                        <div className="flex align-align-items-center gap-3">
                             <i className="pi pi-file-check text-green-600 text-2xl mt-1" />
                             <div>
                                 <div className="font-semibold text-900 mb-1">

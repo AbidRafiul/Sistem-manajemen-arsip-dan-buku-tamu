@@ -96,7 +96,8 @@ const routeMiddleware = async (searchUrl: string) => {
             let apiPath = process.env.NEXT_PUBLIC_API_DIR_PATH || '/api/v1';
 
             if (!apiPath.startsWith('http')) {
-                apiPath = `http://localhost:8000${apiPath}`;
+                const baseUrl = process.env.API_URL ? process.env.API_URL.replace('/api/v1', '') : '';
+                apiPath = `${baseUrl}${apiPath}`;
             }
 
             const resp = await axios.post(

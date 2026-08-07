@@ -1,7 +1,5 @@
 'use client'
 
-import fileDownload from "@/lib/axios/fileDownload";
-import postData from "@/lib/axios/postData";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
 import { showError, showSuccess } from "@/lib/tools/generalTools";
 import { useRouter } from "next/navigation";
@@ -20,7 +18,7 @@ import { InputText } from "primereact/inputtext";
 import { Message } from "primereact/message";
 import { Tag } from "primereact/tag";
 import { useEffect, useState } from "react";
-import { apiEndpointArchive, apiEndpointDetail, apiEndpointFileDownload, apiEndpointGet } from "../endpoints";
+import { apiEndpointGet } from "../endpoints";
 import { IncomingLetterFile, IncomingLetterStatus, TableData, TableProps } from "../interfaces";
 import Form from "./form";
 import { usePermissions } from '@/hooks/usePermissions';
@@ -54,7 +52,14 @@ const Table = ({
     setState,
     formik,
     getData,
-    toast
+    toast,
+    handleSave,
+    handleDelete,
+    getLetterTypeOptions,
+    openDetail,
+    reloadDetail,
+    executeArchiveLetter,
+    getFileBlob
 }: TableProps) => {
     const permissions = usePermissions();
     const { canCreate, canUpdate, canDelete } = permissions;
@@ -74,42 +79,23 @@ const Table = ({
         setState((p) => ({ ...p, detail: false, detailData: null }));
     };
 
-    const openDetail = async (rowData: TableData) => {
+    const onOpenDetail = async (rowData: TableData) => {
         closePreview();
-        setState((p) => ({ ...p, detail: true, detailLoad: true, detailData: null }));
-        try {
-            const res = await postData(apiEndpointDetail, { surat_masuk_id: rowData.surat_masuk_id });
-            setState((p) => ({ ...p, detailData: res.data?.data || null }));
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || "Detail surat gagal diambil");
-            setState((p) => ({ ...p, detail: false, detailData: null }));
-        } finally {
-            setState((p) => ({ ...p, detailLoad: false }));
-        }
+        if (openDetail) await openDetail(rowData);
     };
 
-    const reloadDetail = async (letterId: number) => {
-        const res = await postData(apiEndpointDetail, { surat_masuk_id: letterId });
-        setState((p) => ({ ...p, detailData: res.data?.data || null }));
-    };
-
-    const executeArchiveLetter = async () => {
-        if (!detailLetter?.surat_masuk_id) return;
+    const onArchiveLetter = async () => {
+        if (!detailLetter?.surat_masuk_id || !executeArchiveLetter) return;
 
         setState((p) => ({ ...p, load: true }));
         try {
-            const res = await postData(apiEndpointArchive, {
-                surat_masuk_id: detailLetter.surat_masuk_id,
-                nama_pic: detailLetter.nama_pengirim || "Sekretariat",
-                created_by: detailLetter.updated_by || detailLetter.created_by || null,
-            });
-            showSuccess(toast, res.data?.message || "Surat berhasil diarsipkan");
-            await reloadDetail(detailLetter.surat_masuk_id);
+            await executeArchiveLetter(
+                detailLetter.surat_masuk_id,
+                detailLetter.nama_pengirim || "Sekretariat",
+                detailLetter.updated_by || detailLetter.created_by || null
+            );
+            if (reloadDetail) await reloadDetail(detailLetter.surat_masuk_id);
             await refreshData();
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || "Surat gagal diarsipkan");
         } finally {
             setState((p) => ({ ...p, load: false }));
         }
@@ -130,16 +116,14 @@ const Table = ({
             rejectLabel: "Batal",
             acceptClassName: "p-button-success",
             rejectClassName: "p-button-secondary p-button-outlined",
-            accept: executeArchiveLetter,
+            accept: onArchiveLetter,
         });
     };
-
-    const getFileBlob = async (file: IncomingLetterFile) =>
-        fileDownload(apiEndpointFileDownload, { file_surat_masuk_id: file.file_surat_masuk_id });
 
     const previewUploadedFile = async (file: IncomingLetterFile) => {
         closePreview();
         try {
+            if (!getFileBlob) return;
             const res = await getFileBlob(file);
             const mimeType = file.tipe_mime_file || res.headers["content-type"] || "application/octet-stream";
             const blob = new Blob([res.data], { type: mimeType });
@@ -152,6 +136,7 @@ const Table = ({
 
     const downloadUploadedFile = async (file: IncomingLetterFile) => {
         try {
+            if (!getFileBlob) return;
             const res = await getFileBlob(file);
             const blob = new Blob([res.data], { type: file.tipe_mime_file || "application/octet-stream" });
             const url = window.URL.createObjectURL(blob);
@@ -206,7 +191,7 @@ const Table = ({
                 icon="pi pi-eye"
                 rounded text size="small"
                 tooltip="Lihat Detail" tooltipOptions={{ position: "top" }}
-                onClick={() => openDetail(rowData)}
+                onClick={() => onOpenDetail(rowData)}
             />
             {canUpdate && (
                 <Button
@@ -301,13 +286,13 @@ const Table = ({
             <ConfirmDialog />
             <Card className="shadow-1 border-round-2xl border-none">
                 {/* Page Header */}
-                <div className="mb-4">
+                <div className="mb-3">
                     <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: "0.1em" }}>Korespondensi</span>
-                    <h2 className="m-0 text-900 font-extrabold text-2xl mt-1 mb-2" style={{ letterSpacing: "-0.02em" }}>Surat Masuk</h2>
+                    <h2 className="m-0 text-900 font-bold text-2xl mb-1" style={{ letterSpacing: "-0.02em" }}>Surat Masuk</h2>
                     <p className="m-0 text-color-secondary text-sm font-medium">Kelola seluruh surat masuk, upload file, dan pantau status disposisi.</p>
                 </div>
 
-                <div className="flex flex-row flex-wrap items-center gap-2 mb-4">
+                <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
                     {canCreate && (
                         <>
                             <Button
@@ -388,7 +373,16 @@ const Table = ({
                 </DataTable>
             </Card>
 
-            <Form getData={getData} toast={toast} state={state} setState={setState} formik={formik} />
+                <Form 
+                    getData={getData} 
+                    state={state} 
+                    setState={setState} 
+                    formik={formik} 
+                    toast={toast} 
+                    handleSave={handleSave}
+                    handleDelete={handleDelete}
+                    getLetterTypeOptions={getLetterTypeOptions}
+                />
 
             {/* ── Detail Dialog ──────────────────────────────────── */}
             <Dialog
@@ -412,7 +406,7 @@ const Table = ({
                 ) : (
                     <div className="flex flex-column gap-4 pt-3">
                         {/* Header info */}
-                        <div className="flex align-items-start justify-content-between gap-3 p-3 surface-50 border-round-xl border-1 surface-border">
+                        <div className="flex align-align-items-center justify-content-between gap-3 p-3 surface-50 border-round-xl border-1 surface-border">
                             <div>
                                 <h3 className="m-0 text-900 font-bold text-lg">{detailLetter?.perihal || "-"}</h3>
                                 <div className="flex gap-2 mt-2 flex-wrap">
@@ -423,7 +417,7 @@ const Table = ({
                                     )}
                                 </div>
                             </div>
-                            <div className="flex flex-column align-items-end gap-2">
+                            <div className="flex flex-column align-align-items-end gap-2">
                                 {detailLetter?.status && statusTemplate({ status: detailLetter.status } as TableData)}
                                 {archivedDocument ? (
                                     <Button
@@ -483,7 +477,7 @@ const Table = ({
                                         <div className="flex flex-column gap-2">
                                             {detailFiles.map((file) => (
                                                 <div key={file.file_surat_masuk_id} className="p-3 surface-50 border-round-lg border-1 surface-border">
-                                                    <div className="flex justify-content-between align-items-start gap-2">
+                                                    <div className="flex justify-content-between align-align-items-center gap-2">
                                                         <div className="flex align-items-center gap-2">
                                                             <div className="flex align-items-center justify-content-center border-round" style={{ width: "2rem", height: "2rem", background: "#EEF2FF", color: "#4F46E5", flexShrink: 0 }}>
                                                                 <i className="pi pi-file text-sm" />

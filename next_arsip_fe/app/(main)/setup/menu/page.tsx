@@ -73,7 +73,7 @@ const MenuPage = () => {
             const headers = { Authorization: `Bearer ${token}` };
 
             Promise.all([
-                postData('/master/organisasi/roles/get_data', {}, headers),
+                postData('/master/organisasi/roles/get-data', {}, headers),
                 postData(apiEndpointGetMenu, {}, headers)
             ]).then(([resRoles, resMenus]) => {
                 setState((prev: any) => ({
@@ -168,7 +168,8 @@ const MenuPage = () => {
     }, [session]);
 
     return (
-        <div className="p-4">
+        <>
+
             <Toast ref={toast} position="top-right" />
             
             <Table 
@@ -190,7 +191,7 @@ const MenuPage = () => {
                 handleSave={handleSave} 
                 handleDelete={handleDelete} 
             />
-        </div>
+        </>
     );
 };
 

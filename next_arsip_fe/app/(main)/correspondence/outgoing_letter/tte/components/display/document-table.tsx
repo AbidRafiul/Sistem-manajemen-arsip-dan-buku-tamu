@@ -1,7 +1,5 @@
 'use client';
 
-import getDataRequest from "@/lib/axios/getData";
-import postData from "@/lib/axios/postData";
 import { showError, showSuccess } from "@/lib/tools/generalTools";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
@@ -16,10 +14,7 @@ import { useEffect, useState } from "react";
 
 import { usePermissions } from "@/hooks/usePermissions";
 import {
-    apiEndpointDetail,
-    apiEndpointFinalize,
     apiEndpointPending,
-    apiEndpointSign,
     apiEndpointSigned,
 } from "../endpoints";
 import { formatDate, formatDateTime, formatFileSize, statusIcon, statusTone } from "../utils";
@@ -31,7 +26,7 @@ interface Props extends TtePageProps {
     subtitle: string;
 }
 
-const DocumentTable = ({ state, setState, toast, getData, mode, title, subtitle }: Props) => {
+const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDocument, signDocument, mode, title, subtitle }: Props) => {
     const permissions = usePermissions();
     const [signing, setSigning] = useState(false);
     const [finalizing, setFinalizing] = useState(false);
@@ -51,43 +46,23 @@ const DocumentTable = ({ state, setState, toast, getData, mode, title, subtitle 
             sort_order: "desc",
         });
 
-    const openDetail = async (rowData: TteDocumentRow) => {
-        setState((p) => ({ ...p, detail: true, detailLoad: true, detailData: null }));
-        try {
-            const res = await getDataRequest(`${apiEndpointDetail}/${rowData.id_surat_keluar}/tanda-tangan`);
-            const detail = res.data?.data || null;
-            setState((p) => ({ ...p, detailData: detail }));
-            const firstCert = detail?.certificates?.[0]?.id_sertifikat_elektronik || null;
-            setSelectedCertificate(firstCert);
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || "Detail dokumen gagal diambil");
-            setState((p) => ({ ...p, detail: false, detailData: null }));
-        } finally {
-            setState((p) => ({ ...p, detailLoad: false }));
-        }
+    const handleOpenDetail = async (rowData: TteDocumentRow) => {
+        const firstCert = await openDetail(rowData);
+        setSelectedCertificate(firstCert);
     };
 
-    const finalizeDocument = async () => {
-        if (!detailLetter?.id_surat_keluar) return;
+    const handleFinalizeDocument = async () => {
         setFinalizing(true);
         try {
-            const res = await postData(`${apiEndpointFinalize}/${detailLetter.id_surat_keluar}/finalisasi`, {
-                catatan: "Finalisasi dokumen untuk tanda tangan elektronik",
-            });
-            showSuccess(toast, res.data?.message || "Dokumen berhasil difinalisasi");
-            await openDetail({ id_surat_keluar: detailLetter.id_surat_keluar } as TteDocumentRow);
+            await finalizeDocument(detailLetter);
+            await handleOpenDetail({ id_surat_keluar: detailLetter.id_surat_keluar } as TteDocumentRow);
             await refreshData();
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || "Dokumen gagal difinalisasi");
         } finally {
             setFinalizing(false);
         }
     };
 
-    const signDocument = async () => {
-        if (!detailLetter?.id_surat_keluar) return;
+    const handleSignDocument = async () => {
         if (!selectedCertificate) {
             showError(toast, "Pilih sertifikat elektronik terlebih dahulu");
             return;
@@ -95,15 +70,9 @@ const DocumentTable = ({ state, setState, toast, getData, mode, title, subtitle 
 
         setSigning(true);
         try {
-            const res = await postData(`${apiEndpointSign}/${detailLetter.id_surat_keluar}/tanda-tangan`, {
-                id_sertifikat_elektronik: selectedCertificate,
-            });
-            showSuccess(toast, res.data?.message || "Dokumen berhasil ditandatangani");
-            await openDetail({ id_surat_keluar: detailLetter.id_surat_keluar } as TteDocumentRow);
+            await signDocument(detailLetter, selectedCertificate);
+            await handleOpenDetail({ id_surat_keluar: detailLetter.id_surat_keluar } as TteDocumentRow);
             await refreshData();
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || "Dokumen gagal ditandatangani");
         } finally {
             setSigning(false);
         }
@@ -122,7 +91,7 @@ const DocumentTable = ({ state, setState, toast, getData, mode, title, subtitle 
             acceptLabel: "Finalisasi",
             rejectLabel: "Batal",
             acceptClassName: "p-button-success",
-            accept: finalizeDocument,
+            accept: handleFinalizeDocument,
         });
     };
 
@@ -139,7 +108,7 @@ const DocumentTable = ({ state, setState, toast, getData, mode, title, subtitle 
             acceptLabel: "Tandatangani",
             rejectLabel: "Batal",
             acceptClassName: "p-button-success",
-            accept: signDocument,
+            accept: handleSignDocument,
         });
     };
 
@@ -189,7 +158,7 @@ const DocumentTable = ({ state, setState, toast, getData, mode, title, subtitle 
                 size="small"
                 tooltip="Lihat Detail"
                 tooltipOptions={{ position: "top" }}
-                onClick={() => openDetail(rowData)}
+                onClick={() => handleOpenDetail(rowData)}
             />
             <Button
                 icon="pi pi-download"
@@ -352,6 +321,12 @@ const DocumentTable = ({ state, setState, toast, getData, mode, title, subtitle 
 
                         {mode === "pending" && (
                             <div className="flex align-items-center gap-2 flex-wrap">
+                                <Button 
+                                    label="Lihat Detail & TTE" 
+                                    size="small" 
+                                    severity="info" 
+                                    onClick={() => handleOpenDetail(detailLetter)} 
+                                />
                                 <Button
                                     label="Finalisasi"
                                     icon="pi pi-check"
@@ -360,6 +335,12 @@ const DocumentTable = ({ state, setState, toast, getData, mode, title, subtitle 
                                     disabled={!permissions.canCreate}
                                     loading={finalizing}
                                     onClick={confirmFinalize}
+                                />
+                                <Button 
+                                    label="Tanda Tangani Dokumen" 
+                                    severity="success" 
+                                    onClick={handleSignDocument} 
+                                    loading={signing} 
                                 />
                                 <Button
                                     label="Tandatangani"

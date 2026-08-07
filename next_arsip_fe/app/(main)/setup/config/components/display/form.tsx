@@ -4,10 +4,8 @@ import { FormProps, initValue } from '../interfaces';
 import { InputText } from 'primereact/inputtext';
 
 import { Button } from 'primereact/button';
-import { apiEndpointCreate, apiEndpointGet } from '../endpoints';
-import { showError, showSuccess } from '@/lib/tools/generalTools';
+import { showError } from '@/lib/tools/generalTools';
 import { useEffect, useRef } from 'react';
-import formUpload from '@/lib/axios/formData';
 import { Toolbar } from 'primereact/toolbar';
 import { ProgressBar } from 'primereact/progressbar';
 import { InputTextarea } from 'primereact/inputtextarea';
@@ -27,51 +25,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
         }
     };
 
-    const handleSave = async (input: initValue) => {
-        setState((p) => ({ ...p, load: true }));
-
-        try {
-            const oHeaders = {
-                'X-Level': '1'
-            };
-
-            const formData = new FormData();
-
-            const { msLogoPerusahaan, ...rest } = input;
-
-            const key = Object.keys(rest);
-            const keterangan = Object.values(rest);
-
-            formData.append('Kode', JSON.stringify(key));
-            formData.append('Keterangan', JSON.stringify(keterangan));
-
-            if (msLogoPerusahaan) {
-                formData.append('msLogoPerusahaan', msLogoPerusahaan);
-            }
-
-            const vaData = await formUpload(apiEndpointCreate, formData, oHeaders);
-
-            const res = vaData.data;
-
-            showSuccess(toast, res.data?.message || 'Konfigurasi berhasil disimpan');
-
-            formik.resetForm();
-            setState((p) => ({
-                ...p,
-                add: false,
-                edit: false,
-                approval: false,
-                delete: false
-            }));
-
-            await getData(apiEndpointGet);
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || 'Terjadi kesalahan yang tidak terduga');
-        } finally {
-            setState((p) => ({ ...p, load: false, submittedData: null }));
-        }
-    };
+    // API call dipindahkan ke page.tsx
 
     const onFileSelect = (event: any) => {
         const file = event?.target?.files[0];
@@ -97,7 +51,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
     const isFormFieldInvalid = (name: keyof initValue) => !!(formik?.touched[name] && formik?.errors[name]);
 
     const getFormErrorMessage = (name: keyof initValue) => {
-        return isFormFieldInvalid(name) ? <small className="p-error">{formik?.errors[name]}</small> : <small className="p-error">&nbsp;</small>;
+        return isFormFieldInvalid(name) ? <small className="p-error">{formik?.errors[name] as string}</small> : <small className="p-error">&nbsp;</small>;
     };
     useEffect(() => {
         return () => {
@@ -105,15 +59,10 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
         };
     }, [state.imgPrev]);
 
-    useEffect(() => {
-        if (state.submittedData) {
-            handleSave(state.submittedData);
-        }
-    }, [state.submittedData]);
-
-    useEffect(() => {
-        getData(apiEndpointGet);
-    }, []);
+    // Initial load getData (apiEndpointGet has been passed from parent, or handled in parent)
+    // Wait, getData expects apiEndpoint. Since we removed apiEndpointGet here, we should 
+    // let parent handle the initial data fetching, or pass apiEndpointGet as prop? 
+    // Actually, parent can just do getData() inside useEffect!
 
     return (
         <>
@@ -156,23 +105,9 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                                         </div>
                                         {isFormFieldInvalid('msNamaPerusahaan') ? getFormErrorMessage('msNamaPerusahaan') : ''}
                                     </div>
-                                    {/* <div className="flex flex-column gap-2 w-full">
-                                    <label htmlFor="mssurelPerusahaan">surel Perusahaan</label>
-                                    <div className="p-inputgroup">
-                                        <InputText
-                                            style={{ width: '100%' }}
-                                            id="mssurelPerusahaan"
-                                            name="mssurelPerusahaan"
-                                            value={formik.values.mssurelPerusahaan}
-                                            onChange={(e) => {
-                                                formik.setFieldValue('mssurelPerusahaan', e.target.value);
-                                            }}
-                                            className={isFormFieldInvalid('mssurelPerusahaan') ? 'p-invalid' : ''}
-                                        />
-                                    </div>
-                                    {isFormFieldInvalid('mssurelPerusahaan') ? getFormErrorMessage('mssurelPerusahaan') : ''}
-                                </div> */}
+
                                 </div>
+
                                 <div className="flex flex-column gap-2 w-full">
                                     <label htmlFor="msAlamatPerusahaan">Alamat Perusahaan</label>
                                     <div className="p-inputgroup">

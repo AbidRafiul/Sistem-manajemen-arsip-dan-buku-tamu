@@ -92,11 +92,11 @@ const SearchPage = () => {
     };
 
     return (
-        <div className="p-4 md:p-5 surface-ground min-h-screen">
+        <>
             <Toast ref={toast} position="top-right" />
 
             {/* Top Navigation & Breadcrumb */}
-            <div className="flex align-items-center justify-content-between mb-4">
+            <div className="flex align-items-center justify-content-between mb-3">
                 <Button
                     type="button"
                     icon="pi pi-arrow-left"
@@ -181,7 +181,7 @@ const SearchPage = () => {
                     </div>
 
                     {/* Controls Row: Mode Selector + Quick Keywords */}
-                    <div className="flex flex-column lg:flex-row align-items-start lg:align-items-center justify-content-between gap-4 pt-1">
+                    <div className="flex flex-column lg:flex-row align-align-items-center lg:align-items-center justify-content-between gap-4 pt-1">
                         {/* Scope Selector */}
                         <div className="flex flex-column gap-2 w-full lg:w-auto">
                             <span className="text-xs font-bold text-500 uppercase tracking-wider">
@@ -263,21 +263,21 @@ const SearchPage = () => {
                         </p>
 
                         <div className="grid text-left surface-50 p-3 border-round-xl border-1 border-gray-200">
-                            <div className="col-12 md:col-4 flex align-items-start gap-2">
+                            <div className="col-12 md:col-4 flex align-align-items-center gap-2">
                                 <i className="pi pi-check-circle text-blue-600 mt-1" />
                                 <div>
                                     <div className="font-bold text-xs text-800">OCR Automatic Parsing</div>
                                     <div className="text-xs text-500">PDF & Gambar Scan diekstrak otomatis</div>
                                 </div>
                             </div>
-                            <div className="col-12 md:col-4 flex align-items-start gap-2">
+                            <div className="col-12 md:col-4 flex align-align-items-center gap-2">
                                 <i className="pi pi-check-circle text-blue-600 mt-1" />
                                 <div>
                                     <div className="font-bold text-xs text-800">Multi-Tenant Scoping</div>
                                     <div className="text-xs text-500">Sesuai hak akses kantor terpilih</div>
                                 </div>
                             </div>
-                            <div className="col-12 md:col-4 flex align-items-start gap-2">
+                            <div className="col-12 md:col-4 flex align-align-items-center gap-2">
                                 <i className="pi pi-check-circle text-blue-600 mt-1" />
                                 <div>
                                     <div className="font-bold text-xs text-800">Exact Match Snippet</div>
@@ -322,7 +322,7 @@ const SearchPage = () => {
                     )}
                 </div>
             </Dialog>
-        </div>
+        </>
     );
 };
 

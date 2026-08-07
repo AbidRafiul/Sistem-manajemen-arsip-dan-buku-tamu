@@ -62,6 +62,7 @@ export interface TableProps {
     handleApproveReject: (loanId: number, status: 'approved' | 'rejected', notes: string) => Promise<void>;
     handleReturn: (loanId: number) => Promise<void>;
     toast: RefObject<Toast>;
+    handleScan?: (codeStr: string) => Promise<void>;
 }
 
 export interface FormProps {
@@ -69,4 +70,5 @@ export interface FormProps {
     setState: React.Dispatch<React.SetStateAction<State>>;
     formik: FormikProps<initValue>;
     toast: RefObject<Toast>;
+    handleScan?: (codeStr: string) => Promise<void>;
 }

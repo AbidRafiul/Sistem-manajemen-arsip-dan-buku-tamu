@@ -22,15 +22,15 @@ export default function DashboardView({ data, chartData, auditLogs, isLoading }:
     return (
         <div className="flex flex-column gap-4">
             {/* Page Header */}
-            <div className="flex flex-column md:flex-row md:align-items-center justify-content-between gap-3 mb-2">
+            <div className="flex flex-column md:flex-row md:align-items-center justify-content-between gap-3">
                 <div>
                     <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: '0.1em' }}>
                         Ringkasan
                     </span>
-                    <h1 className="m-0 text-900 font-extrabold text-3xl mb-2 mt-1" style={{ letterSpacing: '-0.02em' }}>
+                    <h2 className="m-0 text-900 font-bold text-2xl mb-1 mt-1">
                         Dashboard
-                    </h1>
-                    <p className="m-0 text-color-secondary font-medium">
+                    </h2>
+                    <p className="m-0 text-color-secondary text-sm">
                         Ringkasan aktivitas arsip, kunjungan, surat, dan retensi dalam satu tampilan operasional.
                     </p>
                 </div>

@@ -5,7 +5,10 @@ import {
   Logging,
   validatePayload,
 } from "../components/tools/servertool.js";
+import { status, datetime } from "../components/tools/general.js";
 import { generateNomorSurat } from "../components/tools/letter_numbering_service.js";
+
+import { parseIndonesianDateToIso } from "./outgoing_letter_extract_ocr.js";
 
 const router = express.Router();
 const AGENDA_PREFIX = "SK";
@@ -106,6 +109,13 @@ const outgoingLetterCreate = async (req, res) => {
     oPayload.created_by = nCreatedBy;
     oPayload.updated_by = nUpdatedBy;
 
+    if (oPayload.tanggal_surat) {
+      oPayload.tanggal_surat = parseIndonesianDateToIso(oPayload.tanggal_surat) || oPayload.tanggal_surat;
+    }
+    if (oPayload.tanggal_kirim) {
+      oPayload.tanggal_kirim = parseIndonesianDateToIso(oPayload.tanggal_kirim) || oPayload.tanggal_kirim;
+    }
+
     const oValidation = {
       nomor_surat: Joi.string().max(100).allow(null, "").optional(),
       nomor_agenda: Joi.string().max(100).optional(),
@@ -151,8 +161,9 @@ const outgoingLetterCreate = async (req, res) => {
 
     if (cValidate) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidate,
+        datetime: datetime(),
       });
     }
 
@@ -188,8 +199,9 @@ const outgoingLetterCreate = async (req, res) => {
 
       if (cReferenceError) {
         return res.status(400).json({
-          status: false,
-          message: cReferenceError,
+          status: status.BAD_REQUEST,
+        message: cReferenceError,
+        datetime: datetime(),
         });
       }
     }
@@ -201,7 +213,7 @@ const outgoingLetterCreate = async (req, res) => {
         .first();
       const cNomorAgenda =
         oPayload.nomor_agenda || (await generateAgendaNumber(trx));
-      const cStatus = oPayload.status || "draft";
+      const cStatus = oPayload.status || "menunggu_approval";
       const bNomorSuratAuto = oPayload.nomor_surat_auto !== false;
       const cManualNomorSurat = String(oPayload.nomor_surat || "").trim();
       const cGeneratedNomorSurat = await generateNomorSurat(trx, {
@@ -241,7 +253,14 @@ const outgoingLetterCreate = async (req, res) => {
             })
           : null);
 
+      const nIdCabang =
+        oPayload.id_cabang ||
+        req?.auth?.id_cabang ||
+        req?.headers?.["x-filter-cabang"] ||
+        1;
+
       const vaInserted = await trx("trs_surat_keluar").insert({
+        id_cabang: nIdCabang,
         nomor_surat: cNomorSurat,
         nomor_agenda: cNomorAgenda,
         tanggal_surat: oPayload.tanggal_surat,
@@ -279,8 +298,9 @@ const outgoingLetterCreate = async (req, res) => {
     });
 
     return res.status(201).json({
-      status: true,
-      message: "Surat keluar berhasil dibuat",
+      status: status.SUKSES,
+        message: "Surat keluar berhasil dibuat",
+        datetime: datetime(),
       data: {
         id_surat_keluar: nOutgoingLetterId,
       },
@@ -288,21 +308,23 @@ const outgoingLetterCreate = async (req, res) => {
   } catch (error) {
     if (String(error.message || "").includes("konfigurasi penomoran")) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: error.message,
+        datetime: datetime(),
       });
     }
 
     const oResult = {
-      status: false,
-      message: "Surat keluar gagal dibuat",
+      status: status.BAD_REQUEST,
+        message: "Surat keluar gagal dibuat",
+        datetime: datetime(),
     };
 
     await Logging(error, {
       file: cFile,
       func: cFunc,
       request: JSON.stringify(oPayload),
-      response: oResult.message,
+      response: oResult,
       user: req?.auth?.nama_pengguna || "",
     });
 

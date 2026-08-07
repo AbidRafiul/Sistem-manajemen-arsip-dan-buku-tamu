@@ -1,8 +1,6 @@
 'use client'
 
-import formUpload from "@/lib/axios/formData";
-import postData from "@/lib/axios/postData";
-import { showError, showSuccess } from "@/lib/tools/generalTools";
+import { showError } from "@/lib/tools/generalTools";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { Divider } from "primereact/divider";
@@ -11,10 +9,9 @@ import { FileUpload, FileUploadHandlerEvent } from "primereact/fileupload";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Message } from "primereact/message";
+
 import { useEffect, useState } from "react";
-import { apiEndpointCreate, apiEndpointDelete, apiEndpointGet, apiEndpointLetterTypeData, apiEndpointUpdate, apiEndpointUpload } from "../endpoints";
 import { FormProps, initValue } from "../interfaces";
-import { mapIncomingLetterPayload } from "../mappers";
 
 const statusOptions = [
     { label: "Baru", value: "baru" },
@@ -37,92 +34,39 @@ const Form = ({
     setState,
     formik,
     toast,
-    getData
+    getData,
+    handleSave,
+    handleDelete,
+    getLetterTypeOptions
 }: FormProps) => {
     const [letterTypeOptions, setLetterTypeOptions] = useState<LetterTypeOption[]>([]);
 
-    const getIncomingLetterId = (res: any, input: initValue) =>
-        res?.data?.data?.surat_masuk_id || input.surat_masuk_id;
-
-    const getLetterTypeOptions = async () => {
-        try {
-            const res = await postData(apiEndpointLetterTypeData, {});
-            setLetterTypeOptions(res.data?.data || []);
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || "Jenis surat gagal diambil");
+    const fetchLetterTypeOptions = async () => {
+        if (getLetterTypeOptions) {
+            const data = await getLetterTypeOptions();
+            setLetterTypeOptions(data);
         }
     };
 
-    const uploadLetterFile = async (input: initValue, incomingLetterId: number | null) => {
-        if (!input.file_surat || !incomingLetterId) return;
-        const formData = new FormData();
-        formData.append("surat_masuk_id", String(incomingLetterId));
-        formData.append("File", input.file_surat);
-        const uploadedBy = input.updated_by || input.created_by;
-        if (uploadedBy) formData.append("uploaded_by", String(uploadedBy));
-        await formUpload(apiEndpointUpload, formData, {});
-    };
-
-    const handleSave = async (input: initValue) => {
-        setState((p) => ({ ...p, load: true }));
-        try {
-            const isEdit = Boolean(state.edit);
-            const cEndPoint = isEdit ? apiEndpointUpdate : apiEndpointCreate;
-            const oBody = mapIncomingLetterPayload(input, isEdit);
-            const vaData = await postData(cEndPoint, oBody);
-            const res = vaData.data;
-            const incomingLetterId = getIncomingLetterId(vaData, input);
-
-            if (input.file_surat) {
-                try {
-                    await uploadLetterFile(input, incomingLetterId);
-                } catch (error: any) {
-                    const e = error?.response?.data || error;
-                    showError(toast, e?.message || "Surat tersimpan, tapi file gagal diupload");
-                }
+    const onSubmit = async (input: initValue) => {
+        if (handleSave) {
+            setState((p) => ({ ...p, load: true }));
+            try {
+                await handleSave(input);
+            } finally {
+                setState((p) => ({ ...p, load: false, submittedData: null }));
             }
-
-            showSuccess(toast, res?.message || "Berhasil Menyimpan Data");
-            formik.resetForm();
-            setState((p) => ({
-                ...p,
-                add: false,
-                edit: false,
-                delete: false,
-                detail: false,
-                detailData: null,
-                selectedLetters: [],
-            }));
-            await getData(apiEndpointGet);
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || "Terjadi Kesalahan");
-        } finally {
-            setState((p) => ({ ...p, load: false, submittedData: null }));
         }
     };
 
-
-
-    const handleDelete = async () => {
-        setState((p) => ({ ...p, load: true }));
-        try {
-            if (state.selectedLetters.length < 1) {
-                showError(toast, "Tidak ada surat yang dipilih");
-                return;
+    const onDelete = async () => {
+        if (handleDelete) {
+            setState((p) => ({ ...p, load: true }));
+            try {
+                await handleDelete();
+            } finally {
+                setState((p) => ({ ...p, load: false }));
             }
-            for (const letter of state.selectedLetters) {
-                await postData(apiEndpointDelete, { surat_masuk_id: letter.surat_masuk_id });
-            }
-            showSuccess(toast, "Surat masuk berhasil dihapus");
-            setState((p) => ({ ...p, selectedLetters: [], add: false, edit: false, delete: false }));
-            await getData(apiEndpointGet);
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || "Terjadi Kesalahan");
-        } finally {
-            setState((p) => ({ ...p, load: false }));
         }
     };
 
@@ -143,18 +87,18 @@ const Form = ({
             />
             <Button
                 label="Ya, Hapus" icon="pi pi-trash" severity="danger" size="small"
-                onClick={handleDelete} loading={state.load}
+                onClick={onDelete} loading={state.load}
             />
         </div>
     );
 
     useEffect(() => {
-        if (state.submittedData) handleSave(state.submittedData);
+        if (state.submittedData) onSubmit(state.submittedData);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.submittedData]);
 
     useEffect(() => {
-        getLetterTypeOptions();
+        fetchLetterTypeOptions();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

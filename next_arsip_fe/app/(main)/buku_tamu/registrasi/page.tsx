@@ -1,12 +1,13 @@
 'use client';
 
-import axios from 'axios';
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
-import postData from '@/lib/axios/postData';
 import { showError, showSuccess } from '@/lib/tools/generalTools';
+import postData from '@/lib/axios/postData';
+import formUpload from '@/lib/axios/formData';
+import { apiEndpointRegistrasi } from './components/endpoints';
 import RegistrasiForm from './components/display/form';
 import VisitorCardModal from './components/display/table';
 import { apiEndpointGetPurpose, apiEndpointGetUser, apiEndpointGetBranches } from './components/endpoints';
@@ -154,7 +155,7 @@ export default function RegistrasiKunjunganPage() {
             return;
         }
         try {
-            const response = await axios.post("http://localhost:8000/api/v1/buku_tamu/visit_data/users", { id_cabang: branchId });
+            const response = await postData("/buku-tamu/visit-data/users", { id_cabang: branchId });
             if (response.data?.status === '00' && Array.isArray(response.data?.data)) {
                 const mapped = response.data.data.map((h: any) => ({
                     id_pengguna: h.id,
@@ -206,27 +207,26 @@ export default function RegistrasiKunjunganPage() {
         try {
             const submitData = new FormData();
 
-            submitData.append('GuestName', formData.guest_name);
-            submitData.append('PhoneNumber', formData.phone_number);
-            submitData.append('GuestEmail', formData.guest_email || '');
-            submitData.append('GuestCompany', formData.guest_company || '-');
-            submitData.append('GuestPosition', formData.guest_position || '');
-            submitData.append('IdentityType', formData.identity_type || '');
-            submitData.append('IdentityNumber', formData.identity_number || '');
-            submitData.append('VisitPurposeId', String(formData.visit_purpose_id));
-            submitData.append('BranchId', String(formData.id_cabang));
+            submitData.append('nama_tamu', formData.guest_name);
+            submitData.append('nomor_telepon', formData.phone_number);
+            submitData.append('email_tamu', formData.guest_email || '');
+            submitData.append('instansi_tamu', formData.guest_company || '-');
+            submitData.append('jabatan_tamu', formData.guest_position || '');
+            submitData.append('jenis_identitas', formData.identity_type || '');
+            submitData.append('nomor_identitas', formData.identity_number || '');
+            submitData.append('id_tujuan_kunjungan', String(formData.visit_purpose_id));
             submitData.append('id_cabang', String(formData.id_cabang));
-            submitData.append('HostUserId', formData.host_user_id ? String(formData.host_user_id) : '');
-            submitData.append('HostName', formData.host_name || '');
-            submitData.append('VisitNotes', formData.visit_notes || '');
+            submitData.append('id_user_host', formData.host_user_id ? String(formData.host_user_id) : '');
+            submitData.append('nama_host', formData.host_name || '');
+            submitData.append('catatan_kunjungan', formData.visit_notes || '');
             if (formData.check_in_time instanceof Date) {
-                submitData.append('CheckInTime', formData.check_in_time.toISOString());
+                submitData.append('waktu_masuk', formData.check_in_time.toISOString());
             }
-            submitData.append('VisitType', formData.visit_type || 'personal');
-            submitData.append('GuestCount', String(formData.guest_count || 1));
-            submitData.append('ApprovalStatus', 'approved');
+            submitData.append('tipe_kunjungan', formData.visit_type || 'personal');
+            submitData.append('jumlah_tamu', String(formData.guest_count || 1));
+            submitData.append('status_persetujuan', 'approved');
             if (formData.signature_data) {
-                submitData.append('SignatureData', formData.signature_data);
+                submitData.append('tanda_tangan_data', formData.signature_data);
             }
 
             if (formData.visit_type === 'group' && formData.group_members && formData.group_members.length > 0) {
@@ -235,31 +235,19 @@ export default function RegistrasiKunjunganPage() {
                     phone: m.phone,
                     idNumber: m.idNumber,
                 }));
-                submitData.append('GroupMembers', JSON.stringify(membersToSend));
+                submitData.append('anggota_rombongan', JSON.stringify(membersToSend));
 
                 formData.group_members.forEach((member, index) => {
                     if (member.identityFile) {
-                        submitData.append(`MemberIdentityFile_${index}`, member.identityFile);
+                        submitData.append(`foto_identitas_anggota_${index}`, member.identityFile);
                     }
                 });
             }
 
-            if (identityFile) submitData.append('IdentityFile', identityFile);
-            if (selfieFile) submitData.append('SelfieFile', selfieFile);
+            if (identityFile) submitData.append('foto_identitas', identityFile);
+            if (selfieFile) submitData.append('foto_wajah', selfieFile);
 
-            const tokenSIAB = typeof window !== 'undefined' ? (localStorage.getItem('token') || sessionStorage.getItem('token') || '') : '';
-
-            const response = await axios.post(
-                "http://localhost:8000/api/v1/buku_tamu/visit_checkin",
-                submitData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        'Authorization': tokenSIAB ? `Bearer ${tokenSIAB}` : '',
-                        'x-access-token': tokenSIAB
-                    }
-                }
-            );
+            const response = await formUpload(apiEndpointRegistrasi, submitData);
 
             if (response?.data?.status === '00') {
                 showSuccess(toast, 'Check-In Berhasil!');
@@ -283,11 +271,12 @@ export default function RegistrasiKunjunganPage() {
     };
 
     return (
-        <div className="p-4 surface-ground min-h-screen">
+        <>
+
             <Toast ref={toast} position="top-right" />
 
-            <div className="flex flex-column md:flex-row justify-content-between md:align-items-center gap-3 mb-4">
-                <h4 className="m-0 font-bold text-color">Registrasi Kunjungan</h4>
+            <div className="flex justify-content-between align-items-center mb-3">
+                <h2 className="m-0 text-900 font-bold text-2xl">Registrasi Kunjungan</h2>
                 <div className="flex flex-wrap gap-2">
                     <Button 
                         type="button" 
@@ -295,9 +284,10 @@ export default function RegistrasiKunjunganPage() {
                         label="Halaman Visitor (Publik)" 
                         severity="info" 
                         outlined 
-                        className="py-2 px-3 border-round-lg font-semibold text-sm bg-white" 
+                        size="small"
                         onClick={() => window.open('/visitor/booking', '_blank')} 
                     />
+                    <Button type="button" label="Kembali ke Monitoring" icon="pi pi-arrow-left" outlined size="small" onClick={() => router.push('/buku_tamu/monitoring')} />
                 </div>
             </div>
 
@@ -324,6 +314,7 @@ export default function RegistrasiKunjunganPage() {
                 }}
                 cardData={generatedCard}
             />
-        </div>
+        </>
     );
 }
+

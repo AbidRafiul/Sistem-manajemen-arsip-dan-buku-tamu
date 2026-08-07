@@ -1,14 +1,20 @@
 'use client';
 
 import getDataRequest from "@/lib/axios/getData";
-import { showError } from "@/lib/tools/generalTools";
+import postData from "@/lib/axios/postData";
+import { showError, showSuccess } from "@/lib/tools/generalTools";
 import { useSession } from "next-auth/react";
 import { FilterMatchMode } from "primereact/api";
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
 import DocumentTable from "../components/display/document-table";
-import { apiEndpointSigned } from "../components/endpoints";
-import { TteState } from "../components/interfaces";
+import { 
+    apiEndpointSigned, 
+    apiEndpointDetail,
+    apiEndpointFinalize,
+    apiEndpointSign
+} from "../components/endpoints";
+import { TteState, TteDocumentRow } from "../components/interfaces";
 
 const Page = () => {
     const toast = useRef<Toast>(null);
@@ -39,6 +45,50 @@ const Page = () => {
         }
     };
 
+    const openDetail = async (rowData: TteDocumentRow) => {
+        setState((p) => ({ ...p, detail: true, detailLoad: true, detailData: null }));
+        try {
+            const res = await getDataRequest(`${apiEndpointDetail}/${rowData.id_surat_keluar}/tanda-tangan`);
+            const detail = res.data?.data || null;
+            setState((p) => ({ ...p, detailData: detail }));
+            const firstCert = detail?.certificates?.[0]?.id_sertifikat_elektronik || null;
+            return firstCert;
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Detail dokumen gagal diambil");
+            setState((p) => ({ ...p, detail: false, detailData: null }));
+            return null;
+        } finally {
+            setState((p) => ({ ...p, detailLoad: false }));
+        }
+    };
+
+    const finalizeDocument = async (detailLetter: any) => {
+        try {
+            const res = await postData(`${apiEndpointFinalize}/${detailLetter.id_surat_keluar}/finalisasi`, {
+                catatan: "Finalisasi dokumen untuk tanda tangan elektronik",
+            });
+            showSuccess(toast, res.data?.message || "Dokumen berhasil difinalisasi");
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Dokumen gagal difinalisasi");
+            throw error;
+        }
+    };
+
+    const signDocument = async (detailLetter: any, selectedCertificate: number | null) => {
+        try {
+            const res = await postData(`${apiEndpointSign}/${detailLetter.id_surat_keluar}/tanda-tangan`, {
+                id_sertifikat_elektronik: selectedCertificate,
+            });
+            showSuccess(toast, res.data?.message || "Dokumen berhasil ditandatangani");
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Dokumen gagal ditandatangani");
+            throw error;
+        }
+    };
+
     useEffect(() => {
         if (session) setState((p) => ({ ...p, session }));
     }, [session]);
@@ -49,7 +99,7 @@ const Page = () => {
     }, []);
 
     return (
-        <div className="p-4">
+        <div className="w-full">
             <Toast ref={toast} position="top-right" />
             <DocumentTable
                 mode="signed"
@@ -58,6 +108,9 @@ const Page = () => {
                 state={state}
                 setState={setState}
                 toast={toast}
+                openDetail={openDetail}
+                finalizeDocument={finalizeDocument}
+                signDocument={signDocument}
                 getData={getData}
             />
         </div>

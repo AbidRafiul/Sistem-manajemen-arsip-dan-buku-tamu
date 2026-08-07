@@ -3,6 +3,8 @@ import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { Logging, validatePayload } from "../components/tools/servertool.js";
 import { createNotification } from "../components/tools/notification_helper.js";
+import { status, datetime } from "../components/tools/general.js";
+import { signLetterAutomatically } from "../components/tools/tte_service.js";
 
 const router = express.Router();
 
@@ -28,8 +30,9 @@ const outgoingLetterApprove = async (req, res) => {
 
     if (cValidate) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidate,
+        datetime: datetime(),
       });
     }
 
@@ -40,15 +43,20 @@ const outgoingLetterApprove = async (req, res) => {
 
     if (!oLetter) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Surat keluar tidak ditemukan",
+        datetime: datetime(),
       });
     }
 
     if (oLetter.status !== "menunggu_approval") {
       return res.status(400).json({
-        status: false,
-        message: "Surat keluar tidak sedang menunggu approval (status saat ini: " + oLetter.status + ")",
+        status: status.BAD_REQUEST,
+        message:
+          "Surat keluar tidak sedang menunggu approval (status saat ini: " +
+          oLetter.status +
+          ")",
+        datetime: datetime(),
       });
     }
 
@@ -80,7 +88,8 @@ const outgoingLetterApprove = async (req, res) => {
 
     // Kirim notifikasi ke pembuat surat dan semua Superadmin
     try {
-      const perihal = oLetter.perihal || oLetter.hal || `Surat Keluar #${oPayload.id_surat_keluar}`;
+      const perihal =
+        oLetter.perihal || oLetter.hal || `Surat Keluar #${oPayload.id_surat_keluar}`;
 
       if (oLetter.created_by) {
         await createNotification({
@@ -111,24 +120,44 @@ const outgoingLetterApprove = async (req, res) => {
         }
       }
     } catch (notifError) {
-      console.error("Gagal kirim notifikasi surat keluar disetujui:", notifError.message);
+      console.error(
+        "Gagal kirim notifikasi surat keluar disetujui:",
+        notifError.message
+      );
+    }
+
+    // 3. Otomatis proses TTE & Tempel Stempel Visual + QR Code ke PDF Surat
+    let tteResult = null;
+    try {
+      tteResult = await signLetterAutomatically({
+        idSuratKeluar: oPayload.id_surat_keluar,
+        actorId: nActorId,
+        req,
+      });
+    } catch (tteError) {
+      console.error("Gagal melakukan TTE otomatis saat approval:", tteError);
     }
 
     return res.status(200).json({
-      status: true,
-      message: "Surat keluar berhasil disetujui",
+      status: status.SUKSES,
+      message: tteResult
+        ? "Surat keluar berhasil disetujui dan Tanda Tangan Elektronik (TTE) otomatis tertempel"
+        : "Surat keluar berhasil disetujui",
+      datetime: datetime(),
+      tte: tteResult,
     });
   } catch (error) {
     const oResult = {
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Surat keluar gagal disetujui",
+      datetime: datetime(),
     };
 
     await Logging(error, {
       file: cFile,
       func: cFunc,
       request: JSON.stringify(oPayload),
-      response: oResult.message,
+      response: oResult,
       user: req?.auth?.nama_pengguna || "",
     });
 

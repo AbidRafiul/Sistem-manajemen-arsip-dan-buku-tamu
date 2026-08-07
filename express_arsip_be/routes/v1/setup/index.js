@@ -16,23 +16,15 @@ import navUserPermissions from "./navigation/user_permissions.js";
 import configCreate from "./config/config_create.js";
 import configData from "./config/config_data.js";
 
-import menuData from "./menu/menu.js";
-
-import {
-  contextMiddleware,
-  validateAccessToken,
-  validateSignature,
-} from "../../../middleware/validate_header.js";
 
 // master
 // user
-const authMiddleware = [validateAccessToken, validateSignature, contextMiddleware];
 
-router.use("/user-login/user-data", authMiddleware, user);
-router.use("/user-login/user-create", authMiddleware, userCreate);
-router.use("/user-login/user-update", authMiddleware, userUpdate);
-router.use("/user-login/user-delete", authMiddleware, userDelete);
-router.use("/user-login/user-dropdown", authMiddleware, userDropdown);
+router.use("/user-login/user-data", user);
+router.use("/user-login/user-create", userCreate);
+router.use("/user-login/user-update", userUpdate);
+router.use("/user-login/user-delete", userDelete);
+router.use("/user-login/user-dropdown", userDropdown);
 // user
 router.use("/config-data", configData);
 router.use("/config-create", configCreate);
@@ -44,6 +36,16 @@ router.use("/nav/user-insert", navUserInsert);
 router.use("/nav/user-permissions", navUserPermissions);
 
 // menu
-router.use("/menu", menuData);
+import menuData from "./menu/menu_data.js";
+import menuDelete from "./menu/menu_delete.js";
+import menuInsert from "./menu/menu_insert.js";
+import menuUpdate from "./menu/menu_update.js";
+import menuRebuild from "./menu/menu_rebuild.js";
+
+router.use("/menu/data", menuData);
+router.use("/menu/delete", menuDelete);
+router.use("/menu/insert", menuInsert);
+router.use("/menu/update", menuUpdate);
+router.use("/menu/rebuild", menuRebuild);
 
 export default router;

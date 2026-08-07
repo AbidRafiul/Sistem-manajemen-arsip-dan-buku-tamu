@@ -9,3 +9,4 @@ export const apiEndpointDocumentDownload = '/correspondence/outgoing-letter-docu
 export const apiEndpointUpload = '/correspondence/outgoing-file-upload';
 export const apiEndpointArchive = '/correspondence/outgoing-letter-archive';
 export const apiEndpointTemplateSurat = '/master/surat/template-surat';
+export const apiEndpointExtractOcr = '/correspondence/outgoing-letter-extract-ocr';

@@ -1,17 +1,15 @@
-import express from "express";
-import DB from "../../core/config/knex.js";
-import { Logging } from "./components/tools/servertool.js";
-import { loadObjectBuffer, verifyPdfBuffer } from "./components/tools/tte_service.js";
+import DB from "../../../core/config/knex.js";
+import { Logging } from "../components/tools/servertool.js";
+import { loadObjectBuffer, verifyPdfBuffer } from "../components/tools/tte_service.js";
+import { status, datetime } from "../components/tools/general.js";
 
-const router = express.Router();
-
-router.get("/:token_verifikasi", async (req, res) => {
+const getVerifikasiDokumen = async (req, res) => {
   const token = req.params.token_verifikasi;
 
   try {
     if (!token) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Token verifikasi wajib diisi",
       });
     }
@@ -33,7 +31,7 @@ router.get("/:token_verifikasi", async (req, res) => {
 
     if (!signature) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Dokumen tanda tangan tidak ditemukan",
       });
     }
@@ -48,7 +46,7 @@ router.get("/:token_verifikasi", async (req, res) => {
       .first();
 
     return res.status(200).json({
-      status: true,
+      status: status.SUKSES,
       message: "Verifikasi dokumen berhasil diambil",
       data: {
         dokumen_tertandatangan: verification.dokumen_tertandatangan,
@@ -71,18 +69,18 @@ router.get("/:token_verifikasi", async (req, res) => {
     });
   } catch (error) {
     await Logging(error, {
-      file: "verifikasi_dokumen.js",
-      func: "getByToken",
+      file: "verifikasi_get.js",
+      func: "getVerifikasiDokumen",
       request: JSON.stringify({ token_verifikasi: token }),
       response: "Verifikasi dokumen gagal diambil",
       user: "",
     });
 
     return res.status(500).json({
-      status: false,
+      status: status.BAD_REQUEST,
       message: "Verifikasi dokumen gagal diambil",
     });
   }
-});
+};
 
-export default router;
+export default getVerifikasiDokumen;

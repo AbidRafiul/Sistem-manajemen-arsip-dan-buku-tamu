@@ -48,9 +48,10 @@ const BranchSwitcher = () => {
                 'x-filter-cabang': '',
                 'x-filter-departemen': '',
                 'x-filter-divisi': '',
-                'x-filter-unit-kerja': ''
+                'x-filter-unit-kerja': '',
+                'x-exact-cabang': ''
             };
-            const res = await postData('/master/organisasi/branches/get_data', { limit: 1000, page: 1, keyword: '' }, bypassFilters);
+            const res = await postData('/master/organisasi/branches/get-data', { limit: 1000, page: 1, keyword: '' }, bypassFilters);
             const branches = res.data?.data || [];
             setAllBranches(branches);
             setLoaded(true);
@@ -122,8 +123,8 @@ const BranchSwitcher = () => {
         ? allBranches.filter(b => b.id_induk === selectedUnit)
         : (pusatList.length === 0 && daerahList.length === 0 && unitList.length === 0) ? allBranches.filter(b => b.level === 4) : [];
 
-    // Visibility logic: Tampilkan Level 1 hanya jika ada lebih dari 1 root (best practice: skip level tanpa pilihan)
-    const showPusat = pusatList.length > 1;
+    // Visibility logic: Tampilkan Level 1 selalu jika ada data pusat (sesuai permintaan user)
+    const showPusat = pusatList.length > 0;
     const showDaerah = daerahList.length > 0;
     const showUnit = unitList.length > 0;
     const showKecamatan = kecamatanList.length > 0;

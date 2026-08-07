@@ -134,6 +134,13 @@ export interface TableProps {
     formik: FormikProps<initValue>;
     getData: (apiEndpoint: string, payload?: Record<string, any>) => Promise<void>;
     toast: RefObject<Toast>;
+    handleSave?: (input: initValue) => Promise<void>;
+    handleDelete?: () => Promise<void>;
+    getLetterTypeOptions?: () => Promise<any[]>;
+    openDetail?: (rowData: TableData) => Promise<void>;
+    reloadDetail?: (letterId: number) => Promise<void>;
+    executeArchiveLetter?: (letterId: number, pic: string, createdBy: number | null) => Promise<void>;
+    getFileBlob?: (file: IncomingLetterFile) => Promise<any>;
 }
 
 export interface FormProps {
@@ -142,4 +149,7 @@ export interface FormProps {
     formik: FormikProps<initValue>;
     toast: RefObject<Toast>;
     getData: (apiEndpoint: string, payload?: Record<string, any>) => Promise<void>;
+    handleSave?: (input: initValue) => Promise<void>;
+    handleDelete?: () => Promise<void>;
+    getLetterTypeOptions?: () => Promise<any[]>;
 }

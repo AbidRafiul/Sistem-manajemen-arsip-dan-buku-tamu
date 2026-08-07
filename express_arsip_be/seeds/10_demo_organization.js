@@ -102,14 +102,14 @@ export async function seed(knex) {
 
     for (let idx = 0; idx < allRoles.length; idx++) {
       const role = allRoles[idx];
-      let userId;
+      let nUserId;
       let username;
 
       if (role.nama_peran === "Administrator") {
-        userId = b.id_cabang === 1 ? 1001 : b.id_cabang + 5;
+        nUserId = b.id_cabang === 1 ? 1001 : b.id_cabang + 5;
         username = `admin.${b.id_cabang}@admin.com`;
       } else {
-        userId = 1000 + (idx * 100) + b.id_cabang;
+        nUserId = 1000 + (idx * 100) + b.id_cabang;
         const prefix = role.nama_peran.toLowerCase().replace(/\s+/g, ".");
         username = `${prefix}.${b.id_cabang}@admin.com`;
       }
@@ -131,7 +131,7 @@ export async function seed(knex) {
       }
 
       await knex("mst_pengguna").insert({
-        id_pengguna: userId,
+        id_pengguna: nUserId,
         nama_lengkap: `${role.nama_peran} ${b.nama_cabang}`,
         nama_pengguna: username,
         surel: username,
@@ -148,7 +148,7 @@ export async function seed(knex) {
       }).onConflict("id_pengguna").merge();
 
       userRoleRecords.push({
-        id_pengguna: userId,
+        id_pengguna: nUserId,
         id_peran: role.id_peran,
         peran_utama: 1,
         status: "active",
@@ -158,7 +158,7 @@ export async function seed(knex) {
 
       if (oNavigation) {
         userNavRecords.push({
-          id_pengguna: userId,
+          id_pengguna: nUserId,
           menu: oNavigation.menu,
           created_at: dNow,
           updated_at: dNow,

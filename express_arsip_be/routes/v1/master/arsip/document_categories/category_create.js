@@ -52,6 +52,7 @@ const createDocumentCategory = async (req, res) => {
         "any.required": "{#label} wajib diisi",
       },
       oPayload,
+      { allowUnknown: true }
     );
 
     if (cValidation) {
@@ -91,7 +92,7 @@ const createDocumentCategory = async (req, res) => {
             kode_klasifikasi: oPayload.kode_klasifikasi,
             nama_kategori_dokumen: oPayload.nama_kategori_dokumen,
             deskripsi: oPayload.deskripsi || null,
-            status: "active",
+            status: oPayload.status || "active",
             updated_at: new Date()
           });
 
@@ -109,7 +110,7 @@ const createDocumentCategory = async (req, res) => {
       kode_kategori_dokumen: oPayload.kode_kategori_dokumen,
       nama_kategori_dokumen: oPayload.nama_kategori_dokumen,
       deskripsi: oPayload.deskripsi || null,
-      status: "active",
+      status: oPayload.status || "active",
       created_at: dNow,
       updated_at: dNow,
     });

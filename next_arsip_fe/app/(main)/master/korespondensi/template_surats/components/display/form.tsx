@@ -114,7 +114,7 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
 
           <div className="surface-50 border-round p-3 border-1 surface-border">
             <div className="font-semibold text-sm mb-2">Preview Singkat</div>
-            <pre className="m-0 text-sm whitespace-pre-wrap">{previewText}</pre>
+            <pre className="m-0 text-sm" style={{ whiteSpace: 'pre-wrap' }}>{previewText}</pre>
           </div>
 
           <div className="flex justify-content-end gap-2 mt-3">

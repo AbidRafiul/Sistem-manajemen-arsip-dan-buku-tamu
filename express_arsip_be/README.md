@@ -51,15 +51,15 @@ utf8mb4_unicode_ci
 
 - **Konvensi penamaan:**
   - Nama table: `snake_case`
-  - Nama field/column: `PascalCase`
+  - Nama field/column: `snake_case`
 
 **Contoh:**
 
 ```text
 user_profiles
-UserName
-CreatedAt
-UpdatedAt
+nama_pengguna
+created_at
+updated_at
 ```
 
 > Pelanggaran standar penamaan akan menyebabkan penolakan code review.
@@ -214,9 +214,11 @@ Terdapat **3 middleware inti**:
 ### 6.2 Aturan Penggunaan
 
 - **SEMUA route WAJIB** menggunakan ketiga middleware di atas
-- **KECUALI** route auth berikut:
+- **KECUALI** rute-rute berikut (Pengecualian Resmi):
   - `/auth/login`
   - `/auth/token`
+  - `/auth/reset-password` (Hanya wajib `validateAccessToken`)
+  - `/verifikasi-dokumen` (Tanpa middleware karena ranah publik)
 
 ### 6.3 Fungsi Middleware
 
@@ -233,7 +235,7 @@ Terdapat **3 middleware inti**:
 - Satu file = satu endpoint
 - Semua route harus versioned
 - Semua route non-auth **WAJIB** memakai middleware
-- Field database `PascalCase`
+- Field database `snake_case`
 - Table database `snake_case`
 - MySQL collation `utf8mb4_unicode_ci`
 
@@ -248,7 +250,7 @@ Standar ini **WAJIB digunakan di seluruh backend** untuk menjaga konsistensi, ke
 ### 8.1 Variable dari FE / Payload
 
 - **Nama variable dari request body / payload HARUS sama persis dengan field di database**
-- Format penamaan: **PascalCase**
+- Format penamaan: **snake_case**
 
 **Contoh:**
 
@@ -256,21 +258,21 @@ Standar ini **WAJIB digunakan di seluruh backend** untuk menjaga konsistensi, ke
 // Payload dari FE
 {
   nama_lengkap: "John Doe",
-  Username: "johnd",
-  Telp: "08123456789",
-  Status: "active"
+  nama_pengguna: "johnd",
+  telepon: "08123456789",
+  status: "active"
 }
 ```
 
 ```js
 // Database field
 nama_lengkap;
-Username;
-Telp;
-Status;
+nama_pengguna;
+telepon;
+status;
 ```
 
-> Dilarang mengubah payload menjadi `camelCase` atau `snake_case`.
+> Dilarang mengubah payload menjadi `camelCase` atau `PascalCase`.
 
 ---
 

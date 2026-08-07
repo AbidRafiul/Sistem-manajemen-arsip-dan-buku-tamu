@@ -128,7 +128,7 @@ const AppMenu = () => {
             const namaPengguna = String(user?.nama_pengguna || user?.kode_pengguna || '').trim();
             console.log('AppMenu: Fetching menu for activeId:', activeId, 'namaPengguna:', namaPengguna);
             const { data: vaData } = await postData('setup/nav/user-data', {
-                ...(activeId ? { IdPengguna: activeId, id_pengguna: activeId, user_id: activeId } : {}),
+                ...(activeId ? { id_pengguna: activeId } : {}),
                 ...(namaPengguna ? { nama_pengguna: namaPengguna } : {})
             });
             console.log('AppMenu: Received menu data:', vaData);

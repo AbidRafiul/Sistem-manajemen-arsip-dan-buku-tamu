@@ -66,7 +66,7 @@ const SearchResult: React.FC<SearchResultProps> = ({ results, load, onPreview })
                                 borderLeft: isContent ? '4px solid #3B82F6' : '4px solid #10B981'
                             }}
                         >
-                            <div className="flex flex-column md:flex-row justify-content-between md:align-items-start gap-4">
+                            <div className="flex flex-column md:flex-row justify-content-between md:align-align-items-center gap-4">
                                 <div className="flex-1">
                                     {/* Header Tags & Metadata */}
                                     <div className="flex flex-wrap align-items-center gap-2 mb-2">

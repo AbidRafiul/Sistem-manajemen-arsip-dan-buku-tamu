@@ -3,93 +3,11 @@
 import { Dialog } from 'primereact/dialog';
 import { FormProps, initValue } from '../interfaces';
 import { InputText } from 'primereact/inputtext';
-import { Password } from 'primereact/password';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
-import { apiEndpointCreate, apiEndpointDelete, apiEndpointGet, apiEndpointGetCategory, apiEndpointGetDivision, apiEndpointUpdate } from '../endpoints';
-import postData from '@/lib/axios/postData';
-import { showError, showSuccess } from '@/lib/tools/generalTools';
-import { useEffect } from 'react';
 import { InputTextarea } from 'primereact/inputtextarea';
 
-const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
-    const fetchComponentData = async () => {
-        setState((p) => ({ ...p, load: true }));
-
-        try {
-            const { data: vaCateg } = await postData(apiEndpointGetCategory);
-            const { data: vaDivision } = await postData(apiEndpointGetDivision);
-
-            setState((p) => ({ ...p, categoryData: vaCateg.data, divisionData: vaDivision.data, selectedUsers: [], add: false, edit: false, delete: false }));
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || 'Terjadi Kesalahan');
-        } finally {
-            setState((p) => ({ ...p, load: false }));
-        }
-    };
-
-    const handleSave = async (input: initValue) => {
-        setState((p) => ({ ...p, load: true }));
-
-        try {
-            const isEdit = Boolean(state.edit);
-
-            const cEndPoint = isEdit ? apiEndpointUpdate : apiEndpointCreate;
-
-            const oHeaders: Record<string, string> = {
-                'X-Level': '1'
-            };
-
-            const oBody: Record<string, any> = {
-                Name: input.Name,
-                Status: input.Status,
-                Code: input.Code,
-                Location: input.Location,
-                Type: input.Type,
-                CategoryCode: input.CategoryCode,
-                DivisionCode: input.DivisionCode
-            };
-
-            const vaData = await postData(cEndPoint, oBody, oHeaders);
-            const res = vaData.data;
-
-            showSuccess(toast, res.data?.message || 'Berhasil Menyimpan Data');
-            formik.resetForm();
-            setState((p) => ({ ...p, add: false, edit: false, delete: false }));
-            await getData(apiEndpointGet);
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || 'Terjadi Kesalahan');
-        } finally {
-            setState((p) => ({ ...p, load: false, submittedData: null }));
-        }
-    };
-
-    const handleDelete = async () => {
-        setState((p) => ({ ...p, load: true }));
-
-        try {
-            if (state.selectedUsers.length < 1) {
-                showError(toast, 'Tidak Ada Aset yang Dipilih')
-                return
-            }
-
-            const vaCode = state.selectedUsers.map((v) => v.Code);
-
-            const vaData = await postData(apiEndpointDelete, { Code: vaCode });
-            const res = vaData.data;
-
-            showSuccess(toast, res.data?.message || 'Berhasil Menghapus Data');
-            setState((p) => ({ ...p, selectedUsers: [], add: false, edit: false, delete: false }));
-            await getData(apiEndpointGet);
-        } catch (error: any) {
-            const e = error?.response?.data || error;
-            showError(toast, e?.message || 'Terjadi Kesalahan');
-        } finally {
-            setState((p) => ({ ...p, load: false }));
-        }
-    };
+const Form = ({ state, setState, formik, toast, getData, handleDelete }: FormProps) => {
 
     const deleteFooterTemplate = (
         <div className="flex justify-content-center gap-2">
@@ -113,15 +31,6 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
         return isFormFieldInvalid(name) ? <small className="p-error">{formik?.errors[name]}</small> : <small className="p-error">&nbsp;</small>;
     };
 
-    useEffect(() => {
-        if (state.submittedData) {
-            handleSave(state.submittedData);
-        }
-    }, [state.submittedData]);
-
-    useEffect(() => {
-        fetchComponentData();
-    }, []);
 
     return (
         <>

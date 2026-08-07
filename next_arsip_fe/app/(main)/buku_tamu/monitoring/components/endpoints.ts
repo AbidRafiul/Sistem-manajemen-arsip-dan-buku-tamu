@@ -1,1 +1,1 @@
-export const apiEndpointMonitoring = '/buku_tamu/visit_monitoring';
+export const apiEndpointMonitoring = '/buku-tamu/visit-monitoring';

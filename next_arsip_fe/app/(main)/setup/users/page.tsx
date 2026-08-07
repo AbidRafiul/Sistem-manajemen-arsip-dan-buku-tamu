@@ -151,12 +151,12 @@ const Page = () => {
     useEffect(() => {
         if (session) {
             const vaEndpoints = [
-                { key: 'branches', path: '/master/organisasi/branches/get_data' },
-                { key: 'positions', path: '/master/organisasi/positions/get_data' },
-                { key: 'divisions', path: '/master/organisasi/divisions/get_data' },
-                { key: 'departments', path: '/master/organisasi/department/get_data' },
-                { key: 'workUnits', path: '/master/organisasi/work_unit/get_data' },
-                { key: 'roles', path: '/master/organisasi/roles/get_data' }
+                { key: 'branches', path: '/master/organisasi/branches/get-data' },
+                { key: 'positions', path: '/master/organisasi/positions/get-data' },
+                { key: 'divisions', path: '/master/organisasi/divisions/get-data' },
+                { key: 'departments', path: '/master/organisasi/department/get-data' },
+                { key: 'workUnits', path: '/master/organisasi/work-unit/get-data' },
+                { key: 'roles', path: '/master/organisasi/roles/get-data' }
             ];
 
             const myIdPengguna = (session as any)?.user?.IdPengguna || (session as any)?.user?.id || '';
@@ -247,8 +247,8 @@ const Page = () => {
             // Pastikan data ini isinya beneran ANGKA (Number)
             const vaIdPengguna = state.selectedUsers.map((v: any) => v.id || v.id_pengguna);
 
-            // Kita bungkus angka tersebut ke dalam key 'NamaPengguna' demi backend
-            const finalPayload = { NamaPengguna: vaIdPengguna.map(Number) };
+            // Kita bungkus angka tersebut ke dalam key 'id_pengguna' demi backend
+            const finalPayload = { id_pengguna: vaIdPengguna.map(Number) };
 
             // (Opsional) Intip payload-nya sebelum dikirim, pastikan BUKAN [ null ] atau [ NaN ]
             console.log("PAYLOAD KE BACKEND:", finalPayload);
@@ -293,7 +293,7 @@ const Page = () => {
             const headers = {
                 'X-Level': '1'
             };
-            const vaData = await postData(apiEndpointGetNavDataEdit, { NamaPengguna: IdPengguna }, headers);
+            const vaData = await postData(apiEndpointGetNavDataEdit, { id_pengguna: IdPengguna }, headers);
 
             let res = vaData.data;
             setNavBar((p) => ({
@@ -316,8 +316,8 @@ const Page = () => {
 
         try {
             const res = await postData(apiEndpointUpdateNav, {
-                IdPengguna: navBar.IdPengguna,
-                Menu: JSON.stringify(navBar.menu)
+                id_pengguna: navBar.IdPengguna,
+                menu: JSON.stringify(navBar.menu)
             });
             showSuccess(toast, res.data.message);
             setNavBar((p) => ({ ...p, show: false }));
@@ -340,15 +340,14 @@ const Page = () => {
 
     return (
         <>
-            <div className="p-4">
-                <Toast ref={toast} position="top-right" />
+            <Toast ref={toast} position="top-right" />
 
-                <Table getNav={getNav} dataRekap={dataRekap} setDataRekap={setDataRekap} state={state} toast={toast} setState={setState} formik={formik} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />
-                <Print dataRekap={dataRekap} setDataRekap={setDataRekap} state={state} toast={toast} setState={setState} formik={formik} getData={getData} />
 
-                {/* 3. KOMPONEN FORM DIPANGGIL DI SINI DENGAN PROPS YANG LENGKAP */}
-                <Form formik={formik} state={state} setState={setState} toast={toast} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />
-            </div>
+            <Table getNav={getNav} dataRekap={dataRekap} setDataRekap={setDataRekap} state={state} toast={toast} setState={setState} formik={formik} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />
+            <Print dataRekap={dataRekap} setDataRekap={setDataRekap} state={state} toast={toast} setState={setState} formik={formik} getData={getData} />
+
+            {/* 3. KOMPONEN FORM DIPANGGIL DI SINI DENGAN PROPS YANG LENGKAP */}
+            <Form formik={formik} state={state} setState={setState} toast={toast} getData={getData} handleSave={handleSave} handleDelete={handleDelete} />
         </>
     );
 };

@@ -32,8 +32,8 @@ const getRoleById = async (roleId) => {
     .catch(() => null);
 };
 
-const getRoleByUserId = async (userId) => {
-  if (!userId) return null;
+const getRoleByUserId = async (nUserId) => {
+  if (!nUserId) return null;
 
   return await DB("mst_pengguna_peran")
     .leftJoin("mst_peran", "mst_pengguna_peran.id_peran", "mst_peran.id_peran")
@@ -41,7 +41,7 @@ const getRoleByUserId = async (userId) => {
       "mst_peran.nama_peran",
       "mst_peran.kode_peran",
     )
-    .where("mst_pengguna_peran.id_pengguna", userId)
+    .where("mst_pengguna_peran.id_pengguna", nUserId)
     .where((builder) => {
       builder
         .where("mst_pengguna_peran.status", "active")

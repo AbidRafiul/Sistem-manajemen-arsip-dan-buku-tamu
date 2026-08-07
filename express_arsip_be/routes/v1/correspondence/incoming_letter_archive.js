@@ -2,7 +2,8 @@ import express from "express";
 import Joi from "joi";
 import { v4 as uuidv4 } from "uuid";
 import DB from "../../../core/config/knex.js";
-import { validatePayload } from "../components/tools/servertool.js";
+import { validatePayload, Logging } from "../components/tools/servertool.js";
+import { status } from "../components/tools/general.js";
 import { insertIncomingLetterTracking } from "../components/tools/tracking_helper.js";
 import { createNotification } from "../components/tools/notification_helper.js";
 
@@ -25,7 +26,6 @@ const buildDocumentFilePath = (filePath = "") => {
 const incomingLetterArchive = async (req, res) => {
   try {
     const oPayload = req.body || {};
-
     const oValidation = {
       surat_masuk_id: Joi.number().required(),
       nama_pic: Joi.string().max(150).allow(null, "").optional(),
@@ -45,18 +45,15 @@ const incomingLetterArchive = async (req, res) => {
 
     if (cValidate) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: cValidate,
       });
     }
 
-    const oLetter = await DB("trs_surat_masuk")
-      .where("surat_masuk_id", oPayload.surat_masuk_id)
-      .first();
-
+    const oLetter = await DB("trs_surat_masuk").where("surat_masuk_id", oPayload.surat_masuk_id).first();
     if (!oLetter) {
       return res.status(404).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Surat masuk tidak ditemukan",
       });
     }
@@ -70,7 +67,7 @@ const incomingLetterArchive = async (req, res) => {
 
     if (!oActiveFile) {
       return res.status(400).json({
-        status: false,
+        status: status.BAD_REQUEST,
         message: "Upload file surat terlebih dahulu sebelum diarsipkan",
       });
     }
@@ -82,7 +79,7 @@ const incomingLetterArchive = async (req, res) => {
 
     if (oExistingDocument) {
       return res.status(200).json({
-        status: true,
+        status: status.SUKSES,
         message: "Surat masuk sudah pernah diarsipkan",
         data: {
           id_dokumen: oExistingDocument.id_dokumen,
@@ -93,23 +90,10 @@ const incomingLetterArchive = async (req, res) => {
     }
 
     const dNow = new Date();
-
     const oResult = await DB.transaction(async (trx) => {
       const cDocumentTypeCode = "SURAT";
-      const cClassificationCode = await getCodeById(
-        trx,
-        "mst_klasifikasi_arsip",
-        "id_klasifikasi",
-        "kode_klasifikasi",
-        oLetter.klasifikasi_arsip_id,
-      );
-      const cConfidentialityCode = await getCodeById(
-        trx,
-        "mst_tingkat_kerahasiaan",
-        "id_tingkat_kerahasiaan",
-        "kode_tingkat_kerahasiaan",
-        oLetter.tingkat_kerahasiaan_id,
-      );
+      const cClassificationCode = await getCodeById(trx, "mst_klasifikasi_arsip", "id_klasifikasi", "kode_klasifikasi", oLetter.klasifikasi_arsip_id);
+      const cConfidentialityCode = await getCodeById(trx, "mst_tingkat_kerahasiaan", "id_tingkat_kerahasiaan", "kode_tingkat_kerahasiaan", oLetter.tingkat_kerahasiaan_id);
 
       const [nDocumentId] = await trx("trs_dokumen").insert({
         kode_klasifikasi: cClassificationCode,
@@ -121,11 +105,7 @@ const incomingLetterArchive = async (req, res) => {
         nomor_dokumen: oLetter.nomor_agenda,
         tanggal: oLetter.tanggal_surat || oLetter.tanggal_diterima,
         tanggal_kedaluwarsa: null,
-        nama_pic:
-          oPayload.nama_pic ||
-          req?.context?.nama_pengguna ||
-          oLetter.nama_pengirim ||
-          "Sekretariat",
+        nama_pic: oPayload.nama_pic || req?.context?.nama_pengguna || oLetter.nama_pengirim || "Sekretariat",
         lokasi_fisik: oPayload.lokasi_fisik || null,
         qr_code: `DOC-${uuidv4()}`,
         status: "active",
@@ -134,20 +114,18 @@ const incomingLetterArchive = async (req, res) => {
       });
 
       const cKodeDokumen = `${oLetter.nomor_agenda}-${nDocumentId}`;
-      await trx("trs_dokumen")
-        .where("id_dokumen", nDocumentId)
-        .update({ kode_dokumen: cKodeDokumen });
+      await trx("trs_dokumen").where("id_dokumen", nDocumentId).update({
+        kode_dokumen: cKodeDokumen,
+      });
 
       const [nVersionId] = await trx("trs_versi_dokumen").insert({
         kode_dokumen: cKodeDokumen,
         nomor_versi: 1,
         catatan_perubahan: `Diarsipkan dari surat masuk ${oLetter.nomor_agenda}`,
         file_path: buildDocumentFilePath(oActiveFile.path_file),
-        diunggah_oleh:
-          oPayload.archived_by || req?.context?.Username || "system",
+        diunggah_oleh: oPayload.archived_by || req?.context?.Username || "system",
         status_persetujuan: "approved",
-        disetujui_oleh:
-          oPayload.archived_by || req?.context?.Username || "system",
+        disetujui_oleh: oPayload.archived_by || req?.context?.Username || "system",
         disetujui_pada: dNow,
         catatan_persetujuan: "Versi awal dari file surat masuk",
         tanggal_transaksi: dNow,
@@ -214,21 +192,27 @@ const incomingLetterArchive = async (req, res) => {
     }
 
     return res.status(201).json({
-      status: true,
+      status: status.SUKSES,
       message: "Surat masuk berhasil diarsipkan menjadi dokumen",
       data: oResult,
     });
   } catch (error) {
     console.log(error);
-
-    return res.status(500).json({
-      status: false,
+    const oResult = {
+      status: status.BAD_REQUEST,
       message: "Surat masuk gagal diarsipkan",
       error: error.message,
+    };
+    Logging(error, {
+      file: "incoming_letter_archive.js",
+      func: "handler",
+      request: req.body || {},
+      response: oResult,
+      user: "",
     });
+    return res.status(500).json(oResult);
   }
 };
 
 router.post("/", incomingLetterArchive);
-
 export default router;

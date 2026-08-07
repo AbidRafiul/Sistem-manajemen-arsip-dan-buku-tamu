@@ -1,15 +1,28 @@
 'use client'
 
+import formUpload from "@/lib/axios/formData";
 import postData from "@/lib/axios/postData";
-import { showError } from "@/lib/tools/generalTools";
+import { showError, showSuccess } from "@/lib/tools/generalTools";
 import { useFormik } from "formik";
 import { useSession } from "next-auth/react";
 import { FilterMatchMode } from "primereact/api";
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
+import fileDownload from "@/lib/axios/fileDownload";
 import Table from "../components/display/table";
-import { initValue, State } from "../components/interfaces";
-import { mapIncomingLetterRow } from "../components/mappers";
+import { 
+    apiEndpointCreate, 
+    apiEndpointDelete, 
+    apiEndpointGet, 
+    apiEndpointLetterTypeData, 
+    apiEndpointUpdate, 
+    apiEndpointUpload,
+    apiEndpointDetail,
+    apiEndpointArchive,
+    apiEndpointFileDownload
+} from "../components/endpoints";
+import { IncomingLetterFile, initValue, State, TableData } from "../components/interfaces";
+import { mapIncomingLetterPayload, mapIncomingLetterRow } from "../components/mappers";
 
 const initialValues: initValue = {
     surat_masuk_id: null,
@@ -90,6 +103,121 @@ const Page = () => {
         }
     };
 
+    const getIncomingLetterId = (res: any, input: initValue) =>
+        res?.data?.data?.surat_masuk_id || input.surat_masuk_id;
+
+    const getLetterTypeOptions = async () => {
+        try {
+            const res = await postData(apiEndpointLetterTypeData, {});
+            return res.data?.data || [];
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Jenis surat gagal diambil");
+            return [];
+        }
+    };
+
+    const uploadLetterFile = async (input: initValue, incomingLetterId: number | null) => {
+        if (!input.file_surat || !incomingLetterId) return;
+        const formData = new FormData();
+        formData.append("surat_masuk_id", String(incomingLetterId));
+        formData.append("File", input.file_surat);
+        const uploadedBy = input.updated_by || input.created_by;
+        if (uploadedBy) formData.append("uploaded_by", String(uploadedBy));
+        await formUpload(apiEndpointUpload, formData, {});
+    };
+
+    const handleSave = async (input: initValue) => {
+        try {
+            const isEdit = Boolean(state.edit);
+            const cEndPoint = isEdit ? apiEndpointUpdate : apiEndpointCreate;
+            const oBody = mapIncomingLetterPayload(input, isEdit);
+            const vaData = await postData(cEndPoint, oBody);
+            const res = vaData.data;
+            const incomingLetterId = getIncomingLetterId(vaData, input);
+
+            if (input.file_surat) {
+                try {
+                    await uploadLetterFile(input, incomingLetterId);
+                } catch (error: any) {
+                    const e = error?.response?.data || error;
+                    showError(toast, e?.message || "Surat tersimpan, tapi file gagal diupload");
+                }
+            }
+
+            showSuccess(toast, res?.message || "Berhasil Menyimpan Data");
+            formik.resetForm();
+            setState((p) => ({
+                ...p,
+                add: false,
+                edit: false,
+                delete: false,
+                detail: false,
+                detailData: null,
+                selectedLetters: [],
+            }));
+            await getData(apiEndpointGet);
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Terjadi Kesalahan");
+        }
+    };
+
+    const handleDelete = async () => {
+        try {
+            if (state.selectedLetters.length < 1) {
+                showError(toast, "Tidak ada surat yang dipilih");
+                return;
+            }
+            for (const letter of state.selectedLetters) {
+                await postData(apiEndpointDelete, { surat_masuk_id: letter.surat_masuk_id });
+            }
+            showSuccess(toast, "Surat masuk berhasil dihapus");
+            setState((p) => ({ ...p, selectedLetters: [], add: false, edit: false, delete: false }));
+            await getData(apiEndpointGet);
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Terjadi Kesalahan");
+        }
+    };
+
+    const openDetail = async (rowData: TableData) => {
+        setState((p) => ({ ...p, detail: true, detailLoad: true, detailData: null }));
+        try {
+            const res = await postData(apiEndpointDetail, { surat_masuk_id: rowData.surat_masuk_id });
+            setState((p) => ({ ...p, detailData: res.data?.data || null }));
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Detail surat gagal diambil");
+            setState((p) => ({ ...p, detail: false, detailData: null }));
+        } finally {
+            setState((p) => ({ ...p, detailLoad: false }));
+        }
+    };
+
+    const reloadDetail = async (letterId: number) => {
+        const res = await postData(apiEndpointDetail, { surat_masuk_id: letterId });
+        setState((p) => ({ ...p, detailData: res.data?.data || null }));
+    };
+
+    const executeArchiveLetter = async (letterId: number, pic: string, createdBy: number | null) => {
+        try {
+            const res = await postData(apiEndpointArchive, {
+                surat_masuk_id: letterId,
+                nama_pic: pic,
+                created_by: createdBy,
+            });
+            showSuccess(toast, res.data?.message || "Surat berhasil diarsipkan");
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "Surat gagal diarsipkan");
+        }
+    };
+
+    const getFileBlob = async (file: IncomingLetterFile) => {
+        return fileDownload(apiEndpointFileDownload, { file_surat_masuk_id: file.file_surat_masuk_id });
+    };
+
     useEffect(() => {
         if (session) {
             setState((prev) => ({
@@ -100,10 +228,23 @@ const Page = () => {
     }, [session]);
 
     return (
-        <div className="p-4">
+        <>
             <Toast ref={toast} position="top-right" />
-            <Table getData={getData} state={state} setState={setState} formik={formik} toast={toast} />
-        </div>
+            <Table 
+                getData={getData} 
+                state={state} 
+                setState={setState} 
+                formik={formik} 
+                toast={toast} 
+                handleSave={handleSave}
+                handleDelete={handleDelete}
+                getLetterTypeOptions={getLetterTypeOptions}
+                openDetail={openDetail}
+                reloadDetail={reloadDetail}
+                executeArchiveLetter={executeArchiveLetter}
+                getFileBlob={getFileBlob}
+            />
+        </>
     );
 };
 

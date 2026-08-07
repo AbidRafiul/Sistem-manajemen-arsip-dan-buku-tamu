@@ -1,4 +1,4 @@
-export const apiEndpointGet = '/master/organisasi/roles/get_data';
+export const apiEndpointGet = '/master/organisasi/roles/get-data';
 export const apiEndpointCreate = '/master/organisasi/roles/create';
 export const apiEndpointUpdate = '/master/organisasi/roles/update';
 export const apiEndpointDelete = '/master/organisasi/roles/delete';

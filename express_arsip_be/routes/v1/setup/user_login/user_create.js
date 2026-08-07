@@ -161,7 +161,7 @@ router.post("/", async (req, res) => {
     // 5. TRANSAKSI DATABASE KE 3 TABEL
     await DB.transaction(async (trx) => {
       // 1. Masuk ke mst_pengguna
-      const [newUserId] = await trx("mst_pengguna").insert({
+      const [nNewUserId] = await trx("mst_pengguna").insert({
         nama_lengkap: oPayload.nama_lengkap,
         nama_pengguna: oPayload.nama_pengguna,
         surel: oPayload.surel || oPayload.nama_pengguna,
@@ -182,7 +182,7 @@ router.post("/", async (req, res) => {
 
       // 2. Masuk ke mst_pengguna_peran (Relasi Peran)
       await trx("mst_pengguna_peran").insert({
-        id_pengguna: newUserId,
+        id_pengguna: nNewUserId,
         id_peran: peranData.id_peran,
         peran_utama: 1,
         status: "active",
@@ -193,7 +193,7 @@ router.post("/", async (req, res) => {
       // 3. Masuk ke navigasi_pengguna (Menu Spesifik)
       await trx("navigasi_pengguna")
         .insert({
-          id_pengguna: newUserId,
+          id_pengguna: nNewUserId,
           menu: oNavigation.menu,
           created_at: formatDateSystem(),
           updated_at: formatDateSystem(),

@@ -46,7 +46,11 @@ router.post("/create", async (req, res) => {
 
     return res.status(201).json({ status: status.SUKSES, message: "Berhasil ditambahkan!", datetime: formatDateSystem() });
   } catch (error) {
-    const oResult = { status: status.BAD_REQUEST, message: "Gagal menyimpan", datetime: datetime() };
+    let errorMessage = "Gagal menyimpan";
+    if (error.code === 'ER_DUP_ENTRY') {
+      errorMessage = "Kode Divisi sudah digunakan oleh divisi lain";
+    }
+    const oResult = { status: status.BAD_REQUEST, message: errorMessage, datetime: datetime() };
     Logging(error, { file: "create.js", func: "create", request: oPayload, response: oResult, user: cnama_pengguna });
     return res.status(500).json(oResult);
   }
