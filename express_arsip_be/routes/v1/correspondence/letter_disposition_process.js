@@ -2,6 +2,7 @@ import express from "express";
 import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { validatePayload } from "../components/tools/servertool.js";
+import { insertIncomingLetterTracking } from "../components/tools/tracking_helper.js";
 
 const router = express.Router();
 
@@ -96,7 +97,7 @@ const letterDispositionProcess = async (req, res) => {
           updated_at: dNow,
         });
 
-      await trx("trs_tracking_surat_masuk").insert({
+      await insertIncomingLetterTracking(trx, {
         surat_masuk_id: oDisposition.surat_masuk_id,
         disposisi_surat_id: oPayload.disposisi_id,
         nama_aksi: "disposisi_diproses",

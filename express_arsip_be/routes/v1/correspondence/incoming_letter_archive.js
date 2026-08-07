@@ -3,6 +3,8 @@ import Joi from "joi";
 import { v4 as uuidv4 } from "uuid";
 import DB from "../../../core/config/knex.js";
 import { validatePayload } from "../components/tools/servertool.js";
+import { insertIncomingLetterTracking } from "../components/tools/tracking_helper.js";
+import { createNotification } from "../components/tools/notification_helper.js";
 
 const router = express.Router();
 
@@ -153,7 +155,7 @@ const incomingLetterArchive = async (req, res) => {
         updated_at: dNow,
       });
 
-      await trx("trs_tracking_surat_masuk").insert({
+      await insertIncomingLetterTracking(trx, {
         surat_masuk_id: oLetter.surat_masuk_id,
         disposisi_surat_id: null,
         nama_aksi: "surat_diarsipkan",
@@ -174,6 +176,42 @@ const incomingLetterArchive = async (req, res) => {
         id_versi: nVersionId,
       };
     });
+
+    // Kirim notifikasi ke user di cabang terkait dan Superadmin
+    try {
+      const perihal = oLetter.perihal || `Surat Masuk #${oLetter.surat_masuk_id}`;
+
+      const usersInBranch = oLetter.id_cabang
+        ? await DB("mst_pengguna")
+            .where("id_cabang", oLetter.id_cabang)
+            .andWhere("status", "active")
+            .select("id_pengguna")
+        : [];
+
+      const superadmins = await DB("mst_pengguna as p")
+        .join("mst_pengguna_peran as pp", "p.id_pengguna", "pp.id_pengguna")
+        .join("mst_peran as r", "pp.id_peran", "r.id_peran")
+        .whereIn("r.kode_peran", ["SUPERADMIN", "SA"])
+        .andWhere("p.status", "active")
+        .select("p.id_pengguna");
+
+      const targetUserIds = new Set([
+        ...usersInBranch.map((u) => u.id_pengguna),
+        ...superadmins.map((u) => u.id_pengguna),
+      ]);
+
+      for (const userId of targetUserIds) {
+        await createNotification({
+          id_pengguna: userId,
+          judul: "Surat Masuk Diarsipkan",
+          pesan: `Surat "${perihal}" telah diarsipkan menjadi dokumen ${oResult?.kode_dokumen || ""}.`,
+          tipe: "surat_masuk",
+          tautan: "/edms/documents",
+        });
+      }
+    } catch (notifError) {
+      console.error("Gagal kirim notifikasi pengarsipan surat masuk:", notifError.message);
+    }
 
     return res.status(201).json({
       status: true,

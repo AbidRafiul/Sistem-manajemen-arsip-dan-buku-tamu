@@ -2,6 +2,8 @@ import express from "express";
 import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { validatePayload } from "../components/tools/servertool.js";
+import { createNotification } from "../components/tools/notification_helper.js";
+import { insertIncomingLetterTracking } from "../components/tools/tracking_helper.js";
 
 const router = express.Router();
 const AGENDA_PREFIX = "AGD";
@@ -173,7 +175,7 @@ const incomingLetterCreate = async (req, res) => {
 
       const nId = vaInserted[0];
 
-      await trx("trs_tracking_surat_masuk").insert({
+      await insertIncomingLetterTracking(trx, {
         surat_masuk_id: nId,
         disposisi_surat_id: null,
         nama_aksi: "surat_dibuat",
@@ -190,6 +192,40 @@ const incomingLetterCreate = async (req, res) => {
 
       return nId;
     });
+
+    try {
+      const branchId = req?.context?.id_cabang || req?.auth?.id_cabang;
+      if (branchId) {
+        const usersInBranch = await DB("mst_pengguna")
+          .where("id_cabang", branchId)
+          .andWhere("status", "active")
+          .select("id_pengguna");
+
+        const superadmins = await DB("mst_pengguna as p")
+          .join("mst_pengguna_peran as pp", "p.id_pengguna", "pp.id_pengguna")
+          .join("mst_peran as r", "pp.id_peran", "r.id_peran")
+          .whereIn("r.kode_peran", ["SUPERADMIN", "SA"])
+          .andWhere("p.status", "active")
+          .select("p.id_pengguna");
+
+        const targetUserIds = new Set([
+          ...usersInBranch.map(u => u.id_pengguna),
+          ...superadmins.map(u => u.id_pengguna)
+        ]);
+
+        for (const userId of targetUserIds) {
+          await createNotification({
+            id_pengguna: userId,
+            judul: "Surat Masuk Baru",
+            pesan: `Perihal: ${oPayload.perihal}`,
+            tipe: "surat_masuk",
+            tautan: "/correspondence/mail_in",
+          });
+        }
+      }
+    } catch (notifError) {
+      console.error("Gagal mengirim notifikasi surat masuk:", notifError);
+    }
 
     return res.status(201).json({
       status: true,

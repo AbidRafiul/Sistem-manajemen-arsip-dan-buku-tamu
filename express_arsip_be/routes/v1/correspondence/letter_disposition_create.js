@@ -4,6 +4,7 @@ import DB from "../../../core/config/knex.js";
 import { validatePayload } from "../components/tools/servertool.js";
 import { sendWhatsAppMessage } from "../../../core/components/tools/wa_helper.js";
 import { formatDateSystem } from "../components/tools/general.js";
+import { createNotification } from "../components/tools/notification_helper.js";
 
 const router = express.Router();
 
@@ -477,9 +478,37 @@ const letterDispositionCreate = async (req, res) => {
       return nId;
     });
 
-    // Kirim notifikasi WA secara asynchronous (fire-and-forget)
+    // Kirim notifikasi secara asynchronous (fire-and-forget)
     try {
       const oPenerima = await DB("mst_pengguna").select("nama_lengkap", "no_hp").where("id_pengguna", oPayload.kepada_pengguna_id).first();
+
+      await createNotification({
+        id_pengguna: oPayload.kepada_pengguna_id,
+        judul: "Disposisi Surat Baru",
+        pesan: `Anda menerima disposisi untuk surat: ${oLetter?.perihal || '-'}`,
+        tipe: "disposisi",
+        tautan: "/correspondence/disposition",
+      });
+
+      const superadmins = await DB("mst_pengguna as p")
+        .join("mst_pengguna_peran as pp", "p.id_pengguna", "pp.id_pengguna")
+        .join("mst_peran as r", "pp.id_peran", "r.id_peran")
+        .whereIn("r.kode_peran", ["SUPERADMIN", "SA"])
+        .andWhere("p.status", "active")
+        .select("p.id_pengguna");
+
+      for (const sa of superadmins) {
+        if (sa.id_pengguna !== Number(oPayload.kepada_pengguna_id)) {
+          await createNotification({
+            id_pengguna: sa.id_pengguna,
+            judul: "Disposisi Surat Baru",
+            pesan: `Disposisi surat ke ${oPenerima?.nama_lengkap || 'Staf'}: ${oLetter?.perihal || '-'}`,
+            tipe: "disposisi",
+            tautan: "/correspondence/disposition",
+          });
+        }
+      }
+
       if (oPenerima && oPenerima.no_hp) {
          const surat = await DB(letterTable).select("nomor_surat", "perihal").where(letterIdColumn, oPayload.surat_masuk_id).first();
          
@@ -494,11 +523,10 @@ Detail Disposisi:
 
 Silakan buka sistem Arsip Digital Anda untuk melihat lampiran fisik surat dan menindaklanjuti disposisi ini. Terima kasih.`;
          
-         // Tidak pakai await agar response API tidak terhambat
          sendWhatsAppMessage(oPenerima.no_hp, waPesan);
       }
     } catch (waErr) {
-      console.error("[WA Gateway] Gagal mengirim WA Disposisi:", waErr.message);
+      console.error("Gagal mengirim notifikasi disposisi:", waErr.message);
     }
 
     return res.status(201).json({

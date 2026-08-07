@@ -6,6 +6,7 @@ import {
   uploadFileToMinio,
   getMinioPrefix
 } from "../../../core/components/tools/minio_helper.js";
+import { insertIncomingLetterTracking } from "../components/tools/tracking_helper.js";
 
 const router = express.Router();
 
@@ -132,7 +133,7 @@ const incomingLetterUpload = async (req, res) => {
         updated_at: dNow,
       });
 
-      await trx("trs_tracking_surat_masuk").insert({
+      await insertIncomingLetterTracking(trx, {
         surat_masuk_id: oPayload.surat_masuk_id,
         disposisi_surat_id: null,
         nama_aksi: "file_surat_diupload",

@@ -2,6 +2,8 @@ import express from "express";
 import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { validatePayload } from "../components/tools/servertool.js";
+import { insertIncomingLetterTracking } from "../components/tools/tracking_helper.js";
+import { createNotification } from "../components/tools/notification_helper.js";
 
 const router = express.Router();
 
@@ -92,7 +94,7 @@ const letterDispositionComplete = async (req, res) => {
           updated_at: dNow,
         });
 
-      await trx("trs_tracking_surat_masuk").insert({
+      await insertIncomingLetterTracking(trx, {
         surat_masuk_id: oDisposition.surat_masuk_id,
         disposisi_surat_id: oPayload.disposisi_id,
         nama_aksi: "disposisi_selesai",
@@ -122,7 +124,7 @@ const letterDispositionComplete = async (req, res) => {
             updated_at: dNow,
           });
 
-        await trx("trs_tracking_surat_masuk").insert({
+        await insertIncomingLetterTracking(trx, {
           surat_masuk_id: oDisposition.surat_masuk_id,
           disposisi_surat_id: oPayload.disposisi_id,
           nama_aksi: "surat_selesai",
@@ -146,6 +148,42 @@ const letterDispositionComplete = async (req, res) => {
           });
       }
     });
+
+    // Kirim notifikasi ke pemberi disposisi (pimpinan) dan semua Superadmin
+    try {
+      const perihal = oLetter.perihal || `Surat Masuk #${oLetter.surat_masuk_id}`;
+
+      if (oDisposition.dari_pengguna_id) {
+        await createNotification({
+          id_pengguna: oDisposition.dari_pengguna_id,
+          judul: "Disposisi Selesai",
+          pesan: `Disposisi surat "${perihal}" telah DISELESAIKAN oleh staf pelaksana.`,
+          tipe: "disposisi",
+          tautan: "/correspondence/mail_in/data",
+        });
+      }
+
+      const superadmins = await DB("mst_pengguna as p")
+        .join("mst_pengguna_peran as pp", "p.id_pengguna", "pp.id_pengguna")
+        .join("mst_peran as r", "pp.id_peran", "r.id_peran")
+        .whereIn("r.kode_peran", ["SUPERADMIN", "SA"])
+        .andWhere("p.status", "active")
+        .select("p.id_pengguna");
+
+      for (const sa of superadmins) {
+        if (sa.id_pengguna !== oDisposition.dari_pengguna_id) {
+          await createNotification({
+            id_pengguna: sa.id_pengguna,
+            judul: "Disposisi Selesai",
+            pesan: `Disposisi surat "${perihal}" telah diselesaikan.`,
+            tipe: "disposisi",
+            tautan: "/correspondence/mail_in/data",
+          });
+        }
+      }
+    } catch (notifError) {
+      console.error("Gagal kirim notifikasi disposisi selesai:", notifError.message);
+    }
 
     return res.status(200).json({
       status: true,

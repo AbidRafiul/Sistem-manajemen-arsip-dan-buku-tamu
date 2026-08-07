@@ -150,7 +150,7 @@ export async function up(knex) {
     table.bigIncrements("id_detail_alur_tanda_tangan").primary();
     table.bigInteger("id_alur_tanda_tangan").unsigned().notNullable();
     table.integer("id_pengguna").unsigned().nullable();
-    table.integer("id_peran").unsigned().nullable();
+    table.integer("id_peran").nullable();
     table.integer("urutan").notNullable().defaultTo(1);
     table
       .enu("jenis_tindakan", ["persetujuan", "tanda_tangan"])
@@ -211,7 +211,7 @@ export async function up(knex) {
   await createIfMissing("trs_tanda_tangan_dokumen", (table) => {
     table.bigIncrements("id_tanda_tangan_dokumen").primary();
     table.bigInteger("id_surat_keluar").unsigned().notNullable();
-    table.integer("id_pengguna").unsigned().nullable();
+    table.integer("id_pengguna").nullable();
     table.bigInteger("id_sertifikat_elektronik").unsigned().nullable();
     table.integer("id_versi_dokumen").nullable();
     table.integer("urutan_tanda_tangan").notNullable().defaultTo(1);

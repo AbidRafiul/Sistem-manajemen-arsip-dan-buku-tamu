@@ -8,6 +8,7 @@ import DB from "../../../core/config/knex.js";
 import { uploadFileToMinio, getMinioPrefix, MINIO_BUCKET_NAME } from "../../../core/components/tools/minio_helper.js";
 import { sendMailNotification } from "../../../core/components/tools/mail_helper.js";
 import { sendWhatsAppMessage } from "../../../core/components/tools/wa_helper.js";
+import { createNotification } from "../components/tools/notification_helper.js";
 
 const cBucket = MINIO_BUCKET_NAME;
 
@@ -241,6 +242,66 @@ router.post(
       };
 
       const [idKunjungan] = await DB("trs_kunjungan").insert(oData);
+
+      try {
+        if (resolvedHostUserId) {
+          await createNotification({
+            id_pengguna: resolvedHostUserId,
+            judul: "Registrasi Tamu Baru",
+            pesan: `${GuestName || "Seorang tamu"} (${GuestCompany || "Instansi tidak diketahui"}) telah check-in`,
+            tipe: "kunjungan",
+            tautan: "/buku_tamu/monitoring",
+          });
+
+          const superadmins = await DB("mst_pengguna as p")
+            .join("mst_pengguna_peran as pp", "p.id_pengguna", "pp.id_pengguna")
+            .join("mst_peran as r", "pp.id_peran", "r.id_peran")
+            .whereIn("r.kode_peran", ["SUPERADMIN", "SA"])
+            .andWhere("p.status", "active")
+            .select("p.id_pengguna");
+
+          for (const sa of superadmins) {
+            if (sa.id_pengguna !== Number(resolvedHostUserId)) {
+              await createNotification({
+                id_pengguna: sa.id_pengguna,
+                judul: "Registrasi Tamu Baru",
+                pesan: `${GuestName || "Seorang tamu"} (${GuestCompany || "Instansi tidak diketahui"}) telah check-in`,
+                tipe: "kunjungan",
+                tautan: "/buku_tamu/monitoring",
+              });
+            }
+          }
+        } else {
+          const branchUsers = await DB("mst_pengguna")
+            .where("id_cabang", targetBranchId)
+            .andWhere("status", "active")
+            .select("id_pengguna");
+
+          const superadmins = await DB("mst_pengguna as p")
+            .join("mst_pengguna_peran as pp", "p.id_pengguna", "pp.id_pengguna")
+            .join("mst_peran as r", "pp.id_peran", "r.id_peran")
+            .whereIn("r.kode_peran", ["SUPERADMIN", "SA"])
+            .andWhere("p.status", "active")
+            .select("p.id_pengguna");
+
+          const targetUserIds = new Set([
+            ...branchUsers.map(u => u.id_pengguna),
+            ...superadmins.map(u => u.id_pengguna)
+          ]);
+
+          for (const userId of targetUserIds) {
+            await createNotification({
+              id_pengguna: userId,
+              judul: "Registrasi Tamu Baru",
+              pesan: `${GuestName || "Seorang tamu"} (${GuestCompany || "Instansi tidak diketahui"}) telah check-in`,
+              tipe: "kunjungan",
+              tautan: "/buku_tamu/monitoring",
+            });
+          }
+        }
+      } catch (notifError) {
+        console.error("Gagal membuat notifikasi checkin:", notifError);
+      }
 
       // Simpan anggota rombongan jika ada
       let parsedGroupMembers = [];

@@ -1,5 +1,6 @@
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+import { createNotification } from "../components/tools/notification_helper.js";
 
 const createArchiveLoan = async (req, res) => {
   const oPayload = req.body;
@@ -86,6 +87,39 @@ const createArchiveLoan = async (req, res) => {
     };
 
     const [nLoanId] = await DB("trs_peminjaman_arsip").insert(oData);
+
+    try {
+      if (nIdCabang) {
+        const branchUsers = await DB("mst_pengguna")
+          .where("id_cabang", nIdCabang)
+          .andWhere("status", "active")
+          .select("id_pengguna");
+
+        const superadmins = await DB("mst_pengguna as p")
+          .join("mst_pengguna_peran as pp", "p.id_pengguna", "pp.id_pengguna")
+          .join("mst_peran as r", "pp.id_peran", "r.id_peran")
+          .whereIn("r.kode_peran", ["SUPERADMIN", "SA"])
+          .andWhere("p.status", "active")
+          .select("p.id_pengguna");
+
+        const targetUserIds = new Set([
+          ...branchUsers.map(u => u.id_pengguna),
+          ...superadmins.map(u => u.id_pengguna)
+        ]);
+
+        for (const userId of targetUserIds) {
+          await createNotification({
+            id_pengguna: userId,
+            judul: "Permohonan Peminjaman Arsip",
+            pesan: `${cBorrowerName} mengajukan pinjaman dokumen: ${oDocument.nama_dokumen || cKodeDokumen}`,
+            tipe: "peminjaman_arsip",
+            tautan: "/edms/archive_loan",
+          });
+        }
+      }
+    } catch (notifError) {
+      console.error("Gagal mengirim notifikasi peminjaman arsip:", notifError);
+    }
 
     const oResult = {
       status: "success",

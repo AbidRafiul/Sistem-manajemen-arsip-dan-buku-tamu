@@ -15,3 +15,13 @@ app
       throw err;
     }
   });
+
+// Tangkap unhandled promise rejection agar server tidak crash
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("  Unhandled Rejection at:", promise, "reason:", reason);
+});
+
+// Tangkap uncaught exception agar server tidak crash
+process.on("uncaughtException", (err) => {
+  console.error("  Uncaught Exception:", err);
+});

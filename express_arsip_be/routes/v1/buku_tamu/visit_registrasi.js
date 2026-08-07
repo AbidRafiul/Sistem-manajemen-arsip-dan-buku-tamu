@@ -7,6 +7,7 @@ import DB from "../../../core/config/knex.js";
 import { uploadFileToMinio, getMinioPrefix, MINIO_BUCKET_NAME } from "../../../core/components/tools/minio_helper.js";
 import { sendMailNotification } from "../../../core/components/tools/mail_helper.js";
 import { sendWhatsAppMessage } from "../../../core/components/tools/wa_helper.js";
+import { createNotification } from "../components/tools/notification_helper.js";
 
 const cBucket = MINIO_BUCKET_NAME;
 
@@ -384,6 +385,61 @@ Data Rencana Kunjungan:
 
 ${closingMsg}`;
             await sendWhatsAppMessage(oHost.telepon, waHost);
+          }
+
+          await createNotification({
+            id_pengguna: resolvedHostUserId,
+            judul: "Rencana Kunjungan Baru",
+            pesan: `${GuestName || "Seorang tamu"} (${GuestCompany || "Instansi tidak diketahui"}) mendaftarkan rencana kunjungan`,
+            tipe: "kunjungan",
+            tautan: "/buku_tamu/monitoring",
+          });
+
+          const superadmins = await DB("mst_pengguna as p")
+            .join("mst_pengguna_peran as pp", "p.id_pengguna", "pp.id_pengguna")
+            .join("mst_peran as r", "pp.id_peran", "r.id_peran")
+            .whereIn("r.kode_peran", ["SUPERADMIN", "SA"])
+            .andWhere("p.status", "active")
+            .select("p.id_pengguna");
+
+          for (const sa of superadmins) {
+            if (sa.id_pengguna !== Number(resolvedHostUserId)) {
+              await createNotification({
+                id_pengguna: sa.id_pengguna,
+                judul: "Rencana Kunjungan Baru",
+                pesan: `${GuestName || "Seorang tamu"} (${GuestCompany || "Instansi tidak diketahui"}) mendaftarkan rencana kunjungan`,
+                tipe: "kunjungan",
+                tautan: "/buku_tamu/monitoring",
+              });
+            }
+          }
+        } else {
+          // If no host is selected, notify all active users in the target branch
+          const branchUsers = await DB("mst_pengguna")
+            .where("id_cabang", targetBranchId)
+            .andWhere("status", "active")
+            .select("id_pengguna");
+
+          const superadmins = await DB("mst_pengguna as p")
+            .join("mst_pengguna_peran as pp", "p.id_pengguna", "pp.id_pengguna")
+            .join("mst_peran as r", "pp.id_peran", "r.id_peran")
+            .whereIn("r.kode_peran", ["SUPERADMIN", "SA"])
+            .andWhere("p.status", "active")
+            .select("p.id_pengguna");
+
+          const targetUserIds = new Set([
+            ...branchUsers.map(u => u.id_pengguna),
+            ...superadmins.map(u => u.id_pengguna)
+          ]);
+
+          for (const userId of targetUserIds) {
+            await createNotification({
+              id_pengguna: userId,
+              judul: "Rencana Kunjungan Baru",
+              pesan: `${GuestName || "Seorang tamu"} (${GuestCompany || "Instansi tidak diketahui"}) mendaftarkan rencana kunjungan`,
+              tipe: "kunjungan",
+              tautan: "/buku_tamu/monitoring",
+            });
           }
         }
       } catch (e) {

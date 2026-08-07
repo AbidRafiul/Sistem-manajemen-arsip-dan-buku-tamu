@@ -2,6 +2,7 @@ import express from "express";
 import Joi from "joi";
 import DB from "../../../core/config/knex.js";
 import { Logging, validatePayload } from "../components/tools/servertool.js";
+import { createNotification } from "../components/tools/notification_helper.js";
 
 const router = express.Router();
 
@@ -76,6 +77,42 @@ const outgoingLetterApprove = async (req, res) => {
         updated_at: dNow,
       });
     });
+
+    // Kirim notifikasi ke pembuat surat dan semua Superadmin
+    try {
+      const perihal = oLetter.perihal || oLetter.hal || `Surat Keluar #${oPayload.id_surat_keluar}`;
+
+      if (oLetter.created_by) {
+        await createNotification({
+          id_pengguna: oLetter.created_by,
+          judul: "Surat Keluar Disetujui",
+          pesan: `Surat keluar "${perihal}" telah DISETUJUI oleh pimpinan.`,
+          tipe: "surat_keluar",
+          tautan: "/correspondence/mail_out/data",
+        });
+      }
+
+      const superadmins = await DB("mst_pengguna as p")
+        .join("mst_pengguna_peran as pp", "p.id_pengguna", "pp.id_pengguna")
+        .join("mst_peran as r", "pp.id_peran", "r.id_peran")
+        .whereIn("r.kode_peran", ["SUPERADMIN", "SA"])
+        .andWhere("p.status", "active")
+        .select("p.id_pengguna");
+
+      for (const sa of superadmins) {
+        if (sa.id_pengguna !== oLetter.created_by) {
+          await createNotification({
+            id_pengguna: sa.id_pengguna,
+            judul: "Surat Keluar Disetujui",
+            pesan: `Surat keluar "${perihal}" telah DISETUJUI.`,
+            tipe: "surat_keluar",
+            tautan: "/correspondence/mail_out/data",
+          });
+        }
+      }
+    } catch (notifError) {
+      console.error("Gagal kirim notifikasi surat keluar disetujui:", notifError.message);
+    }
 
     return res.status(200).json({
       status: true,
