@@ -234,9 +234,15 @@ const buildPdfPreviewUrl = async (values: initValue, apiGetConfig?: (payload: an
     const cName = config.msNamaPerusahaan || "PT. MARSTECH GLOBAL";
     const cAddress = config.msAlamatPerusahaan || "JL. MARGATAMA ASRI IV NO. 3 KANIGORO, KARTOHARJO, MADIUN, JAWA TIMUR";
     const cContact = `Telp. ${config.msTeleponPerusahaan || "0351-2812555"}`;
-    const cLogoUrl = config.msLogoPerusahaan 
-        ? `${process.env.NEXT_PUBLIC_API_DIR_PATH?.replace('/api', '') || ''}/uploads/config/logo_perusahaan/${config.msLogoPerusahaan}` 
-        : COMPANY_LOGO_URL;
+    let cLogoUrl = COMPANY_LOGO_URL;
+    if (config.msLogoPerusahaan) {
+        if (config.msLogoPerusahaan.startsWith('http')) {
+            cLogoUrl = config.msLogoPerusahaan;
+        } else {
+            const basePath = process.env.NEXT_PUBLIC_API_DIR_PATH?.replace('/api', '') || '';
+            cLogoUrl = `${basePath}/uploads/config/logo_perusahaan/${config.msLogoPerusahaan}`;
+        }
+    }
 
     const doc = new jsPDF({
         orientation: "p",
@@ -246,23 +252,62 @@ const buildPdfPreviewUrl = async (values: initValue, apiGetConfig?: (payload: an
     });
     const logoDataUrl = await loadImageAsDataUrl(cLogoUrl).catch(() => null) || await loadImageAsDataUrl(COMPANY_LOGO_URL).catch(() => null);
     const pageWidth = 210;
-    const marginX = 32;
-    const maxWidth = 156;
+    const marginX = 25; // Adjusted margin to fit the logo and text well
+    const maxWidth = 160;
     const lineHeight = 6;
     let cursorY = 43;
 
+    const logoSize = 25;
+    const textStartX = marginX + logoSize + 5; // Start text next to logo
+
     if (logoDataUrl) {
-        doc.addImage(logoDataUrl, "PNG", 24, 9, 28, 24);
+        let ratio = 1;
+        try {
+            ratio = await new Promise<number>((resolve) => {
+                const img = new window.Image();
+                img.onload = () => resolve(img.naturalHeight / (img.naturalWidth || 1));
+                img.onerror = () => resolve(1);
+                img.src = logoDataUrl;
+            });
+        } catch (e) {
+            ratio = 1;
+        }
+        const logoHeight = logoSize * ratio;
+        // Center the logo vertically relative to the header text area (which is around height 25)
+        const yPos = 8 + (25 - logoHeight) / 2;
+        doc.addImage(logoDataUrl, "PNG", marginX, yPos > 8 ? yPos : 8, logoSize, logoHeight);
     }
+    
+    // Header Text
+    doc.setTextColor(11, 46, 89); // Dark blue color for Company Name #0B2E59
     doc.setFont("times", "bold");
     doc.setFontSize(16);
-    doc.text(cName, pageWidth / 2 + 8, 15, { align: "center" });
-    doc.setFontSize(10);
-    doc.text(cAddress, pageWidth / 2 + 8, 22, { align: "center" });
+    doc.text(cName, textStartX, 14);
+
+    doc.setTextColor(40, 40, 40); // Dark grey for address
+    doc.setFont("times", "normal");
     doc.setFontSize(9);
-    doc.text(cContact, pageWidth / 2 + 8, 28, { align: "center" });
-    doc.setLineWidth(0.8);
-    doc.line(18, 36, 190, 36);
+    doc.text(cAddress, textStartX, 20);
+
+    const email = config.msEmailPerusahaan || "info@marstech.co.id";
+    const web = config.msWebsitePerusahaan || "www.marstech.co.id";
+    const contactLine = `${cContact}  |  E-mail: ${email}  |  Web: ${web}`;
+    
+    doc.setTextColor(40, 40, 40);
+    doc.setFontSize(9);
+    doc.text(contactLine, textStartX, 25);
+
+    // Two underline borders
+    doc.setDrawColor(11, 46, 89); // Dark blue lines
+    doc.setLineWidth(1.0); // Thick line
+    doc.line(marginX, 35, pageWidth - marginX, 35);
+    
+    doc.setLineWidth(0.3); // Thin line
+    doc.line(marginX, 36.5, pageWidth - marginX, 36.5);
+
+    // Reset color for body
+    doc.setTextColor(0, 0, 0);
+    doc.setDrawColor(0, 0, 0);
 
     doc.setFont("times", "bold");
     doc.setFontSize(12);

@@ -106,7 +106,8 @@ const Table = ({
     apiExtractOcr,
     apiGetLetterTypes,
     apiGetTemplates,
-    apiGetNomorPreview
+    apiGetNomorPreview,
+    apiGetConfig
 }: TableProps) => {
     const [uploading, setUploading] = useState(false);
     const [archiving, setArchiving] = useState(false);
