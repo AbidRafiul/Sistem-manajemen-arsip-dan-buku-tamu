@@ -81,5 +81,13 @@ router.use(
   Dashboard
 );
 
+// Notifikasi
+import Notification from "./notification/index.js";
+router.use(
+  "/notification",
+  [validateAccessToken, validateSignature, contextMiddleware],
+  Notification
+);
+
 export default router;
 

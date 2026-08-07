@@ -1,5 +1,6 @@
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+import { createNotification } from "../components/tools/notification_helper.js";
 
 const reviewDestructionProposal = async (req, res) => {
   const oPayload = req.body;
@@ -74,6 +75,45 @@ const reviewDestructionProposal = async (req, res) => {
         ...oData,
       },
     };
+
+    // Kirim notifikasi ke pengusul dan semua Superadmin
+    try {
+      const actionText = cStatus === "approved" ? "DISETUJUI" : "DITOLAK";
+      const kode = oProposal.kode_dokumen || `Usulan #${nProposalId}`;
+
+      if (oProposal.dibuat_oleh || oProposal.created_by) {
+        const proposerId = oProposal.dibuat_oleh || oProposal.created_by;
+        await createNotification({
+          id_pengguna: proposerId,
+          judul: `Usulan Pemusnahan ${actionText}`,
+          pesan: `Usulan pemusnahan arsip "${kode}" telah ${actionText} oleh pimpinan. Catatan: ${cReviewNotes || "-"}`,
+          tipe: "pemusnahan_arsip",
+          tautan: "/edms/destruction",
+        });
+      }
+
+      const superadmins = await DB("mst_pengguna as p")
+        .join("mst_pengguna_peran as pp", "p.id_pengguna", "pp.id_pengguna")
+        .join("mst_peran as r", "pp.id_peran", "r.id_peran")
+        .whereIn("r.kode_peran", ["SUPERADMIN", "SA"])
+        .andWhere("p.status", "active")
+        .select("p.id_pengguna");
+
+      const proposerId = oProposal.dibuat_oleh || oProposal.created_by;
+      for (const sa of superadmins) {
+        if (sa.id_pengguna !== proposerId) {
+          await createNotification({
+            id_pengguna: sa.id_pengguna,
+            judul: `Usulan Pemusnahan ${actionText}`,
+            pesan: `Usulan pemusnahan arsip "${kode}" telah ${actionText}.`,
+            tipe: "pemusnahan_arsip",
+            tautan: "/edms/destruction",
+          });
+        }
+      }
+    } catch (notifError) {
+      console.error("Gagal kirim notifikasi usulan pemusnahan:", notifError.message);
+    }
 
     return res.status(200).json(oResult);
   } catch (error) {

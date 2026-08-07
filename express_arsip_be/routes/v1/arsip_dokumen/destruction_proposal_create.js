@@ -1,5 +1,6 @@
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+import { createNotification } from "../components/tools/notification_helper.js";
 
 const createDestructionProposal = async (req, res) => {
   const oPayload = req.body;
@@ -102,6 +103,28 @@ const createDestructionProposal = async (req, res) => {
         ...oData,
       },
     };
+
+    // Kirim notifikasi ke Pimpinan dan Superadmin
+    try {
+      const superadmins = await DB("mst_pengguna as p")
+        .join("mst_pengguna_peran as pp", "p.id_pengguna", "pp.id_pengguna")
+        .join("mst_peran as r", "pp.id_peran", "r.id_peran")
+        .whereIn("r.kode_peran", ["SUPERADMIN", "SA", "PIMPINAN"])
+        .andWhere("p.status", "active")
+        .select("p.id_pengguna");
+
+      for (const sa of superadmins) {
+        await createNotification({
+          id_pengguna: sa.id_pengguna,
+          judul: "Usulan Pemusnahan Baru",
+          pesan: `Usulan pemusnahan baru untuk dokumen "${oDocument.nama_dokumen || oDocument.kode_dokumen}" oleh ${cProposedBy}`,
+          tipe: "pemusnahan_arsip",
+          tautan: "/edms/destruction",
+        });
+      }
+    } catch (notifError) {
+      console.error("Gagal kirim notifikasi usulan pemusnahan baru:", notifError.message);
+    }
 
     return res.status(200).json(oResult);
   } catch (error) {

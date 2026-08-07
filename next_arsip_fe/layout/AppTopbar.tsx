@@ -14,6 +14,21 @@ import { Divider } from 'primereact/divider';
 import { Tag } from 'primereact/tag';
 import { formatDateCalendar } from '@/lib/tools/dateTools';
 import BranchSwitcher from './BranchSwitcher';
+import getData from '@/lib/axios/getData';
+import putData from '@/lib/axios/putData';
+import { useRouter } from 'next/navigation';
+
+interface NotificationItem {
+    id_notifikasi: number;
+    id_pengguna: number | null;
+    judul: string;
+    pesan: string;
+    tipe: string;
+    tautan: string | null;
+    status_baca: number;
+    created_at: string;
+    updated_at: string;
+}
 
 const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     const { data: session } = useSession();
@@ -23,6 +38,76 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     const op = useRef<OverlayPanel>(null);
     const notificationOp = useRef<OverlayPanel>(null);
     const [realZonedTime, setRealZonedTime] = useState<String | null>("-");
+
+    const router = useRouter();
+    const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+    const [unreadCount, setUnreadCount] = useState<number>(0);
+
+    const fetchNotifications = async () => {
+        if (!session) return;
+        try {
+            const res = await getData('/notification');
+            if (res?.data?.status === '00') {
+                setNotifications(res.data.data || []);
+                setUnreadCount(res.data.unread_count || 0);
+            }
+        } catch (err) {
+            console.error('Gagal mengambil data notifikasi:', err);
+        }
+    };
+
+    const handleNotificationClick = async (item: NotificationItem) => {
+        notificationOp.current?.hide();
+        try {
+            if (item.status_baca === 0) {
+                await putData('/notification/mark-read', { id_notifikasi: item.id_notifikasi });
+                setNotifications(prev => prev.map(n => n.id_notifikasi === item.id_notifikasi ? { ...n, status_baca: 1 } : n));
+                setUnreadCount(prev => Math.max(0, prev - 1));
+            }
+        } catch (err) {
+            console.error('Gagal menandai notifikasi dibaca:', err);
+        }
+
+        if (item.tautan) {
+            router.push(item.tautan);
+        }
+    };
+
+    const handleMarkAllRead = async () => {
+        try {
+            await putData('/notification/mark-read', {});
+            setNotifications(prev => prev.map(n => ({ ...n, status_baca: 1 })));
+            setUnreadCount(0);
+            notificationOp.current?.hide();
+        } catch (err) {
+            console.error('Gagal menandai semua notifikasi dibaca:', err);
+        }
+    };
+
+    const formatRelativeTime = (dateStr: string) => {
+        try {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diffMs = now.getTime() - date.getTime();
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Baru saja';
+            if (diffMins < 60) return `${diffMins} menit lalu`;
+            if (diffHours < 24) return `${diffHours} jam lalu`;
+            if (diffDays === 1) return 'Kemarin';
+            if (diffDays < 7) return `${diffDays} hari lalu`;
+            
+            return date.toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+        } catch (e) {
+            return '-';
+        }
+    };
 
     useImperativeHandle(ref, () => ({
         menubutton: menubuttonRef.current,
@@ -36,7 +121,13 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
             setRealZonedTime(formatDateCalendar(new Date(), "EEEE, dd MMMM yyyy HH:mm:ss", null, 'id'));
         }, 1000);
 
-        return () => clearInterval(timer);
+        fetchNotifications();
+        const notificationTimer = setInterval(fetchNotifications, 60000);
+
+        return () => {
+            clearInterval(timer);
+            clearInterval(notificationTimer);
+        };
     }, [session]);
 
     const handleLogout = async () => {
@@ -114,17 +205,24 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                             }}
                             aria-label="Notifikasi"
                         >
-                            <Badge
-                                severity="danger"
-                                style={{
-                                    position: 'absolute',
-                                    top: '4px',
-                                    right: '4px',
-                                    minWidth: '8px',
-                                    height: '8px',
-                                    padding: 0
-                                }}
-                            />
+                            {unreadCount > 0 && (
+                                <Badge
+                                    value={unreadCount}
+                                    severity="danger"
+                                    style={{
+                                        position: 'absolute',
+                                        top: '2px',
+                                        right: '2px',
+                                        minWidth: '16px',
+                                        height: '16px',
+                                        fontSize: '0.65rem',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        padding: 0
+                                    }}
+                                />
+                            )}
                         </Button>
 
                         {/* Notification OverlayPanel */}
@@ -139,56 +237,91 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                             <div className="flex flex-column p-1">
                                 <div className="flex justify-content-between align-items-center mb-3 px-2 pt-2">
                                     <span className="font-bold text-base text-900">Notifikasi</span>
-                                    <Tag value="2 Baru" severity="danger" rounded style={{ fontSize: '0.65rem', padding: '0.15rem 0.4rem', fontWeight: 700 }} />
+                                    {unreadCount > 0 && (
+                                        <Tag value={`${unreadCount} Baru`} severity="danger" rounded style={{ fontSize: '0.65rem', padding: '0.15rem 0.4rem', fontWeight: 700 }} />
+                                    )}
                                 </div>
 
-                                <div className="flex flex-column gap-1">
-                                    {/* Notification Item 1 */}
-                                    <div className="flex align-items-start gap-3 p-2 hover:surface-hover border-round cursor-pointer transition-colors transition-duration-150">
-                                        <Avatar
-                                            icon="pi pi-envelope"
-                                            shape="circle"
-                                            style={{
-                                                background: 'rgba(79, 70, 229, 0.08)',
-                                                color: '#4F46E5',
-                                                minWidth: '2.25rem',
-                                                height: '2.25rem',
-                                                fontSize: '0.9rem'
-                                            }}
-                                        />
-                                        <div className="flex flex-column gap-1 flex-1">
-                                            <span className="text-sm font-semibold text-900">Surat Masuk Baru</span>
-                                            <span className="text-xs text-600 line-height-3">Perihal: Undangan Koordinasi dari Dinas Kesehatan</span>
-                                            <span className="text-400 font-medium" style={{ fontSize: '0.65rem' }}>10 menit lalu</span>
+                                <div className="flex flex-column gap-1" style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                                    {notifications.length === 0 ? (
+                                        <div className="text-center py-4 text-500 text-sm">
+                                            Tidak ada notifikasi baru
                                         </div>
-                                    </div>
+                                    ) : (
+                                        notifications.map((item) => {
+                                            const isUnread = item.status_baca === 0;
+                                            let icon = 'pi pi-bell';
+                                            let avatarBg = 'rgba(234, 179, 8, 0.08)';
+                                            let avatarColor = '#EAB308';
 
-                                    {/* Notification Item 2 */}
-                                    <div className="flex align-items-start gap-3 p-2 hover:surface-hover border-round cursor-pointer transition-colors transition-duration-150">
-                                        <Avatar
-                                            icon="pi pi-user-plus"
-                                            shape="circle"
-                                            style={{
-                                                background: 'rgba(34, 197, 94, 0.08)',
-                                                color: '#22C55E',
-                                                minWidth: '2.25rem',
-                                                height: '2.25rem',
-                                                fontSize: '0.9rem'
-                                            }}
-                                        />
-                                        <div className="flex flex-column gap-1 flex-1">
-                                            <span className="text-sm font-semibold text-900">Registrasi Tamu Baru</span>
-                                            <span className="text-xs text-600 line-height-3">Bpk. Budi Santoso (PT. Tech Indo) telah check-in</span>
-                                            <span className="text-400 font-medium" style={{ fontSize: '0.65rem' }}>1 jam lalu</span>
-                                        </div>
-                                    </div>
+                                            if (item.tipe === 'surat_masuk') {
+                                                icon = 'pi pi-envelope';
+                                                avatarBg = 'rgba(79, 70, 229, 0.08)';
+                                                avatarColor = '#4F46E5';
+                                            } else if (item.tipe === 'disposisi') {
+                                                icon = 'pi pi-share-alt';
+                                                avatarBg = 'rgba(59, 130, 246, 0.08)';
+                                                avatarColor = '#3B82F6';
+                                            } else if (item.tipe === 'kunjungan' || item.tipe === 'buku_tamu') {
+                                                icon = 'pi pi-user-plus';
+                                                avatarBg = 'rgba(34, 197, 94, 0.08)';
+                                                avatarColor = '#22C55E';
+                                            } else if (item.tipe === 'peminjaman_arsip') {
+                                                icon = 'pi pi-folder-open';
+                                                avatarBg = 'rgba(249, 115, 22, 0.08)';
+                                                avatarColor = '#F97316';
+                                            } else if (item.tipe === 'surat_keluar') {
+                                                icon = 'pi pi-send';
+                                                avatarBg = 'rgba(139, 92, 246, 0.08)';
+                                                avatarColor = '#8B5CF6';
+                                            } else if (item.tipe === 'pemusnahan_arsip') {
+                                                icon = 'pi pi-trash';
+                                                avatarBg = 'rgba(239, 68, 68, 0.08)';
+                                                avatarColor = '#EF4444';
+                                            }
+
+                                            return (
+                                                <div
+                                                    key={item.id_notifikasi}
+                                                    onClick={() => handleNotificationClick(item)}
+                                                    className="flex align-items-start gap-3 p-2 hover:surface-hover border-round cursor-pointer transition-colors transition-duration-150"
+                                                    style={{
+                                                        background: isUnread ? 'rgba(79, 70, 229, 0.03)' : 'transparent'
+                                                    }}
+                                                >
+                                                    <Avatar
+                                                        icon={icon}
+                                                        shape="circle"
+                                                        style={{
+                                                            background: avatarBg,
+                                                            color: avatarColor,
+                                                            minWidth: '2.25rem',
+                                                            height: '2.25rem',
+                                                            fontSize: '0.9rem'
+                                                        }}
+                                                    />
+                                                    <div className="flex flex-column gap-1 flex-1">
+                                                        <span className={`text-sm text-900 ${isUnread ? 'font-bold' : 'font-semibold'}`}>
+                                                            {item.judul}
+                                                        </span>
+                                                        <span className="text-xs text-600 line-height-3">{item.pesan}</span>
+                                                        <span className="text-400 font-medium" style={{ fontSize: '0.65rem' }}>
+                                                            {formatRelativeTime(item.created_at)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    )}
                                 </div>
 
                                 <Divider className="my-2" style={{ borderColor: '#F3F4F6' }} />
 
                                 <Button
                                     label="Tandai Semua Dibaca"
+                                    onClick={handleMarkAllRead}
                                     text
+                                    disabled={unreadCount === 0}
                                     className="w-full text-center text-xs font-semibold py-2 text-indigo-600 hover:bg-indigo-50 border-none"
                                     style={{ borderRadius: '6px', color: '#4F46E5' }}
                                 />
