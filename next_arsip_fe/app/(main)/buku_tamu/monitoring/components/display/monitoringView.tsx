@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import { Button } from 'primereact/button';
+import { Dropdown } from 'primereact/dropdown';
 import StatsCards from './statsCards';
 import ChartDisplay from './chart';
 import ActiveGuestsTable from './activeGuestsTable';
@@ -14,6 +15,8 @@ interface MonitoringViewProps {
     onRefresh: () => void;
     onRegisterNew: () => void;
     onViewHistory: () => void;
+    timeRange: string;
+    setTimeRange: (val: string) => void;
 }
 
 export default function MonitoringView({
@@ -23,8 +26,16 @@ export default function MonitoringView({
     lastUpdated,
     onRefresh,
     onRegisterNew,
-    onViewHistory
+    onViewHistory,
+    timeRange,
+    setTimeRange
 }: MonitoringViewProps) {
+    const timeRangeOptions = [
+        { label: 'Minggu Ini', value: 'this_week' },
+        { label: 'Minggu Lalu', value: 'last_week' },
+        { label: 'Bulan Ini', value: 'this_month' },
+        { label: 'Tahun Ini', value: 'this_year' }
+    ];
     return (
         <div className="flex flex-column gap-4">
             {/* Custom Styles for Pulse Animation and Premium Cards */}
@@ -77,7 +88,14 @@ export default function MonitoringView({
                         Pantau statistik kunjungan harian, tamu aktif, dan tren mingguan secara real-time.
                     </p>
                 </div>
-                <div className="flex flex-wrap gap-2 flex-shrink-0 align-self-start md:align-self-center">
+                <div className="flex flex-wrap gap-2 flex-shrink-0 align-self-start md:align-self-center align-items-center">
+                    <Dropdown 
+                        value={timeRange} 
+                        options={timeRangeOptions} 
+                        onChange={(e) => setTimeRange(e.value)} 
+                        placeholder="Pilih Waktu" 
+                        className="w-full md:w-14rem" 
+                    />
                     <Button
                         type="button"
                         icon="pi pi-plus"

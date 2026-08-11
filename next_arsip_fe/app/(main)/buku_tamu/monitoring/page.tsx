@@ -12,6 +12,7 @@ const MonitoringPage: React.FC = () => {
     const toast = useRef<Toast>(null);
     const [load, setLoad] = useState<boolean>(false);
     const [lastUpdated, setLastUpdated] = useState<string>('');
+    const [timeRange, setTimeRange] = useState<string>('this_week');
     const [stats, setStats] = useState<DashboardStats>({
         total_tamu_hari_ini: 0,
         sedang_berkunjung: 0,
@@ -22,10 +23,11 @@ const MonitoringPage: React.FC = () => {
     });
     const [activeGuests, setActiveGuests] = useState<any[]>([]);
 
-    const fetchMonitoringData = async () => {
+    const fetchMonitoringData = async (overrideRange?: string) => {
         setLoad(true);
         try {
-            const response = await postData(apiEndpointMonitoring, {});
+            const currentRange = overrideRange || timeRange;
+            const response = await postData(apiEndpointMonitoring, { time_range: currentRange });
             if (response?.data?.data) {
                 setStats(response.data.data);
             }
@@ -56,12 +58,12 @@ const MonitoringPage: React.FC = () => {
     };
 
     useEffect(() => {
-        fetchMonitoringData();
+        fetchMonitoringData(timeRange);
         const interval = setInterval(() => {
-            fetchMonitoringData();
+            fetchMonitoringData(timeRange);
         }, 30000);
         return () => clearInterval(interval);
-    }, []);
+    }, [timeRange]);
 
     const handleRegisterNew = () => {
         router.push('/buku_tamu/registrasi');
@@ -79,9 +81,11 @@ const MonitoringPage: React.FC = () => {
                 activeGuests={activeGuests}
                 load={load}
                 lastUpdated={lastUpdated}
-                onRefresh={fetchMonitoringData}
+                onRefresh={() => fetchMonitoringData(timeRange)}
                 onRegisterNew={handleRegisterNew}
                 onViewHistory={handleViewHistory}
+                timeRange={timeRange}
+                setTimeRange={setTimeRange}
             />
         </>
     );

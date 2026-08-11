@@ -11,11 +11,11 @@ interface ChartDisplayProps {
 
 export default function ChartDisplay({ stats }: ChartDisplayProps) {
     const lineChartData = {
-        labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
+        labels: stats.chart_trend_labels || ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
         datasets: [
             {
                 label: 'Jumlah Kunjungan',
-                data: stats.chart_mingguan && stats.chart_mingguan.length === 7 ? stats.chart_mingguan : (stats.chart_mingguan || [0, 0, 0, 0, 0, 0, 0]),
+                data: stats.chart_trend_data || stats.chart_mingguan || [0, 0, 0, 0, 0, 0, 0],
                 fill: true,
                 borderColor: '#6366f1', // Indigo primary color
                 backgroundColor: 'rgba(99, 102, 241, 0.08)', // Indigo translucent area

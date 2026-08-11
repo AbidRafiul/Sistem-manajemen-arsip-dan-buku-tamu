@@ -248,7 +248,7 @@ router.post(
           await createNotification({
             id_pengguna: resolvedHostUserId,
             judul: "Registrasi Tamu Baru",
-            pesan: `${GuestName || "Seorang tamu"} (${GuestCompany || "Instansi tidak diketahui"}) telah check-in`,
+            pesan: `${nama_tamu || "Seorang tamu"} (${instansi_tamu || "Instansi tidak diketahui"}) telah check-in`,
             tipe: "kunjungan",
             tautan: "/buku_tamu/monitoring",
           });
@@ -265,7 +265,7 @@ router.post(
               await createNotification({
                 id_pengguna: sa.id_pengguna,
                 judul: "Registrasi Tamu Baru",
-                pesan: `${GuestName || "Seorang tamu"} (${GuestCompany || "Instansi tidak diketahui"}) telah check-in`,
+                pesan: `${nama_tamu || "Seorang tamu"} (${instansi_tamu || "Instansi tidak diketahui"}) telah check-in`,
                 tipe: "kunjungan",
                 tautan: "/buku_tamu/monitoring",
               });
@@ -293,7 +293,7 @@ router.post(
             await createNotification({
               id_pengguna: userId,
               judul: "Registrasi Tamu Baru",
-              pesan: `${GuestName || "Seorang tamu"} (${GuestCompany || "Instansi tidak diketahui"}) telah check-in`,
+              pesan: `${nama_tamu || "Seorang tamu"} (${instansi_tamu || "Instansi tidak diketahui"}) telah check-in untuk menemui host`,
               tipe: "kunjungan",
               tautan: "/buku_tamu/monitoring",
             });
@@ -356,7 +356,7 @@ router.post(
         // 5. KIRIM NOTIFIKASI WA GANDA (KE TAMU & HOST)
         // ==========================================
         try {
-          let resolvedHostName = HostName || null;
+          let resolvedHostName = nama_host || null;
           let oHost = null;
 
           if (resolvedHostUserId) {
@@ -370,10 +370,10 @@ router.post(
           }
 
           // A. Kirim Notifikasi WA ke TAMU
-          if (PhoneNumber) {
-            const cleanGuestPhone = String(PhoneNumber).replace(/[^0-9+]/g, '');
+          if (nomor_telepon) {
+            const cleanGuestPhone = String(nomor_telepon).replace(/[^0-9+]/g, '');
             const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${VisitCode}`;
-            const waPesanTamu = `Halo Bpk/Ibu ${GuestName},
+            const waPesanTamu = `Halo Bpk/Ibu ${nama_tamu},
 
 Selamat datang! Proses Check-In kunjungan Anda di Lobi telah BERHASIL pada waktu ${formatDateSystem()}.
 

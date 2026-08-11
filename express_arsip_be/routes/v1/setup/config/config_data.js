@@ -69,7 +69,7 @@ router.post("/", async (req, res) => {
       if (row.kode == "msLogoPerusahaan") {
         if (row.keterangan) {
           oFormatted["msLogoPerusahaan"] =
-            `${process.env.APP_SERVER}:${process.env.APP_PORT}/uploads/config/logo_perusahaan/${row.keterangan}`;
+            `${process.env.APP_SERVER}/uploads/config/logo_perusahaan/${row.keterangan}`;
         } else {
           oFormatted["msLogoPerusahaan"] = null;
         }

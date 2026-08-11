@@ -21,24 +21,65 @@ router.post("/", async (req, res) => {
     const chart_tujuan_labels = ruteTujuan.map(item => item.nama_tujuan_kunjungan);
     const chart_tujuan_data = ruteTujuan.map(item => parseInt(item.total, 10));
 
-    // Hitung tren mingguan (Senin - Minggu)
-    const chart_mingguan = [0, 0, 0, 0, 0, 0, 0];
-    let qWeekly = DB("trs_kunjungan as t").leftJoin("mst_pengguna", "t.id_user_host", "mst_pengguna.id_pengguna").select(DB.raw("WEEKDAY(t.created_at) as day_index, COUNT(t.id_kunjungan) as total")).whereRaw("YEARWEEK(t.created_at, 1) = YEARWEEK(CURRENT_DATE(), 1)").groupByRaw("WEEKDAY(t.created_at)");
-    applyMultiTenantFilter(qWeekly, req, 't');
-    const daysInWeek = await qWeekly;
-    if (Array.isArray(daysInWeek)) {
-      daysInWeek.forEach(row => {
-        const idx = parseInt(row.day_index, 10);
-        if (idx >= 0 && idx < 7) {
-          chart_mingguan[idx] = parseInt(row.total, 10);
-        }
+    // Hitung tren dinamis berdasarkan req.body.time_range
+    const timeRange = req.body.time_range || 'this_week';
+    let chart_trend_labels = [];
+    let chart_trend_data = [];
+
+    let qTrend = DB("trs_kunjungan as t").leftJoin("mst_pengguna", "t.id_user_host", "mst_pengguna.id_pengguna");
+    applyMultiTenantFilter(qTrend, req, 't');
+
+    if (timeRange === 'this_week' || timeRange === 'last_week') {
+      chart_trend_labels = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+      chart_trend_data = [0, 0, 0, 0, 0, 0, 0];
+      const offset = timeRange === 'last_week' ? 1 : 0;
+      
+      qTrend = qTrend.select(DB.raw("WEEKDAY(t.created_at) as idx, COUNT(t.id_kunjungan) as total"))
+        .whereRaw(`YEARWEEK(t.created_at, 1) = YEARWEEK(CURRENT_DATE() - INTERVAL ${offset} WEEK, 1)`)
+        .groupByRaw("WEEKDAY(t.created_at)");
+
+      const resTrend = await qTrend;
+      resTrend.forEach(row => {
+        const idx = parseInt(row.idx, 10);
+        if (idx >= 0 && idx < 7) chart_trend_data[idx] = parseInt(row.total, 10);
+      });
+    } else if (timeRange === 'this_month') {
+      const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+      for (let i = 1; i <= daysInMonth; i++) {
+        chart_trend_labels.push(i.toString());
+        chart_trend_data.push(0);
+      }
+      qTrend = qTrend.select(DB.raw("DAY(t.created_at) as idx, COUNT(t.id_kunjungan) as total"))
+        .whereRaw("YEAR(t.created_at) = YEAR(CURRENT_DATE()) AND MONTH(t.created_at) = MONTH(CURRENT_DATE())")
+        .groupByRaw("DAY(t.created_at)");
+
+      const resTrend = await qTrend;
+      resTrend.forEach(row => {
+        const idx = parseInt(row.idx, 10);
+        if (idx >= 1 && idx <= daysInMonth) chart_trend_data[idx - 1] = parseInt(row.total, 10);
+      });
+    } else if (timeRange === 'this_year') {
+      chart_trend_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      chart_trend_data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      
+      qTrend = qTrend.select(DB.raw("MONTH(t.created_at) as idx, COUNT(t.id_kunjungan) as total"))
+        .whereRaw("YEAR(t.created_at) = YEAR(CURRENT_DATE())")
+        .groupByRaw("MONTH(t.created_at)");
+
+      const resTrend = await qTrend;
+      resTrend.forEach(row => {
+        const idx = parseInt(row.idx, 10);
+        if (idx >= 1 && idx <= 12) chart_trend_data[idx - 1] = parseInt(row.total, 10);
       });
     }
+
     const oDashboardStats = {
       total_tamu_hari_ini: parseInt(totalTamuHariIni?.total || 0, 10),
       sedang_berkunjung: parseInt(sedangBerkunjung?.total || 0, 10),
       selesai_kunjungan: parseInt(selesaiKunjungan?.total || 0, 10),
-      chart_mingguan: chart_mingguan,
+      chart_mingguan: chart_trend_data, // Backwards compatibility
+      chart_trend_labels: chart_trend_labels,
+      chart_trend_data: chart_trend_data,
       chart_tujuan_labels: chart_tujuan_labels,
       chart_tujuan_data: chart_tujuan_data
     };

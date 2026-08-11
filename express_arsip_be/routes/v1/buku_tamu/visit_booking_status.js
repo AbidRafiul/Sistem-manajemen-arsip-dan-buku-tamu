@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
         datetime: formatDateSystem()
       });
     }
-    const cBaseUrl = `${process.env.APP_SERVER || 'http://localhost'}:${process.env.APP_PORT || '8000'}`;
+    const cBaseUrl = process.env.APP_SERVER || `http://localhost:${process.env.APP_PORT || '8000'}`;
     const cQrImageUrl = oRow.token_qr ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${oRow.token_qr}` : null;
     return res.status(200).json({
       status: "00",

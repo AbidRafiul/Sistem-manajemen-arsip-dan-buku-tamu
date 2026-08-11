@@ -51,7 +51,7 @@ const documentPreview = async (req, res) => {
       let finalUrl = presignedUrl;
       
       if (err) {
-        console.warn("Gagal men-generate presigned URL dari MinIO, fallback ke URL lokal:", err.message);
+        console.warn("Gagal men-generate presigned URL dari MinIO, fallback ke URL lokal:", err);
         // Fallback to local static file serving if MinIO fails (useful for local development)
         const serverUrl = process.env.APP_SERVER || "http://127.0.0.1:8000";
         finalUrl = `${serverUrl.replace(/\/$/, "")}/uploads/${cObjectName}`;
