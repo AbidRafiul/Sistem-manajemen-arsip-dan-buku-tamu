@@ -34,9 +34,8 @@ const Form = ({ state, setState, formik }: FormProps) => {
             modal
             style={{ width: '40rem', maxWidth: '95vw' }}
             onHide={() => { setState((p) => ({ ...p, add: false, edit: false })); formik.resetForm(); }}
-            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
-        >
-            <form onSubmit={formik.handleSubmit} className="flex gap-1 flex-column pt-3 text-sm">
+            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}>
+            <form onSubmit={formik.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
                 
                 <div className="flex flex-column gap-1 mb-2">
                     <label htmlFor="kode_retensi" className="font-semibold text-sm text-900">
@@ -47,8 +46,7 @@ const Form = ({ state, setState, formik }: FormProps) => {
                         value={formik.values.kode_retensi}
                         onChange={(e) => formik.setFieldValue('kode_retensi', e.target.value.toUpperCase())}
                         className={`w-full ${isFormFieldInvalid('kode_retensi') ? 'p-invalid' : ''}`}
-                        placeholder="Contoh: RET-ADM-05"
-                    />
+                        placeholder="Contoh: RET-ADM-05" />
                     {getFormErrorMessage('kode_retensi')}
                 </div>
 
@@ -61,8 +59,7 @@ const Form = ({ state, setState, formik }: FormProps) => {
                         value={formik.values.nama_retensi}
                         onChange={(e) => formik.setFieldValue('nama_retensi', e.target.value)}
                         className={`w-full ${isFormFieldInvalid('nama_retensi') ? 'p-invalid' : ''}`}
-                        placeholder="Contoh: Retensi Administrasi 5 Tahun"
-                    />
+                        placeholder="Contoh: Retensi Administrasi 5 Tahun" />
                     {getFormErrorMessage('nama_retensi')}
                 </div>
 
@@ -81,8 +78,7 @@ const Form = ({ state, setState, formik }: FormProps) => {
                             onChange={(e) => formik.setFieldValue('kode_kategori_dokumen', e.value)}
                             placeholder="Pilih Kategori Dokumen"
                             className={`w-full ${isFormFieldInvalid('kode_kategori_dokumen') ? 'p-invalid' : ''}`}
-                            filter
-                        />
+                            filter />
                         {getFormErrorMessage('kode_kategori_dokumen')}
                     </div>
                     <div className="col-12 md:col-6 flex flex-column gap-1">
@@ -96,8 +92,7 @@ const Form = ({ state, setState, formik }: FormProps) => {
                             onChange={(e) => formik.setFieldValue('tahun_retensi', e.target.value === '' ? '' : Number(e.target.value))}
                             className={`w-full ${isFormFieldInvalid('tahun_retensi') ? 'p-invalid' : ''}`}
                             placeholder="Contoh: 5"
-                            min={0}
-                        />
+                            min={0} />
                         {getFormErrorMessage('tahun_retensi')}
                     </div>
                 </div>
@@ -112,8 +107,7 @@ const Form = ({ state, setState, formik }: FormProps) => {
                         options={actionOptions}
                         onChange={(e) => formik.setFieldValue('tindakan_retensi', e.value)}
                         placeholder="Pilih Tindakan Akhir"
-                        className={`w-full ${isFormFieldInvalid('tindakan_retensi') ? 'p-invalid' : ''}`}
-                    />
+                        className={`w-full ${isFormFieldInvalid('tindakan_retensi') ? 'p-invalid' : ''}`} />
                     {getFormErrorMessage('tindakan_retensi')}
                 </div>
 
@@ -127,31 +121,17 @@ const Form = ({ state, setState, formik }: FormProps) => {
                         onChange={(e) => formik.setFieldValue('deskripsi', e.target.value)}
                         rows={3}
                         className="w-full"
-                        placeholder="Keterangan mengenai jadwal retensi..."
-                    />
+                        placeholder="Keterangan mengenai jadwal retensi..." />
                 </div>
 
                 <Divider className="my-2" />
 
-                <div className="flex justify-content-end gap-2">
-                    <Button
-                        type="button"
-                        label="Batal"
-                        icon="pi pi-times"
-                        severity="secondary"
-                        outlined
-                        size="small"
-                        onClick={() => { setState((p) => ({ ...p, add: false, edit: false })); formik.resetForm(); }}
-                        disabled={state.load}
-                    />
-                    <Button
-                        type="submit"
-                        label={state.edit ? 'Simpan Perubahan' : 'Simpan Jadwal'}
-                        icon={state.edit ? 'pi pi-check' : 'pi pi-save'}
-                        size="small"
-                        style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%)', border: 'none' }}
-                        loading={state.load}
-                    />
+                <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                    
+                    <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                        
+                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className=" w-full" loading={state?.load} disabled={state?.load} />
+                    </div>
                 </div>
             </form>
         </Dialog>

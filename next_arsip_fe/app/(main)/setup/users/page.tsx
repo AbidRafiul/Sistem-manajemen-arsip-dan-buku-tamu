@@ -219,7 +219,7 @@ const Page = () => {
             const vaData = await postData(cEndPoint, oBody, oHeaders);
             showSuccess(toast, vaData.data?.data?.message || 'Berhasil Menyimpan Data');
             formik.resetForm();
-            setState((p) => ({ ...p, add: false, edit: false, delete: false }));
+            setState((p: any) => ({ ...p, add: false, edit: false, delete: false }));
 
             // Refresh tabel
             getData(apiEndpointGet);

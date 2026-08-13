@@ -108,8 +108,7 @@ const renderStatusTag = (statusValue?: string) => {
             value={statusLabel[status] || status}
             severity={severityMap[status] || "info"}
             icon={iconMap[status] || "pi pi-circle"}
-            style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }}
-        />
+            style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }} />
     );
 };
 
@@ -177,13 +176,11 @@ const DispositionView = ({
     );
 
     const pendingActionTemplate = (rowData: TableData) => (
-        <Button
-            size="small"
+        <Button size="small"
             icon="pi pi-send"
             label={rowData.status === "baru" ? "Disposisikan" : "Tambah"}
-            style={{ background: "linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)", border: "none", fontSize: "0.75rem" }}
-            onClick={() => onOpenCreate(rowData)}
-        />
+            style={{ backgroundColor: "#10b981", border: "none", fontSize: "0.75rem" }}
+            onClick={() => onOpenCreate(rowData)} />
     );
 
     const dispositionLetterTemplate = (row: Record<string, any>) => (
@@ -239,31 +236,26 @@ const DispositionView = ({
         <>
             {/* ─── Page Header ──────────────────────────────────────────────── */}
             <Card className="shadow-1 border-round-2xl border-none mb-4">
-                <div className="flex flex-column md:flex-row md:align-align-items-center justify-content-between gap-3 mb-4">
+                <div className="flex flex-column md:flex-row md:align-items-center justify-content-between gap-3 mb-4">
                     <div>
                         <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: "0.1em" }}>Mail In · Korespondensi</span>
                         <h2 className="m-0 text-900 font-extrabold text-2xl mt-1 mb-2" style={{ letterSpacing: "-0.02em" }}>Workflow Disposisi</h2>
                         <p className="m-0 text-color-secondary text-sm font-medium">Kelola disposisi berjenjang, instruksi pimpinan, catatan, dan tracking status surat masuk.</p>
                     </div>
-                    <div className="flex flex-wrap gap-2 flex-shrink-0">
+                    <div className="flex flex-wrap align-items-center gap-2 flex-shrink-0">
                         <span className="p-input-icon-left">
                             <i className="pi pi-search" />
                             <InputText
                                 value={search}
                                 onChange={(e) => onSearchChange(e.target.value)}
                                 placeholder="Cari surat atau disposisi..."
-                                className="text-sm" style={{ height: "2.25rem" }}
-                            />
+                                className="text-sm" style={{ height: "2.25rem" }} />
                         </span>
-                        <Button
-                            icon="pi pi-send" label="Buat Disposisi" size="small"
-                            style={{ background: "linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)", border: "none", boxShadow: "0 4px 12px rgba(59,130,246,0.2)" }}
-                            onClick={() => onOpenCreate()}
-                        />
-                        <Button
-                            icon="pi pi-refresh" label="Refresh" text size="small"
-                            loading={loading} onClick={onRefresh}
-                        />
+                        <Button icon="pi pi-send" label="Buat Disposisi" size="small"
+                            style={{ backgroundColor: "#10b981", border: "none", boxShadow: "0 4px 12px rgba(16,185,129,0.2)" }}
+                            onClick={() => onOpenCreate()} />
+                        <Button icon="pi pi-refresh" label="Refresh" text size="small"
+                            loading={loading} onClick={onRefresh} />
                     </div>
                 </div>
 
@@ -291,7 +283,7 @@ const DispositionView = ({
                         <div className="text-color-secondary text-sm">Status surat bergerak otomatis berdasarkan aksi disposisi.</div>
                     </div>
                     <div className="flex align-items-center justify-content-center border-circle font-extrabold text-lg"
-                        style={{ width: "4rem", height: "4rem", background: "linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)", color: "#fff", flexShrink: 0 }}>
+                        style={{ width: "4rem", height: "4rem", backgroundColor: "#10b981", color: "#fff", flexShrink: 0 }}>
                         {completionRate}%
                     </div>
                 </div>
@@ -318,8 +310,7 @@ const DispositionView = ({
                                 </div>
                             }
                             className="text-sm"
-                            rowHover
-                        >
+                            rowHover>
                             <Column header="No / Pengirim" body={pendingLetterNoTemplate} style={{ minWidth: "150px" }} />
                             <Column header="Perihal" body={pendingLetterSubjectTemplate} style={{ minWidth: "200px" }} />
                             <Column body={(r) => renderStatusTag(r.status)} header="Status" style={{ width: "120px" }} />
@@ -355,8 +346,7 @@ const DispositionView = ({
                         <Message
                             severity="info"
                             text="Gunakan 'Teruskan' agar parent disposisi tetap tercatat dalam riwayat."
-                            className="w-full text-xs"
-                        />
+                            className="w-full text-xs" />
                     </Card>
                 </div>
             </div>
@@ -382,8 +372,7 @@ const DispositionView = ({
                     }
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                     className="text-sm"
-                    rowHover
-                >
+                    rowHover>
                     <Column header="Surat" body={dispositionLetterTemplate} style={{ minWidth: "160px" }} />
                     <Column header="Alur" body={dispositionFlowTemplate} style={{ minWidth: "200px" }} />
                     <Column header="Instruksi Pimpinan" body={dispositionInstructionTemplate} style={{ minWidth: "180px" }} />
@@ -407,8 +396,7 @@ const DispositionView = ({
                 modal
                 style={{ width: "44rem", maxWidth: "95vw" }}
                 onHide={onCloseDialog}
-                pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}
-            >
+                pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}>
                 {(dialogMode === "create" || dialogMode === "forward") && (
                     <div className="flex flex-column gap-1 pt-3 text-sm">
                         {dialogMode === "forward" && selectedDisposition && (
@@ -431,8 +419,7 @@ const DispositionView = ({
                                 filter
                                 filterPlaceholder="Cari surat..."
                                 disabled={dialogMode === "forward" || Boolean(selectedLetter)}
-                                className="w-full"
-                            />
+                                className="w-full" />
                         </div>
 
                         <div className="flex flex-column gap-1 mb-3">
@@ -447,8 +434,7 @@ const DispositionView = ({
                                 placeholder="Pilih pimpinan / unit / staf"
                                 filter
                                 filterPlaceholder="Cari nama..."
-                                className="w-full"
-                            />
+                                className="w-full" />
                         </div>
 
                         <div className="flex flex-column gap-1 mb-3">
@@ -462,8 +448,7 @@ const DispositionView = ({
                                 onChange={(e) => onFormChange("instruksi_disposisi_id", e.value)}
                                 placeholder="Pilih instruksi (opsional)"
                                 showClear
-                                className="w-full"
-                            />
+                                className="w-full" />
                         </div>
 
                         <div className="flex flex-column gap-1 mb-3">
@@ -473,8 +458,7 @@ const DispositionView = ({
                                 value={form.instruksi}
                                 onChange={(e) => onFormChange("instruksi", e.target.value)}
                                 placeholder="Contoh: Mohon telaah dan siapkan bahan tindak lanjut"
-                                className="w-full"
-                            />
+                                className="w-full" />
                         </div>
 
                         <div className="flex flex-column gap-1 mb-3">
@@ -486,8 +470,7 @@ const DispositionView = ({
                                 rows={3}
                                 placeholder="Catatan khusus untuk penerima (opsional)"
                                 style={{ resize: "none" }}
-                                className="w-full"
-                            />
+                                className="w-full" />
                         </div>
 
                         <div className="flex flex-column gap-1 mb-3">
@@ -497,20 +480,17 @@ const DispositionView = ({
                                 type="date"
                                 value={form.batas_waktu}
                                 onChange={(e) => onFormChange("batas_waktu", e.target.value)}
-                                className="w-full"
-                            />
+                                className="w-full" />
                         </div>
 
                         <Divider className="my-2" />
 
-                        <div className="flex justify-content-end gap-2">
+                        <div className="flex mt-4 pt-3 border-top-1 surface-border">
                             <Button label="Batal" icon="pi pi-times" severity="secondary" outlined size="small" onClick={onCloseDialog} disabled={loading} />
-                            <Button
-                                label={dialogMode === "forward" ? "Teruskan" : "Buat Disposisi"}
+                            <Button label={dialogMode === "forward" ? "Teruskan" : "Buat Disposisi"}
                                 icon="pi pi-send" size="small"
-                                style={{ background: "linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)", border: "none" }}
-                                onClick={onSaveDisposition} loading={loading}
-                            />
+                                style={{ backgroundColor: "#10b981", border: "none" }}
+                                onClick={onSaveDisposition} loading={loading} />
                         </div>
                     </div>
                 )}
@@ -541,21 +521,18 @@ const DispositionView = ({
                                     ? "Contoh: Sudah ditindaklanjuti dan dokumen diarsipkan"
                                     : "Contoh: Sedang ditelaah oleh unit terkait"}
                                 style={{ resize: "none" }}
-                                className="w-full"
-                            />
+                                className="w-full" />
                         </div>
 
                         <Divider className="my-2" />
 
-                        <div className="flex justify-content-end gap-2">
+                        <div className="flex mt-4 pt-3 border-top-1 surface-border">
                             <Button label="Batal" icon="pi pi-times" severity="secondary" outlined size="small" onClick={onCloseDialog} disabled={loading} />
-                            <Button
-                                label={dialogMode === "complete" ? "Selesaikan" : "Proses"}
+                            <Button label={dialogMode === "complete" ? "Selesaikan" : "Proses"}
                                 icon={dialogMode === "complete" ? "pi pi-check" : "pi pi-play"}
                                 severity={dialogMode === "complete" ? "success" : "warning"}
                                 size="small"
-                                onClick={onSaveAction} loading={loading}
-                            />
+                                onClick={onSaveAction} loading={loading} />
                         </div>
                     </div>
                 )}

@@ -49,36 +49,33 @@ const Form = ({ state, setState, formik, toast, getData, handleSave, handleDelet
             header={state.edit ? "Edit Menu" : "Tambah Menu Baru"} 
             modal 
             footer={footerDialog} 
-            onHide={hideDialog}
-        >
-            <form onSubmit={formik.handleSubmit} className="flex gap-2 flex-column mt-2">
+            onHide={hideDialog}>
+            <form onSubmit={formik.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
                 <div className="flex md:flex-row flex-column gap-2 w-full">
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="kode_menu" className="font-bold">Kode Menu</label>
+                        <label htmlFor="kode_menu" className="font-semibold text-sm text-700">Kode Menu</label>
                         <div className="p-inputgroup">
                             <InputText 
                                 id="kode_menu" 
                                 name="kode_menu" 
                                 value={formik.values.kode_menu} 
-                                style={{ padding: '1rem' }}
+                                
                                 onChange={formik.handleChange} 
-                                className={isFormFieldInvalid('kode_menu') ? 'p-invalid' : ''} 
-                            />
+                                className={isFormFieldInvalid('kode_menu') ? 'p-invalid' : ''} />
                         </div>
                         {getFormErrorMessage('kode_menu')}
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="nama_menu" className="font-bold">Nama Menu</label>
+                        <label htmlFor="nama_menu" className="font-semibold text-sm text-700">Nama Menu</label>
                         <div className="p-inputgroup">
                             <InputText 
                                 id="nama_menu" 
                                 name="nama_menu" 
                                 value={formik.values.nama_menu} 
-                                style={{ padding: '1rem' }}
+                                
                                 onChange={formik.handleChange} 
-                                className={isFormFieldInvalid('nama_menu') ? 'p-invalid' : ''} 
-                            />
+                                className={isFormFieldInvalid('nama_menu') ? 'p-invalid' : ''} />
                         </div>
                         {getFormErrorMessage('nama_menu')}
                     </div>
@@ -86,37 +83,35 @@ const Form = ({ state, setState, formik, toast, getData, handleSave, handleDelet
 
                 <div className="flex md:flex-row flex-column gap-2 w-full">
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="jalur_menu" className="font-bold">URL (Jalur)</label>
+                        <label htmlFor="jalur_menu" className="font-semibold text-sm text-700">URL (Jalur)</label>
                         <div className="p-inputgroup">
                             <InputText 
                                 id="jalur_menu" 
                                 name="jalur_menu" 
                                 value={formik.values.jalur_menu} 
-                                style={{ padding: '1rem' }}
+                                
                                 onChange={formik.handleChange} 
-                                placeholder="Contoh: /dashboard"
-                            />
+                                placeholder="Contoh: /dashboard" />
                         </div>
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="ikon_menu" className="font-bold">Ikon (PrimeIcons)</label>
+                        <label htmlFor="ikon_menu" className="font-semibold text-sm text-700">Ikon (PrimeIcons)</label>
                         <div className="p-inputgroup">
                             <InputText 
                                 id="ikon_menu" 
                                 name="ikon_menu" 
                                 value={formik.values.ikon_menu} 
-                                style={{ padding: '1rem' }}
+                                
                                 onChange={formik.handleChange} 
-                                placeholder="Contoh: pi pi-home"
-                            />
+                                placeholder="Contoh: pi pi-home" />
                         </div>
                     </div>
                 </div>
 
                 <div className="flex md:flex-row flex-column gap-2 w-full">
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="id_menu_induk" className="font-bold">Induk Menu (Kosongkan jika ini menu utama)</label>
+                        <label htmlFor="id_menu_induk" className="font-semibold text-sm text-700">Induk Menu (Kosongkan jika ini menu utama)</label>
                         <div className="p-inputgroup">
                             <Dropdown 
                                 id="id_menu_induk" 
@@ -129,13 +124,12 @@ const Form = ({ state, setState, formik, toast, getData, handleSave, handleDelet
                                 placeholder="Pilih Induk Menu" 
                                 filter
                                 showClear
-                                className="w-full"
-                            />
+                                className="w-full" />
                         </div>
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="id_peran" className="font-bold">Hak Akses Peran</label>
+                        <label htmlFor="id_peran" className="font-semibold text-sm text-700">Hak Akses Peran</label>
                         <div className="p-inputgroup">
                             <MultiSelect 
                                 id="id_peran" 
@@ -148,29 +142,27 @@ const Form = ({ state, setState, formik, toast, getData, handleSave, handleDelet
                                 placeholder="Pilih Peran yang Boleh Akses" 
                                 display="chip"
                                 filter
-                                className="w-full"
-                            />
+                                className="w-full" />
                         </div>
                     </div>
                 </div>
 
                 <div className="flex md:flex-row flex-column gap-2 w-full">
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="urutan" className="font-bold">Urutan Tampil</label>
+                        <label htmlFor="urutan" className="font-semibold text-sm text-700">Urutan Tampil</label>
                         <div className="p-inputgroup">
                             <InputNumber 
                                 id="urutan" 
                                 value={formik.values.urutan} 
                                 onValueChange={(e) => formik.setFieldValue('urutan', e.value)} 
                                 min={0} 
-                                className="w-full"
-                            />
+                                className="w-full" />
                         </div>
                         {getFormErrorMessage('urutan')}
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="status_aktif" className="font-bold">Status</label>
+                        <label htmlFor="status_aktif" className="font-semibold text-sm text-700">Status</label>
                         <div className="p-inputgroup">
                             <Dropdown 
                                 id="status_aktif" 
@@ -178,8 +170,7 @@ const Form = ({ state, setState, formik, toast, getData, handleSave, handleDelet
                                 value={formik.values.status_aktif} 
                                 options={statusOptions} 
                                 onChange={formik.handleChange} 
-                                className="w-full"
-                            />
+                                className="w-full" />
                         </div>
                     </div>
                 </div>
@@ -188,9 +179,9 @@ const Form = ({ state, setState, formik, toast, getData, handleSave, handleDelet
 
         <Dialog visible={state.delete} style={{ width: '450px' }} header="Konfirmasi" modal onHide={() => setState(p => ({ ...p, delete: false }))}
             footer={
-                <div className="flex justify-content-end gap-2">
+                <div className="flex mt-4 pt-3 border-top-1 surface-border">
                     <Button label="Batal" icon="pi pi-times" outlined onClick={() => setState(p => ({ ...p, delete: false }))} />
-                    <Button label="Hapus" icon="pi pi-check" severity="danger" onClick={handleDelete} loading={state.load} />
+                    <Button label="Ya, Hapus" icon="pi pi-trash" severity="danger" onClick={handleDelete} loading={state.load} />
                 </div>
             }>
             <div className="flex align-items-center justify-content-center">

@@ -240,8 +240,7 @@ const Page = () => {
                 reloadDetail={reloadDetail}
                 handleDeleteLetter={handleDeleteLetter}
                 handleFileUpload={handleFileUpload}
-                executeArchiveLetter={executeArchiveLetter}
-            />
+                executeArchiveLetter={executeArchiveLetter} />
         </>
     );
 };

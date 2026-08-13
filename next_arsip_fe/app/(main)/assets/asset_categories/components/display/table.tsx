@@ -39,8 +39,7 @@ const Table = ({
                             _filters['global'].value = value;
                             setState((p) => ({ ...p, searchVal: value, filters: _filters }));
                         }}
-                        placeholder="Cari kategori..."
-                    />
+                        placeholder="Cari kategori..." />
                 </span>
             </div>
         </div>
@@ -48,11 +47,8 @@ const Table = ({
 
     const actionBodyTemplate = (rowData: TableData) => (
         <div className="flex gap-2">
-            <Button
-                icon="pi pi-pencil"
-                rounded
+            <Button icon="pi pi-pencil"
                 outlined
-                className="p-button-sm"
                 onClick={() => {
                     formik.setValues(p => ({
                         ...p,
@@ -61,17 +57,12 @@ const Table = ({
 
                     setState(p => ({ ...p, add: false, delete: false, edit: true }))
                 }}
-                tooltip="Ubah"
-            />
-            <Button
-                icon="pi pi-trash"
-                rounded
+                tooltip="Ubah" />
+            <Button icon="pi pi-trash"
                 outlined
                 severity="danger"
-                className="p-button-sm"
                 onClick={() => setState(p => ({ ...p, delete: true, selectedUsers: [rowData] }))}
-                tooltip="Hapus"
-            />
+                tooltip="Hapus" />
         </div>
     );
 
@@ -89,35 +80,30 @@ const Table = ({
             </div>
 
             <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
-                <Button
-                    size="small"
-                    label="Baru"
+                <Button size="small"
+                    label="Tambah"
                     icon="pi pi-plus"
                     outlined
                     severity="success"
                     onClick={() => {
                         setState(p => ({ ...p, selectedUser: [], add: true }))
-                    }}
-                />
-                <Button
-                    size="small"
+                    }} />
+                <Button size="small"
                     label="Impor"
                     icon="pi pi-file-import"
                     outlined
-                // onClick={() => fileInputRef.current?.click()}
+                // onClick={() => fileInputRef.current?.click()} 
                 />
 
-                <Button
-                    size="small"
+                <Button size="small"
                     label="Cetak"
                     icon="pi pi-print"
                     outlined
-                // onClick={() => setAdjustDialog(true)}
+                // onClick={() => setAdjustDialog(true)} 
                 />
                 <Divider layout="vertical" />
-                <Button
-                    size="small"
-                    label={`Hapus${state.selectedUsers.length > 0 ? ` (${state.selectedUsers.length})` : ''}`}
+                <Button size="small"
+                    label={`Hapus${state.selectedUsers.length> 0 ? ` (${state.selectedUsers.length})` : ''}`}
                     icon="pi pi-trash"
                     severity="danger"
                     outlined
@@ -129,17 +115,14 @@ const Table = ({
 
                         setState(p => ({ ...p, delete: true }))
                     }}
-                    disabled={state.selectedUsers.length === 0}
-                />
+                    disabled={state.selectedUsers.length === 0} />
                 <Divider layout="vertical" />
-                <Button
-                    size="small"
-                    label="Muat Ulang"
+                <Button size="small"
+                    label="Refresh"
                     icon="pi pi-refresh"
                     outlined
                     onClick={() => getData(apiEndpointGet)}
-                    loading={state.load}
-                />
+                    loading={state.load} />
             </div>
 
             <DataTable
@@ -156,8 +139,7 @@ const Table = ({
                 dataKey="Code"
                 emptyMessage="Data Kosong"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data"
-            >
+                currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
                 <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
                 <Column field="Name" header="Nama Kategori"></Column>
                 <Column
@@ -175,13 +157,11 @@ const Table = ({
                                     textOverflow: "ellipsis",
                                     display: "block",
                                     maxWidth: "200px"
-                                }}
-                            >
+                                }}>
                                 {rowData.Description}
                             </span>
                         </>
-                    )}
-                />
+                    )} />
                 <Column field="CreatedAt" sortable body={rowData => formatDateCalendar(rowData.CreatedAt)} header="Tanggal & Waktu"></Column>
                 <Column headerStyle={{ textAlign: 'center' }} align="center" header="Aksi" body={actionBodyTemplate}></Column>
             </DataTable>

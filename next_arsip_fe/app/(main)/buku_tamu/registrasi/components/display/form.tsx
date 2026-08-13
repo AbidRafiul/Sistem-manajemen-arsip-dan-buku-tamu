@@ -138,8 +138,7 @@ export default function RegistrasiForm({
                             <span className="text-xl font-bold text-900">Data Lengkap Tamu</span>
                         </div>
                     }
-                    className="border-none shadow-1 border-round-2xl p-2 bg-white"
-                >
+                    className="border-none shadow-1 border-round-2xl p-2 bg-white">
                     <div className="flex flex-column gap-3 mt-2">
                         <div className="field">
                             <label htmlFor="guest_name" className="font-semibold block mb-2 text-sm text-800">
@@ -179,15 +178,12 @@ export default function RegistrasiForm({
                                         src={identityPreview} 
                                         alt="Identity Preview" 
                                         className="border-round-lg shadow-2"
-                                        style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'contain' }}
-                                    />
-                                    <Button 
-                                        type="button" 
+                                        style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'contain' }} />
+                                    <Button type="button" 
                                         label="Hapus Identitas" 
                                         icon="pi pi-trash" 
                                         className="p-button-danger p-button-text p-button-sm mt-1"
-                                        onClick={() => setIdentityFile(null)}
-                                    />
+                                        onClick={() => setIdentityFile(null)} />
                                 </div>
                             ) : (
                                 <FileUpload mode="basic" accept="image/*" maxFileSize={2000000} onSelect={(e) => setIdentityFile(e.files[0])} chooseLabel="Pilih Foto ID" className="w-full text-sm" />
@@ -201,34 +197,27 @@ export default function RegistrasiForm({
                                         src={selfiePreview} 
                                         alt="Selfie Preview" 
                                         className="border-round-lg shadow-2"
-                                        style={{ width: '150px', height: '150px', objectFit: 'cover' }}
-                                    />
+                                        style={{ width: '150px', height: '150px', objectFit: 'cover' }} />
                                     <div className="flex gap-2 mt-1">
-                                        <Button 
-                                            type="button" 
+                                        <Button type="button" 
                                             label="Hapus Foto" 
                                             icon="pi pi-trash" 
                                             className="p-button-danger p-button-text p-button-sm"
-                                            onClick={() => setSelfieFile(null)}
-                                        />
-                                        <Button 
-                                            type="button" 
+                                            onClick={() => setSelfieFile(null)} />
+                                        <Button type="button" 
                                             label="Ambil Ulang" 
                                             icon="pi pi-refresh" 
                                             className="p-button-secondary p-button-text p-button-sm"
-                                            onClick={openCamera}
-                                        />
+                                            onClick={openCamera} />
                                     </div>
                                 </div>
                             ) : (
                                 <div className="flex flex-column sm:flex-row gap-2">
-                                    <Button 
-                                        type="button" 
+                                    <Button type="button" 
                                         label="Ambil Foto Live (Kamera)" 
                                         icon="pi pi-camera" 
                                         className="p-button-outlined p-button-primary flex-1 p-button-sm"
-                                        onClick={openCamera}
-                                    />
+                                        onClick={openCamera} />
                                     <div className="flex-1 relative">
                                         <FileUpload 
                                             mode="basic" 
@@ -236,8 +225,7 @@ export default function RegistrasiForm({
                                             maxFileSize={2000000} 
                                             onSelect={(e) => setSelfieFile(e.files[0])} 
                                             chooseLabel="Unggah File Foto" 
-                                            className="w-full text-sm p-button-sm" 
-                                        />
+                                            className="w-full text-sm p-button-sm" />
                                     </div>
                                 </div>
                             )}
@@ -257,8 +245,7 @@ export default function RegistrasiForm({
                             <span className="text-xl font-bold text-900">Informasi Kunjungan</span>
                         </div>
                     }
-                    className="border-none shadow-1 border-round-2xl p-2 bg-white"
-                >
+                    className="border-none shadow-1 border-round-2xl p-2 bg-white">
                     <div className="flex flex-column gap-3 mt-2">
                         <div className="field">
                             <label htmlFor="id_cabang" className="font-semibold block mb-2 text-sm text-800">
@@ -284,15 +271,13 @@ export default function RegistrasiForm({
                                     { label: 'Group (Rombongan)', value: 'group' }
                                 ]}
                                 onChange={(e) => handleChange('visit_type', e.value)}
-                                className="p-inputtext-sm"
-                            />
+                                className="p-inputtext-sm" />
                         </div>
                         {formData.visit_type === 'group' && (
                             <div className="flex flex-column gap-3 mt-2 border-top-1 border-300 pt-3">
                                 <div className="flex justify-content-between align-items-center mb-2">
                                     <span className="font-semibold text-color text-sm">Daftar Anggota Rombongan</span>
-                                    <Button
-                                        type="button"
+                                    <Button type="button"
                                         label="Tambah Anggota"
                                         icon="pi pi-plus"
                                         className="p-button-outlined p-button-sm py-1 px-2 text-xs"
@@ -301,14 +286,12 @@ export default function RegistrasiForm({
                                             const updated = [...currentMembers, { name: '', phone: '', idNumber: '', identityFile: null }];
                                             handleChange('group_members', updated);
                                             handleChange('guest_count', updated.length + 1);
-                                        }}
-                                    />
+                                        }} />
                                 </div>
 
                                 {(formData.group_members || []).map((member, index) => (
                                     <div key={index} className="p-3 surface-50 border-round-lg border-1 border-200 flex flex-column gap-2 mb-2 relative">
-                                        <Button
-                                            type="button"
+                                        <Button type="button"
                                             icon="pi pi-times"
                                             className="p-button-rounded p-button-text p-button-danger absolute p-1 text-xs"
                                             style={{ top: '8px', right: '8px', width: '24px', height: '24px' }}
@@ -317,12 +300,10 @@ export default function RegistrasiForm({
                                                 const updated = currentMembers.filter((_, i) => i !== index);
                                                 handleChange('group_members', updated);
                                                 handleChange('guest_count', updated.length + 1);
-                                            }}
-                                        />
+                                            }} />
                                         <div className="font-semibold text-xs text-600 mb-1 flex align-items-center gap-2">
                                             <span>Anggota #{index + 1}</span>
-                                            <Button
-                                                type="button"
+                                            <Button type="button"
                                                 label="Salin dari Tamu Utama"
                                                 className="p-button-text p-button-sm p-0 text-xs font-medium text-primary hover:underline ml-2"
                                                 style={{ height: 'auto', minWidth: 'auto' }}
@@ -335,8 +316,7 @@ export default function RegistrasiForm({
                                                         idNumber: formData.identity_number,
                                                     };
                                                     handleChange('group_members', currentMembers);
-                                                }}
-                                            />
+                                                }} />
                                         </div>
                                         <div className="grid">
                                             <div className="col-12 md:col-4 field m-0">
@@ -349,8 +329,7 @@ export default function RegistrasiForm({
                                                         handleChange('group_members', currentMembers);
                                                     }}
                                                     placeholder="Nama lengkap"
-                                                    className="p-inputtext-sm w-full"
-                                                />
+                                                    className="p-inputtext-sm w-full" />
                                             </div>
                                             <div className="col-12 md:col-4 field m-0">
                                                 <label className="text-xs font-semibold mb-1 block">No. HP (Opsional)</label>
@@ -362,8 +341,7 @@ export default function RegistrasiForm({
                                                         handleChange('group_members', currentMembers);
                                                     }}
                                                     placeholder="No. HP"
-                                                    className="p-inputtext-sm w-full"
-                                                />
+                                                    className="p-inputtext-sm w-full" />
                                             </div>
                                             <div className="col-12 md:col-4 field m-0">
                                                 <label className="text-xs font-semibold mb-1 block">No. ID / KTP (Opsional)</label>
@@ -375,8 +353,7 @@ export default function RegistrasiForm({
                                                         handleChange('group_members', currentMembers);
                                                     }}
                                                     placeholder="No. ID"
-                                                    className="p-inputtext-sm w-full"
-                                                />
+                                                    className="p-inputtext-sm w-full" />
                                             </div>
                                         </div>
                                         <div className="field m-0 mt-2">
@@ -391,8 +368,7 @@ export default function RegistrasiForm({
                                                     handleChange('group_members', currentMembers);
                                                 }}
                                                 chooseLabel={member.identityFile ? member.identityFile.name : "Pilih Foto KTP"}
-                                                className="w-full text-xs"
-                                            />
+                                                className="w-full text-xs" />
                                         </div>
                                     </div>
                                 ))}
@@ -407,8 +383,7 @@ export default function RegistrasiForm({
                                         readOnly
                                         disabled
                                         value={String(formData.guest_count || 1)}
-                                        className="p-inputtext-sm bg-gray-100"
-                                    />
+                                        className="p-inputtext-sm bg-gray-100" />
                                 </div>
                             </div>
                         )}
@@ -439,8 +414,7 @@ export default function RegistrasiForm({
                                     border: '1px solid #ced4da',
                                     minHeight: '34px',
                                     fontSize: '0.875rem'
-                                }}
-                            />
+                                }} />
                         </div>
                         <div className="field">
                             <label htmlFor="visit_notes" className="font-semibold block mb-2 text-sm text-800">Catatan Tambahan</label>
@@ -449,9 +423,9 @@ export default function RegistrasiForm({
                     </div>
                 </Card>
 
-                <div className="flex justify-content-end gap-2 mt-3">
-                    <Button type="button" label="Reset Form" icon="pi pi-refresh" severity="secondary" outlined className="py-2 px-4 font-semibold text-sm border-round-lg" onClick={() => handleChange('reset', null)} />
-                    <Button type="submit" label="Daftarkan Rencana Kunjungan" icon="pi pi-check" loading={loading} className="py-2 px-4 font-semibold text-sm border-round-lg text-white" style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)', border: 'none' }} />
+                <div className="flex gap-3 mt-6 pt-4 border-top-1 surface-border">
+                    <Button type="button" label="Reset Form" icon="pi pi-refresh" severity="secondary" outlined className="px-4 w-auto" onClick={() => handleChange('reset', null)} />
+                    <Button type="submit" label="Simpan Registrasi" icon="pi pi-check" className=" w-full" loading={loading} disabled={loading} />
                 </div>
             </div>
             <Dialog
@@ -470,8 +444,7 @@ export default function RegistrasiForm({
                     root: { className: 'border-round-2xl shadow-6' },
                     header: { className: 'surface-50 border-bottom-1 surface-border py-3 px-4' },
                     content: { className: 'p-4 flex flex-column align-items-center' }
-                }}
-            >
+                }}>
                 <div className="relative w-full aspect-video border-round-xl overflow-hidden bg-black shadow-inner mb-4">
                     <video 
                         ref={videoRef} 
@@ -479,26 +452,17 @@ export default function RegistrasiForm({
                         playsInline 
                         muted
                         className="w-full h-full object-cover"
-                        style={{ transform: 'scaleX(-1)' }}
-                    />
+                        style={{ transform: 'scaleX(-1)' }} />
                 </div>
                 
                 <div className="flex gap-3 w-full">
-                    <Button 
-                        type="button" 
-                        label="Batal" 
-                        icon="pi pi-times" 
-                        className="p-button-outlined p-button-secondary flex-1 py-2 font-semibold text-sm border-round-lg"
-                        onClick={closeCamera}
-                    />
-                    <Button 
-                        type="button" 
+                    
+                    <Button type="button" 
                         label="Ambil Foto" 
                         icon="pi pi-camera" 
                         className="flex-1 py-2 font-semibold text-sm border-round-lg text-white" 
                         style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)', border: 'none' }}
-                        onClick={capturePhoto}
-                    />
+                        onClick={capturePhoto} />
                 </div>
             </Dialog>
         </form>

@@ -11,9 +11,9 @@ export default function ActiveGuestsTable({ activeGuests }: ActiveGuestsTablePro
         if (!dateTimeString) return '';
         try {
             const parts = dateTimeString.split(' ');
-            if (parts.length > 1) {
+            if (parts.length> 1) {
                 const timeParts = parts[1].split(':');
-                if (timeParts.length > 1) {
+                if (timeParts.length> 1) {
                     return `${timeParts[0]}:${timeParts[1]}`;
                 }
             }
@@ -36,26 +36,23 @@ export default function ActiveGuestsTable({ activeGuests }: ActiveGuestsTablePro
                 </span>
             </div>
 
-            {activeGuests.length > 0 ? (
+            {activeGuests.length> 0 ? (
                 <div className="flex flex-column gap-3">
                     {activeGuests.map((guest, idx) => (
                         <div 
                             key={guest.id_kunjungan || idx} 
-                            className="flex flex-column md:flex-row md:align-items-center justify-content-between p-3 border-round-xl bg-gray-50 border-1 border-100"
-                        >
+                            className="flex flex-column md:flex-row md:align-items-center justify-content-between p-3 border-round-xl bg-gray-50 border-1 border-100">
                             <div className="flex align-items-center gap-3">
                                 {guest.PhotoFaceUrl ? (
                                     <img 
                                         src={guest.PhotoFaceUrl} 
                                         alt={guest.nama_tamu} 
                                         className="border-round-circle object-cover shadow-1"
-                                        style={{ width: '3.25rem', height: '3.25rem' }} 
-                                    />
+                                        style={{ width: '3.25rem', height: '3.25rem' }} />
                                 ) : (
                                     <div 
                                         className="flex align-items-center justify-content-center border-round-circle font-bold text-sm bg-blue-100 text-blue-700"
-                                        style={{ width: '3.25rem', height: '3.25rem' }}
-                                    >
+                                        style={{ width: '3.25rem', height: '3.25rem' }}>
                                         {guest.nama_tamu ? guest.nama_tamu.trim().split(/\s+/).map((n: string) => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() : 'T'}
                                     </div>
                                 )}

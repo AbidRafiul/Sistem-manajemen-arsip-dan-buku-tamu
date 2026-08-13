@@ -65,9 +65,8 @@ const Form = ({
             modal
             style={{ width: '44rem', maxWidth: '95vw' }}
             onHide={() => { setState((p) => ({ ...p, add: false })); formik?.resetForm(); }}
-            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
-        >
-            <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-1 pt-3">
+            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}>
+            <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
 
                 <div className="flex flex-column gap-1 mb-3">
                     <label htmlFor="qr_scan" className="font-semibold text-sm text-900">
@@ -84,8 +83,7 @@ const Form = ({
                             onKeyDown={handleQrScanKeyDown}
                             placeholder="Arahkan kursor ke sini lalu scan QR atau tempel UUID Dokumen..."
                             className="w-full text-sm"
-                            disabled={qrScanLoading}
-                        />
+                            disabled={qrScanLoading} />
                         {qrScanLoading ? (
                             <Button type="button" icon="pi pi-spin pi-spinner" disabled />
                         ) : (
@@ -109,8 +107,7 @@ const Form = ({
                         placeholder="Pilih dokumen yang akan dipinjam"
                         className={`w-full ${isFormFieldInvalid('kode_dokumen') ? 'p-invalid' : ''}`}
                         emptyMessage="Tidak ada dokumen tersedia"
-                        emptyFilterMessage="Dokumen tidak ditemukan"
-                    />
+                        emptyFilterMessage="Dokumen tidak ditemukan" />
                     {getFormErrorMessage('kode_dokumen')}
                 </div>
 
@@ -123,8 +120,7 @@ const Form = ({
                         value={formik.values.nama_peminjam}
                         onChange={(e) => formik.setFieldValue('nama_peminjam', e.target.value)}
                         className={`w-full ${isFormFieldInvalid('nama_peminjam') ? 'p-invalid' : ''}`}
-                        placeholder="Masukkan nama lengkap peminjam"
-                    />
+                        placeholder="Masukkan nama lengkap peminjam" />
                     {getFormErrorMessage('nama_peminjam')}
                 </div>
 
@@ -137,8 +133,7 @@ const Form = ({
                         type="date"
                         value={formik.values.tanggal_pengembalian}
                         onChange={(e) => formik.setFieldValue('tanggal_pengembalian', e.target.value)}
-                        className={`w-full ${isFormFieldInvalid('tanggal_pengembalian') ? 'p-invalid' : ''}`}
-                    />
+                        className={`w-full ${isFormFieldInvalid('tanggal_pengembalian') ? 'p-invalid' : ''}`} />
                     {getFormErrorMessage('tanggal_pengembalian')}
                 </div>
 
@@ -153,32 +148,15 @@ const Form = ({
                         onChange={(e) => formik.setFieldValue('keperluan', e.target.value)}
                         className={`w-full ${isFormFieldInvalid('keperluan') ? 'p-invalid' : ''}`}
                         placeholder="Contoh: Audit, tinjauan hukum, verifikasi data..."
-                        style={{ resize: 'none' }}
-                    />
+                        style={{ resize: 'none' }} />
                     {getFormErrorMessage('keperluan')}
                 </div>
 
                 <Divider className="my-2" />
 
-                <div className="flex justify-content-end gap-2">
-                    <Button
-                        type="button"
-                        label="Batal"
-                        icon="pi pi-times"
-                        severity="secondary"
-                        outlined
-                        size="small"
-                        onClick={() => { setState((p) => ({ ...p, add: false })); formik.resetForm(); }}
-                        disabled={state.load}
-                    />
-                    <Button
-                        type="submit"
-                        label="Ajukan Peminjaman"
-                        icon="pi pi-send"
-                        size="small"
-                        style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%)', border: 'none' }}
-                        loading={state.load}
-                    />
+                <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                    
+                    <Button type="submit" label="Kirim Permintaan" icon="pi pi-check" className=" w-full" loading={state?.load} disabled={state?.load} />
                 </div>
             </form>
         </Dialog>

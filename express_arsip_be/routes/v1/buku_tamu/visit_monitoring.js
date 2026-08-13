@@ -15,14 +15,30 @@ router.post("/", async (req, res) => {
     let qSelesai = DB("trs_kunjungan").leftJoin("mst_pengguna", "trs_kunjungan.id_user_host", "mst_pengguna.id_pengguna").whereRaw("DATE(trs_kunjungan.created_at) = CURRENT_DATE()").andWhere("trs_kunjungan.status", "out").count("trs_kunjungan.id_kunjungan as total");
     applyMultiTenantFilter(qSelesai, req, 'trs_kunjungan');
     const selesaiKunjungan = await qSelesai.first();
-    let qRute = DB("trs_kunjungan as t").leftJoin("mst_pengguna", "t.id_user_host", "mst_pengguna.id_pengguna").join("mst_tujuan_kunjungan as m", "t.id_tujuan_kunjungan", "m.id_tujuan_kunjungan").select("m.nama_tujuan_kunjungan").count("t.id_kunjungan as total").whereRaw("DATE(t.created_at) = CURRENT_DATE()").groupBy("m.nama_tujuan_kunjungan");
+    const timeRange = req.body.time_range || 'this_week';
+    
+    let qRute = DB("trs_kunjungan as t")
+      .leftJoin("mst_pengguna", "t.id_user_host", "mst_pengguna.id_pengguna")
+      .join("mst_tujuan_kunjungan as m", "t.id_tujuan_kunjungan", "m.id_tujuan_kunjungan")
+      .select("m.nama_tujuan_kunjungan")
+      .count("t.id_kunjungan as total")
+      .groupBy("m.nama_tujuan_kunjungan");
+
+    if (timeRange === 'this_week' || timeRange === 'last_week') {
+      const offset = timeRange === 'last_week' ? 1 : 0;
+      qRute = qRute.whereRaw(`YEARWEEK(t.created_at, 1) = YEARWEEK(CURRENT_DATE() - INTERVAL ${offset} WEEK, 1)`);
+    } else if (timeRange === 'this_month') {
+      qRute = qRute.whereRaw("YEAR(t.created_at) = YEAR(CURRENT_DATE()) AND MONTH(t.created_at) = MONTH(CURRENT_DATE())");
+    } else if (timeRange === 'this_year') {
+      qRute = qRute.whereRaw("YEAR(t.created_at) = YEAR(CURRENT_DATE())");
+    } else {
+      qRute = qRute.whereRaw("DATE(t.created_at) = CURRENT_DATE()");
+    }
+
     applyMultiTenantFilter(qRute, req, 't');
     const ruteTujuan = await qRute;
     const chart_tujuan_labels = ruteTujuan.map(item => item.nama_tujuan_kunjungan);
     const chart_tujuan_data = ruteTujuan.map(item => parseInt(item.total, 10));
-
-    // Hitung tren dinamis berdasarkan req.body.time_range
-    const timeRange = req.body.time_range || 'this_week';
     let chart_trend_labels = [];
     let chart_trend_data = [];
 

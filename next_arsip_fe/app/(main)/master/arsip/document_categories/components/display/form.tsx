@@ -19,17 +19,17 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
 
     const deleteFooterTemplate = (
         <div className="flex justify-content-center gap-2">
-            <Button type="button" label="Batal" icon="pi pi-times" severity="secondary" outlined onClick={hideDialog} disabled={state.load} />
-            <Button type="button" label="Hapus" icon="pi pi-check" severity="danger" loading={state?.load} disabled={state?.load} onClick={handleDelete} />
+            
+            <Button type="button" label="Ya, Hapus" icon="pi pi-trash" severity="danger" loading={state?.load} disabled={state?.load} onClick={handleDelete} />
         </div>
     );
 
     return (
         <>
             <Dialog visible={isDialogVisible} style={{ width: '500px' }} header={state.add ? 'Tambah Kategori Dokumen' : 'Ubah Kategori Dokumen'} modal onHide={hideDialog} className="p-fluid">
-                <form onSubmit={formik?.handleSubmit} className="flex gap-3 flex-column mt-3">
+                <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="kode_klasifikasi" className="font-bold text-sm text-800">Klasifikasi Arsip</label>
+                        <label htmlFor="kode_klasifikasi" className="font-semibold text-sm text-700">Klasifikasi Arsip</label>
                         <Dropdown 
                             id="kode_klasifikasi" 
                             name="kode_klasifikasi" 
@@ -41,32 +41,34 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
                             onChange={formik?.handleChange} 
                             className={isFormFieldInvalid('kode_klasifikasi') ? 'p-invalid' : ''} 
                             placeholder="Pilih Klasifikasi Arsip"
-                            filter
-                        />
+                            filter />
                         {getFormErrorMessage('kode_klasifikasi')}
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="kode_kategori_dokumen" className="font-bold text-sm text-800">Kode Kategori</label>
+                        <label htmlFor="kode_kategori_dokumen" className="font-semibold text-sm text-700">Kode Kategori</label>
                         <InputText id="kode_kategori_dokumen" name="kode_kategori_dokumen" value={formik?.values.kode_kategori_dokumen} onChange={formik?.handleChange} className={isFormFieldInvalid('kode_kategori_dokumen') ? 'p-invalid' : ''} placeholder="Contoh: ADM-UMUM, KEU-TRANS" />
                         {getFormErrorMessage('kode_kategori_dokumen')}
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="nama_kategori_dokumen" className="font-bold text-sm text-800">Nama Kategori</label>
+                        <label htmlFor="nama_kategori_dokumen" className="font-semibold text-sm text-700">Nama Kategori</label>
                         <InputText id="nama_kategori_dokumen" name="nama_kategori_dokumen" value={formik?.values.nama_kategori_dokumen} onChange={formik?.handleChange} className={isFormFieldInvalid('nama_kategori_dokumen') ? 'p-invalid' : ''} placeholder="Contoh: Administrasi Umum, Keuangan Transaksi" />
                         {getFormErrorMessage('nama_kategori_dokumen')}
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="deskripsi" className="font-bold text-sm text-800">Deskripsi</label>
+                        <label htmlFor="deskripsi" className="font-semibold text-sm text-700">Deskripsi</label>
                         <InputText id="deskripsi" name="deskripsi" value={formik?.values.deskripsi} onChange={formik?.handleChange} className={isFormFieldInvalid('deskripsi') ? 'p-invalid' : ''} placeholder="Keterangan singkat kategori dokumen" />
                         {getFormErrorMessage('deskripsi')}
                     </div>
 
-                    <div className="flex justify-content-end gap-2 mt-3">
-                        <Button type="button" label="Batal" icon="pi pi-times" severity="secondary" outlined onClick={hideDialog} className="w-auto" />
-                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className="w-auto" loading={state?.load} disabled={state?.load} />
+                    <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                        
+                        <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                        
+                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className=" w-full" loading={state?.load} disabled={state?.load} />
+                    </div>
                     </div>
                 </form>
             </Dialog>

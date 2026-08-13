@@ -1,5 +1,6 @@
 import { LayoutProvider } from '../layout/context/layoutcontext';
 import { PrimeReactProvider } from 'primereact/api';
+import 'primereact/resources/themes/lara-light-green/theme.css';
 import 'primereact/resources/primereact.css';
 import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';
@@ -10,8 +11,9 @@ import { SessionProvider } from 'next-auth/react';
 import NextTopLoader from 'nextjs-toploader';
 import { RootLayoutProps } from '@/types/layout';
 import { Metadata, Viewport } from 'next';
+import { Inter } from 'next/font/google';
 
-
+const inter = Inter({ subsets: ['latin'], display: 'swap' });
 export const viewport: Viewport = {
     initialScale: 1,
     width: 'device-width'
@@ -37,18 +39,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
     return (
-        <html lang="id" suppressHydrationWarning>
-            <head>
-                <link
-                    id="theme-css"
-                    href={`/themes/lara-light-blue/theme.css`}
-                    rel="stylesheet"
-                />
-                <link rel="preconnect" href="https://fonts.googleapis.com" />
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-            </head>
-            <body suppressHydrationWarning style={{ fontFamily: "'Inter', sans-serif" }}>
+        <html lang="id" suppressHydrationWarning className={inter.className}>
+            <body suppressHydrationWarning>
                 <SessionProvider>
                     <PrimeReactProvider>
                         <LayoutProvider>

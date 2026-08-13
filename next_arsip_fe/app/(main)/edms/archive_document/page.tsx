@@ -339,6 +339,14 @@ const Page = () => {
             showError(toast, 'Berkas dokumen belum diunggah untuk versi ini');
             return;
         }
+
+        const ext = fileName.split('.').pop()?.toLowerCase() || '';
+        const supported = ['pdf', 'jpg', 'jpeg', 'png', 'txt', 'webp', 'svg'];
+        if (!supported.includes(ext)) {
+            showError(toast, `Peringatan: Format dokumen .${ext} tidak didukung untuk pratinjau langsung di browser. Silakan gunakan tombol Unduh.`);
+            return;
+        }
+
         setState((p) => ({ ...p, load: true }));
         try {
             const res = await getData(apiEndpointDocumentPreview, { file_name: fileName });
@@ -516,8 +524,7 @@ const Page = () => {
                 state={state}
                 setState={setState}
                 formik={formik}
-                toast={toast}
-            />
+                toast={toast} />
 
             {/* Document Preview Dialog */}
             <Dialog
@@ -533,8 +540,7 @@ const Page = () => {
                 onHide={() => {
                     setState((p) => ({ ...p, isPreviewVisible: false, previewUrl: '' }));
                 }}
-                pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
-            >
+                pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}>
                 <div className="pt-3">
                     {state.previewUrl ? (
                         <iframe
@@ -542,8 +548,7 @@ const Page = () => {
                             width="100%"
                             height="600px"
                             style={{ border: 'none', borderRadius: '8px' }}
-                            title="Preview Arsip"
-                        />
+                            title="Preview Arsip" />
                     ) : (
                         <div className="flex flex-column align-items-center justify-content-center py-5 text-color-secondary">
                             <i className="pi pi-spin pi-spinner text-3xl mb-3" />

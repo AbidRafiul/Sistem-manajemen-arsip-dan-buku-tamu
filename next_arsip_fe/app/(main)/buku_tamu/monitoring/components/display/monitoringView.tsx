@@ -13,8 +13,6 @@ interface MonitoringViewProps {
     load: boolean;
     lastUpdated?: Date | null | string;
     onRefresh: () => void;
-    onRegisterNew: () => void;
-    onViewHistory: () => void;
     timeRange: string;
     setTimeRange: (val: string) => void;
 }
@@ -25,8 +23,6 @@ export default function MonitoringView({
     load,
     lastUpdated,
     onRefresh,
-    onRegisterNew,
-    onViewHistory,
     timeRange,
     setTimeRange
 }: MonitoringViewProps) {
@@ -94,35 +90,15 @@ export default function MonitoringView({
                         options={timeRangeOptions} 
                         onChange={(e) => setTimeRange(e.value)} 
                         placeholder="Pilih Waktu" 
-                        className="w-full md:w-14rem" 
-                    />
-                    <Button
-                        type="button"
-                        icon="pi pi-plus"
-                        label="Registrasi Tamu Baru"
-                        className="py-2 px-3 border-round-lg font-semibold text-sm text-white"
-                        style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)', border: 'none' }}
-                        onClick={onRegisterNew}
-                    />
-                    <Button
-                        type="button"
-                        icon="pi pi-history"
-                        label="Riwayat Tamu"
-                        severity="warning"
-                        outlined
-                        className="py-2 px-3 border-round-lg font-semibold text-sm bg-white"
-                        onClick={onViewHistory}
-                    />
-                    <Button
-                        type="button"
+                        className="w-full md:w-14rem" />
+                    <Button type="button"
                         icon={`pi pi-refresh ${load ? 'pi-spin' : ''}`}
                         label="Refresh"
                         outlined
                         severity="secondary"
                         className="py-2 px-3 border-round-lg font-semibold text-sm bg-white"
                         onClick={onRefresh}
-                        loading={load}
-                    />
+                        loading={load} />
                 </div>
             </div>
 

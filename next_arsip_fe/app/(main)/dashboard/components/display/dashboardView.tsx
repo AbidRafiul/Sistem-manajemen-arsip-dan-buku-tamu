@@ -34,15 +34,13 @@ export default function DashboardView({ data, chartData, auditLogs, isLoading }:
                         Ringkasan aktivitas arsip, kunjungan, surat, dan retensi dalam satu tampilan operasional.
                     </p>
                 </div>
-                <Button
-                    type="button"
+                <Button type="button"
                     icon="pi pi-calendar"
                     label={cTanggalHariIni}
                     outlined
                     severity="secondary"
                     className="bg-white border-300 text-700 font-semibold shadow-1"
-                    style={{ whiteSpace: 'nowrap' }}
-                />
+                    style={{ whiteSpace: 'nowrap' }} />
             </div>
 
             {/* Metric Summary Cards */}

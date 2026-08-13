@@ -32,8 +32,8 @@ export default function ChartDisplay({ stats }: ChartDisplayProps) {
 
     const hasPurposeData = Boolean(
         stats.chart_tujuan_data &&
-        stats.chart_tujuan_data.length > 0 &&
-        stats.chart_tujuan_data.some(val => val > 0)
+        stats.chart_tujuan_data.length> 0 &&
+        stats.chart_tujuan_data.some(val => val> 0)
     );
 
     const doughnutChartData = {
@@ -162,9 +162,9 @@ export default function ChartDisplay({ stats }: ChartDisplayProps) {
                                 <div className="border-circle p-3 mb-2 flex align-items-center justify-content-center bg-gray-50" style={{ width: '4rem', height: '4rem' }}>
                                     <i className="pi pi-chart-pie text-2xl text-400" />
                                 </div>
-                                <h4 className="m-0 text-800 font-bold text-sm">Belum Ada Transaksi Hari Ini</h4>
+                                <h4 className="m-0 text-800 font-bold text-sm">Belum Ada Transaksi</h4>
                                 <p className="m-0 text-color-secondary text-xs mt-1 max-w-15rem">
-                                    Distribusi persentase tujuan akan otomatis muncul setelah ada transaksi hari ini.
+                                    Distribusi persentase tujuan akan otomatis muncul setelah ada transaksi pada periode ini.
                                 </p>
                             </div>
                         )}

@@ -182,7 +182,7 @@ export const extractIsiSuratFromFinal = (value?: string | null) => {
     if (!text) return "";
 
     const hormatIndex = text.toLowerCase().indexOf("dengan hormat");
-    if (hormatIndex >= 0) {
+    if (hormatIndex>= 0) {
         text = text.slice(hormatIndex).replace(/^dengan hormat,?\s*/i, "").trim();
     }
 
@@ -275,7 +275,7 @@ const buildPdfPreviewUrl = async (values: initValue, apiGetConfig?: (payload: an
         const logoHeight = logoSize * ratio;
         // Center the logo vertically relative to the header text area (which is around height 25)
         const yPos = 8 + (25 - logoHeight) / 2;
-        doc.addImage(logoDataUrl, "PNG", marginX, yPos > 8 ? yPos : 8, logoSize, logoHeight);
+        doc.addImage(logoDataUrl, "PNG", marginX, yPos> 8 ? yPos : 8, logoSize, logoHeight);
     }
     
     // Header Text
@@ -342,7 +342,7 @@ const buildPdfPreviewUrl = async (values: initValue, apiGetConfig?: (payload: an
         const wrappedLines = paragraph ? doc.splitTextToSize(paragraph, maxWidth - (startX - marginX)) : [""];
 
         for (const line of wrappedLines) {
-            if (cursorY > 232) {
+            if (cursorY> 232) {
                 doc.addPage();
                 cursorY = 22;
             }
@@ -354,7 +354,7 @@ const buildPdfPreviewUrl = async (values: initValue, apiGetConfig?: (payload: an
         cursorY += 2;
     }
 
-    if (cursorY > 220) {
+    if (cursorY> 220) {
         doc.addPage();
     }
 
@@ -601,7 +601,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
             );
             let uploadErrorMessage = "";
 
-            if (shouldUploadPdf && savedId > 0) {
+            if (shouldUploadPdf && savedId> 0) {
                 try {
                     await uploadDirectPdf(savedId, input.file_surat);
                 } catch (uploadError: any) {
@@ -913,9 +913,8 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                 setPdfPreviewVisible(false);
                 formik.resetForm();
             }}
-            pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}
-        >
-            <form onSubmit={formik.handleSubmit} className="flex flex-column gap-1 pt-3 text-sm">
+            pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}>
+            <form onSubmit={formik.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
                 <div className="grid">
                     <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
                         <label htmlFor="nomor_surat" className="font-semibold text-900">
@@ -930,8 +929,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                                 formik.setFieldValue("nomor_surat", e.target.value);
                             }}
                             onBlur={() => formik.setFieldTouched("nomor_surat", true)}
-                            placeholder="Contoh: 001/SK/VII/2026"
-                        />
+                            placeholder="Contoh: 001/SK/VII/2026" />
                         <small className="text-color-secondary">
                             {nomorPreviewLoading
                                 ? "Mengambil nomor otomatis..."
@@ -951,8 +949,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                                     suratInputMode === "sistem"
                                         ? "bg-white text-primary shadow-1 font-semibold"
                                         : "bg-transparent text-600 hover:text-900 font-medium"
-                                }`}
-                            >
+                                }`}>
                                 <i className="pi pi-file-edit text-sm" />
                                 <span className="text-sm whitespace-nowrap">Opsi 1: Template Sistem</span>
                             </button>
@@ -964,8 +961,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                                     suratInputMode === "upload_pdf"
                                         ? "bg-white text-primary shadow-1 font-semibold"
                                         : "bg-transparent text-600 hover:text-900 font-medium"
-                                }`}
-                            >
+                                }`}>
                                 <i className="pi pi-upload text-sm" />
                                 <span className="text-sm whitespace-nowrap">Opsi 2: Upload File (PDF/Word)</span>
                             </button>
@@ -989,8 +985,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                             onBlur={() => formik.setFieldTouched("tanggal_surat", true)}
                             dateFormat="yy-mm-dd"
                             showIcon
-                            placeholder="Pilih tanggal surat"
-                        />
+                            placeholder="Pilih tanggal surat" />
                         {getFormErrorMessage("tanggal_surat")}
                     </div>
 
@@ -1003,8 +998,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                             onChange={(e) => formik.setFieldValue("tanggal_kirim", toDateString(e.value))}
                             dateFormat="yy-mm-dd"
                             showIcon
-                            placeholder="Pilih tanggal kirim"
-                        />
+                            placeholder="Pilih tanggal kirim" />
                         <small className="p-error">&nbsp;</small>
                     </div>
 
@@ -1023,8 +1017,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                             onBlur={() => formik.setFieldTouched("id_jenis_surat", true)}
                             placeholder="Pilih jenis surat"
                             filter
-                            showClear
-                        />
+                            showClear />
                         {getFormErrorMessage("id_jenis_surat")}
                     </div>
 
@@ -1036,8 +1029,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                             value={formik.values.status}
                             options={availableStatusOptions}
                             onChange={(e) => formik.setFieldValue("status", e.value)}
-                            placeholder="Pilih status"
-                        />
+                            placeholder="Pilih status" />
                         {getFormErrorMessage("status")}
                     </div>
 
@@ -1051,8 +1043,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                             value={formik.values.perihal}
                             onChange={(e) => formik.setFieldValue("perihal", e.target.value)}
                             onBlur={() => formik.setFieldTouched("perihal", true)}
-                            placeholder="Perihal surat"
-                        />
+                            placeholder="Perihal surat" />
                         {getFormErrorMessage("perihal")}
                     </div>
 
@@ -1066,8 +1057,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                             value={formik.values.tujuan}
                             onChange={(e) => formik.setFieldValue("tujuan", e.target.value)}
                             onBlur={() => formik.setFieldTouched("tujuan", true)}
-                            placeholder="Nama penerima"
-                        />
+                            placeholder="Nama penerima" />
                         {getFormErrorMessage("tujuan")}
                     </div>
 
@@ -1078,8 +1068,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                             className="w-full"
                             value={formik.values.instansi_tujuan}
                             onChange={(e) => formik.setFieldValue("instansi_tujuan", e.target.value)}
-                            placeholder="Nama instansi tujuan"
-                        />
+                            placeholder="Nama instansi tujuan" />
                         <small className="p-error">&nbsp;</small>
                     </div>
 
@@ -1092,8 +1081,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                             options={mediaPengirimanOptions}
                             onChange={(e) => formik.setFieldValue("media_pengiriman", e.value || "")}
                             placeholder="Pilih media pengiriman"
-                            showClear
-                        />
+                            showClear />
                         <small className="p-error">&nbsp;</small>
                     </div>
 
@@ -1112,8 +1100,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                                 }}
                                 placeholder="Pilih template"
                                 filter
-                                showClear
-                            />
+                                showClear />
                             <small className="p-error">&nbsp;</small>
                         </div>
                     ) : (
@@ -1127,31 +1114,25 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                                 type="file"
                                 accept=".pdf,.docx,.doc,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                                 style={{ display: "none" }}
-                                onChange={handleExternalFileSelection}
-                            />
+                                onChange={handleExternalFileSelection} />
                             <div className="flex align-items-stretch gap-2">
                                 <InputText
                                     className="w-full"
                                     value={formik.values.file_surat?.name || "Belum ada file PDF/Word dipilih"}
-                                    readOnly
-                                />
-                                <Button
-                                    type="button"
+                                    readOnly />
+                                <Button type="button"
                                     icon={isOcrExtracting ? "pi pi-spin pi-spinner" : "pi pi-upload"}
                                     outlined
                                     aria-label="Pilih file eksternal"
                                     disabled={isOcrExtracting}
-                                    onClick={() => fileInputRef.current?.click()}
-                                />
-                                <Button
-                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()} />
+                                <Button type="button"
                                     icon="pi pi-times"
                                     severity="secondary"
                                     outlined
                                     aria-label="Hapus file eksternal"
                                     disabled={!formik.values.file_surat || isOcrExtracting}
-                                    onClick={clearUploadedPdf}
-                                />
+                                    onClick={clearUploadedPdf} />
                             </div>
                             <small className="text-color-secondary">
                                 {isOcrExtracting
@@ -1170,8 +1151,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                             className="w-full"
                             value={formik.values.nama_pengirim}
                             onChange={(e) => formik.setFieldValue("nama_pengirim", e.target.value)}
-                            placeholder="Nama penandatangan / pengirim"
-                        />
+                            placeholder="Nama penandatangan / pengirim" />
                         <small className="p-error">&nbsp;</small>
                     </div>
 
@@ -1182,8 +1162,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                             className="w-full"
                             value={formik.values.jabatan}
                             onChange={(e) => formik.setFieldValue("jabatan", e.target.value)}
-                            placeholder="Jabatan penandatangan / pengirim"
-                        />
+                            placeholder="Jabatan penandatangan / pengirim" />
                         <small className="p-error">&nbsp;</small>
                     </div>
 
@@ -1198,8 +1177,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                                 formik.setFieldValue("isi_surat", e.target.value);
                             }}
                             placeholder="Tulis isi utama surat di sini"
-                            autoResize
-                        />
+                            autoResize />
                     </div>
 
                     {suratInputMode === "sistem" && (
@@ -1207,34 +1185,28 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                             <div className="flex align-items-center justify-content-between gap-2 flex-wrap">
                                 <label htmlFor="isi_surat_final" className="font-semibold text-900">Preview Naskah Final</label>
                                 <div className="flex align-items-center gap-2 flex-wrap">
-                                    <Button
-                                        type="button"
+                                    <Button type="button"
                                         size="small"
                                         icon="pi pi-sync"
                                         label="Terapkan Data"
                                         outlined
                                         disabled={!selectedTemplate}
-                                        onClick={applyTemplateToPreview}
-                                    />
-                                    <Button
-                                        type="button"
+                                        onClick={applyTemplateToPreview} />
+                                    <Button type="button"
                                         size="small"
                                         icon="pi pi-file-pdf"
                                         label="Preview PDF"
                                         outlined
                                         disabled={!formik.values.isi_surat_final && !formik.values.isi_surat}
-                                        onClick={generatePdfPreview}
-                                    />
-                                    <Button
-                                        type="button"
+                                        onClick={generatePdfPreview} />
+                                    <Button type="button"
                                         size="small"
                                         icon="pi pi-download"
                                         label="Unduh DOCX"
                                         outlined
                                         loading={downloadLoading}
                                         disabled={!formik.values.id_surat_keluar}
-                                        onClick={downloadDocx}
-                                    />
+                                        onClick={downloadDocx} />
                                 </div>
                             </div>
                             <InputTextarea
@@ -1243,42 +1215,19 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                                 rows={10}
                                 value={formik.values.isi_surat_final}
                                 readOnly
-                                autoResize
-                            />
+                                autoResize />
                         </div>
                     )}
                 </div>
 
                 <Divider className="my-2" />
 
-                <div className="flex justify-content-end gap-2">
-                    <Button
-                        type="button"
-                        label="Batal"
-                        icon="pi pi-times"
-                        severity="secondary"
-                        outlined
-                        size="small"
-                        onClick={() => {
-                            setState((p) => ({ ...p, add: false, edit: false }));
-                            setNomorSuratAuto(true);
-                            setSuratInputMode("sistem");
-                            clearUploadedPdf();
-                            if (pdfPreviewUrl) {
-                                URL.revokeObjectURL(pdfPreviewUrl);
-                                setPdfPreviewUrl("");
-                            }
-                            setPdfPreviewVisible(false);
-                            formik.resetForm();
-                        }}
-                    />
-                    <Button
-                        type="submit"
-                        label={state.edit ? "Simpan Perubahan" : "Simpan Surat"}
-                        icon={state.edit ? "pi pi-check" : "pi pi-save"}
-                        size="small"
-                        loading={state.load}
-                    />
+                <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                    
+                    <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                        
+                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className=" w-full" loading={state?.load} disabled={state?.load} />
+                    </div>
                 </div>
             </form>
         </Dialog>
@@ -1300,15 +1249,13 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                     setPdfPreviewUrl("");
                 }
             }}
-            pt={{ content: { className: "h-full" } }}
-        >
+            pt={{ content: { className: "h-full" } }}>
             <div className="h-full">
                 {pdfPreviewUrl && (
                     <PDFViewer
                         pdfUrl={pdfPreviewUrl}
                         paperSize="A4"
-                        fileName={formik.values.nomor_surat || "preview-surat-keluar"}
-                    />
+                        fileName={formik.values.nomor_surat || "preview-surat-keluar"} />
                 )}
             </div>
         </Dialog>

@@ -27,7 +27,7 @@ export default function ChartSection({ chartData, isLoading }: ChartSectionProps
     const colors = ['#4f46e5', '#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#64748b'];
     const hoverColors = ['#4338ca', '#2563eb', '#059669', '#d97706', '#db2777', '#7c3aed', '#475569'];
 
-    const hasData = chartData && chartData.length > 0;
+    const hasData = chartData && chartData.length> 0;
 
     const oChartData = {
         labels: hasData ? chartData.map((d) => d.label) : ['Belum Ada Data'],
@@ -92,14 +92,13 @@ export default function ChartSection({ chartData, isLoading }: ChartSectionProps
                         
                         {hasData ? (
                             chartData.map((item, index) => {
-                                const percentage = totalCount > 0 ? ((item.count / totalCount) * 100).toFixed(1) : '0.0';
+                                const percentage = totalCount> 0 ? ((item.count / totalCount) * 100).toFixed(1) : '0.0';
                                 const color = colors[index % colors.length];
                                 return (
                                     <div
                                         key={`list-item-${index}`}
                                         className="flex align-items-center justify-content-between p-3 border-round-xl border-1 border-50 premium-hover-card"
-                                        style={{ background: '#fafafa', transition: 'all 0.2s ease' }}
-                                    >
+                                        style={{ background: '#fafafa', transition: 'all 0.2s ease' }}>
                                         <div className="flex align-items-center gap-3">
                                             <span className="border-circle" style={{ width: '0.75rem', height: '0.75rem', backgroundColor: color, flexShrink: 0 }} />
                                             <div>

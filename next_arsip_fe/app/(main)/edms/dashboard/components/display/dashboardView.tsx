@@ -55,14 +55,12 @@ export default function DashboardView({ state, onRefresh }: DashboardViewProps) 
                 </div>
 
                 <div className="flex align-items-center ml-auto md:ml-0 flex-shrink-0 align-self-start md:align-self-center">
-                    <Button
-                        type="button"
+                    <Button type="button"
                         icon={`pi pi-refresh ${state.load ? 'pi-spin' : ''}`}
                         label="Segarkan"
                         className="p-button-outlined p-button-sm border-round-lg text-xs"
                         onClick={onRefresh}
-                        disabled={state.load}
-                    />
+                        disabled={state.load} />
                 </div>
             </div>
 

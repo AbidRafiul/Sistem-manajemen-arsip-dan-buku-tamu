@@ -218,8 +218,7 @@ const Page = () => {
                 setState={setState}
                 formik={formik}
                 toast={toast}
-                handleScan={handleScan}
-            />
+                handleScan={handleScan} />
     </>
 }
 

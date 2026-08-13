@@ -17,3 +17,18 @@ export const hashEquals = (hashedInput: string, storedHash: string) => {
 
     return crypto.timingSafeEqual(bufferInput, bufferStored);
 };
+
+import { formatDateCalendar } from './dateTools';
+
+export const getBasicToken = () => {
+    const dateStr = formatDateCalendar(new Date(), 'yyyyMMdd');
+    const userKey = `${process.env.USER_KEY}#${dateStr}#Key`;
+    const userPasKey = `${process.env.USER_PAS_KEY}#${dateStr}#PassKey`;
+    const userSecret = `${process.env.USER_SECRET}#${dateStr}#SecretKey`;
+
+    const hmac1 = hmac(userKey, userSecret);
+    const hmac2 = hmac(userPasKey, userSecret);
+    const credentials = Buffer.from(`${hmac1}:${hmac2}`).toString('base64');
+    return `Basic ${credentials}`;
+};
+

@@ -12,16 +12,14 @@ const Form = ({ state, setState, formik, toast, getData, handleDelete }: FormPro
 
     const deleteFooterTemplate = (
         <div className="flex justify-content-center gap-2">
-            <Button
-                label="Batal"
+            <Button label="Batal"
                 icon="pi pi-times"
                 severity="secondary"
                 outlined
                 onClick={() => {
-                    setState((p) => ({ ...p, add: false, edit: false, delete: false }));
+                    setState((p: any) => ({ ...p, add: false, edit: false, delete: false }));
                 }}
-                disabled={state.load}
-            />
+                disabled={state.load} />
             <Button label="Ya, Hapus" icon="pi pi-trash" severity="danger" onClick={handleDelete} loading={state.load} />
         </div>
     );
@@ -44,31 +42,29 @@ const Form = ({ state, setState, formik, toast, getData, handleDelete }: FormPro
                 modal
                 style={{ width: '50%' }}
                 onHide={() => {
-                    setState((p) => ({ ...p, add: false, edit: false, delete: false }));
+                    setState((p: any) => ({ ...p, add: false, edit: false, delete: false }));
                     formik?.resetForm();
-                }}
-            >
-                <form onSubmit={formik?.handleSubmit} className="flex gap-2 flex-column">
+                }}>
+                <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
                     <div className="flex flex-column gap-2 w-full">
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="name">Name</label>
+                            <label htmlFor="name" className="font-semibold text-sm text-700">Name</label>
                             <div className="p-inputgroup">
                                 <InputText
                                     id="name"
                                     name="name"
                                     value={formik?.values.Name}
-                                    style={{ padding: '1rem' }}
+                                    
                                     placeholder=""
                                     onChange={(e) => {
                                         formik?.setFieldValue('Name', e.target.value);
                                     }}
-                                    className={isFormFieldInvalid('Name') ? 'p-invalid' : ''}
-                                />
+                                    className={isFormFieldInvalid('Name') ? 'p-invalid' : ''} />
                             </div>
                             {isFormFieldInvalid('Name') ? getFormErrorMessage('Name') : ''}
                         </div>
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="Description">Description</label>
+                            <label htmlFor="Description" className="font-semibold text-sm text-700">Description</label>
                             <div className="w-full">
                                 <InputTextarea
                                     id="Description"
@@ -81,13 +77,15 @@ const Form = ({ state, setState, formik, toast, getData, handleDelete }: FormPro
                                     onChange={(e) => {
                                         formik?.setFieldValue('Description', e.target.value);
                                     }}
-                                    className={isFormFieldInvalid('Description') ? 'p-invalid' : ''}
-                                />
+                                    className={isFormFieldInvalid('Description') ? 'p-invalid' : ''} />
                             </div>
                             {isFormFieldInvalid('Description') ? getFormErrorMessage('Description') : ''}
                         </div>
                     </div>
-                    <Button type="submit" label={state?.edit ? 'Update' : 'Save'} className="mt-2" loading={state?.load} />
+                    <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                        
+                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className=" w-full" loading={state?.load} disabled={state?.load} />
+                    </div>
                 </form>
             </Dialog>
 
@@ -95,19 +93,18 @@ const Form = ({ state, setState, formik, toast, getData, handleDelete }: FormPro
                 header="Delete Confirm"
                 visible={state.delete}
                 onHide={() => {
-                    setState((p) => ({ ...p, add: false, edit: false, delete: false }));
+                    setState((p: any) => ({ ...p, add: false, edit: false, delete: false }));
                 }}
                 modal
                 style={{ width: '25rem' }}
-                footer={deleteFooterTemplate}
-            >
+                footer={deleteFooterTemplate}>
                 <div className="flex flex-column align-items-center text-center gap-4 py-4">
                     <i className="pi pi-exclamation-triangle text-red-500 text-6xl" />
 
                     <div>
-                        <h3 className="font-bold mb-2">{state.selectedUsers.length > 1 ? `Delete ${state.selectedUsers.length} units?` : 'Delete this unit?'}</h3>
+                        <h3 className="font-bold mb-2">{state.selectedUsers.length> 1 ? `Delete ${state.selectedUsers.length} units?` : 'Delete this unit?'}</h3>
                         <p className="text-color-secondary">
-                            {state.selectedUsers.length > 1 ? (
+                            {state.selectedUsers.length> 1 ? (
                                 `You are going to delete all this selected ${state.selectedUsers.length} units`
                             ) : (
                                 <>

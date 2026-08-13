@@ -31,7 +31,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
         const file = event?.target?.files[0];
         if (!file) return;
 
-        if (file.size > 1024 * 1024) {
+        if (file.size> 1024 * 1024) {
             // 1MB
             formik.setFieldValue('msLogoPerusahaan', null);
             return showError(toast, 'File tidak boleh lebih dari 1MB.');
@@ -44,7 +44,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
 
     const konfigurasiFooter = (
         <>
-            <Button type="submit" label="Simpan" icon="pi pi-check" className="p-button-text" onClick={() => formik.handleSubmit()} />
+            <Button type="submit" label="Simpan" icon="pi pi-check" className=" w-full p-button-text" onClick={() => formik.handleSubmit()} />
         </>
     );
 
@@ -81,8 +81,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                                     style={{
                                         borderRadius: '6px'
                                     }}
-                                    onClick={() => fileInputRef.current?.click()}
-                                >
+                                    onClick={() => fileInputRef.current?.click()}>
                                     <i className="pi pi-pencil"></i>
                                 </div>
                                 <input type="file" ref={fileInputRef} id="fileInput" accept="image/*" style={{ display: 'none' }} onChange={onFileSelect} />
@@ -90,7 +89,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                             <div className="flex flex-column w-full gap-2">
                                 <div className="flex gap-2 w-full">
                                     <div className="flex flex-column gap-2 w-full">
-                                        <label htmlFor="msNamaPerusahaan">Nama Perusahaan</label>
+                                        <label htmlFor="msNamaPerusahaan" className="font-semibold text-sm text-700">Nama Perusahaan</label>
                                         <div className="p-inputgroup">
                                             <InputText
                                                 style={{ width: '100%' }}
@@ -100,8 +99,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                                                 onChange={(e) => {
                                                     formik.setFieldValue('msNamaPerusahaan', e.target.value);
                                                 }}
-                                                className={isFormFieldInvalid('msNamaPerusahaan') ? 'p-invalid' : ''}
-                                            />
+                                                className={isFormFieldInvalid('msNamaPerusahaan') ? 'p-invalid' : ''} />
                                         </div>
                                         {isFormFieldInvalid('msNamaPerusahaan') ? getFormErrorMessage('msNamaPerusahaan') : ''}
                                     </div>
@@ -109,7 +107,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                                 </div>
 
                                 <div className="flex flex-column gap-2 w-full">
-                                    <label htmlFor="msAlamatPerusahaan">Alamat Perusahaan</label>
+                                    <label htmlFor="msAlamatPerusahaan" className="font-semibold text-sm text-700">Alamat Perusahaan</label>
                                     <div className="p-inputgroup">
                                         <InputTextarea
                                             autoResize
@@ -118,14 +116,13 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                                                 formik.setFieldValue('msAlamatPerusahaan', e.target.value);
                                             }}
                                             rows={2}
-                                            cols={30}
-                                        />
+                                            cols={30} />
                                     </div>
                                     {isFormFieldInvalid('msAlamatPerusahaan') ? getFormErrorMessage('msAlamatPerusahaan') : ''}
                                 </div>
                                 <div className="flex gap-2">
                                     <div className="flex flex-column gap-2 w-full">
-                                        <label htmlFor="msKotaPerusahaan">Kota Perusahaan</label>
+                                        <label htmlFor="msKotaPerusahaan" className="font-semibold text-sm text-700">Kota Perusahaan</label>
                                         <div className="p-inputgroup">
                                             <InputText
                                                 style={{ width: '100%' }}
@@ -135,13 +132,12 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                                                 onChange={(e) => {
                                                     formik.setFieldValue('msKotaPerusahaan', e.target.value);
                                                 }}
-                                                className={isFormFieldInvalid('msKotaPerusahaan') ? 'p-invalid' : ''}
-                                            />
+                                                className={isFormFieldInvalid('msKotaPerusahaan') ? 'p-invalid' : ''} />
                                         </div>
                                         {isFormFieldInvalid('msKotaPerusahaan') ? getFormErrorMessage('msKotaPerusahaan') : ''}
                                     </div>
                                     <div className="flex flex-column gap-2 w-full">
-                                        <label htmlFor="msTeleponPerusahaan">Telepon Perusahaan</label>
+                                        <label htmlFor="msTeleponPerusahaan" className="font-semibold text-sm text-700">Telepon Perusahaan</label>
                                         <div className="p-inputgroup">
                                             <InputText
                                                 style={{ width: '100%' }}
@@ -152,15 +148,14 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                                                     const value = e.target.value.replace(/[^0-9]/g, '');
                                                     formik.setFieldValue('msTeleponPerusahaan', value);
                                                 }}
-                                                className={isFormFieldInvalid('msTeleponPerusahaan') ? 'p-invalid' : ''}
-                                            />
+                                                className={isFormFieldInvalid('msTeleponPerusahaan') ? 'p-invalid' : ''} />
                                         </div>
                                         {isFormFieldInvalid('msTeleponPerusahaan') ? getFormErrorMessage('msTeleponPerusahaan') : ''}
                                     </div>
                                 </div>
                                 <div className="flex gap-2 mt-2">
                                     <div className="flex flex-column gap-2 w-full">
-                                        <label htmlFor="msEmailPerusahaan">Email Perusahaan</label>
+                                        <label htmlFor="msEmailPerusahaan" className="font-semibold text-sm text-700">Email Perusahaan</label>
                                         <div className="p-inputgroup">
                                             <InputText
                                                 style={{ width: '100%' }}
@@ -170,13 +165,12 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                                                 onChange={(e) => {
                                                     formik.setFieldValue('msEmailPerusahaan', e.target.value);
                                                 }}
-                                                className={isFormFieldInvalid('msEmailPerusahaan') ? 'p-invalid' : ''}
-                                            />
+                                                className={isFormFieldInvalid('msEmailPerusahaan') ? 'p-invalid' : ''} />
                                         </div>
                                         {isFormFieldInvalid('msEmailPerusahaan') ? getFormErrorMessage('msEmailPerusahaan') : ''}
                                     </div>
                                     <div className="flex flex-column gap-2 w-full">
-                                        <label htmlFor="msWebsitePerusahaan">Website Perusahaan</label>
+                                        <label htmlFor="msWebsitePerusahaan" className="font-semibold text-sm text-700">Website Perusahaan</label>
                                         <div className="p-inputgroup">
                                             <InputText
                                                 style={{ width: '100%' }}
@@ -186,15 +180,14 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                                                 onChange={(e) => {
                                                     formik.setFieldValue('msWebsitePerusahaan', e.target.value);
                                                 }}
-                                                className={isFormFieldInvalid('msWebsitePerusahaan') ? 'p-invalid' : ''}
-                                            />
+                                                className={isFormFieldInvalid('msWebsitePerusahaan') ? 'p-invalid' : ''} />
                                         </div>
                                         {isFormFieldInvalid('msWebsitePerusahaan') ? getFormErrorMessage('msWebsitePerusahaan') : ''}
                                     </div>
                                 </div>
                                 <div className="flex gap-2 mt-2">
                                     <div className="flex flex-column gap-2 w-full">
-                                        <label htmlFor="msNamaPimpinan">Pimpinan Utama</label>
+                                        <label htmlFor="msNamaPimpinan" className="font-semibold text-sm text-700">Pimpinan Utama</label>
                                         <div className="p-inputgroup">
                                             <InputText
                                                 style={{ width: '100%' }}
@@ -204,8 +197,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                                                 onChange={(e) => {
                                                     formik.setFieldValue('msNamaPimpinan', e.target.value);
                                                 }}
-                                                className={isFormFieldInvalid('msNamaPimpinan') ? 'p-invalid' : ''}
-                                            />
+                                                className={isFormFieldInvalid('msNamaPimpinan') ? 'p-invalid' : ''} />
                                         </div>
                                         {isFormFieldInvalid('msNamaPimpinan') ? getFormErrorMessage('msNamaPimpinan') : ''}
                                     </div>
@@ -213,7 +205,7 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                             </div>
                         </div>
 
-                        <Toolbar className="mb-4" end={konfigurasiFooter}></Toolbar>
+                        <Toolbar className="mt-6 mb-4" end={konfigurasiFooter}></Toolbar>
                     </div>
                 </div>
             </div>

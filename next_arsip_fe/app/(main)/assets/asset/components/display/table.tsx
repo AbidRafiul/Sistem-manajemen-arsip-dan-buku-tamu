@@ -40,8 +40,7 @@ const Table = ({
                             _filters['global'].value = value;
                             setState((p) => ({ ...p, searchVal: value, filters: _filters }));
                         }}
-                        placeholder="Cari aset..."
-                    />
+                        placeholder="Cari aset..." />
                 </span>
             </div>
         </div>
@@ -50,11 +49,8 @@ const Table = ({
     const actionBodyTemplate = (rowData: TableData) => (
         <div className="flex gap-2">
             {canUpdate && (
-                <Button
-                    icon="pi pi-pencil"
-                    rounded
+                <Button icon="pi pi-pencil"
                     outlined
-                    className="p-button-sm"
                     onClick={() => {
                         formik.setValues(p => ({
                             ...p,
@@ -69,19 +65,14 @@ const Table = ({
 
                         setState(p => ({ ...p, add: false, delete: false, edit: true }))
                     }}
-                    tooltip="Ubah"
-                />
+                    tooltip="Ubah" />
             )}
             {canDelete && (
-                <Button
-                    icon="pi pi-trash"
-                    rounded
+                <Button icon="pi pi-trash"
                     outlined
                     severity="danger"
-                    className="p-button-sm"
                     onClick={() => setState(p => ({ ...p, delete: true, selectedUsers: [rowData] }))}
-                    tooltip="Hapus"
-                />
+                    tooltip="Hapus" />
             )}
         </div>
     );
@@ -112,8 +103,7 @@ const Table = ({
                     minWidth: "75px",
                     display: "inline-flex",
                     justifyContent: "center",
-                }}
-            />
+                }} />
         );
     };
 
@@ -133,23 +123,20 @@ const Table = ({
 
             <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
                 {canCreate && (
-                    <Button
-                        size="small"
+                    <Button size="small"
                         label="New"
                         icon="pi pi-plus"
                         outlined
                         severity="success"
                         onClick={() => {
                             setState(p => ({ ...p, selectedUser: [], add: true }))
-                        }}
-                    />
+                        }} />
                 )}
                 {canDelete && (
                     <>
                         <Divider layout="vertical" />
-                        <Button
-                            size="small"
-                            label={`Delete${state.selectedUsers.length > 0 ? ` (${state.selectedUsers.length})` : ''}`}
+                        <Button size="small"
+                            label={`Delete${state.selectedUsers.length> 0 ? ` (${state.selectedUsers.length})` : ''}`}
                             icon="pi pi-trash"
                             severity="danger"
                             outlined
@@ -161,19 +148,16 @@ const Table = ({
 
                                 setState(p => ({ ...p, delete: true }))
                             }}
-                            disabled={state.selectedUsers.length === 0}
-                        />
+                            disabled={state.selectedUsers.length === 0} />
                     </>
                 )}
                 <Divider layout="vertical" />
-                <Button
-                    size="small"
+                <Button size="small"
                     label="Refresh"
                     icon="pi pi-refresh"
                     outlined
                     onClick={() => getData(apiEndpointGet)}
-                    loading={state.load}
-                />
+                    loading={state.load} />
             </div>
 
             <DataTable
@@ -190,8 +174,7 @@ const Table = ({
                 dataKey="Code"
                 emptyMessage="Data Kosong"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data"
-            >
+                currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
                 <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
                 <Column field="Code" header="Kode Aset"></Column>
                 <Column field="Name" header="Nama Aset"></Column>

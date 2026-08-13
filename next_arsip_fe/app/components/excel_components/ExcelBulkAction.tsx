@@ -200,25 +200,21 @@ const ExcelBulkAction: React.FC<ExcelBulkActionProps> = ({
         <React.Fragment>
             <div className="flex align-items-center gap-2">
                 <Button
-                    size="small"
                     label="Import Excel"
                     icon="pi pi-cloud-upload"
                     severity="info"
                     outlined
                     onClick={() => { setParsedRows([]); setErrors([]); setVisible(true); }}
-                    className="py-1 px-3 text-xs font-semibold shadow-1"
                     tooltip={`Import bulk data ${title} dari Excel/CSV`}
                     tooltipOptions={{ position: 'top' }}
                 />
                 <Button
-                    size="small"
                     label="Export Excel"
                     icon="pi pi-file-excel"
                     severity="success"
                     outlined
                     onClick={handleExport}
                     disabled={!data || data.length === 0}
-                    className="py-1 px-3 text-xs font-semibold shadow-1"
                     tooltip={`Export data ${title} ke Excel (.xlsx)`}
                     tooltipOptions={{ position: 'top' }}
                 />

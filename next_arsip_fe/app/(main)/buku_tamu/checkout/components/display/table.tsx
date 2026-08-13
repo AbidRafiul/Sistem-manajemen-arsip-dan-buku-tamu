@@ -53,7 +53,7 @@ export default function GuestDataTable({
     const actionBodyTemplate = (rowData: any) => {
         return (
             <div className="flex gap-2">
-                <Button icon="pi pi-eye" severity="info" rounded outlined onClick={() => onDetail(rowData)} tooltip="Detail" />
+                <Button icon="pi pi-eye" severity="info" outlined onClick={() => onDetail(rowData)} tooltip="Detail" />
                 {canApprove && rowData.status_persetujuan === 'pending' && (
                     <>
                         <Button icon="pi pi-check" severity="success" rounded outlined onClick={() => onApprove(rowData)} tooltip="Setujui" />
@@ -108,22 +108,19 @@ export default function GuestDataTable({
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
             <h5 className="m-0 font-bold">Riwayat Kunjungan Tamu</h5>
             <div className="flex flex-column sm:flex-row gap-2">
-                <Button
-                    type="button"
+                <Button type="button"
                     label="Scan QR"
                     icon="pi pi-qrcode"
                     className="p-button-sm px-3 text-white"
                     style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', border: 'none' }}
-                    onClick={onScanQR}
-                />
+                    onClick={onScanQR} />
 
                 <Dropdown
                     value={state.statusFilter}
                     options={statusOptions}
                     onChange={(e) => onFilterStatus(e.value)}
                     placeholder="Filter Status"
-                    className="w-full sm:w-12rem p-inputtext-sm"
-                />
+                    className="w-full sm:w-12rem p-inputtext-sm" />
                 <span className="p-input-icon-left w-full sm:w-auto">
                     <i className="pi pi-search" />
                     <InputText
@@ -131,17 +128,14 @@ export default function GuestDataTable({
                         value={state.searchVal}
                         onChange={(e) => setState((p: State) => ({ ...p, searchVal: e.target.value }))}
                         placeholder="Cari Nama Tamu..."
-                        className="w-full sm:w-auto p-inputtext-sm"
-                    />
+                        className="w-full sm:w-auto p-inputtext-sm" />
                 </span>
-                <Button
-                    type="button"
+                <Button type="button"
                     icon="pi pi-refresh"
                     severity="secondary"
                     outlined
                     className="p-button-sm px-3 bg-white"
-                    onClick={onRefresh}
-                />
+                    onClick={onRefresh} />
             </div>
         </div>
     );

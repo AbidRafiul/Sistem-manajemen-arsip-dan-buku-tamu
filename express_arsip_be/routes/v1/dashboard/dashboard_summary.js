@@ -131,7 +131,15 @@ const getDashboardSummary = async (req, res) => {
       "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6",
     ];
 
-    const vaAuditLogs = vaAuditRaw.map((oLog, nIndex) => {
+    const _getConsistentColor = (str) => {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return vaColorPalette[Math.abs(hash) % vaColorPalette.length];
+    };
+
+    const vaAuditLogs = vaAuditRaw.map((oLog) => {
       const cRelativeTime = _getRelativeTime(oLog.created_at);
 
       return {
@@ -139,7 +147,7 @@ const getDashboardSummary = async (req, res) => {
         user: oLog.nama_pengguna,
         action: oLog.aksi,
         time: cRelativeTime,
-        color: vaColorPalette[nIndex % vaColorPalette.length],
+        color: _getConsistentColor(oLog.nama_pengguna),
       };
     });
 

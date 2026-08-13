@@ -65,14 +65,6 @@ const MonitoringPage: React.FC = () => {
         return () => clearInterval(interval);
     }, [timeRange]);
 
-    const handleRegisterNew = () => {
-        router.push('/buku_tamu/registrasi');
-    };
-
-    const handleViewHistory = () => {
-        router.push('/buku_tamu/checkout');
-    };
-
     return (
         <>
             <Toast ref={toast} position="top-right" />
@@ -82,11 +74,8 @@ const MonitoringPage: React.FC = () => {
                 load={load}
                 lastUpdated={lastUpdated}
                 onRefresh={() => fetchMonitoringData(timeRange)}
-                onRegisterNew={handleRegisterNew}
-                onViewHistory={handleViewHistory}
                 timeRange={timeRange}
-                setTimeRange={setTimeRange}
-            />
+                setTimeRange={setTimeRange} />
         </>
     );
 };

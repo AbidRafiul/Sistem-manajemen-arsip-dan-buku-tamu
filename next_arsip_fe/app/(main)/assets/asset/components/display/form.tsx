@@ -11,16 +11,14 @@ const Form = ({ state, setState, formik, toast, getData, handleDelete }: FormPro
 
     const deleteFooterTemplate = (
         <div className="flex justify-content-center gap-2">
-            <Button
-                label="Batal"
+            <Button label="Batal"
                 icon="pi pi-times"
                 severity="secondary"
                 outlined
                 onClick={() => {
-                    setState((p) => ({ ...p, add: false, edit: false, delete: false }));
+                    setState((p: any) => ({ ...p, add: false, edit: false, delete: false }));
                 }}
-                disabled={state.load}
-            />
+                disabled={state.load} />
             <Button label="Ya, Hapus" icon="pi pi-trash" severity="danger" onClick={handleDelete} loading={state.load} />
         </div>
     );
@@ -40,50 +38,47 @@ const Form = ({ state, setState, formik, toast, getData, handleDelete }: FormPro
                 modal
                 style={{ width: '50%' }}
                 onHide={() => {
-                    setState((p) => ({ ...p, add: false, edit: false, delete: false }));
+                    setState((p: any) => ({ ...p, add: false, edit: false, delete: false }));
                     formik?.resetForm();
-                }}
-            >
-                <form onSubmit={formik?.handleSubmit} className="flex gap-2 flex-column">
+                }}>
+                <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
                     <div className="flex flex-column gap-2 w-full">
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="code">Code</label>
+                            <label htmlFor="code" className="font-semibold text-sm text-700">Code</label>
                             <div className="p-inputgroup">
                                 <InputText
                                     id="code"
                                     name="code"
                                     disabled={state.edit}
                                     value={formik?.values.Code}
-                                    style={{ padding: '1rem' }}
+                                    
                                     placeholder=""
                                     onChange={(e) => {
                                         if (state.edit) return;
                                         formik?.setFieldValue('Code', e.target.value);
                                     }}
-                                    className={isFormFieldInvalid('Code') ? 'p-invalid' : ''}
-                                />
+                                    className={isFormFieldInvalid('Code') ? 'p-invalid' : ''} />
                             </div>
                             {isFormFieldInvalid('Code') ? getFormErrorMessage('Code') : ''}
                         </div>
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="name">Name</label>
+                            <label htmlFor="name" className="font-semibold text-sm text-700">Name</label>
                             <div className="p-inputgroup">
                                 <InputText
                                     id="name"
                                     name="name"
                                     value={formik?.values.Name}
-                                    style={{ padding: '1rem' }}
+                                    
                                     placeholder=""
                                     onChange={(e) => {
                                         formik?.setFieldValue('Name', e.target.value);
                                     }}
-                                    className={isFormFieldInvalid('Name') ? 'p-invalid' : ''}
-                                />
+                                    className={isFormFieldInvalid('Name') ? 'p-invalid' : ''} />
                             </div>
                             {isFormFieldInvalid('Name') ? getFormErrorMessage('Name') : ''}
                         </div>
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="Location">Location</label>
+                            <label htmlFor="Location" className="font-semibold text-sm text-700">Location</label>
                             <div className="p-inputgroup">
                                 <InputText
                                     id="Location"
@@ -94,13 +89,12 @@ const Form = ({ state, setState, formik, toast, getData, handleDelete }: FormPro
                                     onChange={(e) => {
                                         formik?.setFieldValue('Location', e.target.value);
                                     }}
-                                    className={isFormFieldInvalid('Location') ? 'p-invalid' : ''}
-                                />
+                                    className={isFormFieldInvalid('Location') ? 'p-invalid' : ''} />
                             </div>
                             {isFormFieldInvalid('Location') ? getFormErrorMessage('Location') : ''}
                         </div>
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="Type">Type</label>
+                            <label htmlFor="Type" className="font-semibold text-sm text-700">Type</label>
                             <div className="p-inputgroup">
                                 <InputText
                                     id="Type"
@@ -111,13 +105,12 @@ const Form = ({ state, setState, formik, toast, getData, handleDelete }: FormPro
                                     onChange={(e) => {
                                         formik?.setFieldValue('Type', e.target.value);
                                     }}
-                                    className={isFormFieldInvalid('Type') ? 'p-invalid' : ''}
-                                />
+                                    className={isFormFieldInvalid('Type') ? 'p-invalid' : ''} />
                             </div>
                             {isFormFieldInvalid('Type') ? getFormErrorMessage('Type') : ''}
                         </div>
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="Status">Status</label>
+                            <label htmlFor="Status" className="font-semibold text-sm text-700">Status</label>
                             <div className="p-inputgroup">
                                 <Dropdown
                                     id="Status"
@@ -131,8 +124,7 @@ const Form = ({ state, setState, formik, toast, getData, handleDelete }: FormPro
                                     onChange={(e) => {
                                         formik?.setFieldValue('Status', e.value);
                                     }}
-                                    className={isFormFieldInvalid('Status') ? 'p-invalid' : ''}
-                                />
+                                    className={isFormFieldInvalid('Status') ? 'p-invalid' : ''} />
                             </div>
                             {isFormFieldInvalid('Status') ? getFormErrorMessage('Status') : ''}
                         </div>
@@ -140,7 +132,7 @@ const Form = ({ state, setState, formik, toast, getData, handleDelete }: FormPro
 
                     <div className="flex gap-2 flex-column md:flex-row w-full">
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="CategoryCode">Category</label>
+                            <label htmlFor="CategoryCode" className="font-semibold text-sm text-700">Category</label>
                             <div className="p-inputgroup">
                                 <Dropdown
                                     id="CategoryCode"
@@ -152,13 +144,12 @@ const Form = ({ state, setState, formik, toast, getData, handleDelete }: FormPro
                                     onChange={(e) => {
                                         formik?.setFieldValue('CategoryCode', e.value);
                                     }}
-                                    className={isFormFieldInvalid('CategoryCode') ? 'p-invalid' : ''}
-                                />
+                                    className={isFormFieldInvalid('CategoryCode') ? 'p-invalid' : ''} />
                             </div>
                             {isFormFieldInvalid('CategoryCode') ? getFormErrorMessage('CategoryCode') : ''}
                         </div>
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="DivisionCode">Division</label>
+                            <label htmlFor="DivisionCode" className="font-semibold text-sm text-700">Division</label>
                             <div className="p-inputgroup">
                                 <Dropdown
                                     id="DivisionCode"
@@ -170,31 +161,29 @@ const Form = ({ state, setState, formik, toast, getData, handleDelete }: FormPro
                                     onChange={(e) => {
                                         formik?.setFieldValue('DivisionCode', e.value);
                                     }}
-                                    className={isFormFieldInvalid('DivisionCode') ? 'p-invalid' : ''}
-                                />
+                                    className={isFormFieldInvalid('DivisionCode') ? 'p-invalid' : ''} />
                             </div>
                             {isFormFieldInvalid('DivisionCode') ? getFormErrorMessage('DivisionCode') : ''}
                         </div>
                     </div>
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="name">Nama Aset</label>
+                        <label htmlFor="name" className="font-semibold text-sm text-700">Nama Aset</label>
                         <div className="p-inputgroup">
                             <InputText
                                 id="name"
                                 name="name"
                                 value={formik?.values.Name}
-                                style={{ padding: '1rem' }}
+                                
                                 placeholder=""
                                 onChange={(e) => {
                                     formik?.setFieldValue('Name', e.target.value);
                                 }}
-                                className={isFormFieldInvalid('Name') ? 'p-invalid' : ''}
-                            />
+                                className={isFormFieldInvalid('Name') ? 'p-invalid' : ''} />
                         </div>
                         {isFormFieldInvalid('Name') ? getFormErrorMessage('Name') : ''}
                     </div>
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="Location">Lokasi</label>
+                        <label htmlFor="Location" className="font-semibold text-sm text-700">Lokasi</label>
                         <div className="p-inputgroup">
                             <InputText
                                 id="Location"
@@ -205,13 +194,12 @@ const Form = ({ state, setState, formik, toast, getData, handleDelete }: FormPro
                                 onChange={(e) => {
                                     formik?.setFieldValue('Location', e.target.value);
                                 }}
-                                className={isFormFieldInvalid('Location') ? 'p-invalid' : ''}
-                            />
+                                className={isFormFieldInvalid('Location') ? 'p-invalid' : ''} />
                         </div>
                         {isFormFieldInvalid('Location') ? getFormErrorMessage('Location') : ''}
                     </div>
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="Type">Tipe</label>
+                        <label htmlFor="Type" className="font-semibold text-sm text-700">Tipe</label>
                         <div className="p-inputgroup">
                             <InputText
                                 id="Type"
@@ -222,13 +210,12 @@ const Form = ({ state, setState, formik, toast, getData, handleDelete }: FormPro
                                 onChange={(e) => {
                                     formik?.setFieldValue('Type', e.target.value);
                                 }}
-                                className={isFormFieldInvalid('Type') ? 'p-invalid' : ''}
-                            />
+                                className={isFormFieldInvalid('Type') ? 'p-invalid' : ''} />
                         </div>
                         {isFormFieldInvalid('Type') ? getFormErrorMessage('Type') : ''}
                     </div>
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="Status">Status</label>
+                        <label htmlFor="Status" className="font-semibold text-sm text-700">Status</label>
                         <div className="p-inputgroup">
                             <Dropdown
                                 id="Status"
@@ -242,8 +229,7 @@ const Form = ({ state, setState, formik, toast, getData, handleDelete }: FormPro
                                 onChange={(e) => {
                                     formik?.setFieldValue('Status', e.value);
                                 }}
-                                className={isFormFieldInvalid('Status') ? 'p-invalid' : ''}
-                            />
+                                className={isFormFieldInvalid('Status') ? 'p-invalid' : ''} />
                         </div>
                         {isFormFieldInvalid('Status') ? getFormErrorMessage('Status') : ''}
                     </div>

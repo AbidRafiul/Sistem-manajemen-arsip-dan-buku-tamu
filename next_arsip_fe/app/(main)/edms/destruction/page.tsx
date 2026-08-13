@@ -122,8 +122,7 @@ export default function DestructionPage() {
                                 loading={expiredLoading}
                                 fetchExpiredData={fetchExpiredData}
                                 proposeDestruction={proposeDestruction}
-                                refreshProposals={() => fetchProposals("")}
-                            />
+                                refreshProposals={() => fetchProposals("")} />
                         </div>
                     </TabPanel>
                     <TabPanel header="Usulan Pemusnahan" leftIcon="pi pi-file-export mr-2">
@@ -134,8 +133,7 @@ export default function DestructionPage() {
                                 loading={proposalLoading}
                                 fetchProposals={fetchProposals}
                                 reviewProposal={reviewProposal}
-                                executeProposal={executeProposal}
-                            />
+                                executeProposal={executeProposal} />
                         </div>
                     </TabPanel>
                 </TabView>

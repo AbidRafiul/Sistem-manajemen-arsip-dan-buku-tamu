@@ -39,19 +39,19 @@ const groupBranches = (list: BranchRaw[]): any[] => {
     }
 
     const groups: any[] = [];
-    if (pusat.length > 0) {
+    if (pusat.length> 0) {
         groups.push({
             label: 'Kantor Pusat',
             items: pusat
         });
     }
-    if (cabang.length > 0) {
+    if (cabang.length> 0) {
         groups.push({
             label: 'Kantor Cabang',
             items: cabang
         });
     }
-    if (unit.length > 0) {
+    if (unit.length> 0) {
         groups.push({
             label: 'Unit / Kecamatan',
             items: unit
@@ -250,7 +250,7 @@ export default function RegistrasiKunjunganPage() {
                 submitData.append('tanda_tangan_data', formData.signature_data);
             }
 
-            if (formData.visit_type === 'group' && formData.group_members && formData.group_members.length > 0) {
+            if (formData.visit_type === 'group' && formData.group_members && formData.group_members.length> 0) {
                 const membersToSend = formData.group_members.map((m) => ({
                     name: m.name,
                     phone: m.phone,
@@ -299,16 +299,13 @@ export default function RegistrasiKunjunganPage() {
             <div className="flex justify-content-between align-items-center mb-3">
                 <h2 className="m-0 text-900 font-bold text-2xl">Registrasi Kunjungan</h2>
                 <div className="flex flex-wrap gap-2">
-                    <Button 
-                        type="button" 
+                    <Button type="button" 
                         icon="pi pi-external-link" 
                         label="Halaman Visitor (Publik)" 
                         severity="info" 
                         outlined 
                         size="small"
-                        onClick={() => window.open('/visitor/booking', '_blank')} 
-                    />
-                    <Button type="button" label="Kembali ke Monitoring" icon="pi pi-arrow-left" outlined size="small" onClick={() => router.push('/buku_tamu/monitoring')} />
+                        onClick={() => window.open('/visitor/booking', '_blank')} />
                 </div>
             </div>
 
@@ -324,8 +321,7 @@ export default function RegistrasiKunjunganPage() {
                 branchOptions={branchOptions}
                 loading={loading}
                 disableBranchSelect={disableBranchSelect}
-                handleSubmit={handleSubmit}
-            />
+                handleSubmit={handleSubmit} />
 
             <VisitorCardModal
                 visible={showCardDialog}
@@ -333,8 +329,7 @@ export default function RegistrasiKunjunganPage() {
                     setShowCardDialog(false);
                     router.push('/buku_tamu/checkout');
                 }}
-                cardData={generatedCard}
-            />
+                cardData={generatedCard} />
         </>
     );
 }

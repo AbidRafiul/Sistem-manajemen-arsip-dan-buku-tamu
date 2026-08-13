@@ -32,8 +32,7 @@ const SearchResult: React.FC<SearchResultProps> = ({ results, load, onPreview })
             <div className="text-center py-6">
                 <div
                     className="inline-flex align-items-center justify-content-center border-round-circle mb-3 bg-blue-50"
-                    style={{ width: '4.5rem', height: '4.5rem' }}
-                >
+                    style={{ width: '4.5rem', height: '4.5rem' }}>
                     <i className="pi pi-search-minus text-4xl text-blue-500" />
                 </div>
                 <h4 className="text-xl font-bold text-900 mb-2">Dokumen Tidak Ditemukan</h4>
@@ -64,8 +63,7 @@ const SearchResult: React.FC<SearchResultProps> = ({ results, load, onPreview })
                             className="p-4 border-round-xl border-1 surface-border bg-white shadow-1 hover:shadow-2 transition-all"
                             style={{
                                 borderLeft: isContent ? '4px solid #3B82F6' : '4px solid #10B981'
-                            }}
-                        >
+                            }}>
                             <div className="flex flex-column md:flex-row justify-content-between md:align-align-items-center gap-4">
                                 <div className="flex-1">
                                     {/* Header Tags & Metadata */}
@@ -74,14 +72,12 @@ const SearchResult: React.FC<SearchResultProps> = ({ results, load, onPreview })
                                             value={isContent ? 'Match: Isi Teks Dokumen (OCR)' : 'Match: Metadata Dokumen'}
                                             severity={isContent ? 'info' : 'success'}
                                             icon={isContent ? 'pi pi-file-word' : 'pi pi-tag'}
-                                            className="font-bold px-2 py-1 text-xs"
-                                        />
+                                            className="font-bold px-2 py-1 text-xs" />
                                         {doc.nama_kategori_dokumen && (
                                             <Tag
                                                 value={doc.nama_kategori_dokumen}
                                                 severity="warning"
-                                                className="px-2 py-1 text-xs font-semibold"
-                                            />
+                                                className="px-2 py-1 text-xs font-semibold" />
                                         )}
                                         <span className="text-xs font-mono px-2 py-1 border-round bg-gray-100 text-700 font-semibold border-1 border-gray-200">
                                             {doc.nomor_dokumen}
@@ -91,8 +87,7 @@ const SearchResult: React.FC<SearchResultProps> = ({ results, load, onPreview })
                                     {/* Document Title */}
                                     <h3
                                         className="text-lg md:text-xl font-extrabold text-900 hover:text-blue-600 cursor-pointer transition-colors mb-2"
-                                        onClick={() => router.push(`/edms/archive_document/${doc.id_dokumen}/versions`)}
-                                    >
+                                        onClick={() => router.push(`/edms/archive_document/${doc.id_dokumen}/versions`)}>
                                         {doc.nama_dokumen}
                                     </h3>
 
@@ -128,32 +123,26 @@ const SearchResult: React.FC<SearchResultProps> = ({ results, load, onPreview })
 
                                 {/* Action Buttons Column */}
                                 <div className="flex md:flex-column gap-2 justify-content-end align-items-stretch min-w-10rem">
-                                    <Button
-                                        label="Lihat Versi"
+                                    <Button label="Lihat Versi"
                                         icon="pi pi-history"
                                         size="small"
                                         outlined
                                         className="p-button-sm font-semibold"
-                                        onClick={() => router.push(`/edms/archive_document/${doc.id_dokumen}/versions`)}
-                                    />
-                                    <Button
-                                        label="Audit Trail"
+                                        onClick={() => router.push(`/edms/archive_document/${doc.id_dokumen}/versions`)} />
+                                    <Button label="Audit Trail"
                                         icon="pi pi-clock"
                                         size="small"
                                         severity="secondary"
                                         outlined
                                         className="p-button-sm font-semibold"
-                                        onClick={() => router.push(`/edms/archive_document/${doc.id_dokumen}/history`)}
-                                    />
+                                        onClick={() => router.push(`/edms/archive_document/${doc.id_dokumen}/history`)} />
                                     {doc.file_path && (
-                                        <Button
-                                            label="Pratinjau"
+                                        <Button label="Pratinjau"
                                             icon="pi pi-eye"
                                             size="small"
                                             severity="info"
                                             className="p-button-sm font-bold shadow-1"
-                                            onClick={() => onPreview(doc.file_path!)}
-                                        />
+                                            onClick={() => onPreview(doc.file_path!)} />
                                     )}
                                 </div>
                             </div>
