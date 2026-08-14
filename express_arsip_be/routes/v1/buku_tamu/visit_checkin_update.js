@@ -16,7 +16,7 @@ router.put("/:id", async (req, res) => {
       return res.status(400).json({ status: "99", message: "ID Kunjungan tidak valid", datetime: formatDateSystem() });
     }
 
-    const checkKunjungan = await DB("trs_kunjungan").where("id_kunjungan", id).first();
+    const checkKunjungan = await DB("trx_kunjungan").where("id_kunjungan", id).first();
     if (!checkKunjungan) {
       return res.status(404).json({ status: "01", message: "Data kunjungan tidak ditemukan", datetime: formatDateSystem() });
     }
@@ -31,7 +31,7 @@ router.put("/:id", async (req, res) => {
 
     const currentDateTime = formatDateSystem(new Date(), "yyyy-MM-dd HH:mm:ss", "WIB");
 
-    await DB("trs_kunjungan")
+    await DB("trx_kunjungan")
       .where("id_kunjungan", id)
       .update({
         status: "in",

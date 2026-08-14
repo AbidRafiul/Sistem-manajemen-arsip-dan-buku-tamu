@@ -34,7 +34,7 @@ const reviewDestructionProposal = async (req, res) => {
     }
 
     // Cek proposal ada dan masih bisa di-review
-    const oProposal = await DB("trs_usulan_pemusnahan")
+    const oProposal = await DB("trx_usulan_pemusnahan")
       .where("id_usulan", nProposalId)
       .first();
 
@@ -62,7 +62,7 @@ const reviewDestructionProposal = async (req, res) => {
       updated_at: dNow,
     };
 
-    await DB("trs_usulan_pemusnahan")
+    await DB("trx_usulan_pemusnahan")
       .where("id_usulan", nProposalId)
       .update(oData);
 

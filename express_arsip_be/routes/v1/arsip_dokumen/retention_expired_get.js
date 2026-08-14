@@ -11,7 +11,7 @@ const getRetentionExpiredDocuments = async (req, res) => {
     // Dokumen yang masa retensinya sudah habis:
     // tanggal + tahun_retensi (dalam tahun) <= Hari ini
     // Menggunakan DATE_ADD MySQL untuk kalkulasi
-    const oQuery = DB("trs_dokumen as d")
+    const oQuery = DB("trx_dokumen as d")
       .select(
         "d.id_dokumen",
         "d.kode_dokumen",
@@ -40,7 +40,7 @@ const getRetentionExpiredDocuments = async (req, res) => {
         ),
         // Status proposal pemusnahan (jika ada)
         DB.raw(
-          "(SELECT status FROM trs_usulan_pemusnahan WHERE kode_dokumen = d.kode_dokumen AND status NOT IN ('rejected', 'executed') LIMIT 1) as ActiveProposalStatus"
+          "(SELECT status FROM trx_usulan_pemusnahan WHERE kode_dokumen = d.kode_dokumen AND status NOT IN ('rejected', 'executed') LIMIT 1) as ActiveProposalStatus"
         )
       )
       .join(

@@ -36,7 +36,7 @@ const incomingLetterUpload = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trs_surat_masuk as sm")
+    const oLetter = await DB("trx_surat_masuk as sm")
       .leftJoin("mst_cabang as c", "sm.id_cabang", "c.id_cabang")
       .leftJoin("mst_unit_kerja as uk", "sm.id_unit_kerja", "uk.id_unit_kerja")
       .select(
@@ -73,14 +73,14 @@ const incomingLetterUpload = async (req, res) => {
     const dNow = new Date();
 
     await DB.transaction(async (trx) => {
-      vaReplacedFiles = await trx("trs_file_surat_masuk")
+      vaReplacedFiles = await trx("trx_file_surat_masuk")
         .select("file_surat_masuk_id", "path_file")
         .where("surat_masuk_id", oPayload.surat_masuk_id)
         .where("status", "active")
         .forUpdate();
 
       if (vaReplacedFiles.length > 0) {
-        await trx("trs_file_surat_masuk")
+        await trx("trx_file_surat_masuk")
           .where("surat_masuk_id", oPayload.surat_masuk_id)
           .where("status", "active")
           .update({
@@ -89,7 +89,7 @@ const incomingLetterUpload = async (req, res) => {
           });
       }
 
-      vaInserted = await trx("trs_file_surat_masuk").insert({
+      vaInserted = await trx("trx_file_surat_masuk").insert({
         surat_masuk_id: oPayload.surat_masuk_id,
         path_file: cObjectName,
         nama_file: oFile.originalname,

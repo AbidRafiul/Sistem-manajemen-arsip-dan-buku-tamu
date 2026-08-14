@@ -19,7 +19,7 @@ const returnArchiveLoan = async (req, res) => {
     }
 
     // Ambil data peminjaman
-    const oLoan = await DB("trs_peminjaman_arsip")
+    const oLoan = await DB("trx_peminjaman_arsip")
       .where("id_peminjaman", nLoanId)
       .first();
 
@@ -56,7 +56,7 @@ const returnArchiveLoan = async (req, res) => {
       updated_at: dNow,
     };
 
-    await DB("trs_peminjaman_arsip")
+    await DB("trx_peminjaman_arsip")
       .where("id_peminjaman", nLoanId)
       .update(oData);
 

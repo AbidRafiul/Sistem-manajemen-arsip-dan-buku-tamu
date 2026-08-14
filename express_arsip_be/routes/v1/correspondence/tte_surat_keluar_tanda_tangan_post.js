@@ -36,8 +36,8 @@ const getBasePayload = req => ({
   ...(req.query || {}),
   ...(req.body || {})
 });
-const getLatestFileSubquery = () => DB("trs_file_surat_keluar as tf").select("tf.id_surat_keluar").max("tf.id_file_surat_keluar as id_file_surat_keluar").where("tf.status", "active").groupBy("tf.id_surat_keluar");
-const getSignatureSubquery = () => DB("trs_tanda_tangan_dokumen as ttd").select("ttd.id_surat_keluar").max("ttd.id_tanda_tangan_dokumen as id_tanda_tangan_dokumen").where("ttd.status_tanda_tangan", "aktif").groupBy("ttd.id_surat_keluar");
+const getLatestFileSubquery = () => DB("trx_file_surat_keluar as tf").select("tf.id_surat_keluar").max("tf.id_file_surat_keluar as id_file_surat_keluar").where("tf.status", "active").groupBy("tf.id_surat_keluar");
+const getSignatureSubquery = () => DB("trx_tanda_tangan_dokumen as ttd").select("ttd.id_surat_keluar").max("ttd.id_tanda_tangan_dokumen as id_tanda_tangan_dokumen").where("ttd.status_tanda_tangan", "aktif").groupBy("ttd.id_surat_keluar");
 const buildFileUrl = async pathFile => {
   if (!pathFile) return null;
   const bucketName = process.env.MINIO_BUCKET_NAME || MINIO_BUCKET_NAME;
@@ -74,17 +74,17 @@ const listDocuments = async (req, res, signedOnly = false) => {
   const cSortOrder = String(oPayload.sort_order || "desc").toLowerCase() === "asc" ? "asc" : "desc";
   const latestFileSubquery = getLatestFileSubquery();
   const latestSignatureSubquery = getSignatureSubquery();
-  const latestVerificationSubquery = DB("trs_verifikasi_dokumen as tvd").select("tvd.id_surat_keluar").max("tvd.id_verifikasi_dokumen as id_verifikasi_dokumen").groupBy("tvd.id_surat_keluar");
-  const signatureCountSubquery = DB("trs_tanda_tangan_dokumen as ttd_count").select("ttd_count.id_surat_keluar").count({
+  const latestVerificationSubquery = DB("trx_verifikasi_dokumen as tvd").select("tvd.id_surat_keluar").max("tvd.id_verifikasi_dokumen as id_verifikasi_dokumen").groupBy("tvd.id_surat_keluar");
+  const signatureCountSubquery = DB("trx_tanda_tangan_dokumen as ttd_count").select("ttd_count.id_surat_keluar").count({
     jumlah_tanda_tangan: "ttd_count.id_tanda_tangan_dokumen"
   }).where("ttd_count.status_tanda_tangan", "aktif").groupBy("ttd_count.id_surat_keluar");
-  const query = DB("trs_surat_keluar as tsk").leftJoin("mst_jenis_surat as mjs", "tsk.id_jenis_surat", "mjs.jenis_surat_id").leftJoin("mst_template_surat as mts", "tsk.id_template", "mts.id_template").leftJoin("mst_pengguna as u", "tsk.created_by", "u.id_pengguna").leftJoin({
+  const query = DB("trx_surat_keluar as tsk").leftJoin("mst_jenis_surat as mjs", "tsk.id_jenis_surat", "mjs.jenis_surat_id").leftJoin("mst_template_surat as mts", "tsk.id_template", "mts.id_template").leftJoin("mst_pengguna as u", "tsk.created_by", "u.id_pengguna").leftJoin({
     file_latest: latestFileSubquery
-  }, "tsk.id_surat_keluar", "file_latest.id_surat_keluar").leftJoin("trs_file_surat_keluar as tf", "tf.id_file_surat_keluar", "file_latest.id_file_surat_keluar").leftJoin({
+  }, "tsk.id_surat_keluar", "file_latest.id_surat_keluar").leftJoin("trx_file_surat_keluar as tf", "tf.id_file_surat_keluar", "file_latest.id_file_surat_keluar").leftJoin({
     ttd_latest_ref: latestSignatureSubquery
-  }, "tsk.id_surat_keluar", "ttd_latest_ref.id_surat_keluar").leftJoin("trs_tanda_tangan_dokumen as ttd_latest", "ttd_latest.id_tanda_tangan_dokumen", "ttd_latest_ref.id_tanda_tangan_dokumen").leftJoin({
+  }, "tsk.id_surat_keluar", "ttd_latest_ref.id_surat_keluar").leftJoin("trx_tanda_tangan_dokumen as ttd_latest", "ttd_latest.id_tanda_tangan_dokumen", "ttd_latest_ref.id_tanda_tangan_dokumen").leftJoin({
     ver_latest_ref: latestVerificationSubquery
-  }, "tsk.id_surat_keluar", "ver_latest_ref.id_surat_keluar").leftJoin("trs_verifikasi_dokumen as tvd_latest", "tvd_latest.id_verifikasi_dokumen", "ver_latest_ref.id_verifikasi_dokumen").leftJoin({
+  }, "tsk.id_surat_keluar", "ver_latest_ref.id_surat_keluar").leftJoin("trx_verifikasi_dokumen as tvd_latest", "tvd_latest.id_verifikasi_dokumen", "ver_latest_ref.id_verifikasi_dokumen").leftJoin({
     ttd_count_ref: signatureCountSubquery
   }, "tsk.id_surat_keluar", "ttd_count_ref.id_surat_keluar").select("tsk.id_surat_keluar", "tsk.nomor_surat", "tsk.nomor_agenda", "tsk.tanggal_surat", "tsk.tanggal_kirim", "tsk.id_jenis_surat", "mjs.nama_jenis_surat", "tsk.perihal", "tsk.tujuan", "tsk.instansi_tujuan", "tsk.media_pengiriman", "tsk.id_template", "mts.nama_template", "tsk.id_cabang", "tf.nama_file", "tf.mime_type", "tf.ukuran_file", "tf.tanggal_upload", "tf.path_file", "tsk.isi_surat_final", "tsk.status", "tsk.created_by", "tsk.updated_by", "tsk.created_at", "tsk.updated_at", "ttd_latest.id_tanda_tangan_dokumen as id_tanda_tangan_terakhir", "ttd_latest.waktu_tanda_tangan as waktu_tanda_tangan_terakhir", "ttd_latest.token_verifikasi as token_verifikasi_terakhir", "ttd_latest.hash_dokumen as hash_dokumen_terakhir", "tvd_latest.id_verifikasi_dokumen as id_verifikasi_terakhir", "tvd_latest.valid_kriptografis as valid_kriptografis_terakhir", "tvd_latest.valid_integritas as valid_integritas_terakhir", DB.raw("COALESCE(ttd_count_ref.jumlah_tanda_tangan, 0) as jumlah_tanda_tangan"));
   applyMultiTenantFilter(query, req, "tsk");
@@ -124,10 +124,10 @@ const listDocuments = async (req, res, signedOnly = false) => {
     }
   });
 };
-const getSuratById = async idSuratKeluar => DB("trs_surat_keluar as tsk").leftJoin("mst_jenis_surat as mjs", "tsk.id_jenis_surat", "mjs.jenis_surat_id").leftJoin("mst_template_surat as mts", "tsk.id_template", "mts.id_template").select("tsk.*", "mjs.nama_jenis_surat", "mts.nama_template").where("tsk.id_surat_keluar", idSuratKeluar).first();
-const getCurrentActiveFile = async idSuratKeluar => DB("trs_file_surat_keluar").where("id_surat_keluar", idSuratKeluar).where("status", "active").orderBy("tanggal_upload", "desc").first();
-const getSignatureHistory = async idSuratKeluar => DB("trs_tanda_tangan_dokumen as ttd").leftJoin("mst_pengguna as u", "ttd.id_pengguna", "u.id_pengguna").leftJoin("mst_sertifikat_elektronik as mse", "ttd.id_sertifikat_elektronik", "mse.id_sertifikat_elektronik").select("ttd.*", "u.nama_lengkap as nama_penanda_tangan", "u.nama_pengguna as username_penanda_tangan", "mse.nama_sertifikat", "mse.alias_sertifikat").where("ttd.id_surat_keluar", idSuratKeluar).orderBy("ttd.urutan_tanda_tangan", "asc").orderBy("ttd.created_at", "asc");
-const getVerificationHistory = async idSuratKeluar => DB("trs_verifikasi_dokumen as tvd").leftJoin("mst_pengguna as u", "tvd.diverifikasi_oleh", "u.id_pengguna").select("tvd.*", "u.nama_lengkap as nama_verifikator", "u.nama_pengguna as username_verifikator").where("tvd.id_surat_keluar", idSuratKeluar).orderBy("tvd.diverifikasi_pada", "desc");
+const getSuratById = async idSuratKeluar => DB("trx_surat_keluar as tsk").leftJoin("mst_jenis_surat as mjs", "tsk.id_jenis_surat", "mjs.jenis_surat_id").leftJoin("mst_template_surat as mts", "tsk.id_template", "mts.id_template").select("tsk.*", "mjs.nama_jenis_surat", "mts.nama_template").where("tsk.id_surat_keluar", idSuratKeluar).first();
+const getCurrentActiveFile = async idSuratKeluar => DB("trx_file_surat_keluar").where("id_surat_keluar", idSuratKeluar).where("status", "active").orderBy("tanggal_upload", "desc").first();
+const getSignatureHistory = async idSuratKeluar => DB("trx_tanda_tangan_dokumen as ttd").leftJoin("mst_pengguna as u", "ttd.id_pengguna", "u.id_pengguna").leftJoin("mst_sertifikat_elektronik as mse", "ttd.id_sertifikat_elektronik", "mse.id_sertifikat_elektronik").select("ttd.*", "u.nama_lengkap as nama_penanda_tangan", "u.nama_pengguna as username_penanda_tangan", "mse.nama_sertifikat", "mse.alias_sertifikat").where("ttd.id_surat_keluar", idSuratKeluar).orderBy("ttd.urutan_tanda_tangan", "asc").orderBy("ttd.created_at", "asc");
+const getVerificationHistory = async idSuratKeluar => DB("trx_verifikasi_dokumen as tvd").leftJoin("mst_pengguna as u", "tvd.diverifikasi_oleh", "u.id_pengguna").select("tvd.*", "u.nama_lengkap as nama_verifikator", "u.nama_pengguna as username_verifikator").where("tvd.id_surat_keluar", idSuratKeluar).orderBy("tvd.diverifikasi_pada", "desc");
 const getRoutePermission = async (req, menuPaths, actionKey) => {
   const deny = await assertMenuPermission(req, {
     ...req,
@@ -212,16 +212,16 @@ router.post("/surat-keluar/:id_surat_keluar/tanda-tangan", async (req, res) => {
       idCabang: surat.id_cabang || req?.auth?.id_cabang || null,
       moduleName: "tte/signed"
     });
-    const existingSignatures = await DB("trs_tanda_tangan_dokumen").where("id_surat_keluar", oPayload.id_surat_keluar).where("status_tanda_tangan", "aktif").count({
+    const existingSignatures = await DB("trx_tanda_tangan_dokumen").where("id_surat_keluar", oPayload.id_surat_keluar).where("status_tanda_tangan", "aktif").count({
       total: "id_tanda_tangan_dokumen"
     });
     const urutan = Number(existingSignatures?.[0]?.total || 0) + 1;
     await DB.transaction(async trx => {
-      await trx("trs_file_surat_keluar").where("id_surat_keluar", oPayload.id_surat_keluar).where("status", "active").update({
+      await trx("trx_file_surat_keluar").where("id_surat_keluar", oPayload.id_surat_keluar).where("status", "active").update({
         status: "nonactive",
         updated_at: new Date()
       });
-      await trx("trs_file_surat_keluar").insert({
+      await trx("trx_file_surat_keluar").insert({
         id_surat_keluar: oPayload.id_surat_keluar,
         nama_file: signedFileName,
         path_file: signedPath,
@@ -253,12 +253,12 @@ router.post("/surat-keluar/:id_surat_keluar/tanda-tangan", async (req, res) => {
         created_by: getUserId(req),
         created_at: signingTime
       };
-      await trx("trs_tanda_tangan_dokumen").insert(signatureInsert);
-      const alur = await trx("trs_alur_tanda_tangan").where("id_surat_keluar", oPayload.id_surat_keluar).first();
+      await trx("trx_tanda_tangan_dokumen").insert(signatureInsert);
+      const alur = await trx("trx_alur_tanda_tangan").where("id_surat_keluar", oPayload.id_surat_keluar).first();
       if (alur) {
-        const detailExisting = await trx("trs_detail_alur_tanda_tangan").where("id_alur_tanda_tangan", alur.id_alur_tanda_tangan).where("id_pengguna", getUserId(req)).where("jenis_tindakan", "tanda_tangan").first();
+        const detailExisting = await trx("trx_detail_alur_tanda_tangan").where("id_alur_tanda_tangan", alur.id_alur_tanda_tangan).where("id_pengguna", getUserId(req)).where("jenis_tindakan", "tanda_tangan").first();
         if (detailExisting) {
-          await trx("trs_detail_alur_tanda_tangan").where("id_detail_alur_tanda_tangan", detailExisting.id_detail_alur_tanda_tangan).update({
+          await trx("trx_detail_alur_tanda_tangan").where("id_detail_alur_tanda_tangan", detailExisting.id_detail_alur_tanda_tangan).update({
             status_tindakan: "ditandatangani",
             catatan: oPayload.catatan || detailExisting.catatan,
             hash_dokumen: hashDokumen,
@@ -267,7 +267,7 @@ router.post("/surat-keluar/:id_surat_keluar/tanda-tangan", async (req, res) => {
             updated_at: signingTime
           });
         } else {
-          await trx("trs_detail_alur_tanda_tangan").insert({
+          await trx("trx_detail_alur_tanda_tangan").insert({
             id_alur_tanda_tangan: alur.id_alur_tanda_tangan,
             id_pengguna: getUserId(req),
             id_peran: req?.auth?.peranId || null,
@@ -284,7 +284,7 @@ router.post("/surat-keluar/:id_surat_keluar/tanda-tangan", async (req, res) => {
           });
         }
         if (alur.status_alur !== "selesai") {
-          await trx("trs_alur_tanda_tangan").where("id_alur_tanda_tangan", alur.id_alur_tanda_tangan).update({
+          await trx("trx_alur_tanda_tangan").where("id_alur_tanda_tangan", alur.id_alur_tanda_tangan).update({
             status_alur: "aktif",
             urutan_aktif: urutan,
             updated_by: getUserId(req),
@@ -292,7 +292,7 @@ router.post("/surat-keluar/:id_surat_keluar/tanda-tangan", async (req, res) => {
           });
         }
       } else {
-        const insertedAlur = await trx("trs_alur_tanda_tangan").insert({
+        const insertedAlur = await trx("trx_alur_tanda_tangan").insert({
           id_surat_keluar: oPayload.id_surat_keluar,
           jenis_alur: "berurutan",
           status_alur: "aktif",
@@ -304,7 +304,7 @@ router.post("/surat-keluar/:id_surat_keluar/tanda-tangan", async (req, res) => {
           updated_at: signingTime
         });
         const idAlur = Array.isArray(insertedAlur) ? insertedAlur[0] : insertedAlur;
-        await trx("trs_detail_alur_tanda_tangan").insert({
+        await trx("trx_detail_alur_tanda_tangan").insert({
           id_alur_tanda_tangan: idAlur,
           id_pengguna: getUserId(req),
           id_peran: req?.auth?.peranId || null,
@@ -320,7 +320,7 @@ router.post("/surat-keluar/:id_surat_keluar/tanda-tangan", async (req, res) => {
           updated_at: signingTime
         });
       }
-      await trx("trs_tracking_surat_keluar").insert({
+      await trx("trx_tracking_surat_keluar").insert({
         id_surat_keluar: oPayload.id_surat_keluar,
         status: surat.status,
         aktivitas: "tte_ditandatangani",

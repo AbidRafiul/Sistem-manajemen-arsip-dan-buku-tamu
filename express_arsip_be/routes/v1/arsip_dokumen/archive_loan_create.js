@@ -34,7 +34,7 @@ const createArchiveLoan = async (req, res) => {
     }
 
     // Verifikasi dokumen aktif
-    const oDocument = await DB("trs_dokumen")
+    const oDocument = await DB("trx_dokumen")
       .where("kode_dokumen", cKodeDokumen)
       .where("status", "active")
       .first();
@@ -48,7 +48,7 @@ const createArchiveLoan = async (req, res) => {
     }
 
     // Cek apakah dokumen sedang dipinjam (status = borrowed)
-    const oActiveLoan = await DB("trs_peminjaman_arsip")
+    const oActiveLoan = await DB("trx_peminjaman_arsip")
       .where("kode_dokumen", cKodeDokumen)
       .where("status", "borrowed")
       .first();
@@ -88,7 +88,7 @@ const createArchiveLoan = async (req, res) => {
       updated_at: dNow,
     };
 
-    const [nLoanId] = await DB("trs_peminjaman_arsip").insert(oData);
+    const [nLoanId] = await DB("trx_peminjaman_arsip").insert(oData);
 
     try {
       if (nIdCabang) {

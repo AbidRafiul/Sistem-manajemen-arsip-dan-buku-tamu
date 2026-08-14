@@ -50,7 +50,7 @@ const incomingLetterArchive = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trs_surat_masuk").where("surat_masuk_id", oPayload.surat_masuk_id).first();
+    const oLetter = await DB("trx_surat_masuk").where("surat_masuk_id", oPayload.surat_masuk_id).first();
     if (!oLetter) {
       return res.status(404).json({
         status: status.BAD_REQUEST,
@@ -58,7 +58,7 @@ const incomingLetterArchive = async (req, res) => {
       });
     }
 
-    const oActiveFile = await DB("trs_file_surat_masuk")
+    const oActiveFile = await DB("trx_file_surat_masuk")
       .where("surat_masuk_id", oPayload.surat_masuk_id)
       .where("status", "active")
       .orderBy("created_at", "desc")
@@ -72,7 +72,7 @@ const incomingLetterArchive = async (req, res) => {
       });
     }
 
-    const oExistingDocument = await DB("trs_dokumen")
+    const oExistingDocument = await DB("trx_dokumen")
       .where("nomor_dokumen", oLetter.nomor_agenda)
       .where("status", "active")
       .first();
@@ -95,7 +95,7 @@ const incomingLetterArchive = async (req, res) => {
       const cClassificationCode = await getCodeById(trx, "mst_klasifikasi_arsip", "id_klasifikasi", "kode_klasifikasi", oLetter.klasifikasi_arsip_id);
       const cConfidentialityCode = await getCodeById(trx, "mst_tingkat_kerahasiaan", "id_tingkat_kerahasiaan", "kode_tingkat_kerahasiaan", oLetter.tingkat_kerahasiaan_id);
 
-      const [nDocumentId] = await trx("trs_dokumen").insert({
+      const [nDocumentId] = await trx("trx_dokumen").insert({
         kode_klasifikasi: cClassificationCode,
         kode_jenis_dokumen: cDocumentTypeCode,
         kode_kategori_dokumen: null,
@@ -114,11 +114,11 @@ const incomingLetterArchive = async (req, res) => {
       });
 
       const cKodeDokumen = `${oLetter.nomor_agenda}-${nDocumentId}`;
-      await trx("trs_dokumen").where("id_dokumen", nDocumentId).update({
+      await trx("trx_dokumen").where("id_dokumen", nDocumentId).update({
         kode_dokumen: cKodeDokumen,
       });
 
-      const [nVersionId] = await trx("trs_versi_dokumen").insert({
+      const [nVersionId] = await trx("trx_versi_dokumen").insert({
         kode_dokumen: cKodeDokumen,
         nomor_versi: 1,
         catatan_perubahan: `Diarsipkan dari surat masuk ${oLetter.nomor_agenda}`,

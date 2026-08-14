@@ -13,8 +13,8 @@ router.post("/", async (req, res) => {
     const page = parseInt(oPayload.page || 1, 10) || 1;
     const limit = parseInt(oPayload.limit || 20, 10) || 20;
     const offset = (page - 1) * limit;
-    const q = DB("trs_kunjungan as t").select("t.*", "mp.nama_tujuan_kunjungan as VisitPurposeName", "u.nama_lengkap as HostFullname", "c.nama_cabang as BranchName").leftJoin("mst_tujuan_kunjungan as mp", "t.id_tujuan_kunjungan", "mp.id_tujuan_kunjungan").leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna").leftJoin("mst_cabang as c", "u.id_cabang", "c.id_cabang");
-    const qCount = DB("trs_kunjungan as t").leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna").count({
+    const q = DB("trx_kunjungan as t").select("t.*", "mp.nama_tujuan_kunjungan as VisitPurposeName", "u.nama_lengkap as HostFullname", "c.nama_cabang as BranchName").leftJoin("mst_tujuan_kunjungan as mp", "t.id_tujuan_kunjungan", "mp.id_tujuan_kunjungan").leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna").leftJoin("mst_cabang as c", "u.id_cabang", "c.id_cabang");
+    const qCount = DB("trx_kunjungan as t").leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna").count({
       total: '*'
     });
 

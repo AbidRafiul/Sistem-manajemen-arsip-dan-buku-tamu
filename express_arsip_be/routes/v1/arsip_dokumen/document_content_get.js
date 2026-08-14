@@ -17,7 +17,7 @@ const getDocumentContent = async (req, res) => {
       });
     }
 
-    let query = DB("trs_konten_dokumen as k")
+    let query = DB("trx_konten_dokumen as k")
       .select(
         "k.id_konten",
         "k.kode_dokumen",
@@ -33,7 +33,7 @@ const getDocumentContent = async (req, res) => {
         "v.nomor_versi",
         "v.file_path"
       )
-      .leftJoin("trs_versi_dokumen as v", "k.id_versi", "v.id_versi")
+      .leftJoin("trx_versi_dokumen as v", "k.id_versi", "v.id_versi")
       .where("k.kode_dokumen", cKodeDokumen);
 
     if (nIdVersi) {

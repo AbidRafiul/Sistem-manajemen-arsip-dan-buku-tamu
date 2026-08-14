@@ -15,7 +15,7 @@ router.post("/", async (req, res) => {
     });
   }
   try {
-    const oRow = await DB("trs_kunjungan as t").select("t.nama_tamu", "t.nomor_telepon", "t.instansi_tamu", "t.waktu_masuk", "t.waktu_keluar", "t.status", "t.status_persetujuan", "t.catatan_kunjungan", "t.nama_host", "t.token_qr", "t.kode_kunjungan", "mp.nama_tujuan_kunjungan as VisitPurposeName", "t.created_at").leftJoin("mst_tujuan_kunjungan as mp", "t.id_tujuan_kunjungan", "mp.id_tujuan_kunjungan").where("t.kode_kunjungan", VisitCode).first();
+    const oRow = await DB("trx_kunjungan as t").select("t.nama_tamu", "t.nomor_telepon", "t.instansi_tamu", "t.waktu_masuk", "t.waktu_keluar", "t.status", "t.status_persetujuan", "t.catatan_kunjungan", "t.nama_host", "t.token_qr", "t.kode_kunjungan", "mp.nama_tujuan_kunjungan as VisitPurposeName", "t.created_at").leftJoin("mst_tujuan_kunjungan as mp", "t.id_tujuan_kunjungan", "mp.id_tujuan_kunjungan").where("t.kode_kunjungan", VisitCode).first();
     if (!oRow) {
       return res.status(404).json({
         status: "03",

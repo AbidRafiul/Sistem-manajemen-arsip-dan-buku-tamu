@@ -75,7 +75,7 @@ const outgoingLetterUpdate = async (req, res) => {
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
       uniqueField: ["nomor_agenda"],
-      table: "trs_surat_keluar",
+      table: "trx_surat_keluar",
       excludedField: "id_surat_keluar",
       allowUnknown: false,
     });
@@ -88,7 +88,7 @@ const outgoingLetterUpdate = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trs_surat_keluar")
+    const oLetter = await DB("trx_surat_keluar")
       .where("id_surat_keluar", oPayload.id_surat_keluar)
       .whereNot("status", "dihapus")
       .first();
@@ -161,11 +161,11 @@ const outgoingLetterUpdate = async (req, res) => {
     });
 
     await DB.transaction(async (trx) => {
-      await trx("trs_surat_keluar")
+      await trx("trx_surat_keluar")
         .where("id_surat_keluar", oPayload.id_surat_keluar)
         .update(oUpdate);
 
-      await trx("trs_tracking_surat_keluar").insert({
+      await trx("trx_tracking_surat_keluar").insert({
         id_surat_keluar: oPayload.id_surat_keluar,
         status: oUpdate.status || oLetter.status,
         aktivitas: "surat_diupdate",

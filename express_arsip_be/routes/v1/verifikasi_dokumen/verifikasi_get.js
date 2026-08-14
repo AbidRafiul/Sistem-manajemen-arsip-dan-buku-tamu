@@ -14,7 +14,7 @@ const getVerifikasiDokumen = async (req, res) => {
       });
     }
 
-    const signature = await DB("trs_tanda_tangan_dokumen as ttd")
+    const signature = await DB("trx_tanda_tangan_dokumen as ttd")
       .leftJoin("mst_pengguna as u", "ttd.id_pengguna", "u.id_pengguna")
       .leftJoin("mst_sertifikat_elektronik as mse", "ttd.id_sertifikat_elektronik", "mse.id_sertifikat_elektronik")
       .select(
@@ -40,7 +40,7 @@ const getVerifikasiDokumen = async (req, res) => {
     const verification = await verifyPdfBuffer(pdfBuffer);
     const verificationResult = verification.signatures?.[0] || {};
 
-    const latestVerification = await DB("trs_verifikasi_dokumen")
+    const latestVerification = await DB("trx_verifikasi_dokumen")
       .where("token_verifikasi", token)
       .orderBy("diverifikasi_pada", "desc")
       .first();

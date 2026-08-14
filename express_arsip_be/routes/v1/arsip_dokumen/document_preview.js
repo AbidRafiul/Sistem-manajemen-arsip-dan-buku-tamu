@@ -19,9 +19,9 @@ const documentPreview = async (req, res) => {
 
     // Jika file_path belum ada tapi id_dokumen / kode_dokumen dikirim, cari dari database
     if (!cFilePath && (nIdDokumen || cKodeDokumen)) {
-      const oQuery = DB("trs_versi_dokumen as v")
+      const oQuery = DB("trx_versi_dokumen as v")
         .select("v.file_path")
-        .join("trs_dokumen as d", "v.kode_dokumen", "d.kode_dokumen");
+        .join("trx_dokumen as d", "v.kode_dokumen", "d.kode_dokumen");
 
       if (nIdDokumen) {
         oQuery.where("d.id_dokumen", nIdDokumen);

@@ -35,21 +35,21 @@ const outgoingLetterArchive = async (req, res) => {
         message: cValidate
       });
     }
-    const oLetter = await DB("trs_surat_keluar").where("id_surat_keluar", oPayload.id_surat_keluar).first();
+    const oLetter = await DB("trx_surat_keluar").where("id_surat_keluar", oPayload.id_surat_keluar).first();
     if (!oLetter) {
       return res.status(404).json({
         status: status.BAD_REQUEST,
         message: "Surat keluar tidak ditemukan"
       });
     }
-    const oActiveFile = await DB("trs_file_surat_keluar").where("id_surat_keluar", oPayload.id_surat_keluar).where("status", "active").orderBy("created_at", "desc").orderBy("id_file_surat_keluar", "desc").first();
+    const oActiveFile = await DB("trx_file_surat_keluar").where("id_surat_keluar", oPayload.id_surat_keluar).where("status", "active").orderBy("created_at", "desc").orderBy("id_file_surat_keluar", "desc").first();
     if (!oActiveFile) {
       return res.status(400).json({
         status: status.BAD_REQUEST,
         message: "Upload file surat terlebih dahulu sebelum diarsipkan"
       });
     }
-    const oExistingDocument = await DB("trs_dokumen").where("nomor_dokumen", oLetter.nomor_agenda).where("status", "active").first();
+    const oExistingDocument = await DB("trx_dokumen").where("nomor_dokumen", oLetter.nomor_agenda).where("status", "active").first();
     if (oExistingDocument) {
       return res.status(200).json({
         status: status.SUKSES,
@@ -70,7 +70,7 @@ const outgoingLetterArchive = async (req, res) => {
       const oFirstConf = await trx("mst_tingkat_kerahasiaan").first();
       const cClassificationCode = oFirstClass?.kode_klasifikasi || null;
       const cConfidentialityCode = oFirstConf?.kode_tingkat_kerahasiaan || null;
-      const [nDocumentId] = await trx("trs_dokumen").insert({
+      const [nDocumentId] = await trx("trx_dokumen").insert({
         kode_klasifikasi: cClassificationCode,
         kode_jenis_dokumen: cDocumentTypeCode,
         kode_kategori_dokumen: null,
@@ -88,10 +88,10 @@ const outgoingLetterArchive = async (req, res) => {
         updated_at: dNow
       });
       const cKodeDokumen = `${oLetter.nomor_agenda}-${nDocumentId}`;
-      await trx("trs_dokumen").where("id_dokumen", nDocumentId).update({
+      await trx("trx_dokumen").where("id_dokumen", nDocumentId).update({
         kode_dokumen: cKodeDokumen
       });
-      const [nVersionId] = await trx("trs_versi_dokumen").insert({
+      const [nVersionId] = await trx("trx_versi_dokumen").insert({
         kode_dokumen: cKodeDokumen,
         nomor_versi: 1,
         catatan_perubahan: `Diarsipkan dari surat keluar ${oLetter.nomor_agenda}`,
@@ -105,7 +105,7 @@ const outgoingLetterArchive = async (req, res) => {
         created_at: dNow,
         updated_at: dNow
       });
-      await trx("trs_tracking_surat_keluar").insert({
+      await trx("trx_tracking_surat_keluar").insert({
         id_surat_keluar: oLetter.id_surat_keluar,
         status: oLetter.status,
         aktivitas: "surat_diarsipkan",

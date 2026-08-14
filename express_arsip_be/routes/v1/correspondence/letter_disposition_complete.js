@@ -37,7 +37,7 @@ const letterDispositionComplete = async (req, res) => {
         message: cValidate,
       });
     }
-    const oDisposition = await DB("trs_disposisi_surat")
+    const oDisposition = await DB("trx_disposisi_surat")
       .where("disposisi_surat_id", oPayload.disposisi_id)
       .first();
     if (!oDisposition) {
@@ -52,7 +52,7 @@ const letterDispositionComplete = async (req, res) => {
         message: "Disposisi sudah selesai",
       });
     }
-    const oLetter = await DB("trs_surat_masuk")
+    const oLetter = await DB("trx_surat_masuk")
       .where("surat_masuk_id", oDisposition.surat_masuk_id)
       .first();
     if (!oLetter) {
@@ -72,7 +72,7 @@ const letterDispositionComplete = async (req, res) => {
     let bAllDispositionCompleted = false;
 
     await DB.transaction(async (trx) => {
-      await trx("trs_disposisi_surat")
+      await trx("trx_disposisi_surat")
         .where("disposisi_surat_id", oPayload.disposisi_id)
         .update({
           status: "selesai",
@@ -98,14 +98,14 @@ const letterDispositionComplete = async (req, res) => {
         updated_at: dNow,
       });
 
-      const vaUnfinishedDispositions = await trx("trs_disposisi_surat")
+      const vaUnfinishedDispositions = await trx("trx_disposisi_surat")
         .where("surat_masuk_id", oDisposition.surat_masuk_id)
         .whereNot("status", "selesai");
 
       if (vaUnfinishedDispositions.length === 0) {
         bAllDispositionCompleted = true;
 
-        await trx("trs_surat_masuk")
+        await trx("trx_surat_masuk")
           .where("surat_masuk_id", oDisposition.surat_masuk_id)
           .update({
             status: "selesai",
@@ -128,7 +128,7 @@ const letterDispositionComplete = async (req, res) => {
           updated_at: dNow,
         });
       } else {
-        await trx("trs_surat_masuk")
+        await trx("trx_surat_masuk")
           .where("surat_masuk_id", oDisposition.surat_masuk_id)
           .update({
             status: "diproses",

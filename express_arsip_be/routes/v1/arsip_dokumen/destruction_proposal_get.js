@@ -9,7 +9,7 @@ const getDestructionProposals = async (req, res) => {
     const nIdDokumen = req.query.id_dokumen || req.query.document_id;
     const cProposedBy = req.query.diusulkan_oleh || req.query.proposed_by;
 
-    const oQuery = DB("trs_usulan_pemusnahan as dp")
+    const oQuery = DB("trx_usulan_pemusnahan as dp")
       .select(
         "dp.id_usulan",
         "dp.kode_dokumen",
@@ -38,7 +38,7 @@ const getDestructionProposals = async (req, res) => {
         "rs.tahun_retensi",
         "rs.tindakan_retensi"
       )
-      .leftJoin("trs_dokumen as d", "dp.kode_dokumen", "d.kode_dokumen")
+      .leftJoin("trx_dokumen as d", "dp.kode_dokumen", "d.kode_dokumen")
       .leftJoin(
         "mst_jadwal_retensi as rs",
         "dp.kode_retensi",

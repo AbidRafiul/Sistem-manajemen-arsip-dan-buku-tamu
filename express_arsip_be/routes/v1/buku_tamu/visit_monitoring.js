@@ -6,18 +6,18 @@ import { Logging } from "../components/tools/servertool.js";
 const router = express.Router();
 router.post("/", async (req, res) => {
   try {
-    let qTotal = DB("trs_kunjungan").leftJoin("mst_pengguna", "trs_kunjungan.id_user_host", "mst_pengguna.id_pengguna").whereRaw("DATE(trs_kunjungan.created_at) = CURRENT_DATE()").count("trs_kunjungan.id_kunjungan as total");
-    applyMultiTenantFilter(qTotal, req, 'trs_kunjungan');
+    let qTotal = DB("trx_kunjungan").leftJoin("mst_pengguna", "trx_kunjungan.id_user_host", "mst_pengguna.id_pengguna").whereRaw("DATE(trx_kunjungan.created_at) = CURRENT_DATE()").count("trx_kunjungan.id_kunjungan as total");
+    applyMultiTenantFilter(qTotal, req, 'trx_kunjungan');
     const totalTamuHariIni = await qTotal.first();
-    let qSedang = DB("trs_kunjungan").leftJoin("mst_pengguna", "trs_kunjungan.id_user_host", "mst_pengguna.id_pengguna").whereRaw("DATE(trs_kunjungan.created_at) = CURRENT_DATE()").andWhere("trs_kunjungan.status", "in").count("trs_kunjungan.id_kunjungan as total");
-    applyMultiTenantFilter(qSedang, req, 'trs_kunjungan');
+    let qSedang = DB("trx_kunjungan").leftJoin("mst_pengguna", "trx_kunjungan.id_user_host", "mst_pengguna.id_pengguna").whereRaw("DATE(trx_kunjungan.created_at) = CURRENT_DATE()").andWhere("trx_kunjungan.status", "in").count("trx_kunjungan.id_kunjungan as total");
+    applyMultiTenantFilter(qSedang, req, 'trx_kunjungan');
     const sedangBerkunjung = await qSedang.first();
-    let qSelesai = DB("trs_kunjungan").leftJoin("mst_pengguna", "trs_kunjungan.id_user_host", "mst_pengguna.id_pengguna").whereRaw("DATE(trs_kunjungan.created_at) = CURRENT_DATE()").andWhere("trs_kunjungan.status", "out").count("trs_kunjungan.id_kunjungan as total");
-    applyMultiTenantFilter(qSelesai, req, 'trs_kunjungan');
+    let qSelesai = DB("trx_kunjungan").leftJoin("mst_pengguna", "trx_kunjungan.id_user_host", "mst_pengguna.id_pengguna").whereRaw("DATE(trx_kunjungan.created_at) = CURRENT_DATE()").andWhere("trx_kunjungan.status", "out").count("trx_kunjungan.id_kunjungan as total");
+    applyMultiTenantFilter(qSelesai, req, 'trx_kunjungan');
     const selesaiKunjungan = await qSelesai.first();
     const timeRange = req.body.time_range || 'this_week';
     
-    let qRute = DB("trs_kunjungan as t")
+    let qRute = DB("trx_kunjungan as t")
       .leftJoin("mst_pengguna", "t.id_user_host", "mst_pengguna.id_pengguna")
       .join("mst_tujuan_kunjungan as m", "t.id_tujuan_kunjungan", "m.id_tujuan_kunjungan")
       .select("m.nama_tujuan_kunjungan")
@@ -42,7 +42,7 @@ router.post("/", async (req, res) => {
     let chart_trend_labels = [];
     let chart_trend_data = [];
 
-    let qTrend = DB("trs_kunjungan as t").leftJoin("mst_pengguna", "t.id_user_host", "mst_pengguna.id_pengguna");
+    let qTrend = DB("trx_kunjungan as t").leftJoin("mst_pengguna", "t.id_user_host", "mst_pengguna.id_pengguna");
     applyMultiTenantFilter(qTrend, req, 't');
 
     if (timeRange === 'this_week' || timeRange === 'last_week') {

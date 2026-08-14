@@ -19,7 +19,7 @@ export const createNotification = async ({
 }) => {
   try {
     const now = formatDateSystem();
-    await DB("trs_notifikasi").insert({
+    await DB("trx_notifikasi").insert({
       id_pengguna,
       judul,
       pesan,

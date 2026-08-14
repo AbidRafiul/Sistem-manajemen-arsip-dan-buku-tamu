@@ -37,7 +37,7 @@ const outgoingLetterUpload = async (req, res) => {
         message: "File wajib diupload"
       });
     }
-    const oLetter = await DB("trs_surat_keluar").where("id_surat_keluar", oPayload.id_surat_keluar).first();
+    const oLetter = await DB("trx_surat_keluar").where("id_surat_keluar", oPayload.id_surat_keluar).first();
     if (!oLetter) {
       return res.status(404).json({
         status: status.BAD_REQUEST,
@@ -83,14 +83,14 @@ const outgoingLetterUpload = async (req, res) => {
     let vaReplacedFiles = [];
     const nActorId = oPayload.uploaded_by || req?.auth?.id_pengguna || null;
     await DB.transaction(async trx => {
-      vaReplacedFiles = await trx("trs_file_surat_keluar").select("id_file_surat_keluar", "path_file").where("id_surat_keluar", oPayload.id_surat_keluar).where("status", "active").forUpdate();
+      vaReplacedFiles = await trx("trx_file_surat_keluar").select("id_file_surat_keluar", "path_file").where("id_surat_keluar", oPayload.id_surat_keluar).where("status", "active").forUpdate();
       if (vaReplacedFiles.length > 0) {
-        await trx("trs_file_surat_keluar").where("id_surat_keluar", oPayload.id_surat_keluar).where("status", "active").update({
+        await trx("trx_file_surat_keluar").where("id_surat_keluar", oPayload.id_surat_keluar).where("status", "active").update({
           status: "nonactive",
           updated_at: dNow
         });
       }
-      vaInserted = await trx("trs_file_surat_keluar").insert({
+      vaInserted = await trx("trx_file_surat_keluar").insert({
         id_surat_keluar: oPayload.id_surat_keluar,
         path_file: cObjectName,
         nama_file: oFile.originalname,
@@ -101,7 +101,7 @@ const outgoingLetterUpload = async (req, res) => {
         created_at: dNow,
         updated_at: dNow
       });
-      await trx("trs_tracking_surat_keluar").insert({
+      await trx("trx_tracking_surat_keluar").insert({
         id_surat_keluar: oPayload.id_surat_keluar,
         status: oLetter.status,
         aktivitas: "file_surat_diupload",

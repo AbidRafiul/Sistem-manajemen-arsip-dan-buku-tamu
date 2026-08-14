@@ -853,7 +853,7 @@ const verifyPdfBuffer = async (pdfBuffer) => {
 
 const chooseBaseDocumentBuffer = async (surat, { preferSigned = true } = {}) => {
   const latestSignature = preferSigned
-    ? await DB("trs_tanda_tangan_dokumen as ttd")
+    ? await DB("trx_tanda_tangan_dokumen as ttd")
         .where("ttd.id_surat_keluar", surat.id_surat_keluar)
         .where("ttd.status_tanda_tangan", "aktif")
         .orderBy("ttd.urutan_tanda_tangan", "desc")
@@ -865,7 +865,7 @@ const chooseBaseDocumentBuffer = async (surat, { preferSigned = true } = {}) => 
     return loadObjectBuffer(latestSignature.lokasi_dokumen);
   }
 
-  const latestFile = await DB("trs_file_surat_keluar")
+  const latestFile = await DB("trx_file_surat_keluar")
     .where("id_surat_keluar", surat.id_surat_keluar)
     .where("status", "active")
     .orderBy("tanggal_upload", "desc")
@@ -943,7 +943,7 @@ const buildCertificatePayload = async (payload = {}, req = null) => {
 };
 
 const getLatestDocumentSignature = async (idSuratKeluar) =>
-  DB("trs_tanda_tangan_dokumen as ttd")
+  DB("trx_tanda_tangan_dokumen as ttd")
     .leftJoin("mst_pengguna as u", "ttd.id_pengguna", "u.id_pengguna")
     .leftJoin("mst_sertifikat_elektronik as mse", "ttd.id_sertifikat_elektronik", "mse.id_sertifikat_elektronik")
     .select(
@@ -960,7 +960,7 @@ const getLatestDocumentSignature = async (idSuratKeluar) =>
     .first();
 
 const getLatestDocumentVerification = async (idSuratKeluar) =>
-  DB("trs_verifikasi_dokumen as tvd")
+  DB("trx_verifikasi_dokumen as tvd")
     .leftJoin("mst_pengguna as u", "tvd.diverifikasi_oleh", "u.id_pengguna")
     .select("tvd.*", "u.nama_lengkap as nama_verifikator", "u.nama_pengguna as username_verifikator")
     .where("tvd.id_surat_keluar", idSuratKeluar)
@@ -977,7 +977,7 @@ const recordSignatureLog = async ({
   req,
   metadata = {},
 }) => {
-  const lastLog = await DB("trs_log_tanda_tangan")
+  const lastLog = await DB("trx_log_tanda_tangan")
     .where("id_surat_keluar", idSuratKeluar)
     .orderBy("id_log_tanda_tangan", "desc")
     .first();
@@ -1011,7 +1011,7 @@ const recordSignatureLog = async ({
     ),
   );
 
-  await DB("trs_log_tanda_tangan").insert({
+  await DB("trx_log_tanda_tangan").insert({
     ...logPayloadBase,
     hash_log: hashLog,
   });
@@ -1038,7 +1038,7 @@ const selectSigningPosition = async (surat) => {
 };
 
 const signLetterAutomatically = async ({ idSuratKeluar, actorId = null, req = null }) => {
-  const surat = await DB("trs_surat_keluar as tsk")
+  const surat = await DB("trx_surat_keluar as tsk")
     .leftJoin("mst_jenis_surat as mjs", "tsk.id_jenis_surat", "mjs.jenis_surat_id")
     .leftJoin("mst_template_surat as mts", "tsk.id_template", "mts.id_template")
     .select("tsk.*", "mjs.nama_jenis_surat", "mts.nama_template")
@@ -1049,7 +1049,7 @@ const signLetterAutomatically = async ({ idSuratKeluar, actorId = null, req = nu
     throw new Error("Surat keluar tidak ditemukan");
   }
 
-  const activeFile = await DB("trs_file_surat_keluar")
+  const activeFile = await DB("trx_file_surat_keluar")
     .where("id_surat_keluar", idSuratKeluar)
     .where("status", "active")
     .orderBy("tanggal_upload", "desc")
@@ -1130,14 +1130,14 @@ const signLetterAutomatically = async ({ idSuratKeluar, actorId = null, req = nu
     moduleName: "tte/signed",
   });
 
-  const existingSignatures = await DB("trs_tanda_tangan_dokumen")
+  const existingSignatures = await DB("trx_tanda_tangan_dokumen")
     .where("id_surat_keluar", idSuratKeluar)
     .where("status_tanda_tangan", "aktif")
     .count({ total: "id_tanda_tangan_dokumen" });
   const urutan = Number(existingSignatures?.[0]?.total || 0) + 1;
 
   await DB.transaction(async (trx) => {
-    await trx("trs_file_surat_keluar")
+    await trx("trx_file_surat_keluar")
       .where("id_surat_keluar", idSuratKeluar)
       .where("status", "active")
       .update({
@@ -1145,7 +1145,7 @@ const signLetterAutomatically = async ({ idSuratKeluar, actorId = null, req = nu
         updated_at: new Date(),
       });
 
-    await trx("trs_file_surat_keluar").insert({
+    await trx("trx_file_surat_keluar").insert({
       id_surat_keluar: idSuratKeluar,
       nama_file: signedFileName,
       path_file: signedPath,
@@ -1159,7 +1159,7 @@ const signLetterAutomatically = async ({ idSuratKeluar, actorId = null, req = nu
       updated_at: new Date(),
     });
 
-    await trx("trs_tanda_tangan_dokumen").insert({
+    await trx("trx_tanda_tangan_dokumen").insert({
       id_surat_keluar: idSuratKeluar,
       id_pengguna: actorId || null,
       id_sertifikat_elektronik: certificate?.id_sertifikat_elektronik || null,

@@ -11,22 +11,22 @@ const outgoingLetterDashboardStats = async (req, res) => {
   const cFunc = "outgoingLetterDashboardStats";
 
   try {
-    const qTerkirim = DB("trs_surat_keluar as tsk")
+    const qTerkirim = DB("trx_surat_keluar as tsk")
       .leftJoin("mst_pengguna as u", "tsk.created_by", "u.id_pengguna")
       .count("* as total").whereIn("tsk.status", ["terkirim", "selesai"]).first();
     applyMultiTenantFilter(qTerkirim, req, 'u');
 
-    const qDisetujui = DB("trs_surat_keluar as tsk")
+    const qDisetujui = DB("trx_surat_keluar as tsk")
       .leftJoin("mst_pengguna as u", "tsk.created_by", "u.id_pengguna")
       .count("* as total").where("tsk.status", "disetujui").first();
     applyMultiTenantFilter(qDisetujui, req, 'u');
 
-    const qDitolak = DB("trs_surat_keluar as tsk")
+    const qDitolak = DB("trx_surat_keluar as tsk")
       .leftJoin("mst_pengguna as u", "tsk.created_by", "u.id_pengguna")
       .count("* as total").where("tsk.status", "ditolak").first();
     applyMultiTenantFilter(qDitolak, req, 'u');
 
-    const qMenunggu = DB("trs_surat_keluar as tsk")
+    const qMenunggu = DB("trx_surat_keluar as tsk")
       .leftJoin("mst_pengguna as u", "tsk.created_by", "u.id_pengguna")
       .count("* as total").where("tsk.status", "menunggu_approval").first();
     applyMultiTenantFilter(qMenunggu, req, 'u');
@@ -44,7 +44,7 @@ const outgoingLetterDashboardStats = async (req, res) => {
     const nMenunggu = Number(oMenunggu?.total) || 0;
 
     // Fetch trend data for last 7 days
-    const qChart = DB("trs_surat_keluar as tsk")
+    const qChart = DB("trx_surat_keluar as tsk")
       .leftJoin("mst_pengguna as u", "tsk.created_by", "u.id_pengguna")
       .select(DB.raw("DATE(tsk.created_at) as tanggal"), "tsk.status", DB.raw("COUNT(*) as total"))
       .whereRaw("tsk.created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)")

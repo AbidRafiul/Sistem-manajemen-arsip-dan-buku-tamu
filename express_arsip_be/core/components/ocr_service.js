@@ -153,7 +153,7 @@ export const ocrFromImage = async (fileBuffer, lang = "eng") => {
 
 /**
  * Orchestrator: Process file content for a given document version
- * Runs asynchronously and updates trs_konten_dokumen
+ * Runs asynchronously and updates trx_konten_dokumen
  */
 export const processDocumentContent = async (
   kodeDokumen,
@@ -163,8 +163,8 @@ export const processDocumentContent = async (
 ) => {
   const dNow = new Date();
 
-  // Upsert initial record in trs_konten_dokumen with status 'processing'
-  const existing = await DB("trs_konten_dokumen")
+  // Upsert initial record in trx_konten_dokumen with status 'processing'
+  const existing = await DB("trx_konten_dokumen")
     .where("kode_dokumen", kodeDokumen)
     .where("id_versi", idVersi)
     .first();
@@ -172,7 +172,7 @@ export const processDocumentContent = async (
   let idKonten;
   if (existing) {
     idKonten = existing.id_konten;
-    await DB("trs_konten_dokumen")
+    await DB("trx_konten_dokumen")
       .where("id_konten", idKonten)
       .update({
         status_ocr: "processing",
@@ -180,7 +180,7 @@ export const processDocumentContent = async (
         updated_at: dNow,
       });
   } else {
-    const [insertedId] = await DB("trs_konten_dokumen").insert({
+    const [insertedId] = await DB("trx_konten_dokumen").insert({
       kode_dokumen: kodeDokumen,
       id_versi: idVersi,
       konten_teks: "",
@@ -221,7 +221,7 @@ export const processDocumentContent = async (
     }
 
     // Save result
-    await DB("trs_konten_dokumen")
+    await DB("trx_konten_dokumen")
       .where("id_konten", idKonten)
       .update({
         konten_teks: extractedText,
@@ -241,7 +241,7 @@ export const processDocumentContent = async (
   } catch (error) {
     console.error("[OCR Process Error]:", error.message);
 
-    await DB("trs_konten_dokumen")
+    await DB("trx_konten_dokumen")
       .where("id_konten", idKonten)
       .update({
         status_ocr: "failed",

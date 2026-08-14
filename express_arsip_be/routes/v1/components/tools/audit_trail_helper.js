@@ -1,7 +1,7 @@
 import DB from "../../../../core/config/knex.js";
 
 /**
- * Mencatat riwayat perubahan dokumen ke tabel trs_riwayat_dokumen
+ * Mencatat riwayat perubahan dokumen ke tabel trx_riwayat_dokumen
  *
  * @param {Object} options
  * @param {string} options.kodeDokumen - Kode unik dokumen
@@ -31,7 +31,7 @@ export const logDocumentChange = async ({
       ? req.headers["x-forwarded-for"].split(",")[0].trim()
       : req?.ip || req?.connection?.remoteAddress || null;
 
-    await DB("trs_riwayat_dokumen").insert({
+    await DB("trx_riwayat_dokumen").insert({
       kode_dokumen: kodeDokumen,
       aksi: aksi,
       deskripsi: deskripsi,

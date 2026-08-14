@@ -8,7 +8,7 @@ const getOverdueLoans = async (req, res) => {
     // Ambil peminjaman yang overdue:
     // 1. terlambat = 1 (sudah dikembalikan terlambat)
     // 2. Status = 'borrowed' dan tanggal_pengembalian sudah lewat (belum kembali, sudah terlambat)
-    const vaData = await DB("trs_peminjaman_arsip as l")
+    const vaData = await DB("trx_peminjaman_arsip as l")
       .select(
         "l.id_peminjaman",
         "l.kode_dokumen",
@@ -28,7 +28,7 @@ const getOverdueLoans = async (req, res) => {
         // Kalkulasi hari keterlambatan
         DB.raw(`DATEDIFF(?, l.tanggal_pengembalian) as OverdueDays`, [dToday])
       )
-      .leftJoin("trs_dokumen as d", "l.kode_dokumen", "d.kode_dokumen")
+      .leftJoin("trx_dokumen as d", "l.kode_dokumen", "d.kode_dokumen")
       .where((oBuilder) => {
         oBuilder
           // Sudah dikembalikan terlambat

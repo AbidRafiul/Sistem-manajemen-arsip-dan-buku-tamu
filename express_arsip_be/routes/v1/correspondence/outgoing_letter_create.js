@@ -23,7 +23,7 @@ const getAgendaYear = () =>
 const generateAgendaNumber = async (trx) => {
   const cYear = getAgendaYear();
   const cPrefix = `${AGENDA_PREFIX}-${cYear}-`;
-  const oLastAgenda = await trx("trs_surat_keluar")
+  const oLastAgenda = await trx("trx_surat_keluar")
     .select("nomor_agenda")
     .where("nomor_agenda", "like", `${cPrefix}%`)
     .orderBy("nomor_agenda", "desc")
@@ -155,7 +155,7 @@ const outgoingLetterCreate = async (req, res) => {
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
       uniqueField: ["nomor_agenda"],
-      table: "trs_surat_keluar",
+      table: "trx_surat_keluar",
       allowUnknown: false,
     });
 
@@ -259,7 +259,7 @@ const outgoingLetterCreate = async (req, res) => {
         req?.headers?.["x-filter-cabang"] ||
         1;
 
-      const vaInserted = await trx("trs_surat_keluar").insert({
+      const vaInserted = await trx("trx_surat_keluar").insert({
         id_cabang: nIdCabang,
         nomor_surat: cNomorSurat,
         nomor_agenda: cNomorAgenda,
@@ -283,7 +283,7 @@ const outgoingLetterCreate = async (req, res) => {
 
       const nId = vaInserted[0];
 
-      await trx("trs_tracking_surat_keluar").insert({
+      await trx("trx_tracking_surat_keluar").insert({
         id_surat_keluar: nId,
         status: cStatus,
         aktivitas: "surat_dibuat",

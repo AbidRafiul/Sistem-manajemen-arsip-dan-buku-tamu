@@ -36,7 +36,7 @@ const outgoingLetterApprove = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trs_surat_keluar")
+    const oLetter = await DB("trx_surat_keluar")
       .where("id_surat_keluar", oPayload.id_surat_keluar)
       .whereNot("status", "dihapus")
       .first();
@@ -65,7 +65,7 @@ const outgoingLetterApprove = async (req, res) => {
 
     await DB.transaction(async (trx) => {
       // 1. Update status to 'disetujui'
-      await trx("trs_surat_keluar")
+      await trx("trx_surat_keluar")
         .where("id_surat_keluar", oPayload.id_surat_keluar)
         .update({
           status: "disetujui",
@@ -74,7 +74,7 @@ const outgoingLetterApprove = async (req, res) => {
         });
 
       // 2. Insert into tracking
-      await trx("trs_tracking_surat_keluar").insert({
+      await trx("trx_tracking_surat_keluar").insert({
         id_surat_keluar: oPayload.id_surat_keluar,
         status: "disetujui",
         aktivitas: "surat_disetujui",

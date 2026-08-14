@@ -27,7 +27,7 @@ const letterDispositionProcess = async (req, res) => {
         message: cValidate,
       });
     }
-    const oDisposition = await DB("trs_disposisi_surat")
+    const oDisposition = await DB("trx_disposisi_surat")
       .where("disposisi_surat_id", oPayload.disposisi_id)
       .first();
     if (!oDisposition) {
@@ -48,7 +48,7 @@ const letterDispositionProcess = async (req, res) => {
         message: "Disposisi sudah dalam proses",
       });
     }
-    const oLetter = await DB("trs_surat_masuk")
+    const oLetter = await DB("trx_surat_masuk")
       .where("surat_masuk_id", oDisposition.surat_masuk_id)
       .first();
     if (!oLetter) {
@@ -67,7 +67,7 @@ const letterDispositionProcess = async (req, res) => {
     const nActorId = oPayload.updated_by || req?.auth?.id_pengguna || null;
 
     await DB.transaction(async (trx) => {
-      await trx("trs_disposisi_surat")
+      await trx("trx_disposisi_surat")
         .where("disposisi_surat_id", oPayload.disposisi_id)
         .update({
           status: "diproses",
@@ -77,7 +77,7 @@ const letterDispositionProcess = async (req, res) => {
           updated_at: dNow,
         });
 
-      await trx("trs_surat_masuk")
+      await trx("trx_surat_masuk")
         .where("surat_masuk_id", oDisposition.surat_masuk_id)
         .update({
           status: "diproses",

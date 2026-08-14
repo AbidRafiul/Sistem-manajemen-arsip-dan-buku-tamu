@@ -48,7 +48,7 @@ router.use("/auth/profile", [validateAccessToken, validateSignature, contextMidd
 router.use("/auth/profile/update", [validateAccessToken, validateSignature, contextMiddleware], ProfileUpdate);
 
 // Modul-Modul Aplikasi
-router.use("/verifikasi-dokumen", [validateAccessToken, validateSignature, contextMiddleware], VerifikasiDokumen);
+router.use("/verifikasi-dokumen", VerifikasiDokumen);
 
 router.use(
   "/setup",

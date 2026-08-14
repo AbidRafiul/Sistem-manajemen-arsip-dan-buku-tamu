@@ -21,7 +21,7 @@ const createDocumentVersion = async (req, res) => {
       updated_at: dNow,
     };
 
-    await DB("trs_versi_dokumen").insert(oData);
+    await DB("trx_versi_dokumen").insert(oData);
 
     const oResult = {
       status: "success",

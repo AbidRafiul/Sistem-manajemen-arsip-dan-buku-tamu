@@ -34,27 +34,27 @@ const getArchiveDashboardSummary = async (req, res) => {
       vaTrendRaw,
       vaBorrowedRaw
     ] = await Promise.all([
-      // 1. Total Pengarsipan Dokumen (trs_dokumen berstatus active)
-      applyCabangDocFilter(DB("trs_dokumen").where("status", "active"))
+      // 1. Total Pengarsipan Dokumen (trx_dokumen berstatus active)
+      applyCabangDocFilter(DB("trx_dokumen").where("status", "active"))
         .count("* as count")
         .first()
         .then((r) => Number(r?.count || 0)),
 
-      // 2. Total Dokumen Dipinjam (trs_peminjaman_arsip berstatus borrowed)
-      applyCabangLoanFilter(DB("trs_peminjaman_arsip").where("status", "borrowed"))
+      // 2. Total Dokumen Dipinjam (trx_peminjaman_arsip berstatus borrowed)
+      applyCabangLoanFilter(DB("trx_peminjaman_arsip").where("status", "borrowed"))
         .count("* as count")
         .first()
         .then((r) => Number(r?.count || 0)),
 
-      // 3. Total Pengarsipan dari Modul Surat (trs_surat_masuk)
-      DB("trs_surat_masuk")
+      // 3. Total Pengarsipan dari Modul Surat (trx_surat_masuk)
+      DB("trx_surat_masuk")
         .count("* as count")
         .first()
         .then((r) => Number(r?.count || 0)),
 
       // 4. Pengelompokan dokumen berdasarkan jenis (untuk circle chart)
       applyCabangDocFilter(
-        DB("trs_dokumen as d")
+        DB("trx_dokumen as d")
           .leftJoin("mst_jenis_dokumen as jd", "d.kode_jenis_dokumen", "jd.kode_jenis_dokumen")
           .select(
             DB.raw("COALESCE(jd.nama_jenis_dokumen, d.kode_jenis_dokumen) as label"),
@@ -66,7 +66,7 @@ const getArchiveDashboardSummary = async (req, res) => {
 
       // 5. Trend pengarsipan 7 hari terakhir
       applyCabangDocFilter(
-        DB("trs_dokumen")
+        DB("trx_dokumen")
           .select(DB.raw("DATE(created_at) as tanggal"), DB.raw("COUNT(*) as total"))
           .whereRaw("created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)")
           .where("status", "active")
@@ -76,8 +76,8 @@ const getArchiveDashboardSummary = async (req, res) => {
 
       // 6. Daftar peminjaman aktif (sedang dipinjam)
       applyCabangLoanFilter(
-        DB("trs_peminjaman_arsip as p")
-          .leftJoin("trs_dokumen as d", "p.kode_dokumen", "d.kode_dokumen")
+        DB("trx_peminjaman_arsip as p")
+          .leftJoin("trx_dokumen as d", "p.kode_dokumen", "d.kode_dokumen")
           .select(
             "p.id_peminjaman",
             "p.kode_dokumen",

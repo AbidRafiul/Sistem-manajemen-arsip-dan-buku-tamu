@@ -396,7 +396,7 @@ export async function seed(knex) {
     updated_at: dNow,
   });
 
-  await upsertRows(knex, "trs_dokumen", "kode_dokumen", [
+  await upsertRows(knex, "trx_dokumen", "kode_dokumen", [
     {
       tanggal_transaksi: "2026-06-18",
       kode_dokumen: "DOC-ADM-2026-001",
@@ -439,7 +439,7 @@ export async function seed(knex) {
     },
   ]);
 
-  await upsertRows(knex, "trs_versi_dokumen", "id_versi", [
+  await upsertRows(knex, "trx_versi_dokumen", "id_versi", [
     {
       id_versi: 9001,
       tanggal_transaksi: "2026-06-18",
@@ -456,7 +456,7 @@ export async function seed(knex) {
       updated_at: dNow,
     },
   ]);
-  await upsertRows(knex, "trs_peminjaman_arsip", "id_peminjaman", [
+  await upsertRows(knex, "trx_peminjaman_arsip", "id_peminjaman", [
     {
       id_peminjaman: 9001,
       tanggal_transaksi: "2026-06-18",
@@ -474,7 +474,7 @@ export async function seed(knex) {
       updated_at: dNow,
     },
   ]);
-  await upsertRows(knex, "trs_usulan_pemusnahan", "id_usulan", [
+  await upsertRows(knex, "trx_usulan_pemusnahan", "id_usulan", [
     {
       id_usulan: 9001,
       tanggal_transaksi: "2026-06-18",
@@ -505,7 +505,7 @@ export async function seed(knex) {
     .where("kode_instruksi", "TINDAK_LANJUT")
     .first();
 
-  await upsertRows(knex, "trs_surat_masuk", "nomor_agenda", [
+  await upsertRows(knex, "trx_surat_masuk", "nomor_agenda", [
     {
       nomor_agenda: "AG-2026-001",
       nomor_surat: "EXT/001/VI/2026",
@@ -527,11 +527,11 @@ export async function seed(knex) {
       updated_at: dNow,
     },
   ]);
-  const incoming = await knex("trs_surat_masuk")
+  const incoming = await knex("trx_surat_masuk")
     .where("nomor_agenda", "AG-2026-001")
     .first();
 
-  await upsertRows(knex, "trs_disposisi_surat", "disposisi_surat_id", [
+  await upsertRows(knex, "trx_disposisi_surat", "disposisi_surat_id", [
     {
       disposisi_surat_id: 9001,
       surat_masuk_id: incoming.surat_masuk_id,
@@ -548,7 +548,7 @@ export async function seed(knex) {
       updated_at: dNow,
     },
   ]);
-  await upsertRows(knex, "trs_file_surat_masuk", "file_surat_masuk_id", [
+  await upsertRows(knex, "trx_file_surat_masuk", "file_surat_masuk_id", [
     {
       file_surat_masuk_id: 9001,
       surat_masuk_id: incoming.surat_masuk_id,
@@ -565,7 +565,7 @@ export async function seed(knex) {
   ]);
   await upsertRows(
     knex,
-    "trs_tracking_surat_masuk",
+    "trx_tracking_surat_masuk",
     "tracking_surat_masuk_id",
     [
       {
@@ -586,7 +586,7 @@ export async function seed(knex) {
     ],
   );
 
-  await upsertRows(knex, "trs_kunjungan", "kode_kunjungan", [
+  await upsertRows(knex, "trx_kunjungan", "kode_kunjungan", [
     {
       nama_tamu: "Andi Wijaya",
       nomor_telepon: "081234567890",

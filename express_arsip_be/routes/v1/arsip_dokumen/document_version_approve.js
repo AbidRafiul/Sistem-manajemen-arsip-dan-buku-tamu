@@ -34,7 +34,7 @@ const approveDocumentVersion = async (req, res) => {
     }
 
     // Cek versi ada dan masih pending
-    const oVersion = await DB("trs_versi_dokumen")
+    const oVersion = await DB("trx_versi_dokumen")
       .where("id_versi", nVersionId)
       .first();
 
@@ -62,7 +62,7 @@ const approveDocumentVersion = async (req, res) => {
       updated_at: dNow,
     };
 
-    await DB("trs_versi_dokumen")
+    await DB("trx_versi_dokumen")
       .where("id_versi", nVersionId)
       .update(oData);
 
