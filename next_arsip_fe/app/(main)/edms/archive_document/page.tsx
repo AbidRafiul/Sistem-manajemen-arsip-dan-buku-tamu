@@ -508,55 +508,114 @@ const Page = () => {
     return <>
         <Toast ref={toast} position="top-right" />
 
-            <Table
-                getDocuments={getDocuments}
-                getDocumentDetail={getDocumentDetail}
-                deleteDocuments={deleteDocuments}
-                uploadVersion={uploadVersion}
-                downloadVersion={downloadVersion}
-                rollbackVersion={rollbackVersion}
-                approveVersion={approveVersion}
-                handleFetchPreviewUrl={handleFetchPreviewUrl}
-                handleGenerateQR={handleGenerateQR}
-                handleScanQR={handleScanQR}
-                handleUpdateLocation={handleUpdateLocation}
-                handleGenerateAutoNumber={handleGenerateAutoNumber}
-                state={state}
-                setState={setState}
-                formik={formik}
-                toast={toast} />
+        <Table
+            getDocuments={getDocuments}
+            getDocumentDetail={getDocumentDetail}
+            deleteDocuments={deleteDocuments}
+            uploadVersion={uploadVersion}
+            downloadVersion={downloadVersion}
+            rollbackVersion={rollbackVersion}
+            approveVersion={approveVersion}
+            handleFetchPreviewUrl={handleFetchPreviewUrl}
+            handleGenerateQR={handleGenerateQR}
+            handleScanQR={handleScanQR}
+            handleUpdateLocation={handleUpdateLocation}
+            handleGenerateAutoNumber={handleGenerateAutoNumber}
+            state={state}
+            setState={setState}
+            formik={formik}
+            toast={toast}
+        />
 
-            {/* Document Preview Dialog */}
-            <Dialog
-                visible={state.isPreviewVisible}
-                header={
+        {/* Document Preview Dialog */}
+        <Dialog
+            visible={state.isPreviewVisible}
+            header={
+                <div className="flex align-items-center justify-content-between w-full pr-4">
                     <div className="flex align-items-center gap-2">
-                        <i className="pi pi-file-pdf text-primary" />
-                        <span className="font-bold text-900">Pratinjau Dokumen</span>
+                        <i className="pi pi-file text-primary text-xl" />
+                        <span className="font-bold text-900 text-lg">Pratinjau Dokumen</span>
                     </div>
-                }
-                modal
-                style={{ width: '60rem', maxWidth: '95vw' }}
-                onHide={() => {
-                    setState((p) => ({ ...p, isPreviewVisible: false, previewUrl: '' }));
-                }}
-                pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}>
-                <div className="pt-3">
-                    {state.previewUrl ? (
-                        <iframe
-                            src={state.previewUrl}
-                            width="100%"
-                            height="600px"
-                            style={{ border: 'none', borderRadius: '8px' }}
-                            title="Preview Arsip" />
-                    ) : (
-                        <div className="flex flex-column align-items-center justify-content-center py-5 text-color-secondary">
-                            <i className="pi pi-spin pi-spinner text-3xl mb-3" />
-                            <span>Memuat dokumen...</span>
-                        </div>
+                    {state.previewUrl && (
+                        <a
+                            href={state.previewUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-button p-button-outlined p-button-sm p-button-secondary flex align-items-center gap-2 text-decoration-none"
+                        >
+                            <i className="pi pi-external-link" />
+                            <span>Buka / Unduh Berkas</span>
+                        </a>
                     )}
                 </div>
-            </Dialog>
+            }
+            modal
+            style={{ width: '65rem', maxWidth: '95vw' }}
+            onHide={() => {
+                setState((p) => ({ ...p, isPreviewVisible: false, previewUrl: '' }));
+            }}
+            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
+        >
+            <div className="pt-3">
+                {state.previewUrl ? (
+                    (() => {
+                        const cleanUrl = state.previewUrl.toLowerCase().split('?')[0];
+                        const isPdf = cleanUrl.endsWith('.pdf');
+                        const isImage = cleanUrl.endsWith('.png') || cleanUrl.endsWith('.jpg') || cleanUrl.endsWith('.jpeg') || cleanUrl.endsWith('.webp') || cleanUrl.endsWith('.svg');
+                        
+                        if (isPdf) {
+                            return (
+                                <iframe
+                                    src={state.previewUrl}
+                                    width="100%"
+                                    height="620px"
+                                    style={{ border: 'none', borderRadius: '8px' }}
+                                    title="Preview Arsip PDF"
+                                />
+                            );
+                        }
+
+                        if (isImage) {
+                            return (
+                                <div className="flex justify-content-center p-3 surface-ground border-round">
+                                    <img
+                                        src={state.previewUrl}
+                                        alt="Pratinjau Gambar Arsip"
+                                        style={{ maxWidth: '100%', maxHeight: '600px', objectFit: 'contain', borderRadius: '6px' }}
+                                    />
+                                </div>
+                            );
+                        }
+
+                        return (
+                            <div className="flex flex-column align-items-center justify-content-center py-6 px-4 surface-ground border-round text-center">
+                                <div className="w-4rem h-4rem border-circle surface-card flex align-items-center justify-content-center shadow-1 mb-3">
+                                    <i className="pi pi-file-word text-3xl text-primary" />
+                                </div>
+                                <h4 className="font-bold text-900 mb-2">Dokumen Terlampir (.docx / non-PDF)</h4>
+                                <p className="text-color-secondary mb-4 max-w-26rem" style={{ fontSize: '0.95rem' }}>
+                                    Format berkas ini tidak didukung untuk pratinjau langsung di dalam browser. Silakan unduh untuk membuka dengan aplikasi Microsoft Office / Word.
+                                </p>
+                                <a
+                                    href={state.previewUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-button p-button-primary px-4 gap-2 text-decoration-none"
+                                >
+                                    <i className="pi pi-download" />
+                                    <span>Unduh Berkas Dokumen</span>
+                                </a>
+                            </div>
+                        );
+                    })()
+                ) : (
+                    <div className="flex flex-column align-items-center justify-content-center py-6 text-color-secondary">
+                        <i className="pi pi-spin pi-spinner text-4xl text-primary mb-3" />
+                        <span className="font-medium text-base">Memuat berkas pratinjau dokumen...</span>
+                    </div>
+                )}
+            </div>
+        </Dialog>
     </>
 }
 

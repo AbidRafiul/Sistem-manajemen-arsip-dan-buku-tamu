@@ -47,15 +47,12 @@ const documentPreview = async (req, res) => {
     }
 
     const cBucketName = process.env.MINIO_BUCKET_NAME || "arsip-bucket";
-    const cObjectName = cFilePath.replace(/^\/uploads\//, "").replace(/^\//, "");
+    const cObjectName = cFilePath.replace(/^\/?uploads\//i, "").replace(/^\//, "");
 
-    try {
-      await minioClient.statObject(cBucketName, cObjectName);
-      
-      let finalUrl;
-      try {
-        finalUrl = await minioClient.presignedGetObject(cBucketName, cObjectName, 3600);
-      } catch (err) {
+    minioClient.presignedGetObject(cBucketName, cObjectName, 3600, (err, presignedUrl) => {
+      let finalUrl = presignedUrl;
+
+      if (err) {
         console.warn("Gagal men-generate presigned URL dari MinIO, fallback ke URL lokal:", err.message);
         const serverUrl = process.env.APP_SERVER || "http://127.0.0.1:8000";
         finalUrl = `${serverUrl.replace(/\/$/, "")}/uploads/${cObjectName}`;

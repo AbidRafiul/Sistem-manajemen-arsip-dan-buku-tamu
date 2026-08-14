@@ -86,10 +86,10 @@ const letterDispositionData = async (req, res) => {
       oQuery.where("tld.surat_masuk_id", oPayload.surat_masuk_id);
     }
     if (oPayload.kepada_pengguna_id) {
-      oQuery.where(`tld.${toCol}`, oPayload.kepada_pengguna_id);
+      oQuery.where("tld.kepada_pengguna_id", oPayload.kepada_pengguna_id);
     }
     if (oPayload.dari_pengguna_id) {
-      oQuery.where(`tld.${fromCol}`, oPayload.dari_pengguna_id);
+      oQuery.where("tld.dari_pengguna_id", oPayload.dari_pengguna_id);
     }
     if (oPayload.status) {
       oQuery.where("tld.status", oPayload.status);
