@@ -86,7 +86,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                 <Column align="center" field="kode_peran" header="Kode" sortable></Column>
                 <Column align="center" field="nama_peran" header="Nama" sortable></Column>
                 <Column align="center" body={statusBodyTemplate} header="Status"></Column>
-                <Column align="center" body={actionBodyTemplate} exportable={false} align="center" header="Aksi" style={{ minWidth: '8rem', textAlign: 'center' }}></Column>
+                <Column align="center" body={actionBodyTemplate} exportable={false} header="Aksi" style={{ minWidth: '8rem', textAlign: 'center' }}></Column>
             </DataTable>
         </div>
     );
