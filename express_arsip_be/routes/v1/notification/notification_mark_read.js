@@ -20,7 +20,7 @@ router.put("/mark-read", async (req, res) => {
     }
 
     const now = formatDateSystem();
-    const query = DB("trs_notifikasi")
+    const query = DB("trx_notifikasi")
       .update({
         status_baca: 1,
         updated_at: now,

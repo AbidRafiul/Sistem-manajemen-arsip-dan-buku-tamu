@@ -21,7 +21,7 @@ const createDestructionProposal = async (req, res) => {
     }
 
     // Verifikasi dokumen aktif
-    let oQueryBuilder = DB("trs_dokumen as d")
+    let oQueryBuilder = DB("trx_dokumen as d")
       .select(
         "d.id_dokumen",
         "d.kode_dokumen",
@@ -57,7 +57,7 @@ const createDestructionProposal = async (req, res) => {
     }
 
     // Cek apakah sudah ada proposal aktif untuk dokumen ini
-    const oExistingProposal = await DB("trs_usulan_pemusnahan")
+    const oExistingProposal = await DB("trx_usulan_pemusnahan")
       .where("kode_dokumen", oDocument.kode_dokumen)
       .whereNotIn("status", ["rejected", "executed"])
       .first();
@@ -88,7 +88,7 @@ const createDestructionProposal = async (req, res) => {
       updated_at: dNow,
     };
 
-    const [nProposalId] = await DB("trs_usulan_pemusnahan").insert(oData);
+    const [nProposalId] = await DB("trx_usulan_pemusnahan").insert(oData);
 
     const oResult = {
       status: "success",

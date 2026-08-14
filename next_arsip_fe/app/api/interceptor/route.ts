@@ -3,6 +3,7 @@ import axios from 'axios';
 import { formatDateCalendar } from '@/lib/tools/dateTools';
 import { jwtVerify } from 'jose';
 import { auth } from '@/lib/tools/authTools';
+import { getBasicToken } from '@/lib/tools/encryptTools';
 
 interface CustomHeaders {
     'x-endpoint'?: string;
@@ -87,7 +88,8 @@ export const POST = async (request: NextRequest) => {
         const tokenResponse = await axios.get(`${process.env.API_URL}/auth/token`, {
             headers: {
                 'Content-Type': 'application/json',
-                'X-Timestamp': formatDateCalendar(dNow)
+                'X-Timestamp': formatDateCalendar(dNow),
+                'Authorization': getBasicToken()
             }
         });
 
@@ -166,7 +168,8 @@ export const GET = async (request: NextRequest) => {
         const tokenResponse = await axios.get(`${process.env.API_URL}/auth/token`, {
             headers: {
                 'Content-Type': 'application/json',
-                'X-Timestamp': formatDateCalendar(dNow)
+                'X-Timestamp': formatDateCalendar(dNow),
+                'Authorization': getBasicToken()
             }
         });
 
@@ -338,7 +341,8 @@ export const PUT = async (request: NextRequest) => {
         const tokenResponse = await axios.get(`${process.env.API_URL}/auth/token`, {
             headers: {
                 'Content-Type': 'application/json',
-                'X-Timestamp': formatDateCalendar(dNow)
+                'X-Timestamp': formatDateCalendar(dNow),
+                'Authorization': getBasicToken()
             }
         });
 
@@ -375,7 +379,8 @@ export const DELETE = async (request: NextRequest) => {
         const tokenResponse = await axios.get(`${process.env.API_URL}/auth/token`, {
             headers: {
                 'Content-Type': 'application/json',
-                'X-Timestamp': formatDateCalendar(dNow)
+                'X-Timestamp': formatDateCalendar(dNow),
+                'Authorization': getBasicToken()
             }
         });
 

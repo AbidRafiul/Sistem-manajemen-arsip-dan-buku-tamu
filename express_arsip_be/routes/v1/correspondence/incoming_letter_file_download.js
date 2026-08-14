@@ -15,7 +15,7 @@ const incomingLetterFileDownload = async (req, res) => {
         message: "file_surat_masuk_id wajib diisi"
       });
     }
-    const oFile = await DB("trs_file_surat_masuk").where("file_surat_masuk_id", nFileId).where("status", "active").first();
+    const oFile = await DB("trx_file_surat_masuk").where("file_surat_masuk_id", nFileId).where("status", "active").first();
     if (!oFile) {
       return res.status(404).json({
         status: status.BAD_REQUEST,

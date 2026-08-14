@@ -62,7 +62,7 @@ const generateDocumentNumber = async (req, res) => {
     const cPrefix = `${cInisialKantor}/${cCleanKlasifikasi}/${cCleanKategori}/${cDateStr}/`;
 
     // 4. Cari urutan tertinggi di database untuk prefix hari ini
-    const oLastDoc = await DB("trs_dokumen")
+    const oLastDoc = await DB("trx_dokumen")
       .select("nomor_dokumen")
       .where("nomor_dokumen", "like", `${cPrefix}%`)
       .orderBy("id_dokumen", "desc")

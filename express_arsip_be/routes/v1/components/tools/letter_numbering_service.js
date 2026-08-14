@@ -117,7 +117,7 @@ const getNextNumberPreview = async (db, {
     jenisSuratId,
     unitKerjaId
   });
-  const sequence = await db("trs_sequence_penomoran_surat").where({
+  const sequence = await db("trx_sequence_penomoran_surat").where({
     id_penomoran_surat: config.id_penomoran_surat,
     periode_key: periodeKey,
     cakupan_key: cakupanKey
@@ -172,14 +172,14 @@ export const generateNomorSurat = async (trx, {
     jenisSuratId,
     unitKerjaId
   });
-  let sequence = await trx("trs_sequence_penomoran_surat").where({
+  let sequence = await trx("trx_sequence_penomoran_surat").where({
     id_penomoran_surat: config.id_penomoran_surat,
     periode_key: periodeKey,
     cakupan_key: cakupanKey
   }).forUpdate().first();
   if (!sequence) {
     try {
-      await trx("trs_sequence_penomoran_surat").insert({
+      await trx("trx_sequence_penomoran_surat").insert({
         id_penomoran_surat: config.id_penomoran_surat,
         jenis_surat_id: jenisSuratId || null,
         id_unit_kerja: unitKerjaId || null,
@@ -194,14 +194,14 @@ export const generateNomorSurat = async (trx, {
     } catch (error) {
       if (!["ER_DUP_ENTRY", "23505"].includes(error.code)) throw error;
     }
-    sequence = await trx("trs_sequence_penomoran_surat").where({
+    sequence = await trx("trx_sequence_penomoran_surat").where({
       id_penomoran_surat: config.id_penomoran_surat,
       periode_key: periodeKey,
       cakupan_key: cakupanKey
     }).forUpdate().first();
   }
   const nextNumber = Number(sequence?.nomor_terakhir || 0) + 1;
-  await trx("trs_sequence_penomoran_surat").where("id_sequence_penomoran_surat", sequence.id_sequence_penomoran_surat).update({
+  await trx("trx_sequence_penomoran_surat").where("id_sequence_penomoran_surat", sequence.id_sequence_penomoran_surat).update({
     nomor_terakhir: nextNumber,
     updated_at: new Date()
   });

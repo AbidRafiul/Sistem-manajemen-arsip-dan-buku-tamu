@@ -39,7 +39,7 @@ const outgoingLetterDetail = async (req, res) => {
       });
     }
 
-    const oLetter = await DB("trs_surat_keluar as tsk")
+    const oLetter = await DB("trx_surat_keluar as tsk")
       .leftJoin(
         "mst_jenis_surat as mjs",
         "tsk.id_jenis_surat",
@@ -80,7 +80,7 @@ const outgoingLetterDetail = async (req, res) => {
       });
     }
 
-    const vaFiles = await DB("trs_file_surat_keluar")
+    const vaFiles = await DB("trx_file_surat_keluar")
       .select(
         "id_file_surat_keluar",
         "id_surat_keluar",
@@ -99,7 +99,7 @@ const outgoingLetterDetail = async (req, res) => {
       .where("status", "active")
       .orderBy("tanggal_upload", "desc");
 
-    const vaTrackings = await DB("trs_tracking_surat_keluar as tsk")
+    const vaTrackings = await DB("trx_tracking_surat_keluar as tsk")
       .leftJoin("mst_pengguna as mp", "tsk.dibuat_oleh", "mp.id_pengguna")
       .select(
         "tsk.id_tracking",

@@ -18,7 +18,7 @@ const updateDocumentLocation = async (req, res) => {
     }
 
     // Lokasi fisik boleh kosong (untuk clear lokasi)
-    const oDocument = await DB("trs_dokumen")
+    const oDocument = await DB("trx_dokumen")
       .where("id_dokumen", nIdDokumen)
       .where("status", "active")
       .first();
@@ -36,7 +36,7 @@ const updateDocumentLocation = async (req, res) => {
       updated_at: dNow,
     };
 
-    await DB("trs_dokumen")
+    await DB("trx_dokumen")
       .where("id_dokumen", nIdDokumen)
       .update(oData);
 

@@ -34,7 +34,7 @@ const approveArchiveLoan = async (req, res) => {
     }
 
     // Cek loan ada dan masih pending
-    const oLoan = await Knex("trs_peminjaman_arsip")
+    const oLoan = await Knex("trx_peminjaman_arsip")
       .where("id_peminjaman", nLoanId)
       .first();
 
@@ -56,7 +56,7 @@ const approveArchiveLoan = async (req, res) => {
 
     // Jika approved, check apakah dokumen sedang dipinjam
     if (cStatus === "approved") {
-      const oActiveLoan = await Knex("trs_peminjaman_arsip")
+      const oActiveLoan = await Knex("trx_peminjaman_arsip")
         .where("kode_dokumen", oLoan.kode_dokumen)
         .where("status", "borrowed")
         .first();
@@ -81,7 +81,7 @@ const approveArchiveLoan = async (req, res) => {
       updated_at: dNow,
     };
 
-    await Knex("trs_peminjaman_arsip")
+    await Knex("trx_peminjaman_arsip")
       .where("id_peminjaman", nLoanId)
       .update(oData);
 

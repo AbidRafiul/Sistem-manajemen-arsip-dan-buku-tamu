@@ -252,7 +252,7 @@ router.post(
         created_at: formatDateSystem(),
       };
 
-      const [idKunjungan] = await DB("trs_kunjungan").insert(oData);
+      const [idKunjungan] = await DB("trx_kunjungan").insert(oData);
 
       // Simpan anggota rombongan jika ada
       let parsedGroupMembers = [];
@@ -276,7 +276,7 @@ router.post(
             );
           }
 
-          await DB("trs_kunjungan_anggota").insert({
+          await DB("trx_kunjungan_anggota").insert({
             id_kunjungan: idKunjungan,
             nama_anggota: member.name || member.nama_anggota || "",
             nomor_telepon: member.phone || member.nomor_telepon || null,

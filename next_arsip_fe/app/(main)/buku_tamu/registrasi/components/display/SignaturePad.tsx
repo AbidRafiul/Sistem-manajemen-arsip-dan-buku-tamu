@@ -73,7 +73,7 @@ export default function SignaturePad({ onChange }: SignaturePadProps) {
         let clientY = 0;
 
         if ('touches' in e) {
-            if (e.touches.length > 0) {
+            if (e.touches.length> 0) {
                 clientX = e.touches[0].clientX;
                 clientY = e.touches[0].clientY;
             }
@@ -133,18 +133,15 @@ export default function SignaturePad({ onChange }: SignaturePadProps) {
         <div className="flex flex-column gap-2 border-round-xl border-1 surface-border p-3" style={{ background: '#f8fafc' }}>
             <div className="flex justify-content-between align-items-center mb-1">
                 <span className="font-semibold text-sm text-800">Tanda Tangan Tamu (Gambarkan di Canvas) <span className="text-red-500">*</span></span>
-                <Button
-                    type="button"
+                <Button type="button"
                     label="Bersihkan"
                     icon="pi pi-trash"
                     className="p-button-text p-button-danger p-button-sm py-1 px-2 border-none"
-                    onClick={clearCanvas}
-                />
+                    onClick={clearCanvas} />
             </div>
             <div 
                 className="border-1 border-300 border-round-lg overflow-hidden bg-white flex justify-content-center align-items-center" 
-                style={{ height: '150px' }}
-            >
+                style={{ height: '150px' }}>
                 <canvas
                     ref={canvasRef}
                     className="w-full h-full cursor-crosshair"
@@ -155,8 +152,7 @@ export default function SignaturePad({ onChange }: SignaturePadProps) {
                     onMouseLeave={stopDrawing}
                     onTouchStart={startDrawing}
                     onTouchMove={draw}
-                    onTouchEnd={stopDrawing}
-                />
+                    onTouchEnd={stopDrawing} />
             </div>
         </div>
     );

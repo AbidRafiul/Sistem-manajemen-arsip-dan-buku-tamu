@@ -54,7 +54,7 @@ const normalizeUsers = (rows: Record<string, any>[]): UserOption[] => {
             nama_lengkap: row.nama_lengkap || row.fullname || row.full_name || '',
             nama_pengguna: row.nama_pengguna || row.username || ''
         }))
-        .filter((row) => row.id_pengguna > 0);
+        .filter((row) => row.id_pengguna> 0);
 };
 
 const normalizeInstructions = (rows: Record<string, any>[]): InstructionOption[] => {
@@ -64,7 +64,7 @@ const normalizeInstructions = (rows: Record<string, any>[]): InstructionOption[]
             nama_instruksi: row.nama_instruksi || row.instruction_name || '',
             kode_instruksi: row.kode_instruksi || row.instruction_code || ''
         }))
-        .filter((row) => row.instruksi_disposisi_id > 0);
+        .filter((row) => row.instruksi_disposisi_id> 0);
 };
 
 const getDispositionId = (disposition: Record<string, any> | null) => {
@@ -269,8 +269,7 @@ const Page = () => {
                 onCloseDialog={closeDialog}
                 onSaveDisposition={saveDisposition}
                 onSaveAction={saveAction}
-                onRefresh={() => fetchData(search)}
-            />
+                onRefresh={() => fetchData(search)} />
         </div>
     );
 };

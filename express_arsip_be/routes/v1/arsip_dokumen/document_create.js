@@ -63,7 +63,7 @@ const createDocument = async (req, res) => {
     }
 
     // Cek duplikat nomor dokumen
-    const oExisting = await DB("trs_dokumen")
+    const oExisting = await DB("trx_dokumen")
       .where("nomor_dokumen", cDocumentNumber)
       .where("status", "active")
       .first();
@@ -120,7 +120,7 @@ const createDocument = async (req, res) => {
       const cDateStr = formatDateSystem(dNow, "yyyyMMdd");
       const cPrefix = `${cClassification}/${cDocType}/${cDateStr}/`;
 
-      const oLastDoc = await trx("trs_dokumen")
+      const oLastDoc = await trx("trx_dokumen")
         .select("kode_dokumen")
         .where("kode_dokumen", "like", `${cPrefix}%`)
         .orderBy("id_dokumen", "desc")
@@ -140,7 +140,7 @@ const createDocument = async (req, res) => {
       createdKodeDokumen = cKodeDokumen;
 
       // Insert directly with the pre-generated document code
-      const [nId] = await trx("trs_dokumen").insert({
+      const [nId] = await trx("trx_dokumen").insert({
         ...oData,
         kode_dokumen: cKodeDokumen,
       });
@@ -149,7 +149,7 @@ const createDocument = async (req, res) => {
       if (req.file) {
         const cFilePath = req.file.path || `/uploads/documents/${req.file.filename}`;
         uploadedFilePath = cFilePath;
-        const [nVerId] = await trx("trs_versi_dokumen").insert({
+        const [nVerId] = await trx("trx_versi_dokumen").insert({
           kode_dokumen: cKodeDokumen,
           nomor_versi: 1,
           catatan_perubahan: "Versi Awal (Unggahan Perdana)",

@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import { Button } from 'primereact/button';
+import { Dropdown } from 'primereact/dropdown';
 import StatsCards from './statsCards';
 import ChartDisplay from './chart';
 import ActiveGuestsTable from './activeGuestsTable';
@@ -12,8 +13,8 @@ interface MonitoringViewProps {
     load: boolean;
     lastUpdated?: Date | null | string;
     onRefresh: () => void;
-    onRegisterNew: () => void;
-    onViewHistory: () => void;
+    timeRange: string;
+    setTimeRange: (val: string) => void;
 }
 
 export default function MonitoringView({
@@ -22,9 +23,15 @@ export default function MonitoringView({
     load,
     lastUpdated,
     onRefresh,
-    onRegisterNew,
-    onViewHistory
+    timeRange,
+    setTimeRange
 }: MonitoringViewProps) {
+    const timeRangeOptions = [
+        { label: 'Minggu Ini', value: 'this_week' },
+        { label: 'Minggu Lalu', value: 'last_week' },
+        { label: 'Bulan Ini', value: 'this_month' },
+        { label: 'Tahun Ini', value: 'this_year' }
+    ];
     return (
         <div className="flex flex-column gap-4">
             {/* Custom Styles for Pulse Animation and Premium Cards */}
@@ -77,34 +84,21 @@ export default function MonitoringView({
                         Pantau statistik kunjungan harian, tamu aktif, dan tren mingguan secara real-time.
                     </p>
                 </div>
-                <div className="flex flex-wrap gap-2 flex-shrink-0 align-self-start md:align-self-center">
-                    <Button
-                        type="button"
-                        icon="pi pi-plus"
-                        label="Registrasi Tamu Baru"
-                        className="py-2 px-3 border-round-lg font-semibold text-sm text-white"
-                        style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)', border: 'none' }}
-                        onClick={onRegisterNew}
-                    />
-                    <Button
-                        type="button"
-                        icon="pi pi-history"
-                        label="Riwayat Tamu"
-                        severity="warning"
-                        outlined
-                        className="py-2 px-3 border-round-lg font-semibold text-sm bg-white"
-                        onClick={onViewHistory}
-                    />
-                    <Button
-                        type="button"
+                <div className="flex flex-wrap gap-2 flex-shrink-0 align-self-start md:align-self-center align-items-center">
+                    <Dropdown 
+                        value={timeRange} 
+                        options={timeRangeOptions} 
+                        onChange={(e) => setTimeRange(e.value)} 
+                        placeholder="Pilih Waktu" 
+                        className="w-full md:w-14rem" />
+                    <Button type="button"
                         icon={`pi pi-refresh ${load ? 'pi-spin' : ''}`}
                         label="Refresh"
                         outlined
                         severity="secondary"
                         className="py-2 px-3 border-round-lg font-semibold text-sm bg-white"
                         onClick={onRefresh}
-                        loading={load}
-                    />
+                        loading={load} />
                 </div>
             </div>
 

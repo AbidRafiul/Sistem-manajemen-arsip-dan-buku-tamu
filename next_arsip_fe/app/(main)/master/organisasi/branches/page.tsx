@@ -89,7 +89,8 @@ const Page = () => {
     const getData = async (apiEndpoint: string) => {
         setState((p) => ({ ...p, load: true }));
         try {
-            const res = await postData(apiEndpoint);
+            const bypassFilters = { 'x-exact-cabang': 'false' };
+            const res = await postData(apiEndpoint, {}, bypassFilters);
             setState((p) => ({ ...p, data: res.data.data }));
         } catch (error: any) {
             showError(toast, error?.response?.data?.message || 'Terjadi Kesalahan');

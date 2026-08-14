@@ -27,7 +27,7 @@ const incomingLetterDelete = async (req, res) => {
         message: cValidate
       });
     }
-    const oLetter = await DB("trs_surat_masuk").where("surat_masuk_id", oPayload.surat_masuk_id).first();
+    const oLetter = await DB("trx_surat_masuk").where("surat_masuk_id", oPayload.surat_masuk_id).first();
     if (!oLetter) {
       return res.status(404).json({
         status: status.BAD_REQUEST,
@@ -36,11 +36,11 @@ const incomingLetterDelete = async (req, res) => {
     }
     const dNow = new Date();
     await DB.transaction(async trx => {
-      await trx("trs_surat_masuk").where("surat_masuk_id", oPayload.surat_masuk_id).update({
+      await trx("trx_surat_masuk").where("surat_masuk_id", oPayload.surat_masuk_id).update({
         status: "dihapus",
         updated_at: dNow
       });
-      await trx("trs_tracking_surat_masuk").insert({
+      await trx("trx_tracking_surat_masuk").insert({
         surat_masuk_id: oPayload.surat_masuk_id,
         status: "dihapus",
         aktivitas: "surat_dihapus",

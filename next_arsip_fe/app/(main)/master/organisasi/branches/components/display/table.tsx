@@ -46,9 +46,9 @@ const Table = ({ state, setState, formik, handleDelete, getData, toast }: TableP
     const actionBodyTemplate = (rowData: any) => {
         return (
             <div className="flex gap-2 justify-content-center">
-                {canUpdate && <Button icon="pi pi-pencil" rounded outlined severity="warning" className="p-button-sm" onClick={() => { formik.setValues((p: any) => ({ ...p, ...rowData })); setState(p => ({ ...p, edit: true, add: false })); }} tooltip="Edit" tooltipOptions={{ position: 'top' }} />}
+                {canUpdate && <Button icon="pi pi-pencil" outlined onClick={() => { formik.setValues((p: any) => ({ ...p, ...rowData })); setState(p => ({ ...p, edit: true, add: false })); }} tooltip="Edit" tooltipOptions={{ position: 'top' }} />}
                 
-                {canDelete && <Button icon="pi pi-trash" rounded outlined severity="danger" className="p-button-sm" onClick={() => setState((p) => ({ ...p, selectedData: [rowData], delete: true }))} tooltip="Delete" tooltipOptions={{ position: 'top' }} />}
+                {canDelete && <Button icon="pi pi-trash" outlined severity="danger" onClick={() => setState((p) => ({ ...p, selectedData: [rowData], delete: true }))} tooltip="Delete" tooltipOptions={{ position: 'top' }} />}
             </div>
         );
     };
@@ -76,17 +76,17 @@ const Table = ({ state, setState, formik, handleDelete, getData, toast }: TableP
             <div className="flex flex-row flex-wrap align-items-center justify-content-between gap-2 mb-3">
                 <div className="flex flex-row flex-wrap align-items-center gap-2">
                     {canCreate && (
-                        <Button size="small" label="Baru" icon="pi pi-plus" outlined severity="success" onClick={() => {
+                        <Button size="small" label="Tambah" icon="pi pi-plus" outlined severity="success" onClick={() => {
                             formik.resetForm();
                             setState(p => ({ ...p, add: true, selectedData: [] }));
                         }} />
                     )}
                     <Divider layout="vertical" />
                     {canDelete && (
-                        <Button size="small" label={"Hapus" + (state.selectedData.length > 0 ? " (" + state.selectedData.length + ")" : "")} icon="pi pi-trash" outlined severity="danger" onClick={() => setState(p => ({ ...p, delete: true }))} disabled={state.selectedData.length === 0} />
+                        <Button size="small" label={"Hapus" + (state.selectedData.length> 0 ? " (" + state.selectedData.length + ")" : "")} icon="pi pi-trash" outlined severity="danger" onClick={() => setState(p => ({ ...p, delete: true }))} disabled={state.selectedData.length === 0} />
                     )}
                     <Divider layout="vertical" />
-                    <Button size="small" label="Muat Ulang" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
+                    <Button size="small" label="Refresh" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
                 </div>
             </div>
             <DataTable value={state.data} selection={state.selectedData} onSelectionChange={(e) => setState(p => ({ ...p, selectedData: e.value }))} dataKey="id_cabang" paginator rows={10} rowsPerPageOptions={[5, 10, 25]} globalFilterFields={["kode_cabang","nama_cabang","alamat","telepon","surel","status"]} filters={state.filters} header={renderHeader()} emptyMessage="Tidak ada data ditemukan." loading={state.load} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">

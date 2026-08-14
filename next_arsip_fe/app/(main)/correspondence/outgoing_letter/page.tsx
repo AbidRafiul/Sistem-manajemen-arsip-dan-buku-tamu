@@ -5,14 +5,14 @@ import formUpload from "@/lib/axios/formData";
 import postData from "@/lib/axios/postData";
 import putData from "@/lib/axios/putData";
 import axios from "axios";
-import { showError } from "@/lib/tools/generalTools";
+import { showError, showSuccess } from "@/lib/tools/generalTools";
 import { useFormik } from "formik";
 import { useSession } from "next-auth/react";
 import { FilterMatchMode } from "primereact/api";
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
 import Table from "./components/display/table";
-import { initValue, State } from "./components/interfaces";
+import { initValue, State, TableData } from "./components/interfaces";
 import { mapOutgoingLetterRow } from "./components/mappers";
 import {
     apiEndpointCreate,
@@ -23,6 +23,10 @@ import {
     apiEndpointTemplateSurat,
     apiEndpointUpdate,
     apiEndpointUpload,
+    apiEndpointDetail,
+    apiEndpointDelete,
+    apiEndpointArchive,
+    apiEndpointGet
 } from "./components/endpoints";
 
 const initialValues: initValue = {
@@ -116,6 +120,49 @@ const Page = () => {
         }
     }, [session]);
 
+    const reloadDetail = async (idSuratKeluar: number) => {
+        try {
+            const res = await getDataRequest(`${apiEndpointDetail}/${idSuratKeluar}`);
+            setState((p) => ({ ...p, detailData: res.data?.data || null }));
+        } catch (error: any) {
+            console.error("Gagal reload detail:", error);
+            showError(toast, error?.response?.data?.message || "Detail surat gagal diambil");
+            setState((p) => ({ ...p, detail: false, detailData: null }));
+        }
+    };
+
+    const handleDeleteLetter = async (letters: TableData[]) => {
+        setState((p) => ({ ...p, load: true }));
+        try {
+            for (const letter of letters) {
+                await postData(`${apiEndpointDelete}/${letter.id_surat_keluar}`, {});
+            }
+            showSuccess(toast, "Surat berhasil dihapus");
+            getData(apiEndpointGet, { sort_by: "created_at", sort_order: "desc", limit: 100 });
+        } catch (error: any) {
+            showError(toast, error?.response?.data?.message || "Surat gagal dihapus");
+        } finally {
+            setState((p) => ({ ...p, load: false, selectedLetters: [], delete: false }));
+        }
+    };
+
+    const handleFileUpload = async (file: File, idSuratKeluar: number, uploadedBy: number | null) => {
+        const formData = new FormData();
+        formData.append("file_surat", file);
+        formData.append("uploaded_by", String(uploadedBy || ""));
+        formData.append("id_surat_keluar", String(idSuratKeluar));
+        
+        await apiUploadPdf(idSuratKeluar, formData);
+    };
+
+    const executeArchiveLetter = async (idSuratKeluar: number, pic: string, createdBy: number | null) => {
+        await postData(apiEndpointArchive, {
+            id_surat_keluar: idSuratKeluar,
+            nama_pic: pic,
+            created_by: createdBy
+        });
+    };
+
     const apiSaveLetter = async (payload: any, isEdit: boolean, idSuratKeluar: number | null) => {
         if (isEdit) {
             return await putData(`${apiEndpointUpdate}/${idSuratKeluar}`, payload);
@@ -160,6 +207,19 @@ const Page = () => {
         return res.data?.data?.nomor_surat || "";
     };
 
+    const apiGetConfig = async (payload: any) => {
+        try {
+            const extendedPayload = {
+                kode: [...(payload.kode || []), "msEmailPerusahaan", "msWebsitePerusahaan"]
+            };
+            const res = await postData("/setup/config-data", extendedPayload);
+            return res.data?.data || {};
+        } catch (error) {
+            console.error("Gagal mengambil konfigurasi:", error);
+            return {};
+        }
+    };
+
     return (
         <>
             <Toast ref={toast} position="top-right" />
@@ -176,7 +236,11 @@ const Page = () => {
                 apiGetLetterTypes={apiGetLetterTypes}
                 apiGetTemplates={apiGetTemplates}
                 apiGetNomorPreview={apiGetNomorPreview}
-            />
+                apiGetConfig={apiGetConfig}
+                reloadDetail={reloadDetail}
+                handleDeleteLetter={handleDeleteLetter}
+                handleFileUpload={handleFileUpload}
+                executeArchiveLetter={executeArchiveLetter} />
         </>
     );
 };

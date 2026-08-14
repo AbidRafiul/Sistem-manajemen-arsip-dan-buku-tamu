@@ -242,8 +242,7 @@ const Page = () => {
                 openDetail={openDetail}
                 reloadDetail={reloadDetail}
                 executeArchiveLetter={executeArchiveLetter}
-                getFileBlob={getFileBlob}
-            />
+                getFileBlob={getFileBlob} />
         </>
     );
 };

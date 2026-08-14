@@ -19,44 +19,47 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
 
     const deleteFooterTemplate = (
         <div className="flex justify-content-center gap-2">
-            <Button type="button" label="Batal" icon="pi pi-times" severity="secondary" outlined onClick={hideDialog} disabled={state.load} />
-            <Button type="button" label="Hapus" icon="pi pi-check" severity="danger" loading={state?.load} disabled={state?.load} onClick={handleDelete} />
+            
+            <Button type="button" label="Ya, Hapus" icon="pi pi-trash" severity="danger" loading={state?.load} disabled={state?.load} onClick={handleDelete} />
         </div>
     );
 
     return (
         <>
             <Dialog visible={isDialogVisible} style={{ width: '500px' }} header={state.add ? 'Tambah Klasifikasi Arsip' : 'Ubah Klasifikasi Arsip'} modal onHide={hideDialog} className="p-fluid">
-                <form onSubmit={formik?.handleSubmit} className="flex gap-3 flex-column mt-3">
+                <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="kode_klasifikasi" className="font-bold text-sm text-800">Kode Klasifikasi</label>
+                        <label htmlFor="kode_klasifikasi" className="font-semibold text-sm text-700">Kode Klasifikasi</label>
                         <InputText id="kode_klasifikasi" name="kode_klasifikasi" value={formik?.values.kode_klasifikasi} onChange={formik?.handleChange} className={isFormFieldInvalid('kode_klasifikasi') ? 'p-invalid' : ''} placeholder="Contoh: 001, 100, KP.01" />
                         {getFormErrorMessage('kode_klasifikasi')}
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="nama_klasifikasi" className="font-bold text-sm text-800">Nama Klasifikasi</label>
+                        <label htmlFor="nama_klasifikasi" className="font-semibold text-sm text-700">Nama Klasifikasi</label>
                         <InputText id="nama_klasifikasi" name="nama_klasifikasi" value={formik?.values.nama_klasifikasi} onChange={formik?.handleChange} className={isFormFieldInvalid('nama_klasifikasi') ? 'p-invalid' : ''} placeholder="Contoh: Kepegawaian, Keuangan, Umum" />
                         {getFormErrorMessage('nama_klasifikasi')}
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="deskripsi" className="font-bold text-sm text-800">Deskripsi</label>
+                        <label htmlFor="deskripsi" className="font-semibold text-sm text-700">Deskripsi</label>
                         <InputText id="deskripsi" name="deskripsi" value={formik?.values.deskripsi} onChange={formik?.handleChange} className={isFormFieldInvalid('deskripsi') ? 'p-invalid' : ''} placeholder="Keterangan singkat kode klasifikasi" />
                         {getFormErrorMessage('deskripsi')}
                     </div>
 
                     {state.edit && (
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="status" className="font-bold text-sm text-800">Status</label>
+                            <label htmlFor="status" className="font-semibold text-sm text-700">Status</label>
                             <Dropdown id="status" name="status" value={formik?.values.status} options={[{label: "Aktif", value: "active"}, {label: "Tidak Aktif", value: "nonactive"}]} onChange={formik?.handleChange} className={isFormFieldInvalid('status') ? 'p-invalid' : ''} />
                             {getFormErrorMessage('status')}
                         </div>
                     )}
 
-                    <div className="flex justify-content-end gap-2 mt-3">
-                        <Button type="button" label="Batal" icon="pi pi-times" severity="secondary" outlined onClick={hideDialog} className="w-auto" />
-                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className="w-auto" loading={state?.load} disabled={state?.load} />
+                    <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                        
+                        <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                        
+                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className=" w-full" loading={state?.load} disabled={state?.load} />
+                    </div>
                     </div>
                 </form>
             </Dialog>

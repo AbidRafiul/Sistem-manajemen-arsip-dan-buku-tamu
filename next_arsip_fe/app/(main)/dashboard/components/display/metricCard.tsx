@@ -79,8 +79,7 @@ export default function MetricCards({ data, isLoading }: MetricCardsProps) {
                     className="col-12 md:col-6 xl:col-3 cursor-pointer" 
                     key={oMetric.label}
                     onClick={() => oMetric.to && router.push(oMetric.to)}
-                    style={{ transition: 'all 0.2s ease-in-out' }}
-                >
+                    style={{ transition: 'all 0.2s ease-in-out' }}>
                     <Card className="shadow-1 border-round-2xl border-none h-full hover:shadow-3 hover:-translate-y-1 transition-all transition-duration-200" pt={{ body: { className: 'p-4' }, content: { className: 'p-0 m-0' } }}>
                         <div className="flex justify-content-between align-align-items-center">
                             <div>

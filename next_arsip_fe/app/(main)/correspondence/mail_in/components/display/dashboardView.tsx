@@ -63,8 +63,7 @@ const renderStatusTag = (statusValue?: string) => {
             value={statusLabel[status] || status}
             severity={severityMap[status] || "info"}
             icon={iconMap[status] || "pi pi-circle"}
-            style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }}
-        />
+            style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }} />
     );
 };
 
@@ -190,8 +189,7 @@ const DashboardView = ({
                     <Card className="border-none shadow-1 border-round-2xl h-full">
                         <div className="flex flex-column sm:flex-row align-align-items-center sm:align-items-center justify-content-between gap-3 mb-4">
                             <div className="flex gap-2">
-                                <Button
-                                    label="Semua Surat"
+                                <Button label="Semua Surat"
                                     onClick={() => onFilterChange("all")}
                                     text={activeFilter !== "all"}
                                     className={`text-sm py-2 px-3 border-round-lg font-semibold transition-colors transition-duration-150 mr-2 ${
@@ -201,12 +199,10 @@ const DashboardView = ({
                                     }`}
                                     style={
                                         activeFilter === "all"
-                                            ? { background: "linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)", border: "none" }
+                                            ? { backgroundColor: "#10b981", border: "none" }
                                             : { border: "none" }
-                                    }
-                                />
-                                <Button
-                                    label="Perlu Tindakan"
+                                    } />
+                                <Button label="Perlu Tindakan"
                                     onClick={() => onFilterChange("needs_action")}
                                     text={activeFilter !== "needs_action"}
                                     className={`text-sm py-2 px-3 border-round-lg font-semibold transition-colors transition-duration-150 mr-2 ${
@@ -216,12 +212,10 @@ const DashboardView = ({
                                     }`}
                                     style={
                                         activeFilter === "needs_action"
-                                            ? { background: "linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)", border: "none" }
+                                            ? { backgroundColor: "#10b981", border: "none" }
                                             : { border: "none" }
-                                    }
-                                />
-                                <Button
-                                    label="Selesai / Arsip"
+                                    } />
+                                <Button label="Selesai / Arsip"
                                     onClick={() => onFilterChange("archived")}
                                     text={activeFilter !== "archived"}
                                     className={`text-sm py-2 px-3 border-round-lg font-semibold transition-colors transition-duration-150 ${
@@ -231,19 +225,16 @@ const DashboardView = ({
                                     }`}
                                     style={
                                         activeFilter === "archived"
-                                            ? { background: "linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)", border: "none" }
+                                            ? { backgroundColor: "#10b981", border: "none" }
                                             : { border: "none" }
-                                    }
-                                />
+                                    } />
                             </div>
-                            <Button
-                                text
+                            <Button text
                                 size="small"
                                 icon="pi pi-refresh"
                                 label="Refresh"
                                 loading={loading}
-                                onClick={onRefresh}
-                            />
+                                onClick={onRefresh} />
                         </div>
 
                         <DataTable
@@ -256,8 +247,7 @@ const DashboardView = ({
                                 </div>
                             }
                             className="text-sm"
-                            rowHover
-                        >
+                            rowHover>
                             <Column header="No / Pengirim" body={letterNoTemplate} style={{ minWidth: "180px" }} />
                             <Column header="Perihal" body={letterSubjectTemplate} style={{ minWidth: "200px" }} />
                             <Column header="Tanggal Diterima" body={letterDateTemplate} style={{ width: "160px" }} />
@@ -299,7 +289,7 @@ const DashboardView = ({
                     </Card>
 
                     {/* Disposition Queue */}
-                    <Card className="border-none shadow-1 border-round-2xl text-white p-1" style={{ background: "linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)" }}>
+                    <Card className="border-none shadow-1 border-round-2xl text-white p-1" style={{ backgroundColor: "#10b981" }}>
                         <div className="p-3">
                             <div className="flex align-items-center justify-content-between mb-3">
                                 <span className="text-xs font-semibold uppercase text-white-alpha-80" style={{ letterSpacing: "0.1em" }}>Disposisi Queue</span>

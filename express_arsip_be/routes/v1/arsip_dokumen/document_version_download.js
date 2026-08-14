@@ -21,7 +21,7 @@ const downloadDocumentVersion = async (req, res) => {
     }
 
     // Ambil data versi dokumen
-    const oVersion = await DB("trs_versi_dokumen as v")
+    const oVersion = await DB("trx_versi_dokumen as v")
       .select(
         "v.id_versi",
         "v.kode_dokumen",
@@ -31,7 +31,7 @@ const downloadDocumentVersion = async (req, res) => {
         "d.nama_dokumen",
         "d.nomor_dokumen"
       )
-      .leftJoin("trs_dokumen as d", "v.kode_dokumen", "d.kode_dokumen")
+      .leftJoin("trx_dokumen as d", "v.kode_dokumen", "d.kode_dokumen")
       .where("v.id_versi", nVersionId)
       .first();
 

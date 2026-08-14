@@ -106,7 +106,8 @@ const Table = ({
     apiExtractOcr,
     apiGetLetterTypes,
     apiGetTemplates,
-    apiGetNomorPreview
+    apiGetNomorPreview,
+    apiGetConfig
 }: TableProps) => {
     const [uploading, setUploading] = useState(false);
     const [archiving, setArchiving] = useState(false);
@@ -195,7 +196,7 @@ const Table = ({
             );
         }
 
-        if (state.jenisSuratFilter && Number(state.jenisSuratFilter) > 0) {
+        if (state.jenisSuratFilter && Number(state.jenisSuratFilter)> 0) {
             list = list.filter(
                 (item) => Number(item.id_jenis_surat) === Number(state.jenisSuratFilter)
             );
@@ -245,7 +246,7 @@ const Table = ({
         confirmDialog({
             header: "Konfirmasi Hapus",
             message:
-                letters.length > 1
+                letters.length> 1
                     ? `Hapus ${letters.length} surat keluar yang dipilih dari daftar?`
                     : `Hapus surat ${letters[0].nomor_agenda || letters[0].nomor_surat} dari daftar?`,
             icon: "pi pi-exclamation-triangle",
@@ -277,8 +278,7 @@ const Table = ({
                 value={config.label}
                 severity={config.severity}
                 icon={config.icon}
-                style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }}
-            />
+                style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }} />
         );
     };
 
@@ -325,18 +325,13 @@ const Table = ({
 
     const actionTemplate = (rowData: TableData) => (
         <div className="flex gap-1 justify-content-center">
-            <Button
-                icon="pi pi-eye"
-                rounded
+            <Button icon="pi pi-eye"
                 text
                 size="small"
                 tooltip="Lihat Detail"
                 tooltipOptions={{ position: "top" }}
-                onClick={() => openDetail(rowData)}
-            />
-            <Button
-                icon="pi pi-pencil"
-                rounded
+                onClick={() => openDetail(rowData)} />
+            <Button icon="pi pi-pencil"
                 text
                 severity="secondary"
                 size="small"
@@ -365,18 +360,14 @@ const Table = ({
                         updated_by: rowData.updated_by,
                     });
                     setState((p) => ({ ...p, add: false, edit: true }));
-                }}
-            />
-            <Button
-                icon="pi pi-trash"
-                rounded
+                }} />
+            <Button icon="pi pi-trash"
                 text
                 severity="danger"
                 size="small"
                 tooltip="Hapus"
                 tooltipOptions={{ position: "top" }}
-                onClick={() => confirmDelete([rowData])}
-            />
+                onClick={() => confirmDelete([rowData])} />
         </div>
     );
 
@@ -390,8 +381,7 @@ const Table = ({
             <div className="flex flex-column md:flex-row flex-wrap gap-2 align-items-stretch md:align-items-center w-full xl:justify-content-end">
                 <span
                     className="p-input-icon-left w-full"
-                    style={{ flex: "1 1 14rem", minWidth: "14rem", maxWidth: "22rem" }}
-                >
+                    style={{ flex: "1 1 14rem", minWidth: "14rem", maxWidth: "22rem" }}>
                     <i className="pi pi-search" />
                     <InputText
                         value={state.searchVal}
@@ -408,8 +398,7 @@ const Table = ({
                         }}
                         placeholder="Cari surat..."
                         className="text-sm w-full"
-                        style={{ height: "2.5rem" }}
-                    />
+                        style={{ height: "2.5rem" }} />
                 </span>
 
                 <div className="w-full" style={{ flex: "1 1 11rem", minWidth: "11rem", maxWidth: "15rem" }}>
@@ -420,8 +409,7 @@ const Table = ({
                         placeholder="Filter Status"
                         className="w-full text-sm"
                         panelClassName="text-sm"
-                        style={{ height: "2.5rem" }}
-                    />
+                        style={{ height: "2.5rem" }} />
                 </div>
 
                 <div className="w-full" style={{ flex: "1 1 11rem", minWidth: "11rem", maxWidth: "15rem" }}>
@@ -434,20 +422,17 @@ const Table = ({
                         placeholder="Filter Jenis"
                         className="w-full text-sm"
                         panelClassName="text-sm"
-                        style={{ height: "2.5rem" }}
-                    />
+                        style={{ height: "2.5rem" }} />
                 </div>
 
-                <Button
-                    icon="pi pi-filter"
+                <Button icon="pi pi-filter"
                     aria-label="Terapkan filter"
                     outlined
                     size="small"
                     onClick={refreshData}
                     tooltip="Terapkan filter"
                     className="align-self-start md:align-self-auto"
-                    style={{ width: "2.5rem", height: "2.5rem", flex: "0 0 auto" }}
-                />
+                    style={{ width: "2.5rem", height: "2.5rem", flex: "0 0 auto" }} />
             </div>
         </div>
     );
@@ -479,8 +464,7 @@ const Table = ({
                 </div>
 
                 <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
-                    <Button
-                        size="small"
+                    <Button size="small"
                         label="Tambah Surat"
                         icon="pi pi-plus"
                         outlined
@@ -488,27 +472,22 @@ const Table = ({
                         onClick={() => {
                             formik.resetForm();
                             setState((p) => ({ ...p, selectedLetters: [], add: true, edit: false }));
-                        }}
-                    />
+                        }} />
                     <Divider layout="vertical" />
-                    <Button
-                        size="small"
+                    <Button size="small"
                         label={`Hapus${state.selectedLetters.length ? ` (${state.selectedLetters.length})` : ""}`}
                         icon="pi pi-trash"
                         severity="danger"
                         outlined
                         disabled={state.selectedLetters.length === 0}
-                        onClick={() => confirmDelete(state.selectedLetters)}
-                    />
+                        onClick={() => confirmDelete(state.selectedLetters)} />
                     <Divider layout="vertical" />
-                    <Button
-                        size="small"
+                    <Button size="small"
                         label="Refresh"
                         icon="pi pi-refresh"
                         outlined
                         loading={state.load}
-                        onClick={refreshData}
-                    />
+                        onClick={refreshData} />
                 </div>
 
                 <DataTable
@@ -533,8 +512,7 @@ const Table = ({
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data"
                     rowHover
-                    className="text-sm"
-                >
+                    className="text-sm">
                     <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
                     <Column field="nomor_surat" header="Nomor Surat" sortable style={{ minWidth: "150px" }} />
                     <Column header="Perihal" body={letterTemplate} style={{ minWidth: "220px" }} />
@@ -567,7 +545,7 @@ const Table = ({
                 apiGetLetterTypes={apiGetLetterTypes}
                 apiGetTemplates={apiGetTemplates}
                 apiGetNomorPreview={apiGetNomorPreview}
-            />
+                apiGetConfig={apiGetConfig} />
 
             <Dialog
                 header={
@@ -580,8 +558,7 @@ const Table = ({
                 modal
                 style={{ width: "56rem", maxWidth: "96vw" }}
                 onHide={() => setState((p) => ({ ...p, detail: false, detailData: null }))}
-                pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}
-            >
+                pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}>
                 {state.detailLoad ? (
                     <div className="flex flex-column align-items-center py-6 gap-3 text-color-secondary">
                         <i className="pi pi-spin pi-spinner text-3xl text-primary" />
@@ -600,7 +577,7 @@ const Table = ({
                             <div className="flex align-items-center gap-2">
                                 {(() => {
                                     const isArchived = detailTrackings.some((t: any) => t.aktivitas === "surat_diarsipkan");
-                                    const canArchive = detailFiles.length > 0 && ["disetujui", "selesai", "terkirim"].includes(String(detailLetter?.status).toLowerCase());
+                                    const canArchive = detailFiles.length> 0 && ["disetujui", "selesai", "terkirim"].includes(String(detailLetter?.status).toLowerCase());
 
                                     if (isArchived) {
                                         return (
@@ -608,20 +585,17 @@ const Table = ({
                                                 value="Sudah Diarsipkan" 
                                                 severity="success" 
                                                 icon="pi pi-bookmark-fill" 
-                                                style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }} 
-                                            />
+                                                style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }} />
                                         );
                                     } else if (canArchive) {
                                         return (
-                                            <Button
-                                                label="Arsipkan ke EDMS"
+                                            <Button label="Arsipkan ke EDMS"
                                                 icon="pi pi-archive"
                                                 severity="success"
                                                 size="small"
                                                 loading={archiving}
                                                 onClick={confirmArchiveLetter}
-                                                style={{ fontSize: "0.75rem", padding: "0.3rem 0.65rem" }}
-                                            />
+                                                style={{ fontSize: "0.75rem", padding: "0.3rem 0.65rem" }} />
                                         );
                                     }
                                     return null;
@@ -651,7 +625,7 @@ const Table = ({
 
                         <Divider className="my-0" />
 
-                        {(detailFiles.length > 0 || detailLetter?.isi_surat_final) && (
+                        {(detailFiles.length> 0 || detailLetter?.isi_surat_final) && (
                             <>
                                 <div>
                                     <div className="font-bold text-900 flex align-items-center gap-2 mb-3">
@@ -683,8 +657,7 @@ const Table = ({
                                                         src={fileUrl}
                                                         className="w-full"
                                                         style={{ height: "480px", border: "none" }}
-                                                        title="Pratinjau Dokumen Surat Keluar"
-                                                    />
+                                                        title="Pratinjau Dokumen Surat Keluar" />
                                                 </div>
                                             );
                                         }
@@ -715,8 +688,7 @@ const Table = ({
                                                         </div>
                                                         <pre
                                                             className="m-0 text-sm text-900 line-height-4"
-                                                            style={{ whiteSpace: "pre-wrap", fontFamily: "Georgia, 'Times New Roman', serif" }}
-                                                        >
+                                                            style={{ whiteSpace: "pre-wrap", fontFamily: "Georgia, 'Times New Roman', serif" }}>
                                                             {detailLetter?.isi_surat_final || "Isi naskah dokumen tidak tersedia."}
                                                         </pre>
                                                     </div>
@@ -749,18 +721,15 @@ const Table = ({
                                                         ref={fileInputRef}
                                                         style={{ display: "none" }}
                                                         onChange={onFileUpload}
-                                                        accept="application/pdf"
-                                                    />
-                                                    <Button
-                                                        type="button"
+                                                        accept="application/pdf" />
+                                                    <Button type="button"
                                                         icon="pi pi-upload"
                                                         label="Unggah File"
                                                         outlined
                                                         size="small"
                                                         loading={uploading}
                                                         onClick={() => fileInputRef.current?.click()}
-                                                        style={{ fontSize: "0.75rem", padding: "0.3rem 0.65rem" }}
-                                                    />
+                                                        style={{ fontSize: "0.75rem", padding: "0.3rem 0.65rem" }} />
                                                 </>
                                             );
                                         }
@@ -770,7 +739,7 @@ const Table = ({
                                 </div>
                             </div>
 
-                            {detailFiles.length > 0 ? (
+                            {detailFiles.length> 0 ? (
                                 <div className="flex flex-column gap-2">
                                     {detailFiles.map((file, idx) => {
                                         const fileId = file.id_file_surat_keluar || file.id_surat_keluar;
@@ -795,8 +764,7 @@ const Table = ({
                                                         href={fileUrl}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="no-underline"
-                                                    >
+                                                        className="no-underline">
                                                         <Button icon="pi pi-download" rounded text size="small" tooltip="Download File" />
                                                     </a>
                                                 )}
@@ -822,7 +790,7 @@ const Table = ({
                                 Alur & Histori Approval
                             </div>
 
-                            {detailTrackings.length > 0 ? (
+                            {detailTrackings.length> 0 ? (
                                 <div className="flex flex-column gap-4 pl-3 py-2 relative" style={{ borderLeft: "2px solid var(--surface-200)" }}>
                                     {detailTrackings.map((tracking: any, idx: number) => (
                                         <div key={tracking.id_tracking || idx} className="relative flex align-align-items-center gap-3">

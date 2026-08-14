@@ -122,8 +122,7 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
                     <Tag
                         value={active}
                         severity={statusTone(active)}
-                        icon={statusIcon(active)}
-                    />
+                        icon={statusIcon(active)} />
                 </div>
             </div>
         );
@@ -144,24 +143,19 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
     const signatureTemplate = (rowData: TteDocumentRow) => (
         <Tag
             value={`${rowData.jumlah_tanda_tangan || 0} tanda tangan`}
-            severity={(Number(rowData.jumlah_tanda_tangan || 0) > 0) ? "success" : "warning"}
-            icon="pi pi-sign-in"
-        />
+            severity={(Number(rowData.jumlah_tanda_tangan || 0)> 0) ? "success" : "warning"}
+            icon="pi pi-sign-in" />
     );
 
     const actionTemplate = (rowData: TteDocumentRow) => (
         <div className="flex gap-1 justify-content-center">
-            <Button
-                icon="pi pi-eye"
-                rounded
+            <Button icon="pi pi-eye"
                 text
                 size="small"
                 tooltip="Lihat Detail"
                 tooltipOptions={{ position: "top" }}
-                onClick={() => handleOpenDetail(rowData)}
-            />
-            <Button
-                icon="pi pi-download"
+                onClick={() => handleOpenDetail(rowData)} />
+            <Button icon="pi pi-download"
                 rounded
                 text
                 severity="secondary"
@@ -171,8 +165,7 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
                 onClick={() => {
                     const url = rowData.dokumen_tte_url || rowData.file_url;
                     if (url) window.open(url, "_blank", "noopener,noreferrer");
-                }}
-            />
+                }} />
         </div>
     );
 
@@ -194,16 +187,13 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
                         }}
                         placeholder="Cari nomor, perihal, tujuan..."
                         className="w-full text-sm"
-                        style={{ height: "2.5rem" }}
-                    />
+                        style={{ height: "2.5rem" }} />
                 </span>
-                <Button
-                    icon="pi pi-filter"
+                <Button icon="pi pi-filter"
                     outlined
                     size="small"
                     onClick={refreshData}
-                    style={{ width: "2.5rem", height: "2.5rem" }}
-                />
+                    style={{ width: "2.5rem", height: "2.5rem" }} />
             </div>
         </div>
     );
@@ -245,8 +235,7 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
                     globalFilterFields={["nomor_surat", "nomor_agenda", "perihal", "tujuan", "instansi_tujuan", "nama_file"]}
                     emptyMessage="Belum ada data"
                     rowHover
-                    className="text-sm"
-                >
+                    className="text-sm">
                     <Column field="nomor_surat" header="Nomor Surat" sortable style={{ minWidth: "150px" }} />
                     <Column header="Perihal" body={previewTemplate} style={{ minWidth: "230px" }} />
                     <Column field="tujuan" header="Tujuan" body={(r) => r.tujuan || "-"} style={{ minWidth: "160px" }} />
@@ -268,8 +257,7 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
                 visible={state.detail}
                 modal
                 style={{ width: "62rem", maxWidth: "96vw" }}
-                onHide={() => setState((p) => ({ ...p, detail: false, detailData: null }))}
-            >
+                onHide={() => setState((p) => ({ ...p, detail: false, detailData: null }))}>
                 {state.detailLoad ? (
                     <div className="flex flex-column align-items-center py-6 gap-3 text-color-secondary">
                         <i className="pi pi-spin pi-spinner text-3xl text-primary" />
@@ -289,13 +277,11 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
                                 <div className="flex gap-2 flex-wrap">
                                     <Tag value={detailLetter.status || "-"} severity={statusTone(detailLetter.status)} icon={statusIcon(detailLetter.status)} />
                                     {fileUrl && (
-                                        <Button
-                                            label="Buka Dokumen"
+                                        <Button label="Buka Dokumen"
                                             icon="pi pi-external-link"
                                             size="small"
                                             outlined
-                                            onClick={() => window.open(fileUrl, "_blank", "noopener,noreferrer")}
-                                        />
+                                            onClick={() => window.open(fileUrl, "_blank", "noopener,noreferrer")} />
                                     )}
                                 </div>
                             </div>
@@ -321,34 +307,26 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
 
                         {mode === "pending" && (
                             <div className="flex align-items-center gap-2 flex-wrap">
-                                <Button 
-                                    label="Lihat Detail & TTE" 
+                                <Button label="Lihat Detail & TTE" 
                                     size="small" 
                                     severity="info" 
-                                    onClick={() => handleOpenDetail(detailLetter)} 
-                                />
-                                <Button
-                                    label="Finalisasi"
+                                    onClick={() => handleOpenDetail(detailLetter)} />
+                                <Button label="Finalisasi"
                                     icon="pi pi-check"
                                     severity="success"
                                     outlined
                                     disabled={!permissions.canCreate}
                                     loading={finalizing}
-                                    onClick={confirmFinalize}
-                                />
-                                <Button 
-                                    label="Tanda Tangani Dokumen" 
+                                    onClick={confirmFinalize} />
+                                <Button label="Tanda Tangani Dokumen" 
                                     severity="success" 
                                     onClick={handleSignDocument} 
-                                    loading={signing} 
-                                />
-                                <Button
-                                    label="Tandatangani"
+                                    loading={signing} />
+                                <Button label="Tandatangani"
                                     icon="pi pi-pencil"
                                     disabled={!permissions.canApprove}
                                     loading={signing}
-                                    onClick={confirmSign}
-                                />
+                                    onClick={confirmSign} />
                             </div>
                         )}
 
@@ -365,7 +343,7 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
                                     Riwayat Tanda Tangan
                                 </div>
                                 <div className="flex flex-column gap-2">
-                                    {detailSignatures.length > 0 ? detailSignatures.map((item: any) => (
+                                    {detailSignatures.length> 0 ? detailSignatures.map((item: any) => (
                                         <div key={item.id_tanda_tangan_dokumen} className="p-3 surface-50 border-1 surface-border border-round-lg">
                                             <div className="font-semibold text-900">{item.nama_penanda_tangan || item.username_penanda_tangan || "-"}</div>
                                             <div className="text-xs text-color-secondary mt-1">
@@ -394,13 +372,12 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
                                                 optionValue="id_sertifikat_elektronik"
                                                 placeholder="Pilih Sertifikat"
                                                 onChange={(e) => setSelectedCertificate(e.value)}
-                                                className="w-full"
-                                            />
+                                                className="w-full" />
                                             {certificates.length === 0 && <div className="text-sm text-color-secondary">Belum ada sertifikat aktif.</div>}
                                         </>
                                     ) : null}
 
-                                    {detailVerifications.length > 0 ? detailVerifications.map((item: any) => (
+                                    {detailVerifications.length> 0 ? detailVerifications.map((item: any) => (
                                         <div key={item.id_verifikasi_dokumen} className="p-3 surface-50 border-1 surface-border border-round-lg">
                                             <div className="font-semibold text-900">Validasi {formatDateTime(item.diverifikasi_pada)}</div>
                                             <div className="text-xs text-color-secondary mt-1">

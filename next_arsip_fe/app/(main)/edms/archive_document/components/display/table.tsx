@@ -92,8 +92,7 @@ const Table = ({
             value={rowData.status === 'active' ? 'Aktif' : 'Nonaktif'}
             severity={rowData.status === 'active' ? 'success' : 'danger'}
             icon={rowData.status === 'active' ? 'pi pi-check-circle' : 'pi pi-times-circle'}
-            style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem' }}
-        />
+            style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem' }} />
     );
 
     const documentTemplate = (rowData: DocumentData) => (
@@ -108,58 +107,47 @@ const Table = ({
             <Avatar
                 label={rowData.nama_pic?.slice(0, 1).toUpperCase() || 'P'}
                 shape="circle"
-                style={{ width: '1.75rem', height: '1.75rem', fontSize: '0.7rem', background: '#EEF2FF', color: '#4F46E5', fontWeight: '700', flexShrink: 0 }}
-            />
+                style={{ width: '1.75rem', height: '1.75rem', fontSize: '0.7rem', background: '#EEF2FF', color: '#4F46E5', fontWeight: '700', flexShrink: 0 }} />
             <span className="text-sm text-900">{rowData.nama_pic}</span>
         </div>
     );
 
     const actionTemplate = (rowData: DocumentData) => (
         <div className="flex gap-1 align-items-center">
-            <Button
-                icon="pi pi-info-circle"
+            <Button icon="pi pi-info-circle"
                 rounded
                 text
                 size="small"
                 tooltip="Detail Dokumen"
                 tooltipOptions={{ position: 'top' }}
                 loading={state.detailLoad}
-                onClick={() => getDocumentDetail(rowData.id_dokumen)}
-            />
-            <Button
-                icon="pi pi-history"
+                onClick={() => getDocumentDetail(rowData.id_dokumen)} />
+            <Button icon="pi pi-history"
                 rounded
                 text
                 severity="info"
                 size="small"
                 tooltip="Riwayat Versi"
                 tooltipOptions={{ position: 'top' }}
-                onClick={() => router.push(`/edms/archive_document/${rowData.id_dokumen}/versions`)}
-            />
-            <Button
-                icon="pi pi-clock"
+                onClick={() => router.push(`/edms/archive_document/${rowData.id_dokumen}/versions`)} />
+            <Button icon="pi pi-clock"
                 rounded
                 text
                 severity="help"
                 size="small"
                 tooltip="Audit Trail"
                 tooltipOptions={{ position: 'top' }}
-                onClick={() => router.push(`/edms/archive_document/${rowData.id_dokumen}/history`)}
-            />
-            <Button
-                icon="pi pi-qrcode"
+                onClick={() => router.push(`/edms/archive_document/${rowData.id_dokumen}/history`)} />
+            <Button icon="pi pi-qrcode"
                 rounded
                 text
                 severity="warning"
                 size="small"
                 tooltip="Lihat & Cetak Stiker QR Code"
                 tooltipOptions={{ position: 'top' }}
-                onClick={() => handleGenerateQR(rowData.id_dokumen)}
-            />
+                onClick={() => handleGenerateQR(rowData.id_dokumen)} />
             {canUpdate && (
-                <Button
-                    icon="pi pi-pencil"
-                    rounded
+                <Button icon="pi pi-pencil"
                     text
                     severity="secondary"
                     size="small"
@@ -182,36 +170,29 @@ const Table = ({
                             kode_retensi: rowData.kode_retensi || '',
                         });
                         setState((p) => ({ ...p, add: false, edit: true, delete: false, selectedDocuments: [rowData] }));
-                    }}
-                />
+                    }} />
             )}
             {canDelete && (
-                <Button
-                    icon="pi pi-trash"
-                    rounded
+                <Button icon="pi pi-trash"
                     text
                     severity="danger"
                     size="small"
                     tooltip="Hapus Dokumen"
                     tooltipOptions={{ position: 'top' }}
-                    onClick={() => setState((p) => ({ ...p, delete: true, selectedDocuments: [rowData] }))}
-                />
+                    onClick={() => setState((p) => ({ ...p, delete: true, selectedDocuments: [rowData] }))} />
             )}
         </div>
     );
 
     const previewTemplate = (rowData: DocumentData) => (
-        <Button
-            icon="pi pi-eye"
-            rounded
+        <Button icon="pi pi-eye"
             text
             severity="info"
             size="small"
             tooltip={rowData.file_path ? "Pratinjau Dokumen" : "Belum ada file berkas"}
             tooltipOptions={{ position: 'top' }}
             onClick={() => handleFetchPreviewUrl(rowData.file_path || '')}
-            disabled={!rowData.file_path}
-        />
+            disabled={!rowData.file_path} />
     );
 
     const headerTemplate = (
@@ -229,31 +210,26 @@ const Table = ({
                     }}
                     placeholder="Cari dokumen..."
                     className="text-sm"
-                    style={{ height: '2.25rem' }}
-                />
+                    style={{ height: '2.25rem' }} />
             </span>
         </div>
     );
 
     const deleteFooterTemplate = (
-        <div className="flex justify-content-end gap-2">
-            <Button
-                label="Batal"
+        <div className="flex mt-4 pt-3 border-top-1 surface-border">
+            <Button label="Batal"
                 icon="pi pi-times"
                 severity="secondary"
                 outlined
                 size="small"
                 onClick={() => setState((p) => ({ ...p, delete: false }))}
-                disabled={state.load}
-            />
-            <Button
-                label="Hapus"
+                disabled={state.load} />
+            <Button label="Hapus"
                 icon="pi pi-trash"
                 severity="danger"
                 size="small"
                 onClick={deleteDocuments}
-                loading={state.load}
-            />
+                loading={state.load} />
         </div>
     );
 
@@ -268,8 +244,7 @@ const Table = ({
             <div className="flex flex-column sm:flex-row align-items-stretch sm:align-items-center justify-content-between gap-2 mb-3">
                 <div className="flex flex-row flex-wrap align-items-center gap-2">
                     {canCreate && (
-                        <Button
-                            type="button"
+                        <Button type="button"
                             size="small"
                             label="Tambah Dokumen"
                             icon="pi pi-plus"
@@ -295,37 +270,31 @@ const Table = ({
                                     }
                                 });
                                 setState(p => ({ ...p, add: true, edit: false, delete: false }));
-                            }}
-                        />
+                            }} />
                     )}
                     {canCreate && canDelete && <Divider layout="vertical" className="hidden sm:inline" />}
                     {canDelete && (
-                        <Button
-                            type="button"
+                        <Button type="button"
                             size="small"
-                            label={`Hapus${state.selectedDocuments.length > 0 ? ` (${state.selectedDocuments.length})` : ''}`}
+                            label={`Hapus${state.selectedDocuments.length> 0 ? ` (${state.selectedDocuments.length})` : ''}`}
                             icon="pi pi-trash"
                             severity="danger"
                             outlined
                             disabled={state.selectedDocuments.length === 0}
-                            onClick={() => setState((p) => ({ ...p, delete: true }))}
-                        />
+                            onClick={() => setState((p) => ({ ...p, delete: true }))} />
                     )}
                     {(canCreate || canDelete) && <Divider layout="vertical" className="hidden sm:inline" />}
-                    <Button
-                        type="button"
+                    <Button type="button"
                         size="small"
-                        label="Muat Ulang"
+                        label="Refresh"
                         icon="pi pi-refresh"
                         outlined
                         loading={state.load}
-                        onClick={getDocuments}
-                    />
+                        onClick={getDocuments} />
                 </div>
 
                 <div className="flex flex-row flex-wrap align-items-center gap-2">
-                    <Button
-                        type="button"
+                    <Button type="button"
                         size="small"
                         label="Scan & Track QR"
                         icon="pi pi-qrcode"
@@ -333,18 +302,15 @@ const Table = ({
                         severity="info"
                         tooltip="Pindai Stiker QR Berkas Fisik dengan Kamera Live atau USB Scanner"
                         tooltipOptions={{ position: 'top' }}
-                        onClick={() => setState(p => ({ ...p, trackingDialog: true, trackingCode: '', trackingResult: null }))}
-                    />
+                        onClick={() => setState(p => ({ ...p, trackingDialog: true, trackingCode: '', trackingResult: null }))} />
                     <Divider layout="vertical" className="hidden sm:inline" />
-                    <Button
-                        type="button"
+                    <Button type="button"
                         size="small"
                         label="Pencarian OCR & Teks"
                         icon="pi pi-search-plus"
                         outlined
                         severity="help"
-                        onClick={() => router.push('/edms/archive_document/search')}
-                    />
+                        onClick={() => router.push('/edms/archive_document/search')} />
                 </div>
             </div>
 
@@ -356,8 +322,7 @@ const Table = ({
                         <span>Filter Dokumen</span>
                     </div>
                     {(state.filterClassification || state.filterCategory || state.filterType || state.filterConfidentiality) && (
-                        <Button
-                            label="Bersihkan Filter"
+                        <Button label="Bersihkan Filter"
                             icon="pi pi-filter-slash"
                             className="p-button-text p-button-sm text-xs p-0 text-primary"
                             onClick={() => setState(p => ({
@@ -366,8 +331,7 @@ const Table = ({
                                 filterCategory: '',
                                 filterType: '',
                                 filterConfidentiality: ''
-                            }))}
-                        />
+                            }))} />
                     )}
                 </div>
                 <div className="grid">
@@ -386,8 +350,7 @@ const Table = ({
                             placeholder="Pilih Klasifikasi"
                             className="w-full text-xs p-inputtext-sm"
                             filter
-                            showClear
-                        />
+                            showClear />
                     </div>
                     <div className="col-12 md:col-3 flex flex-column gap-1">
                         <label className="text-xs font-semibold text-color-secondary">Kategori</label>
@@ -407,8 +370,7 @@ const Table = ({
                             className="w-full text-xs p-inputtext-sm"
                             filter
                             showClear
-                            disabled={!state.filterClassification}
-                        />
+                            disabled={!state.filterClassification} />
                     </div>
                     <div className="col-12 md:col-3 flex flex-column gap-1">
                         <label className="text-xs font-semibold text-color-secondary">Tipe Dokumen</label>
@@ -425,8 +387,7 @@ const Table = ({
                             placeholder="Pilih Tipe Dokumen"
                             className="w-full text-xs p-inputtext-sm"
                             filter
-                            showClear
-                        />
+                            showClear />
                     </div>
                     <div className="col-12 md:col-3 flex flex-column gap-1">
                         <label className="text-xs font-semibold text-color-secondary">Tingkat Kerahasiaan</label>
@@ -443,8 +404,7 @@ const Table = ({
                             placeholder="Pilih Kerahasiaan"
                             className="w-full text-xs p-inputtext-sm"
                             filter
-                            showClear
-                        />
+                            showClear />
                     </div>
                 </div>
             </div>
@@ -465,8 +425,7 @@ const Table = ({
                 globalFilterFields={['nomor_dokumen', 'nama_dokumen', 'nama_pic', 'lokasi_fisik']}
                 responsiveLayout="scroll"
                 className="p-datatable-sm border-round-xl border-1 surface-border overflow-hidden"
-                stripedRows
-            >
+                stripedRows>
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
                 <Column field="nomor_dokumen" header="Nomor / Nama Dokumen" body={documentTemplate} sortable style={{ minWidth: '16rem' }} />
                 <Column field="nama_jenis_dokumen" header="Tipe" sortable style={{ minWidth: '10rem' }} />
@@ -488,8 +447,7 @@ const Table = ({
             setState={setState}
             formik={formik}
             handleGenerateAutoNumber={handleGenerateAutoNumber}
-            toast={toast}
-        />
+            toast={toast} />
 
         {/* Modal Hapus Dokumen */}
         <Dialog
@@ -498,8 +456,7 @@ const Table = ({
             modal
             footer={deleteFooterTemplate}
             onHide={() => setState((p) => ({ ...p, delete: false }))}
-            style={{ width: '30rem' }}
-        >
+            style={{ width: '30rem' }}>
             <div className="flex align-items-center gap-3">
                 <i className="pi pi-exclamation-triangle text-red-500 text-3xl" />
                 <span>
@@ -519,8 +476,7 @@ const Table = ({
             }
             modal
             style={{ width: '40rem', maxWidth: '95vw' }}
-            onHide={() => setState(p => ({ ...p, detail: false, detailData: null }))}
-        >
+            onHide={() => setState(p => ({ ...p, detail: false, detailData: null }))}>
             {state.detailData?.document ? (
                 <div className="flex flex-column gap-3 text-sm pt-2">
                     <div className="bg-primary-50 p-3 border-round-xl border-1 border-primary-100 flex justify-content-between align-items-center">
@@ -530,8 +486,7 @@ const Table = ({
                         </div>
                         <Tag
                             value={state.detailData.document.status === 'active' ? 'AKTIF' : 'NONAKTIF'}
-                            severity={state.detailData.document.status === 'active' ? 'success' : 'danger'}
-                        />
+                            severity={state.detailData.document.status === 'active' ? 'success' : 'danger'} />
                     </div>
 
                     <div className="grid mt-1">
@@ -585,8 +540,7 @@ const Table = ({
             }
             modal
             style={{ width: '28rem' }}
-            onHide={() => setState(p => ({ ...p, qrDialog: false, qrData: null }))}
-        >
+            onHide={() => setState(p => ({ ...p, qrDialog: false, qrData: null }))}>
             <div className="flex flex-column align-items-center justify-content-center py-3">
                 {state.qrLoad ? (
                     <i className="pi pi-spin pi-spinner text-3xl text-primary" />
@@ -600,8 +554,7 @@ const Table = ({
                                 {state.qrData.qr_code}
                             </span>
                         </div>
-                        <Button
-                            label="Cetak Stiker QR Code"
+                        <Button label="Cetak Stiker QR Code"
                             icon="pi pi-print"
                             className="mt-4 w-full font-bold"
                             severity="warning"
@@ -636,8 +589,7 @@ const Table = ({
                                     `);
                                     windowPrint?.document.close();
                                 }
-                            }}
-                        />
+                            }} />
                     </>
                 ) : (
                     <span className="text-red-500">Gagal memuat QR Code</span>
@@ -666,8 +618,7 @@ const Table = ({
                 setCameraActive(false);
                 setState(p => ({ ...p, trackingDialog: false, trackingCode: '', trackingResult: null }));
             }}
-            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
-        >
+            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}>
             <div className="flex flex-column gap-4 pt-3">
                 {/* Information Banner */}
                 <div className="bg-blue-50 border-1 border-blue-200 border-round-xl p-3 text-xs text-blue-900 flex flex-column gap-1">
@@ -683,8 +634,7 @@ const Table = ({
 
                 {/* Mode Selector Buttons */}
                 <div className="flex justify-content-center gap-2">
-                    <Button
-                        label="Scanner USB / Ketik Manual"
+                    <Button label="Scanner USB / Ketik Manual"
                         icon="pi pi-keyboard"
                         size="small"
                         severity={scanMode === 'manual' ? 'info' : 'secondary'}
@@ -694,17 +644,14 @@ const Table = ({
                             if (html5QrRef.current) html5QrRef.current.stop().catch(() => {});
                             setCameraActive(false);
                             setScanMode('manual');
-                        }}
-                    />
-                    <Button
-                        label="Pindai via Kamera Live"
+                        }} />
+                    <Button label="Pindai via Kamera Live"
                         icon="pi pi-camera"
                         size="small"
                         severity={scanMode === 'camera' ? 'info' : 'secondary'}
                         outlined={scanMode !== 'camera'}
                         className="font-bold text-xs px-3"
-                        onClick={() => setScanMode('camera')}
-                    />
+                        onClick={() => setScanMode('camera')} />
                 </div>
 
                 {/* Camera Mode */}
@@ -717,22 +664,18 @@ const Table = ({
                             </span>
                         )}
                         {!cameraActive ? (
-                            <Button
-                                label="Buka Kamera Live"
+                            <Button label="Buka Kamera Live"
                                 icon="pi pi-video"
                                 severity="success"
                                 className="p-button-sm font-bold"
-                                onClick={startCameraScanner}
-                            />
+                                onClick={startCameraScanner} />
                         ) : (
-                            <Button
-                                label="Tutup Kamera"
+                            <Button label="Tutup Kamera"
                                 icon="pi pi-power-off"
                                 severity="danger"
                                 outlined
                                 className="p-button-sm font-bold"
-                                onClick={stopCameraScanner}
-                            />
+                                onClick={stopCameraScanner} />
                         )}
                     </div>
                 )}
@@ -740,7 +683,7 @@ const Table = ({
                 {/* Manual / USB Scanner Mode */}
                 {scanMode === 'manual' && (
                     <div className="flex flex-column gap-2 text-sm">
-                        <label htmlFor="qr_input" className="font-bold text-sm text-900">
+                        <label htmlFor="qr_input" className="font-semibold text-sm text-700">
                             Masukkan Kode UUID / Gunakan USB Scanner <span className="text-red-500">*</span>
                         </label>
                         <div className="p-inputgroup">
@@ -755,14 +698,11 @@ const Table = ({
                                 }}
                                 placeholder="Arahkan kursor ke sini lalu scan stiker QR dengan USB Scanner..."
                                 className="text-sm"
-                                autoFocus
-                            />
-                            <Button
-                                icon="pi pi-search"
+                                autoFocus />
+                            <Button icon="pi pi-search"
                                 label="Lacak Berkas"
                                 loading={state.trackingLoad}
-                                onClick={() => handleScanQR(state.trackingCode)}
-                            />
+                                onClick={() => handleScanQR(state.trackingCode)} />
                         </div>
                     </div>
                 )}
@@ -785,8 +725,7 @@ const Table = ({
                                 value={state.trackingResult.is_currently_borrowed ? 'SEDANG DIPINJAM' : 'TERSEDIA'}
                                 severity={state.trackingResult.is_currently_borrowed ? 'warning' : 'success'}
                                 icon={state.trackingResult.is_currently_borrowed ? 'pi pi-exclamation-circle' : 'pi pi-check-circle'}
-                                className="px-3 py-1 font-semibold text-xs border-round-md"
-                            />
+                                className="px-3 py-1 font-semibold text-xs border-round-md" />
                         </div>
 
                         <div className="grid">
@@ -815,8 +754,7 @@ const Table = ({
                                                 e.preventDefault();
                                                 handleFetchPreviewUrl(state.trackingResult.latest_version.file_path);
                                             }}
-                                            className="text-primary font-semibold hover:underline"
-                                        >
+                                            className="text-primary font-semibold hover:underline">
                                             Versi {state.trackingResult.latest_version.nomor_versi} (Pratinjau)
                                         </a>
                                     </div>
@@ -864,10 +802,8 @@ const Table = ({
                                             const val = (e.target as HTMLInputElement).value;
                                             handleUpdateLocation(state.trackingResult.document.id_dokumen, val);
                                         }
-                                    }}
-                                />
-                                <Button
-                                    icon="pi pi-save"
+                                    }} />
+                                <Button icon="pi pi-save"
                                     label="Simpan Lokasi"
                                     severity="success"
                                     loading={state.updatingLocation}
@@ -876,8 +812,7 @@ const Table = ({
                                         if (el) {
                                             handleUpdateLocation(state.trackingResult.document.id_dokumen, el.value);
                                         }
-                                    }}
-                                />
+                                    }} />
                             </div>
                         </div>
                     </div>

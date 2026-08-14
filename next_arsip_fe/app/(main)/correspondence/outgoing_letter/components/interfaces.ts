@@ -142,6 +142,7 @@ export interface TableProps {
     apiGetLetterTypes?: () => Promise<any[]>;
     apiGetTemplates?: () => Promise<any[]>;
     apiGetNomorPreview?: (payload: any) => Promise<string>;
+    apiGetConfig?: (payload: any) => Promise<any>;
 }
 
 export interface FormProps extends TableProps {}

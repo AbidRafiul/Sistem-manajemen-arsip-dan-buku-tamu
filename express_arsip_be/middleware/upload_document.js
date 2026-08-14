@@ -76,7 +76,7 @@ export const uploadDocument = (req, res, next) => {
 
       // Lookup document metadata from DB if id_dokumen / kode_dokumen is present without metadata
       if ((!cNomorDokumen || !cNamaDokumen) && (req.body.id_dokumen || req.body.kode_dokumen)) {
-        const docQuery = DB("trs_dokumen").select("nomor_dokumen", "nama_dokumen", "kode_dokumen");
+        const docQuery = DB("trx_dokumen").select("nomor_dokumen", "nama_dokumen", "kode_dokumen");
         if (req.body.id_dokumen) {
           docQuery.where("id_dokumen", req.body.id_dokumen);
         } else {

@@ -22,13 +22,13 @@ const outgoingLetterFileDownload = async (req, res) => {
     if (nFileId) {
       const cStrParam = String(nFileId).trim();
       if (/^\d+$/.test(cStrParam)) {
-        oFile = await DB("trs_file_surat_keluar")
+        oFile = await DB("trx_file_surat_keluar")
           .where("id_file_surat_keluar", cStrParam)
           .where("status", "active")
           .first();
 
         if (!oFile) {
-          oFile = await DB("trs_file_surat_keluar")
+          oFile = await DB("trx_file_surat_keluar")
             .where("id_surat_keluar", cStrParam)
             .where("status", "active")
             .orderBy("id_file_surat_keluar", "desc")
@@ -36,7 +36,7 @@ const outgoingLetterFileDownload = async (req, res) => {
         }
       } else {
         const cleanParamPath = cStrParam.replace(/\\/g, "/").replace(/^\/+/, "");
-        oFile = await DB("trs_file_surat_keluar")
+        oFile = await DB("trx_file_surat_keluar")
           .where("path_file", "like", `%${cleanParamPath}%`)
           .where("status", "active")
           .first();

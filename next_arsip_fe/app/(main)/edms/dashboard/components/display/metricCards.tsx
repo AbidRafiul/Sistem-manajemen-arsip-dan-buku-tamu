@@ -60,8 +60,7 @@ export default function MetricCards({ metrics, isLoading }: MetricCardsProps) {
                         style={{
                             boxShadow: `0 10px 30px -10px ${card.shadowColor}`,
                             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                        }}
-                    >
+                        }}>
                         <div className="flex justify-content-between align-align-items-center">
                             <div>
                                 <span className="text-sm font-bold text-color-secondary uppercase tracking-wider block" style={{ letterSpacing: '0.05em' }}>
@@ -78,8 +77,7 @@ export default function MetricCards({ metrics, isLoading }: MetricCardsProps) {
                                     height: '3.5rem',
                                     background: card.gradient,
                                     boxShadow: `0 4px 15px 0 ${card.shadowColor}`
-                                }}
-                            >
+                                }}>
                                 <i className={`${card.icon} text-2xl`} />
                             </div>
                         </div>

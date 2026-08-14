@@ -50,7 +50,7 @@ router.post("/", async (req, res) => {
       });
     }
 
-    await DB("trs_kunjungan")
+    await DB("trx_kunjungan")
       .where("id_kunjungan", idKunjungan)
       .update({
         status_persetujuan: action,
@@ -59,7 +59,7 @@ router.post("/", async (req, res) => {
       });
 
     // Kirim Notifikasi WhatsApp ke Tamu jika disetujui / ditolak
-    const visitData = await DB("trs_kunjungan as t")
+    const visitData = await DB("trx_kunjungan as t")
       .leftJoin("mst_tujuan_kunjungan as tk", "t.id_tujuan_kunjungan", "tk.id_tujuan_kunjungan")
       .leftJoin("mst_cabang as c", "t.id_cabang", "c.id_cabang")
       .select("t.*", "tk.nama_tujuan_kunjungan as purpose_name", "c.nama_cabang")

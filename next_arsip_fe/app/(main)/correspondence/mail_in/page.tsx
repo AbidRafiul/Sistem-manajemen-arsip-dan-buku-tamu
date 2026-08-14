@@ -50,8 +50,7 @@ const Page = () => {
                 activeFilter={activeFilter}
                 loading={loading}
                 onFilterChange={setActiveFilter}
-                onRefresh={fetchDashboard}
-            />
+                onRefresh={fetchDashboard} />
         </div>
     );
 };

@@ -19,14 +19,14 @@ router.get("/", async (req, res) => {
     }
 
     // Get notifications for this user, ordered by created_at desc
-    const vaData = await DB("trs_notifikasi")
+    const vaData = await DB("trx_notifikasi")
       .where("id_pengguna", nUserId)
       .orWhereNull("id_pengguna") // support global notifications too
       .orderBy("created_at", "desc")
       .limit(30);
 
     // Calculate unread count
-    const unreadCountRow = await DB("trs_notifikasi")
+    const unreadCountRow = await DB("trx_notifikasi")
       .where({ status_baca: 0 })
       .andWhere((builder) => {
         builder.where("id_pengguna", nUserId).orWhereNull("id_pengguna");

@@ -122,10 +122,10 @@ export interface ListMenuDisplayProps {
 
 export interface RoleColors {
     superadmin: 'success' | 'info' | 'warning' | 'danger' | null | undefined;
-    Pimpinan: 'success' | 'info' | 'warning' | 'danger' | null | undefined;
-    Sekretaris: 'success' | 'info' | 'warning' | 'danger' | null | undefined;
-    'Staff Arsip': 'success' | 'info' | 'warning' | 'danger' | null | undefined;
-    'Staff Umum': 'success' | 'info' | 'warning' | 'danger' | null | undefined;
-    Resepsionis: 'success' | 'info' | 'warning' | 'danger' | null | undefined;
-    Auditor: 'success' | 'info' | 'warning' | 'danger' | null | undefined;
+    pimpinan: 'success' | 'info' | 'warning' | 'danger' | null | undefined;
+    sekretaris: 'success' | 'info' | 'warning' | 'danger' | null | undefined;
+    'staff arsip': 'success' | 'info' | 'warning' | 'danger' | null | undefined;
+    'staff umum': 'success' | 'info' | 'warning' | 'danger' | null | undefined;
+    resepsionis: 'success' | 'info' | 'warning' | 'danger' | null | undefined;
+    auditor: 'success' | 'info' | 'warning' | 'danger' | null | undefined;
 }

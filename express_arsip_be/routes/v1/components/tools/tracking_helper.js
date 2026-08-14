@@ -26,7 +26,7 @@ const assignIfColumnExists = (target, columns, columnName, value) => {
 export const insertIncomingLetterTracking = async (trx, data) => {
   const dbInstance = trx || DB;
   const trackingTable = await getExistingTable([
-    "trs_tracking_surat_masuk",
+    "trx_tracking_surat_masuk",
     "trx_incoming_letter_trackings",
   ]);
 

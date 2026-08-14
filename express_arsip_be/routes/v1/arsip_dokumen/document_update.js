@@ -35,7 +35,7 @@ const updateDocument = async (req, res) => {
     }
 
     // Ambil data lama sebelum update
-    const oOldDoc = await DB("trs_dokumen")
+    const oOldDoc = await DB("trx_dokumen")
       .where("id_dokumen", nDocumentId)
       .where("status", "active")
       .first();
@@ -74,7 +74,7 @@ const updateDocument = async (req, res) => {
     const dNow = new Date();
 
     // Cek duplikat nomor dokumen (exclude dokumen yang sedang diedit)
-    const oExisting = await DB("trs_dokumen")
+    const oExisting = await DB("trx_dokumen")
       .where("nomor_dokumen", cDocumentNumber)
       .where("status", "active")
       .whereNot("id_dokumen", nDocumentId)
@@ -104,7 +104,7 @@ const updateDocument = async (req, res) => {
       updated_at: dNow,
     };
 
-    await DB("trs_dokumen")
+    await DB("trx_dokumen")
       .where("id_dokumen", nDocumentId)
       .where("status", "active")
       .update(oData);

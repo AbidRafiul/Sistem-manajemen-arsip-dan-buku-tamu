@@ -179,8 +179,7 @@ const MenuPage = () => {
                 formik={formik} 
                 getData={getData} 
                 handleSave={handleSave} 
-                handleDelete={handleDelete} 
-            />
+                handleDelete={handleDelete} />
 
             <Form 
                 formik={formik} 
@@ -189,8 +188,7 @@ const MenuPage = () => {
                 toast={toast} 
                 getData={getData} 
                 handleSave={handleSave} 
-                handleDelete={handleDelete} 
-            />
+                handleDelete={handleDelete} />
         </>
     );
 };

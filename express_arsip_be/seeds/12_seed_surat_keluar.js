@@ -77,5 +77,5 @@ export async function seed(knex) {
     }
   ];
 
-  await knex('trs_surat_keluar').insert(dummyData);
+  await knex('trx_surat_keluar').insert(dummyData);
 }

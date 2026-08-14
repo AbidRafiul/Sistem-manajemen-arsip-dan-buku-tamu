@@ -196,9 +196,9 @@ const BranchSwitcher = () => {
             <div
                 className="hidden md:flex align-items-center gap-2 px-3 py-2 border-round-3xl"
                 style={{
-                    background: 'rgba(16, 185, 129, 0.08)',
-                    color: '#059669',
-                    border: '1px solid rgba(16, 185, 129, 0.15)',
+                    background: 'rgba(79, 70, 229, 0.08)',
+                    color: '#4F46E5',
+                    border: '1px solid rgba(79, 70, 229, 0.15)',
                     cursor: isAdmin ? 'pointer' : 'default',
                     transition: 'all 0.15s ease'
                 }}
@@ -231,7 +231,7 @@ const BranchSwitcher = () => {
                         {/* Header */}
                         <div className="flex align-items-center justify-content-between mb-3">
                             <div className="flex align-items-center gap-2">
-                                <i className="pi pi-building" style={{ color: '#059669', fontSize: '1rem' }}></i>
+                                <i className="pi pi-building" style={{ color: '#4F46E5', fontSize: '1rem' }}></i>
                                 <span className="font-bold text-sm text-900">Pindah Kantor</span>
                             </div>
                             <Button
@@ -249,14 +249,14 @@ const BranchSwitcher = () => {
                         {/* Current Branch Info */}
                         <div
                             className="flex align-items-center gap-2 px-3 py-2 border-round mb-3"
-                            style={{ background: 'rgba(16, 185, 129, 0.06)', border: '1px solid rgba(16, 185, 129, 0.12)' }}
+                            style={{ background: 'rgba(79, 70, 229, 0.06)', border: '1px solid rgba(79, 70, 229, 0.12)' }}
                         >
-                            <i className="pi pi-map-marker" style={{ color: '#059669', fontSize: '0.8rem' }}></i>
+                            <i className="pi pi-map-marker" style={{ color: '#4F46E5', fontSize: '0.8rem' }}></i>
                             <div className="flex flex-column">
                                 <span className="font-medium" style={{ fontSize: '0.6rem', color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                     Kantor Aktif
                                 </span>
-                                <span className="font-semibold text-xs" style={{ color: '#059669' }}>
+                                <span className="font-semibold text-xs" style={{ color: '#4F46E5' }}>
                                     {activeBranch}
                                 </span>
                             </div>

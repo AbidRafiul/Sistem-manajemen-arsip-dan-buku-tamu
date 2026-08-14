@@ -1,5 +1,20 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
+/**
+ * @copyright (c) 2026 PT Marstech Global (info@marstech.co.id)
+ * @project Sistem Arsip dan Buku Tamu
+ * @file layout.tsx
+ * @description File layout utama (Wrapper) Frontend
+ * 
+ * @author Standard Template
+ * @created 2026-08-12
+ * 
+ * @contributors
+ * - Development Team
+ * 
+ * @lastModified 2026-08-12
+ * @version 1.0.1
+ */
 
 import { useRouter } from "next/navigation";
 import {
@@ -136,7 +151,9 @@ const Layout = ({ children }: ChildContainerProps) => {
   const containerClass = classNames("layout-wrapper", {
     "layout-overlay": layoutConfig.menuMode === "overlay",
     "layout-static": layoutConfig.menuMode === "static",
-    "layout-static-inactive": false,
+    "layout-static-inactive":
+      layoutState.staticMenuDesktopInactive &&
+      layoutConfig.menuMode === "static",
     "layout-overlay-active": layoutState.overlayMenuActive,
     "layout-mobile-active": layoutState.staticMenuMobileActive,
     "p-input-filled": layoutConfig.inputStyle === "filled",

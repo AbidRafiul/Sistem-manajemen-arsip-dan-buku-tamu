@@ -132,7 +132,7 @@ const Page = () => {
     const collectPermissions = (nodesList: any[], flatList: any[] = []) => {
         nodesList.forEach(node => {
             flatList.push(node.data);
-            if (node.children && node.children.length > 0) {
+            if (node.children && node.children.length> 0) {
                 collectPermissions(node.children, flatList);
             }
         });

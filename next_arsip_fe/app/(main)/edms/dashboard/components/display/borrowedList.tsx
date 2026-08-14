@@ -89,7 +89,7 @@ export default function BorrowedList({ list = [], isLoading }: BorrowedListProps
             <DataTable
                 value={list}
                 rows={5}
-                paginator={list.length > 5}
+                paginator={list.length> 5}
                 className="p-datatable-sm"
                 emptyMessage={
                     <div className="flex flex-column align-items-center justify-content-center text-center p-5 text-color-secondary">
@@ -103,8 +103,7 @@ export default function BorrowedList({ list = [], isLoading }: BorrowedListProps
                 rowClassName={() => 'premium-hover-card'}
                 pt={{
                     root: { className: 'border-none' }
-                }}
-            >
+                }}>
                 <Column field="kode_dokumen" header="KODE DOKUMEN" body={docCodeTemplate} style={{ width: '15%' }} headerClassName="font-bold text-xs text-color-secondary uppercase tracking-wider py-3" />
                 <Column field="nama_dokumen" header="NAMA DOKUMEN / DETAIL" body={docNameTemplate} style={{ width: '35%' }} headerClassName="font-bold text-xs text-color-secondary uppercase tracking-wider py-3" />
                 <Column field="nama_peminjam" header="PEMINJAM" headerClassName="font-bold text-xs text-color-secondary uppercase tracking-wider py-3" className="text-sm font-semibold text-800" style={{ width: '15%' }} />

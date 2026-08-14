@@ -79,16 +79,12 @@ const Form = ({
     };
 
     const deleteFooterTemplate = (
-        <div className="flex justify-content-end gap-2">
-            <Button
-                label="Batal" icon="pi pi-times" severity="secondary" outlined size="small"
-                onClick={() => setState((p) => ({ ...p, add: false, edit: false, delete: false }))}
-                disabled={state.load}
-            />
-            <Button
-                label="Ya, Hapus" icon="pi pi-trash" severity="danger" size="small"
-                onClick={onDelete} loading={state.load}
-            />
+        <div className="flex mt-4 pt-3 border-top-1 surface-border">
+            <Button label="Batal" icon="pi pi-times" severity="secondary" outlined size="small"
+                onClick={() => setState((p: any) => ({ ...p, add: false, edit: false, delete: false }))}
+                disabled={state.load} />
+            <Button label="Ya, Hapus" icon="pi pi-trash" severity="danger" size="small"
+                onClick={onDelete} loading={state.load} />
         </div>
     );
 
@@ -115,10 +111,9 @@ const Form = ({
                 }
                 modal
                 style={{ width: "60rem", maxWidth: "95vw" }}
-                onHide={() => { setState((p) => ({ ...p, add: false, edit: false, delete: false })); formik.resetForm(); }}
-                pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}
-            >
-                <form onSubmit={formik.handleSubmit} className="flex flex-column gap-1 pt-3 text-sm">
+                onHide={() => { setState((p: any) => ({ ...p, add: false, edit: false, delete: false })); formik.resetForm(); }}
+                pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}>
+                <form onSubmit={formik.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
                     <div className="grid">
                         <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
                             <label htmlFor="nomor_agenda" className="font-semibold text-900">
@@ -132,8 +127,7 @@ const Form = ({
                                     if (state.edit) formik.setFieldValue("nomor_agenda", e.target.value);
                                 }}
                                 placeholder="AGD-2026-0001"
-                                disabled={!state.edit}
-                            />
+                                disabled={!state.edit} />
                             {getFormErrorMessage("nomor_agenda")}
                         </div>
                         <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
@@ -143,8 +137,7 @@ const Form = ({
                                 className={`w-full ${isFormFieldInvalid("nomor_surat") ? "p-invalid" : ""}`}
                                 value={formik.values.nomor_surat}
                                 onChange={(e) => formik.setFieldValue("nomor_surat", e.target.value)}
-                                placeholder="Contoh: 001/MEN/VI/2024"
-                            />
+                                placeholder="Contoh: 001/MEN/VI/2024" />
                             {getFormErrorMessage("nomor_surat")}
                         </div>
                         <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
@@ -153,8 +146,7 @@ const Form = ({
                                 id="tanggal_surat" type="date"
                                 className={`w-full ${isFormFieldInvalid("tanggal_surat") ? "p-invalid" : ""}`}
                                 value={formik.values.tanggal_surat}
-                                onChange={(e) => formik.setFieldValue("tanggal_surat", e.target.value)}
-                            />
+                                onChange={(e) => formik.setFieldValue("tanggal_surat", e.target.value)} />
                             {getFormErrorMessage("tanggal_surat")}
                         </div>
                         <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
@@ -163,8 +155,7 @@ const Form = ({
                                 id="tanggal_diterima" type="date"
                                 className={`w-full ${isFormFieldInvalid("tanggal_diterima") ? "p-invalid" : ""}`}
                                 value={formik.values.tanggal_diterima}
-                                onChange={(e) => formik.setFieldValue("tanggal_diterima", e.target.value)}
-                            />
+                                onChange={(e) => formik.setFieldValue("tanggal_diterima", e.target.value)} />
                             {getFormErrorMessage("tanggal_diterima")}
                         </div>
                         <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
@@ -180,8 +171,7 @@ const Form = ({
                                 onBlur={() => formik.setFieldTouched("jenis_surat_id", true)}
                                 placeholder="Pilih jenis surat"
                                 filter
-                                showClear
-                            />
+                                showClear />
                             {getFormErrorMessage("jenis_surat_id")}
                         </div>
                         <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
@@ -191,8 +181,7 @@ const Form = ({
                                 className={`w-full ${isFormFieldInvalid("nama_pengirim") ? "p-invalid" : ""}`}
                                 value={formik.values.nama_pengirim}
                                 onChange={(e) => formik.setFieldValue("nama_pengirim", e.target.value)}
-                                placeholder="Nama pengirim surat"
-                            />
+                                placeholder="Nama pengirim surat" />
                             {getFormErrorMessage("nama_pengirim")}
                         </div>
                         <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
@@ -202,8 +191,7 @@ const Form = ({
                                 className="w-full"
                                 value={formik.values.instansi_pengirim}
                                 onChange={(e) => formik.setFieldValue("instansi_pengirim", e.target.value)}
-                                placeholder="Nama instansi / lembaga"
-                            />
+                                placeholder="Nama instansi / lembaga" />
                             <small className="p-error">&nbsp;</small>
                         </div>
                         <div className="col-12 flex flex-column gap-1 mb-2">
@@ -213,8 +201,7 @@ const Form = ({
                                 className={`w-full ${isFormFieldInvalid("perihal") ? "p-invalid" : ""}`}
                                 value={formik.values.perihal}
                                 onChange={(e) => formik.setFieldValue("perihal", e.target.value)}
-                                placeholder="Perihal / pokok isi surat"
-                            />
+                                placeholder="Perihal / pokok isi surat" />
                             {getFormErrorMessage("perihal")}
                         </div>
                         <div className="col-12 flex flex-column gap-1 mb-2">
@@ -226,8 +213,7 @@ const Form = ({
                                 value={formik.values.keterangan_lampiran}
                                 onChange={(e) => formik.setFieldValue("keterangan_lampiran", e.target.value)}
                                 placeholder="Deskripsi lampiran surat (opsional)"
-                                style={{ resize: "none" }}
-                            />
+                                style={{ resize: "none" }} />
                             <small className="p-error">&nbsp;</small>
                         </div>
 
@@ -249,7 +235,7 @@ const Form = ({
                                 }}
                                 onSelect={(e) => {
                                     const file = e.files[0] || null;
-                                    if (file && file.size > MAX_FILE_SIZE) {
+                                    if (file && file.size> MAX_FILE_SIZE) {
                                         showError(toast, "Ukuran file maksimal 10 MB");
                                         formik.setFieldValue("file_surat", null);
                                         return;
@@ -257,18 +243,15 @@ const Form = ({
                                     formik.setFieldValue("file_surat", file);
                                 }}
                                 className="w-full"
-                                pt={{ basicButton: { className: "w-full justify-content-start" } }}
-                            />
+                                pt={{ basicButton: { className: "w-full justify-content-start" } }} />
                             <small className="text-color-secondary mt-1">PDF, Word, Excel, JPG, atau PNG · Maks. 10 MB</small>
                             {formik.values.file_surat && (
                                 <div className="flex align-items-center gap-2 mt-1 p-2 surface-50 border-round border-1 surface-border">
                                     <i className="pi pi-file-check text-green-500" />
                                     <span className="text-xs text-900 font-semibold">{formik.values.file_surat.name}</span>
-                                    <Button
-                                        icon="pi pi-times" text severity="danger" size="small"
+                                    <Button icon="pi pi-times" text severity="danger" size="small"
                                         className="ml-auto p-0"
-                                        onClick={() => formik.setFieldValue("file_surat", null)}
-                                    />
+                                        onClick={() => formik.setFieldValue("file_surat", null)} />
                                 </div>
                             )}
                         </div>
@@ -281,8 +264,7 @@ const Form = ({
                                     className="w-full"
                                     value={formik.values.status}
                                     options={statusOptions}
-                                    onChange={(e) => formik.setFieldValue("status", e.value)}
-                                />
+                                    onChange={(e) => formik.setFieldValue("status", e.value)} />
                                 {getFormErrorMessage("status")}
                             </div>
                         )}
@@ -290,19 +272,12 @@ const Form = ({
 
                     <Divider className="my-2" />
 
-                    <div className="flex justify-content-end gap-2">
-                        <Button
-                            type="button" label="Batal" icon="pi pi-times" severity="secondary" outlined size="small"
-                            onClick={() => { setState((p) => ({ ...p, add: false, edit: false })); formik.resetForm(); }}
-                        />
-                        <Button
-                            type="submit"
-                            label={state.edit ? "Simpan Perubahan" : "Simpan Surat"}
-                            icon={state.edit ? "pi pi-check" : "pi pi-save"}
-                            size="small"
-                            style={{ background: "linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)", border: "none" }}
-                            loading={state.load}
-                        />
+                    <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                        
+                        <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                        
+                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className=" w-full" loading={state?.load} disabled={state?.load} />
+                    </div>
                     </div>
                 </form>
             </Dialog>
@@ -316,22 +291,21 @@ const Form = ({
                     </div>
                 }
                 visible={state.delete}
-                onHide={() => setState((p) => ({ ...p, add: false, edit: false, delete: false }))}
+                onHide={() => setState((p: any) => ({ ...p, add: false, edit: false, delete: false }))}
                 modal
                 style={{ width: "26rem", maxWidth: "95vw" }}
                 footer={deleteFooterTemplate}
-                pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}
-            >
+                pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}>
                 <div className="flex flex-column align-items-center text-center gap-3 py-4">
                     <div className="flex align-items-center justify-content-center border-circle bg-red-50 border-1 border-red-100" style={{ width: "4rem", height: "4rem" }}>
                         <i className="pi pi-trash text-red-500 text-2xl" />
                     </div>
                     <div>
                         <h4 className="font-bold text-900 m-0 mb-2 text-lg">
-                            {state.selectedLetters.length > 1 ? `Hapus ${state.selectedLetters.length} surat?` : "Hapus surat ini?"}
+                            {state.selectedLetters.length> 1 ? `Hapus ${state.selectedLetters.length} surat?` : "Hapus surat ini?"}
                         </h4>
                         <p className="text-color-secondary text-sm m-0">
-                            {state.selectedLetters.length > 1
+                            {state.selectedLetters.length> 1
                                 ? `${state.selectedLetters.length} surat yang dipilih akan dihapus secara permanen.`
                                 : <>Surat <strong>{state.selectedLetters[0]?.nomor_agenda || ""}</strong> akan dihapus secara permanen.</>
                             }

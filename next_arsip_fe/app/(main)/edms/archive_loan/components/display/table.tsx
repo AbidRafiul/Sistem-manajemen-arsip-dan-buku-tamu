@@ -64,8 +64,7 @@ const Table = ({
             <Avatar
                 label={rowData.nama_peminjam?.slice(0, 1).toUpperCase() || 'B'}
                 shape="circle"
-                style={{ width: '2rem', height: '2rem', fontSize: '0.75rem', background: '#EEF2FF', color: '#4F46E5', fontWeight: '700', flexShrink: 0 }}
-            />
+                style={{ width: '2rem', height: '2rem', fontSize: '0.75rem', background: '#EEF2FF', color: '#4F46E5', fontWeight: '700', flexShrink: 0 }} />
             <span className="font-semibold text-900 text-sm">{rowData.nama_peminjam}</span>
         </div>
     );
@@ -81,43 +80,35 @@ const Table = ({
         const status = rowData.status;
         return (
             <div className="flex gap-1 align-items-center justify-content-center">
-                <Button
-                    icon="pi pi-eye"
-                    rounded
+                <Button icon="pi pi-eye"
                     text
                     severity="secondary"
                     size="small"
                     tooltip="Lihat Detail"
                     tooltipOptions={{ position: 'top' }}
-                    onClick={() => { setSelectedDetail(rowData); setDetailDialog(true); }}
-                />
+                    onClick={() => { setSelectedDetail(rowData); setDetailDialog(true); }} />
                 {status === 'pending' && canApproveLoan && (
                     <>
-                        <Button
-                            icon="pi pi-check"
+                        <Button icon="pi pi-check"
                             rounded
                             text
                             severity="success"
                             size="small"
                             tooltip="Setujui Peminjaman"
                             tooltipOptions={{ position: 'top' }}
-                            onClick={() => { setSelectedDetail(rowData); setTargetStatus('approved'); setNotes(''); setApprovalDialog(true); }}
-                        />
-                        <Button
-                            icon="pi pi-times"
+                            onClick={() => { setSelectedDetail(rowData); setTargetStatus('approved'); setNotes(''); setApprovalDialog(true); }} />
+                        <Button icon="pi pi-times"
                             rounded
                             text
                             severity="danger"
                             size="small"
                             tooltip="Tolak Peminjaman"
                             tooltipOptions={{ position: 'top' }}
-                            onClick={() => { setSelectedDetail(rowData); setTargetStatus('rejected'); setNotes(''); setApprovalDialog(true); }}
-                        />
+                            onClick={() => { setSelectedDetail(rowData); setTargetStatus('rejected'); setNotes(''); setApprovalDialog(true); }} />
                     </>
                 )}
                 {status === 'borrowed' && (
-                    <Button
-                        icon="pi pi-replay"
+                    <Button icon="pi pi-replay"
                         rounded
                         text
                         severity="info"
@@ -127,8 +118,7 @@ const Table = ({
                         onClick={() => {
                             setSelectedDetail(rowData);
                             setReturnDialog(true);
-                        }}
-                    />
+                        }} />
                 )}
             </div>
         );
@@ -144,8 +134,7 @@ const Table = ({
                     onChange={(e) => setState(p => ({ ...p, searchVal: e.target.value }))}
                     placeholder="Cari peminjam atau dokumen..."
                     className="text-sm"
-                    style={{ height: '2.25rem' }}
-                />
+                    style={{ height: '2.25rem' }} />
             </span>
         </div>
     );
@@ -196,32 +185,27 @@ const Table = ({
             <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
                 {canCreate && (
                     <>
-                        <Button
-                            size="small"
+                        <Button size="small"
                             label="Pinjam Dokumen"
                             icon="pi pi-plus"
                             outlined
                             severity="success"
-                            onClick={() => { formik.resetForm(); setState(p => ({ ...p, add: true })); }}
-                        />
+                            onClick={() => { formik.resetForm(); setState(p => ({ ...p, add: true })); }} />
                         <Divider layout="vertical" />
                     </>
                 )}
-                <Button
-                    size="small"
+                <Button size="small"
                     label="Refresh"
                     icon="pi pi-refresh"
                     outlined
                     onClick={getLoans}
-                    loading={state.load}
-                />
+                    loading={state.load} />
             </div>
 
             {/* Status Tabs */}
             <div className="flex flex-wrap gap-2 mb-3">
                 {tabs.map((tab) => (
-                    <Button
-                        key={tab.value}
+                    <Button key={tab.value}
                         icon={tab.icon}
                         label={`${tab.label} (${tabCounts[tab.value]})`}
                         size="small"
@@ -229,8 +213,7 @@ const Table = ({
                         outlined={state.activeTab !== tab.value}
                         className="text-xs border-round-3xl"
                         style={{ padding: '0.4rem 0.85rem' }}
-                        onClick={() => setState(p => ({ ...p, activeTab: tab.value }))}
-                    />
+                        onClick={() => setState(p => ({ ...p, activeTab: tab.value }))} />
                 ))}
             </div>
 
@@ -250,8 +233,7 @@ const Table = ({
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data"
                 rowHover
-                className="text-sm"
-            >
+                className="text-sm">
                 <Column header="Peminjam" body={borrowerTemplate} style={{ minWidth: '180px' }} />
                 <Column header="Dokumen" body={documentTemplate} style={{ minWidth: '180px' }} />
                 <Column field="tanggal_pinjam" header="Tgl. Pinjam" sortable body={rowData => formatDateOnly(rowData.tanggal_pinjam)} style={{ width: '120px' }} />
@@ -276,8 +258,7 @@ const Table = ({
             modal
             style={{ width: '45rem', maxWidth: '95vw' }}
             onHide={() => { setDetailDialog(false); setSelectedDetail(null); }}
-            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
-        >
+            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}>
             {selectedDetail && (
                 <div className="flex flex-column gap-4 pt-3">
                     <div className="flex align-items-center gap-3 p-3 surface-50 border-round-xl border-1 surface-border">
@@ -285,8 +266,7 @@ const Table = ({
                             label={selectedDetail.nama_peminjam?.slice(0, 2).toUpperCase() || 'NA'}
                             shape="circle"
                             size="large"
-                            style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%)', color: '#FFFFFF', fontWeight: '700' }}
-                        />
+                            style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%)', color: '#FFFFFF', fontWeight: '700' }} />
                         <div>
                             <div className="font-bold text-900 text-lg">{selectedDetail.nama_peminjam}</div>
                             <div className="mt-1">{statusTemplate(selectedDetail)}</div>
@@ -361,8 +341,7 @@ const Table = ({
             modal
             style={{ width: '32rem', maxWidth: '95vw' }}
             onHide={() => { setApprovalDialog(false); setSelectedDetail(null); setNotes(''); setTargetStatus(''); }}
-            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
-        >
+            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}>
             <div className="flex flex-column gap-4 pt-3">
                 <div className={`p-3 border-round-lg border-1 ${targetStatus === 'approved' ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
                     <p className="m-0 text-sm text-900">
@@ -378,19 +357,15 @@ const Table = ({
                         placeholder="Contoh: Disetujui, harap jaga kondisi dokumen..."
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        className="w-full"
-                    />
+                        className="w-full" />
                 </div>
-                <div className="flex justify-content-end gap-2">
-                    <Button
-                        label="Batal"
+                <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                    <Button label="Batal"
                         severity="secondary"
                         outlined
                         size="small"
-                        onClick={() => { setApprovalDialog(false); setSelectedDetail(null); setNotes(''); setTargetStatus(''); }}
-                    />
-                    <Button
-                        label={targetStatus === 'approved' ? 'Ya, Setujui' : 'Ya, Tolak'}
+                        onClick={() => { setApprovalDialog(false); setSelectedDetail(null); setNotes(''); setTargetStatus(''); }} />
+                    <Button label={targetStatus === 'approved' ? 'Ya, Setujui' : 'Ya, Tolak'}
                         icon={targetStatus === 'approved' ? 'pi pi-check' : 'pi pi-times'}
                         severity={targetStatus === 'approved' ? 'success' : 'danger'}
                         size="small"
@@ -400,8 +375,7 @@ const Table = ({
                                 setApprovalDialog(false); setSelectedDetail(null); setNotes(''); setTargetStatus('');
                             }
                         }}
-                        loading={state.load}
-                    />
+                        loading={state.load} />
                 </div>
             </div>
         </Dialog>
@@ -418,8 +392,7 @@ const Table = ({
             modal
             style={{ width: '32rem', maxWidth: '95vw' }}
             onHide={() => { setReturnDialog(false); setSelectedDetail(null); }}
-            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
-        >
+            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}>
             <div className="flex flex-column gap-4 pt-3">
                 <div className="p-3 border-round-lg border-1 bg-blue-50 border-blue-100">
                     <p className="m-0 text-sm text-900">
@@ -440,16 +413,13 @@ const Table = ({
                         <span>{formatDateOnly(selectedDetail?.tanggal_pinjam)}</span>
                     </div>
                 </div>
-                <div className="flex justify-content-end gap-2">
-                    <Button
-                        label="Batal"
+                <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                    <Button label="Batal"
                         severity="secondary"
                         outlined
                         size="small"
-                        onClick={() => { setReturnDialog(false); setSelectedDetail(null); }}
-                    />
-                    <Button
-                        label="Ya, Kembalikan"
+                        onClick={() => { setReturnDialog(false); setSelectedDetail(null); }} />
+                    <Button label="Ya, Kembalikan"
                         icon="pi pi-check"
                         severity="info"
                         size="small"
@@ -460,8 +430,7 @@ const Table = ({
                                 setSelectedDetail(null);
                             }
                         }}
-                        loading={state.load}
-                    />
+                        loading={state.load} />
                 </div>
             </div>
         </Dialog>

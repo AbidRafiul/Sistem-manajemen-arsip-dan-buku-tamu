@@ -37,8 +37,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
                 <div className="col-12 md:col-4" key={oMetric.label}>
                     <Card 
                         className="shadow-1 border-round-2xl border-none h-full hover:shadow-3 hover:-translate-y-1 transition-all transition-duration-200" 
-                        pt={{ body: { className: 'p-4' }, content: { className: 'p-0 m-0' } }}
-                    >
+                        pt={{ body: { className: 'p-4' }, content: { className: 'p-0 m-0' } }}>
                         <div className="flex justify-content-between align-items-start">
                             <div>
                                 <span className="block text-color-secondary font-semibold text-sm mb-2">{oMetric.label}</span>

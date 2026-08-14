@@ -315,8 +315,7 @@ const CheckoutPage = () => {
                     setShowRejectDialog(true);
                 }}
                 onCheckin={(row) => handleCheckin(row.id_kunjungan)}
-                onScanQR={() => setShowScanDialog(true)}
-            />
+                onScanQR={() => setShowScanDialog(true)} />
 
             <RejectDialog
                 visible={showRejectDialog}
@@ -325,8 +324,7 @@ const CheckoutPage = () => {
                 loading={state.load}
                 onHide={() => setShowRejectDialog(false)}
                 onNotesChange={setRejectNotes}
-                onConfirm={() => rejectRecord && handleApproval(rejectRecord.id_kunjungan, 'rejected', rejectNotes)}
-            />
+                onConfirm={() => rejectRecord && handleApproval(rejectRecord.id_kunjungan, 'rejected', rejectNotes)} />
  
             <CheckoutDialog
                 visible={state.showCheckoutDialog}
@@ -336,21 +334,18 @@ const CheckoutPage = () => {
                 onHide={() => setState((p: State) => ({ ...p, showCheckoutDialog: false }))}
                 onTokenChange={(val) => setState((p: State) => ({ ...p, checkoutToken: val }))}
                 onNotesChange={(val) => setState((p: State) => ({ ...p, checkoutNotes: val }))}
-                onConfirm={handleCheckout}
-            />
+                onConfirm={handleCheckout} />
  
             <DetailVisitorDialog
                 visible={!!state.detailRecord}
                 record={state.detailRecord}
-                onHide={() => setState((p: State) => ({ ...p, detailRecord: null }))}
-            />
+                onHide={() => setState((p: State) => ({ ...p, detailRecord: null }))} />
  
             <ScanQRDialog
                 visible={showScanDialog}
                 onHide={() => setShowScanDialog(false)}
                 onScanSuccess={handleScanSuccess}
-                loading={state.load}
-            />
+                loading={state.load} />
         </>
     );
 };

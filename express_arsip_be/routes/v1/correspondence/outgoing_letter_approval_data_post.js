@@ -42,7 +42,7 @@ const outgoingLetterApprovalData = async (req, res) => {
         ? "asc"
         : "desc";
 
-    const oQuery = DB("trs_surat_keluar as tsk")
+    const oQuery = DB("trx_surat_keluar as tsk")
       .leftJoin(
         "mst_jenis_surat as mjs",
         "tsk.id_jenis_surat",

@@ -25,9 +25,9 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
     const titleSuffix = cabangName ? ` - ${cabangName}` : (permissions?.activeRole?.toUpperCase() === 'SUPERADMIN' ? ' Pusat' : '');
     const headerTemplate = (
         <div className="flex flex-wrap align-items-center justify-content-between gap-2">
-            <span className="text-xl font-bold">Manajemen Pengguna{titleSuffix}</span>
+            <span className="text-xl font-bold text-900">Master{titleSuffix}</span>
 
-            <div className="flex align-items-center gap-3">
+            <div className="flex gap-2 align-items-center">
                 <div className="flex align-items-center gap-2 px-3 py-2 border-round surface-100">
                     <Checkbox
                         inputId="subBranchToggle"
@@ -36,24 +36,23 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                             const val = !!e.checked;
                             setIncludeSubBranches(val);
                             getData(apiEndpointGet, !val);
-                        }}
-                    />
+                        }} />
                     <label htmlFor="subBranchToggle" className="text-xs font-semibold text-700 cursor-pointer select-none">
                         Tampilkan Sub-Cabang
                     </label>
                 </div>
-                <span className="p-input-icon-left">
+                <span className="p-input-icon-left w-full md:w-20rem">
                     <i className="pi pi-search" />
                     <InputText
                         value={state.searchVal}
+                        className="w-full"
                         onChange={(e) => {
                             const value = e.target.value;
                             let _filters = { ...state.filters };
                             _filters['global'].value = value;
                             setState((p) => ({ ...p, searchVal: value, filters: _filters }));
                         }}
-                        placeholder="Cari pengguna..."
-                    />
+                        placeholder="Cari Data..." />
                 </span>
             </div>
         </div>
@@ -62,24 +61,22 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
     const roleBodyTemplate = (rowData: TableData) => {
         const roleColors: RoleColors = {
             superadmin: 'danger',
-            Pimpinan: 'warning',
-            Sekretaris: 'info',
-            'Staff Arsip': 'success',
-            'Staff Umum': 'success',
-            Resepsionis: 'info',
-            Auditor: 'warning'
+            pimpinan: 'warning',
+            sekretaris: 'info',
+            'staff arsip': 'success',
+            'staff umum': 'success',
+            resepsionis: 'info',
+            auditor: 'warning'
         };
 
         const roleStr = String(rowData.role);
-        return <Tag value={roleStr} severity={roleColors[roleStr as keyof RoleColors] || 'info'} className="text-sm" />;
+        return <Tag value={roleStr} severity={roleColors[roleStr.toLowerCase() as keyof RoleColors] || 'info'} className="text-xs font-semibold px-2 py-1" style={{ minWidth: '105px' }} />;
     };
 
     const actionBodyTemplate = (rowData: TableData) => (
         <div className="flex gap-2">
             {permissions.canUpdate && (
-                <Button
-                    icon="pi pi-pencil"
-                    rounded
+                <Button icon="pi pi-pencil"
                     outlined
                     className="p-button-sm"
                     onClick={() => {
@@ -90,23 +87,20 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
 
                         setState((p) => ({ ...p, add: false, delete: false, edit: true }));
                     }}
-                    tooltip="Edit"
-                />
+                    tooltip="Edit" />
             )}
             {permissions.canDelete && (
-                <Button icon="pi pi-trash" rounded outlined severity="danger" className="p-button-sm" onClick={() => setState((p) => ({ ...p, delete: true, selectedUsers: [rowData] }))} tooltip="Delete" />
+                <Button icon="pi pi-trash" outlined severity="danger" className="p-button-sm" onClick={() => setState((p) => ({ ...p, delete: true, selectedUsers: [rowData] }))} tooltip="Delete" />
             )}
             {/* {permissions.canApprove && (
-                <Button
-                    icon="pi pi-wrench"
+                <Button icon="pi pi-wrench"
                     onClick={() => {
                         getNav?.(rowData?.id_pengguna || '');
                     }}
                     severity="warning"
                     outlined
                     rounded
-                    loading={navBar?.load}
-                />
+                    loading={navBar?.load} />
             )} */}
         </div>
     );
@@ -117,27 +111,30 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
 
     return (
         <>
-            <div className="card">
-                <div className="flex justify-content-between align-items-center mb-3">
-                    <div>
-                        <h2 className="m-0 text-900 font-bold text-2xl mb-1">Manajemen Pengguna</h2>
+            <div className="card shadow-2 border-1 surface-border border-round-xl p-4 bg-white">
+                <div className="flex flex-column gap-2 mb-6 px-1">
+                    <h3 className="text-2xl font-semibold m-0 text-900">Data Master User</h3>
+                    <div className="text-sm text-600">
+                        Kelola master user tenant dan admin.
                     </div>
                 </div>
 
-                <div className="flex flex-row flex-wrap align-items-center justify-content-between gap-2 mb-3">
-                    <div className="flex flex-row flex-wrap align-items-center gap-2">
-                        <Button
-                            size="small"
-                            label="Baru"
-                            icon="pi pi-plus"
-                            outlined
-                            severity="success"
-                            onClick={() => {
-                                setState((p) => ({ ...p, selectedUser: [], add: true }));
-                            }}
-                        />
-                        <Button
-                            size="small"
+                <div className="flex justify-content-between mb-4">
+                    <div className="flex flex-row gap-2">
+                        {permissions.canCreate && (
+                            <>
+                                <Button size="small"
+                                    label="Tambah"
+                                    icon="pi pi-plus"
+                                    outlined
+                                    severity="success"
+                                    onClick={() => {
+                                        setState((p) => ({ ...p, selectedUser: [], add: true }));
+                                    }} />
+                                <Divider layout="vertical" className="hidden sm:inline-block" />
+                            </>
+                        )}
+                        <Button size="small"
                             label="Cetak"
                             icon="pi pi-print"
                             outlined
@@ -161,30 +158,31 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                                     adjust: true,
                                     columnStyles
                                 }));
-                            }}
-                        />
-                        <Divider layout="vertical" />
-                        <Button
-                            size="small"
-                            label={`Hapus${state.selectedUsers.length > 0 ? ` (${state.selectedUsers.length})` : ''}`}
-                            icon="pi pi-trash"
-                            severity="danger"
-                            outlined
-                            onClick={() => {
-                                if (state.selectedUsers.length < 1) {
-                                    setState((p) => ({ ...p, selectedUser: [], delete: false }));
-                                    return;
-                                }
+                            }} />
+                        <Divider layout="vertical" className="hidden sm:inline-block" />
+                        {permissions.canDelete && (
+                            <>
+                                <Button size="small"
+                                    label={`Hapus${state.selectedUsers.length> 0 ? ` (${state.selectedUsers.length})` : ''}`}
+                                    icon="pi pi-trash"
+                                    severity="danger"
+                                    outlined
+                                    onClick={() => {
+                                        if (state.selectedUsers.length < 1) {
+                                            setState((p) => ({ ...p, selectedUser: [], delete: false }));
+                                            return;
+                                        }
 
-                                setState((p) => ({ ...p, delete: true }));
-                            }}
-                            disabled={state.selectedUsers.length === 0}
-                        />
-                        <Divider layout="vertical" />
-                        <Button size="small" label="Muat Ulang" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
+                                        setState((p) => ({ ...p, delete: true }));
+                                    }}
+                                    disabled={state.selectedUsers.length === 0} />
+                                <Divider layout="vertical" className="hidden sm:inline-block" />
+                            </>
+                        )}
+                        <Button size="small" label="Refresh" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
                     </div>
 
-                    <div className="flex flex-row flex-wrap align-items-center gap-2">
+                    <div className="flex flex-row gap-2">
                         <ExcelBulkAction
                             title="Data Pengguna"
                             data={state.data}
@@ -260,8 +258,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                                     id_jabatan: position ? position.id_jabatan : (isNaN(Number(item.nama_jabatan)) ? item.nama_jabatan : Number(item.nama_jabatan)),
                                     id_peran: role ? role.id_peran : (isNaN(Number(item.peran_role)) ? item.peran_role : Number(item.peran_role))
                                 };
-                            }}
-                        />
+                            }} />
                     </div>
                 </div>
 
@@ -280,24 +277,24 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                     emptyMessage="Data Kosong"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data"
-                >
+                    className="p-datatable-sm"
+                    rowHover>
                     <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
-                    <Column field="id_pengguna" header="IdPengguna"></Column>
-                    <Column field="nama_lengkap" header="Name"></Column>
-                    <Column field="nama_pengguna" header="nama_pengguna"></Column>
-                    <Column field="telepon" header="Phone"></Column>
-                    <Column field="role" body={roleBodyTemplate} header="Role"></Column>
+                    <Column field="id_pengguna" header="Unique ID" className="font-semibold text-800" style={{ width: '130px' }}></Column>
+                    <Column field="nama_lengkap" header="Name" className="font-medium text-900"></Column>
+                    <Column field="nama_pengguna" header="Username" className="font-medium"></Column>
+                    <Column field="telepon" header="Phone" style={{ width: '150px' }}></Column>
+                    <Column field="role" body={roleBodyTemplate} header="Role" style={{ width: '130px' }}></Column>
                     <Column
                         field="status"
                         body={(rowData) => {
                             // Karena di DB nilainya 'active' (string), bukan '1'
                             const isActive = rowData.status === 'active';
-                            return <Tag value={isActive ? 'Aktif' : 'Tidak Aktif'} severity={isActive ? 'success' : 'danger'} className="text-sm" />;
+                            return <Tag value={isActive ? 'Aktif' : 'Tidak Aktif'} severity={isActive ? 'success' : 'danger'} className="text-xs font-semibold px-2 py-1" rounded style={{ minWidth: '105px' }} />;
                         }}
-                        header="Status"
-                    ></Column>
-                    <Column field="created_at" sortable body={(rowData) => formatDateCalendar(rowData.created_at)} header="Tanggal & Waktu"></Column>
-                    <Column headerStyle={{ textAlign: 'center' }} align="center" header="Aksi" body={actionBodyTemplate}></Column>
+                        header="Status" style={{ width: '110px' }}></Column>
+                    <Column field="created_at" sortable body={(rowData) => formatDateCalendar(rowData.created_at)} header="Datetime" style={{ width: '150px' }}></Column>
+                    <Column headerStyle={{ textAlign: 'center' }} header="Action" body={actionBodyTemplate} style={{ width: '120px' }}></Column>
                 </DataTable>
             </div>
 

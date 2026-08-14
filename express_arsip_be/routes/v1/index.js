@@ -1,3 +1,18 @@
+/**
+ * @copyright (c) 2026 PT Marstech Global (info@marstech.co.id)
+ * @project Sistem Arsip dan Buku Tamu
+ * @file index.js
+ * @description File index untuk routing v1
+ * 
+ * @author Standard Template
+ * @created 2026-08-12
+ * 
+ * @contributors
+ * - Development Team
+ * 
+ * @lastModified 2026-08-12
+ * @version 1.0.1
+ */
 import express from "express";
 // Auth
 import AccessToken from "./auth/token_get.js";
@@ -26,7 +41,7 @@ import {
 const router = express.Router();
 
 // Auth
-router.use("/auth/token", AccessToken);
+router.use("/auth/token", [validateBaseToken], AccessToken);
 router.use("/auth/login", [validateAccessToken], Login);
 router.use("/auth/reset-password", [validateAccessToken], ResetPassword);
 router.use("/auth/profile", [validateAccessToken, validateSignature, contextMiddleware], ProfileGet);

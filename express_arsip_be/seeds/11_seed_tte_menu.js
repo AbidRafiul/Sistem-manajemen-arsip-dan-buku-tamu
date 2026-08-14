@@ -83,23 +83,7 @@ export async function seed(knex) {
     }
   );
 
-  const idPending = await ensureMenu(
-    knex,
-    (builder) => {
-      builder
-        .where("kode_menu", "SK_TTE_PENDING")
-        .orWhere("jalur_menu", "/correspondence/outgoing_letter/tte/pending");
-    },
-    {
-      id_menu_induk: idTte,
-      kode_menu: "SK_TTE_PENDING",
-      nama_menu: "Dokumen Menunggu Tanda Tangan",
-      jalur_menu: "/correspondence/outgoing_letter/tte/pending",
-      ikon_menu: "pi pi-fw pi-clock",
-      urutan: 2,
-      status_aktif: 0,
-    }
-  );
+
 
   const idSigned = await ensureMenu(
     knex,
@@ -113,47 +97,13 @@ export async function seed(knex) {
       kode_menu: "SK_TTE_SIGNED",
       nama_menu: "Dokumen Tertandatangani",
       jalur_menu: "/correspondence/outgoing_letter/tte/signed",
-      ikon_menu: "pi pi-fw pi-file-check",
+      ikon_menu: "pi pi-fw pi-check-circle",
       urutan: 1,
       status_aktif: 1,
     }
   );
 
-  const idVerify = await ensureMenu(
-    knex,
-    (builder) => {
-      builder
-        .where("kode_menu", "SK_TTE_VERIFY")
-        .orWhere("jalur_menu", "/correspondence/outgoing_letter/tte/verify");
-    },
-    {
-      id_menu_induk: idTte,
-      kode_menu: "SK_TTE_VERIFY",
-      nama_menu: "Verifikasi Dokumen",
-      jalur_menu: "/correspondence/outgoing_letter/tte/verify",
-      ikon_menu: "pi pi-fw pi-shield",
-      urutan: 3,
-      status_aktif: 0,
-    }
-  );
 
-  const idCertificates = await ensureMenu(
-    knex,
-    (builder) => {
-      builder
-        .where("kode_menu", "SK_TTE_CERT")
-        .orWhere("jalur_menu", "/correspondence/outgoing_letter/tte/certificates");
-    },
-    {
-      id_menu_induk: idTte,
-      kode_menu: "SK_TTE_CERT",
-      nama_menu: "Sertifikat Elektronik",
-      jalur_menu: "/correspondence/outgoing_letter/tte/certificates",
-      ikon_menu: "pi pi-fw pi-id-card",
-      urutan: 4,
-      status_aktif: 0,
-    }
-  );
 
   const adminRoleIds = await getRoleIds(knex, ["SUPERADMIN", "ADM", "ADMIN"]);
   const pmanRoleIds = await getRoleIds(knex, ["PMN"]);
@@ -163,10 +113,7 @@ export async function seed(knex) {
   const adminOnlyRoleIds = Array.from(new Set([...adminRoleIds]));
 
   await grantMenuAccess(knex, idTte, operatorRoleIds, 0);
-  await grantMenuAccess(knex, idPending, operatorRoleIds, 1);
   await grantMenuAccess(knex, idSigned, operatorRoleIds, 0);
-  await grantMenuAccess(knex, idVerify, operatorRoleIds, 1);
-  await grantMenuAccess(knex, idCertificates, adminOnlyRoleIds, 1);
 
   const affectedRoleIds = Array.from(
     new Set([...operatorRoleIds, ...adminOnlyRoleIds]),

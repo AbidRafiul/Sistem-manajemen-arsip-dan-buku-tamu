@@ -74,6 +74,14 @@ const SearchPage = () => {
             showError(toast, 'Berkas dokumen tidak tersedia');
             return;
         }
+
+        const ext = fileName.split('.').pop()?.toLowerCase() || '';
+        const supported = ['pdf', 'jpg', 'jpeg', 'png', 'txt', 'webp', 'svg'];
+        if (!supported.includes(ext)) {
+            showError(toast, `Peringatan: Format dokumen .${ext} tidak didukung untuk pratinjau langsung di browser. Silakan gunakan tombol Unduh.`);
+            return;
+        }
+
         setLoad(true);
         try {
             const res = await getData(apiEndpointDocumentPreview, { file_name: fileName });
@@ -97,13 +105,11 @@ const SearchPage = () => {
 
             {/* Top Navigation & Breadcrumb */}
             <div className="flex align-items-center justify-content-between mb-3">
-                <Button
-                    type="button"
+                <Button type="button"
                     icon="pi pi-arrow-left"
                     label="Kembali ke Daftar Arsip"
                     className="p-button-text p-button-secondary font-semibold p-0"
-                    onClick={() => router.push('/edms/archive_document')}
-                />
+                    onClick={() => router.push('/edms/archive_document')} />
                 <div className="flex align-items-center gap-2">
                     <Tag value="Enterprise Full-Text Search" severity="info" icon="pi pi-shield" />
                 </div>
@@ -114,8 +120,7 @@ const SearchPage = () => {
                 className="card p-4 md:p-5 mb-4 border-round-2xl shadow-2 surface-card border-1 border-gray-200"
                 style={{
                     background: 'linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)'
-                }}
-            >
+                }}>
                 {/* Title & Description */}
                 <div className="mb-4">
                     <div className="flex align-items-center gap-3 mb-2">
@@ -125,8 +130,7 @@ const SearchPage = () => {
                                 width: '3rem',
                                 height: '3rem',
                                 background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)'
-                            }}
-                        >
+                            }}>
                             <i className="pi pi-search text-2xl" />
                         </div>
                         <div>
@@ -140,12 +144,11 @@ const SearchPage = () => {
                     </div>
                 </div>
 
-                <form onSubmit={handleFormSubmit} className="flex flex-column gap-4">
+                <form onSubmit={handleFormSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
                     {/* Search Input Field Container */}
                     <div
                         className="flex align-items-center p-2 border-round-xl border-1 surface-border bg-white shadow-1"
-                        style={{ transition: 'all 0.2s ease-in-out' }}
-                    >
+                        style={{ transition: 'all 0.2s ease-in-out' }}>
                         <i className="pi pi-search text-xl text-400 ml-3 mr-2" />
                         <InputText
                             placeholder="Ketik kata kunci pencarian (Contoh: Kontrak Vendor ABC, Perjanjian Kerjasama, SOP 2026...)"
@@ -153,11 +156,9 @@ const SearchPage = () => {
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             style={{ background: 'transparent' }}
-                            autoFocus
-                        />
+                            autoFocus />
                         {query && (
-                            <Button
-                                type="button"
+                            <Button type="button"
                                 icon="pi pi-times"
                                 text
                                 rounded
@@ -167,17 +168,9 @@ const SearchPage = () => {
                                     setHasSearched(false);
                                     setResults([]);
                                 }}
-                                className="mr-2"
-                            />
+                                className="mr-2" />
                         )}
-                        <Button
-                            type="submit"
-                            label="Cari Dokumen"
-                            icon="pi pi-search"
-                            className="p-button-lg px-4 font-bold border-round-lg shadow-2"
-                            style={{ background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)', border: 'none' }}
-                            loading={load}
-                        />
+                        <Button type="submit" label="Cari Dokumen" icon="pi pi-search" className="px-4 w-full font-bold " loading={load} />
                     </div>
 
                     {/* Controls Row: Mode Selector + Quick Keywords */}
@@ -204,8 +197,7 @@ const SearchPage = () => {
                                                 isSelected
                                                     ? 'bg-blue-50 border-blue-400 text-blue-700 font-bold shadow-1'
                                                     : 'bg-white border-gray-300 text-600 hover:bg-gray-50'
-                                            }`}
-                                        >
+                                            }`}>
                                             <i className={`pi ${opt.icon} ${isSelected ? 'text-blue-600' : 'text-400'}`} />
                                             <span>{opt.label}</span>
                                         </button>
@@ -227,8 +219,7 @@ const SearchPage = () => {
                                             setQuery(tag);
                                             handleSearch(tag, mode);
                                         }}
-                                        className="px-3 py-1 border-round-3xl text-xs font-semibold text-700 bg-gray-100 hover:bg-blue-100 hover:text-blue-700 cursor-pointer transition-all border-1 border-gray-200"
-                                    >
+                                        className="px-3 py-1 border-round-3xl text-xs font-semibold text-700 bg-gray-100 hover:bg-blue-100 hover:text-blue-700 cursor-pointer transition-all border-1 border-gray-200">
                                         #{tag}
                                     </span>
                                 ))}
@@ -244,8 +235,7 @@ const SearchPage = () => {
                     <SearchResult
                         results={results}
                         load={load}
-                        onPreview={handleFetchPreviewUrl}
-                    />
+                        onPreview={handleFetchPreviewUrl} />
                 </div>
             ) : (
                 /* Initial Helpful Enterprise Workspace View */
@@ -253,8 +243,7 @@ const SearchPage = () => {
                     <div className="max-w-30rem mx-auto">
                         <div
                             className="inline-flex align-items-center justify-content-center border-round-circle mb-3 surface-100"
-                            style={{ width: '4rem', height: '4rem' }}
-                        >
+                            style={{ width: '4rem', height: '4rem' }}>
                             <i className="pi pi-filter-fill text-2xl text-blue-500" />
                         </div>
                         <h3 className="text-xl font-bold text-900 mb-2">Pencarian Arsip Dokumen Cerdas</h3>
@@ -303,8 +292,7 @@ const SearchPage = () => {
                 onHide={() => {
                     setIsPreviewVisible(false);
                     setPreviewUrl('');
-                }}
-            >
+                }}>
                 <div className="pt-2">
                     {previewUrl ? (
                         <iframe
@@ -312,8 +300,7 @@ const SearchPage = () => {
                             width="100%"
                             height="650px"
                             style={{ border: 'none', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
-                            title="Preview Dokumen"
-                        />
+                            title="Preview Dokumen" />
                     ) : (
                         <div className="flex flex-column align-items-center justify-content-center py-6 text-color-secondary">
                             <i className="pi pi-spin pi-spinner text-4xl text-blue-600 mb-3" />

@@ -47,8 +47,7 @@ const PermissionsModal = ({ state, setState, toast, handleSavePermissions }: Per
             <div className="flex justify-content-center">
                 <Checkbox 
                     checked={rowData.data[field]} 
-                    onChange={(e) => onCheckboxChange(rowData, field, e.checked || false)} 
-                />
+                    onChange={(e) => onCheckboxChange(rowData, field, e.checked || false)} />
             </div>
         );
     };
@@ -67,8 +66,7 @@ const PermissionsModal = ({ state, setState, toast, handleSavePermissions }: Per
             style={{ width: '80vw' }} 
             footer={footer} 
             onHide={handleHide}
-            maximizable
-        >
+            maximizable>
             <TreeTable value={state.permissionsNodes || []} loading={state.permissionsLoading} emptyMessage="Tidak ada data menu" className="p-treetable-sm">
                 <Column field="nama_menu" header="Nama Menu" expander style={{ minWidth: '200px' }}></Column>
                 <Column body={(data) => checkboxTemplate(data, 'hak_lihat')} header="Lihat" style={{ width: '100px', textAlign: 'center' }}></Column>

@@ -28,6 +28,7 @@ async function postData(endpoint: string, data = {}, customHeader = {}) {
                     const parsed = JSON.parse(savedFilter);
                     if (parsed.id_cabang) {
                         filterHeaders['x-filter-cabang'] = String(parsed.id_cabang);
+                        // Jadikan exact match (tanpa turun level) sebagai default sistem
                         filterHeaders['x-exact-cabang'] = 'true';
                     }
                     if (parsed.id_departemen) filterHeaders['x-filter-departemen'] = String(parsed.id_departemen);

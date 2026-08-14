@@ -56,8 +56,7 @@ const Page = () => {
                 data={state.summary}
                 chartData={state.chartData}
                 auditLogs={state.auditLogs}
-                isLoading={state.load}
-            />
+                isLoading={state.load} />
         </>
     );
 };

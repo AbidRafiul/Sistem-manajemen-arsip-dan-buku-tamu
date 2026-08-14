@@ -12,8 +12,8 @@ router.post("/users", async (req, res) => {
     } = req.body;
     let query = DB("mst_pengguna as u").select("u.id_pengguna as id", "u.nama_lengkap as name", "u.id_cabang").where("u.status", "active");
     if (id_cabang && id_cabang !== "null" && id_cabang !== "undefined") {
-      const branchIds = await getDescendantBranchIds(DB, id_cabang);
-      query = query.whereIn("u.id_cabang", branchIds);
+      // Hanya ambil pegawai yang persis berada di cabang tersebut (tanpa descendant)
+      query = query.where("u.id_cabang", id_cabang);
     }
     const listUser = await query.orderBy("u.nama_lengkap", "asc");
     return res.status(200).json({

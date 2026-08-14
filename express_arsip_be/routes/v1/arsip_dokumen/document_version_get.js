@@ -19,13 +19,13 @@ const getDocumentVersions = async (req, res) => {
 
     let oDocument;
     if (cKodeDokumen) {
-      oDocument = await DB("trs_dokumen")
+      oDocument = await DB("trx_dokumen")
         .select("id_dokumen", "kode_dokumen")
         .where("kode_dokumen", cKodeDokumen)
         .where("status", "active")
         .first();
     } else {
-      oDocument = await DB("trs_dokumen")
+      oDocument = await DB("trx_dokumen")
         .select("id_dokumen", "kode_dokumen")
         .where("id_dokumen", nIdDokumen)
         .where("status", "active")
@@ -41,7 +41,7 @@ const getDocumentVersions = async (req, res) => {
       return res.status(404).json(oResult);
     }
 
-    const vaData = await DB("trs_versi_dokumen")
+    const vaData = await DB("trx_versi_dokumen")
       .select(
         "id_versi",
         "kode_dokumen",

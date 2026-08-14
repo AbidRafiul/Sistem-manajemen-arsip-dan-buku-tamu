@@ -94,8 +94,7 @@ export default function ExpiredTable({
         }
 
         return (
-            <Button
-                type="button"
+            <Button type="button"
                 label="Usulkan"
                 icon="pi pi-file-export"
                 size="small"
@@ -105,8 +104,7 @@ export default function ExpiredTable({
                 onClick={() => {
                     setSelectedDoc(rowData);
                     setDialogVisible(true);
-                }}
-            />
+                }} />
         );
     };
 
@@ -131,8 +129,7 @@ export default function ExpiredTable({
                         placeholder="Filter Kategori"
                         showClear
                         className="text-xs"
-                        style={{ minWidth: '15rem', height: '2.25rem' }}
-                    />
+                        style={{ minWidth: '15rem', height: '2.25rem' }} />
                     <span className="p-input-icon-left">
                         <i className="pi pi-search" />
                         <InputText
@@ -140,8 +137,7 @@ export default function ExpiredTable({
                             onChange={(e) => setSearchVal(e.target.value)}
                             placeholder="Cari dokumen..."
                             className="text-sm"
-                            style={{ height: '2.25rem' }}
-                        />
+                            style={{ height: '2.25rem' }} />
                     </span>
                 </div>
             </div>
@@ -160,8 +156,7 @@ export default function ExpiredTable({
                 loading={loading}
                 className="text-sm"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data"
-            >
+                currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data">
                 <Column field="kode_dokumen" header="Kode Dokumen" sortable className="font-semibold text-primary"></Column>
                 <Column field="nomor_dokumen" header="No. Dokumen" sortable></Column>
                 <Column field="nama_dokumen" header="Nama Dokumen" sortable style={{ minWidth: '200px' }}></Column>
@@ -182,10 +177,9 @@ export default function ExpiredTable({
                     setDialogVisible(false);
                     setSelectedDoc(null);
                     setReason('');
-                }}
-            >
+                }}>
                 {selectedDoc && (
-                    <form onSubmit={handleProposeDestruction} className="flex flex-column gap-3 pt-3 text-sm">
+                    <form onSubmit={handleProposeDestruction} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
                         <div className="surface-50 p-3 border-round border-1 surface-border">
                             <div className="mb-2"><strong>Nomor Dokumen:</strong> {selectedDoc.nomor_dokumen}</div>
                             <div className="mb-2"><strong>Nama Dokumen:</strong> {selectedDoc.nama_dokumen}</div>
@@ -203,32 +197,15 @@ export default function ExpiredTable({
                                 onChange={(e) => setReason(e.target.value)}
                                 rows={4}
                                 required
-                                placeholder="Masukkan alasan mengapa dokumen ini diusulkan untuk dimusnahkan..."
-                            />
+                                placeholder="Masukkan alasan mengapa dokumen ini diusulkan untuk dimusnahkan..." />
                         </div>
 
-                        <div className="flex justify-content-end gap-2 mt-2">
-                            <Button
-                                type="button"
-                                label="Batal"
-                                outlined
-                                severity="secondary"
+                        <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                            
+                            <Button type="submit"
+                                label="Usulkan"
                                 size="small"
-                                onClick={() => {
-                                    setDialogVisible(false);
-                                    setSelectedDoc(null);
-                                    setReason('');
-                                }}
-                                disabled={submitting}
-                            />
-                            <Button
-                                type="submit"
-                                label="Ajukan Usulan"
-                                icon="pi pi-send"
-                                severity="danger"
-                                size="small"
-                                loading={submitting}
-                            />
+                                loading={submitting} />
                         </div>
                     </form>
                 )}

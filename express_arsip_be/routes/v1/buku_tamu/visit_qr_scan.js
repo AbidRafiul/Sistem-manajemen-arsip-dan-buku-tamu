@@ -14,7 +14,7 @@ router.post("/", async (req, res) => {
   });
   try {
     const cleanToken = String(QRToken).trim();
-    const oRecord = await DB("trs_kunjungan").where("token_qr", cleanToken).orWhere("kode_kunjungan", cleanToken).orWhere("id_kunjungan", cleanToken).first();
+    const oRecord = await DB("trx_kunjungan").where("token_qr", cleanToken).orWhere("kode_kunjungan", cleanToken).orWhere("id_kunjungan", cleanToken).first();
     if (!oRecord) return res.status(404).json({
       status: "03",
       message: "Tamu tidak ditemukan",
