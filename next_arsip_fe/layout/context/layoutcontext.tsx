@@ -14,7 +14,7 @@ export const LayoutProvider = ({ children }: ChildContainerProps) => {
         menuMode: 'static',
         colorScheme: 'light',
         theme: 'lara-light-blue',
-        scale: 14
+        scale: 12
     });
 
     const [layoutState, setLayoutState] = useState<LayoutState>({
@@ -50,7 +50,12 @@ export const LayoutProvider = ({ children }: ChildContainerProps) => {
 
     // Load filter from localStorage on mount
     React.useEffect(() => {
-        const savedFilter = localStorage.getItem('globalFilter');
+        if (!session) return; // Wait until session is ready
+
+        const userId = (session.user as any)?.IdPengguna || (session.user as any)?.id || 'default';
+        const storageKey = `globalFilter_${userId}`;
+        const savedFilter = localStorage.getItem(storageKey);
+        
         if (savedFilter) {
             try {
                 setLayoutState(prev => ({ ...prev, globalFilter: JSON.parse(savedFilter) }));
@@ -66,14 +71,16 @@ export const LayoutProvider = ({ children }: ChildContainerProps) => {
             }));
         }
         setIsLoaded(true);
-    }, [(session?.user as any)?.nama_cabang, (session?.user as any)?.id_cabang]);
+    }, [session]);
 
     // Save filter to localStorage on change
     React.useEffect(() => {
-        if (isLoaded && layoutState.globalFilter) {
-            localStorage.setItem('globalFilter', JSON.stringify(layoutState.globalFilter));
+        if (isLoaded && layoutState.globalFilter && session) {
+            const userId = (session.user as any)?.IdPengguna || (session.user as any)?.id || 'default';
+            const storageKey = `globalFilter_${userId}`;
+            localStorage.setItem(storageKey, JSON.stringify(layoutState.globalFilter));
         }
-    }, [layoutState.globalFilter, isLoaded]);
+    }, [layoutState.globalFilter, isLoaded, session]);
 
     const showProfileSidebar = () => {
         setLayoutState((prevLayoutState) => ({ ...prevLayoutState, profileSidebarVisible: !prevLayoutState.profileSidebarVisible }));
@@ -86,6 +93,11 @@ export const LayoutProvider = ({ children }: ChildContainerProps) => {
     const isDesktop = () => {
         return window.innerWidth > 991;
     };
+
+    // Apply scale to root element globally for all pages (including public pages)
+    React.useEffect(() => {
+        document.documentElement.style.fontSize = layoutConfig.scale + 'px';
+    }, [layoutConfig.scale]);
 
     const value: LayoutContextProps = {
         layoutConfig,
