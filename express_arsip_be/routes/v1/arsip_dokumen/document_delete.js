@@ -23,7 +23,7 @@ const deleteDocument = async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    const oDocs = await DB("trs_dokumen")
+    const oDocs = await DB("trx_dokumen")
       .select("id_dokumen", "kode_dokumen", "nama_dokumen")
       .whereIn("id_dokumen", vaDocumentId)
       .where("status", "active");
@@ -42,7 +42,7 @@ const deleteDocument = async (req, res) => {
       updated_at: dNow,
     };
 
-    await DB("trs_dokumen")
+    await DB("trx_dokumen")
       .whereIn("id_dokumen", vaDocumentId)
       .where("status", "active")
       .update(oData);

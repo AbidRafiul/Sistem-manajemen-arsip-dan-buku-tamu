@@ -35,7 +35,7 @@ const NavForm = ({ navBar, setNavBar, handleSaveNavbar }: NavbarProps) => {
                 const isMatch = item.label?.toLowerCase().includes(lowerKeyword);
                 const childMatches = searchMenuByLabel(item.items || [], keyword, [...parentIndexes, idx]);
 
-                if (isMatch || childMatches.length > 0) {
+                if (isMatch || childMatches.length> 0) {
                     return {
                         ...item,
                         indexPath: [...parentIndexes, idx],
@@ -96,12 +96,10 @@ const NavForm = ({ navBar, setNavBar, handleSaveNavbar }: NavbarProps) => {
 
     const footerMenuTemplate = (
         <div>
-            <Button
-                label="Batal"
+            <Button label="Batal"
                 icon="pi pi-times"
                 onClick={() => setNavBar(p => ({ ...p, show: false, menu: [] }))}
-                className="p-button-text"
-            />
+                className="p-button-text" />
             <Button label="Simpan" icon="pi pi-check" onClick={handleSave} />
         </div>
     );
@@ -116,8 +114,7 @@ const NavForm = ({ navBar, setNavBar, handleSaveNavbar }: NavbarProps) => {
             visible={navBar?.show}
             onHide={() => setNavBar(p => ({ ...p, show: false }))}
             className="w-9 md:w-6"
-            footer={footerMenuTemplate}
-        >
+            footer={footerMenuTemplate}>
             <div>
                 <div className="card mb-1 border-round p-3 flex gap-2">
                     <Button label="Reset" onClick={handleReset} />
@@ -132,15 +129,13 @@ const NavForm = ({ navBar, setNavBar, handleSaveNavbar }: NavbarProps) => {
                                 const filtered = searchMenuByLabel(navBar.menu, keyword);
                                 setState({ searchVal: keyword, filteredMenu: filtered });
                             }}
-                            placeholder="Cari..."
-                        />
+                            placeholder="Cari..." />
                     </span>
                 </div>
 
                 <div
                     className="card mt-0 border-round p-2 flex gap-2"
-                    style={{ overflow: "scroll" }}
-                >
+                    style={{ overflow: "scroll" }}>
                     <MenuDisplay onEdit={(item: number[]) => deleteItemByIndexes(item)} data={state.filteredMenu} />
                 </div>
             </div>

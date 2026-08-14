@@ -31,8 +31,7 @@ export default function VisitorCardModal({ visible, onHide, cardData }: TablePro
                 root: { className: 'border-round-2xl' },
                 header: { className: 'surface-50 border-bottom-1 surface-border py-3 px-4' },
                 content: { className: 'p-4' }
-            }}
-        >
+            }}>
             {cardData && (
                 <div className="flex flex-column align-items-center text-center">
                     <style>{`
@@ -66,13 +65,11 @@ export default function VisitorCardModal({ visible, onHide, cardData }: TablePro
                     <div 
                         id="printable-card-area"
                         className="w-full border-1 border-300 border-round-2xl overflow-hidden shadow-2 bg-white relative"
-                        style={{ maxWidth: '340px' }}
-                    >
+                        style={{ maxWidth: '340px' }}>
                         {/* Card Header Gradient */}
                         <div 
                             className="py-3 px-3 text-white flex flex-column align-items-center justify-content-center"
-                            style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)' }}
-                        >
+                            style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)' }}>
                             <span className="font-black text-lg tracking-widest text-white-alpha-90" style={{ letterSpacing: '0.15em' }}>KARTU TAMU</span>
                             <span className="text-xs text-white-alpha-70 uppercase font-semibold mt-1" style={{ letterSpacing: '0.05em' }}>Sistem Manajemen Tamu</span>
                         </div>
@@ -82,13 +79,11 @@ export default function VisitorCardModal({ visible, onHide, cardData }: TablePro
                             {/* QR Code Frame */}
                             <div 
                                 className="p-3 border-round-xl border-1 surface-border bg-slate-50 flex align-items-center justify-content-center shadow-1 mb-4"
-                                style={{ width: '170px', height: '170px', background: '#F8FAFC' }}
-                            >
+                                style={{ width: '170px', height: '170px', background: '#F8FAFC' }}>
                                 <img 
                                     src={cardData.qr_image_url} 
                                     alt="QR Code Tamu" 
-                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
-                                />
+                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                             </div>
 
                             {/* Guest Details */}
@@ -102,8 +97,7 @@ export default function VisitorCardModal({ visible, onHide, cardData }: TablePro
                                 <span className="text-xs uppercase text-500 font-bold tracking-wider" style={{ letterSpacing: '0.05em' }}>Kode Kunjungan</span>
                                 <div 
                                     className="text-lg font-black px-4 py-1.5 border-round-lg shadow-sm"
-                                    style={{ background: '#EFF6FF', color: 'var(--primary-color)', border: '1px solid #BFDBFE' }}
-                                >
+                                    style={{ background: '#EFF6FF', color: 'var(--primary-color)', border: '1px solid #BFDBFE' }}>
                                     {cardData.visit_code}
                                 </div>
                             </div>
@@ -118,20 +112,16 @@ export default function VisitorCardModal({ visible, onHide, cardData }: TablePro
 
                     {/* Actions */}
                     <div className="flex gap-2 w-full mt-4" style={{ maxWidth: '340px' }}>
-                        <Button 
-                            label="Tutup" 
+                        <Button label="Tutup" 
                             severity="secondary" 
                             outlined 
                             className="flex-1 py-2 font-semibold text-sm border-round-lg"
-                            onClick={onHide} 
-                        />
-                        <Button 
-                            label="Cetak Kartu Akses" 
+                            onClick={onHide} />
+                        <Button label="Cetak Kartu Akses" 
                             icon="pi pi-print" 
                             className="flex-1 py-2 font-semibold text-sm border-round-lg text-white" 
                             style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)', border: 'none' }}
-                            onClick={() => window.print()} 
-                        />
+                            onClick={() => window.print()} />
                     </div>
                 </div>
             )}

@@ -13,7 +13,7 @@ const incomingLetterData = async (req, res) => {
   try {
     const oPayload = req.body || {};
 
-    const oQuery = DB("trs_surat_masuk as til")
+    const oQuery = DB("trx_surat_masuk as til")
       .leftJoin("mst_jenis_surat as mlt", "til.jenis_surat_id", "mlt.jenis_surat_id")
       .leftJoin("mst_pengguna as u", "til.created_by", "u.id_pengguna")
       .select(

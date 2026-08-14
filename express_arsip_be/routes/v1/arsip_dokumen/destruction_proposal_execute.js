@@ -19,7 +19,7 @@ const executeDestructionProposal = async (req, res) => {
     }
 
     // Ambil data proposal
-    const oProposal = await DB("trs_usulan_pemusnahan")
+    const oProposal = await DB("trx_usulan_pemusnahan")
       .where("id_usulan", nProposalId)
       .first();
 
@@ -42,7 +42,7 @@ const executeDestructionProposal = async (req, res) => {
     // Jalankan dalam satu transaksi database
     await DB.transaction(async (trx) => {
       // 1. Update proposal jadi 'executed'
-      await trx("trs_usulan_pemusnahan")
+      await trx("trx_usulan_pemusnahan")
         .where("id_usulan", nProposalId)
         .update({
           status: "executed",
@@ -53,7 +53,7 @@ const executeDestructionProposal = async (req, res) => {
         });
 
       // 2. Soft-delete dokumen (Status → nonactive)
-      await trx("trs_dokumen")
+      await trx("trx_dokumen")
         .where("kode_dokumen", oProposal.kode_dokumen)
         .update({
           status: "nonactive",

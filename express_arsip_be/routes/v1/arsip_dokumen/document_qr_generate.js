@@ -18,7 +18,7 @@ const generateDocumentQR = async (req, res) => {
     }
 
     // Ambil data dokumen
-    const oDocument = await DB("trs_dokumen")
+    const oDocument = await DB("trx_dokumen")
       .select("id_dokumen", "nama_dokumen", "nomor_dokumen", "qr_code", "status")
       .where("id_dokumen", nIdDokumen)
       .where("status", "active")
@@ -38,7 +38,7 @@ const generateDocumentQR = async (req, res) => {
       cQRCodeString = `DOC-${uuidv4()}`;
 
       // Simpan QR Code string ke database
-      await DB("trs_dokumen")
+      await DB("trx_dokumen")
         .where("id_dokumen", nIdDokumen)
         .update({
           qr_code: cQRCodeString,

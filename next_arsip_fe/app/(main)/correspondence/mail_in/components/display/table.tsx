@@ -160,8 +160,7 @@ const Table = ({
             <Avatar
                 label={rowData.nama_pengirim?.slice(0, 1).toUpperCase() || "S"}
                 shape="circle"
-                style={{ width: "2rem", height: "2rem", fontSize: "0.7rem", background: "#EEF2FF", color: "#4F46E5", fontWeight: "700", flexShrink: 0 }}
-            />
+                style={{ width: "2rem", height: "2rem", fontSize: "0.7rem", background: "#EEF2FF", color: "#4F46E5", fontWeight: "700", flexShrink: 0 }} />
             <div>
                 <div className="font-semibold text-sm text-900">{rowData.nama_pengirim}</div>
                 {rowData.instansi_pengirim && (
@@ -187,16 +186,13 @@ const Table = ({
 
     const actionTemplate = (rowData: TableData) => (
         <div className="flex gap-1 justify-content-center">
-            <Button
-                icon="pi pi-eye"
-                rounded text size="small"
+            <Button icon="pi pi-eye"
+                text size="small"
                 tooltip="Lihat Detail" tooltipOptions={{ position: "top" }}
-                onClick={() => onOpenDetail(rowData)}
-            />
+                onClick={() => onOpenDetail(rowData)} />
             {canUpdate && (
-                <Button
-                    icon="pi pi-pencil"
-                    rounded text severity="secondary" size="small"
+                <Button icon="pi pi-pencil"
+                    text severity="secondary" size="small"
                     tooltip="Edit" tooltipOptions={{ position: "top" }}
                     onClick={() => {
                         formik.setValues({
@@ -219,16 +215,13 @@ const Table = ({
                             updated_by: rowData.updated_by,
                         });
                         setState((p) => ({ ...p, add: false, delete: false, edit: true }));
-                    }}
-                />
+                    }} />
             )}
             {canDelete && (
-                <Button
-                    icon="pi pi-trash"
-                    rounded text severity="danger" size="small"
+                <Button icon="pi pi-trash"
+                    text severity="danger" size="small"
                     tooltip="Hapus" tooltipOptions={{ position: "top" }}
-                    onClick={() => setState((p) => ({ ...p, delete: true, selectedLetters: [rowData] }))}
-                />
+                    onClick={() => setState((p) => ({ ...p, delete: true, selectedLetters: [rowData] }))} />
             )}
         </div>
     );
@@ -247,23 +240,19 @@ const Table = ({
                         }}
                         onKeyDown={(e) => { if (e.key === "Enter") refreshData(); }}
                         placeholder="Cari surat..."
-                        className="text-sm" style={{ height: "2.25rem" }}
-                    />
+                        className="text-sm" style={{ height: "2.25rem" }} />
                 </span>
                 <Dropdown
                     value={state.statusFilter}
                     options={statusOptions}
                     onChange={(e) => setState((p) => ({ ...p, statusFilter: e.value }))}
                     placeholder="Filter Status"
-                    style={{ minWidth: "10rem", height: "2.25rem" }}
-                />
-                <Button
-                    icon="pi pi-filter"
+                    style={{ minWidth: "10rem", height: "2.25rem" }} />
+                <Button icon="pi pi-filter"
                     outlined size="small"
                     onClick={refreshData}
                     tooltip="Terapkan filter"
-                    style={{ height: "2.25rem" }}
-                />
+                    style={{ height: "2.25rem" }} />
             </div>
         </div>
     );
@@ -295,22 +284,19 @@ const Table = ({
                 <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
                     {canCreate && (
                         <>
-                            <Button
-                                size="small"
+                            <Button size="small"
                                 label="Tambah Surat"
                                 icon="pi pi-plus"
                                 outlined
                                 severity="success"
-                                onClick={() => { formik.resetForm(); setState((p) => ({ ...p, selectedLetters: [], add: true, edit: false, delete: false })); }}
-                            />
+                                onClick={() => { formik.resetForm(); setState((p) => ({ ...p, selectedLetters: [], add: true, edit: false, delete: false })); }} />
                             <Divider layout="vertical" />
                         </>
                     )}
                     {canDelete && (
                         <>
-                            <Button
-                                size="small"
-                                label={`Hapus${state.selectedLetters.length > 0 ? ` (${state.selectedLetters.length})` : ""}`}
+                            <Button size="small"
+                                label={`Hapus${state.selectedLetters.length> 0 ? ` (${state.selectedLetters.length})` : ""}`}
                                 icon="pi pi-trash"
                                 severity="danger"
                                 outlined
@@ -318,19 +304,16 @@ const Table = ({
                                 onClick={() => {
                                     if (state.selectedLetters.length < 1) return;
                                     setState((p) => ({ ...p, delete: true }));
-                                }}
-                            />
+                                }} />
                             <Divider layout="vertical" />
                         </>
                     )}
-                    <Button
-                        size="small"
+                    <Button size="small"
                         label="Refresh"
                         icon="pi pi-refresh"
                         outlined
                         loading={state.load}
-                        onClick={refreshData}
-                    />
+                        onClick={refreshData} />
                 </div>
 
                 <DataTable
@@ -354,8 +337,7 @@ const Table = ({
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data"
                     rowHover
-                    className="text-sm"
-                >
+                    className="text-sm">
                     <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
                     <Column field="nomor_agenda" header="No. Surat" body={(r) => (
                         <div>
@@ -381,8 +363,7 @@ const Table = ({
                     toast={toast} 
                     handleSave={handleSave}
                     handleDelete={handleDelete}
-                    getLetterTypeOptions={getLetterTypeOptions}
-                />
+                    getLetterTypeOptions={getLetterTypeOptions} />
 
             {/* ── Detail Dialog ──────────────────────────────────── */}
             <Dialog
@@ -396,8 +377,7 @@ const Table = ({
                 modal
                 style={{ width: "72rem", maxWidth: "96vw" }}
                 onHide={closeDetail}
-                pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}
-            >
+                pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}>
                 {state.detailLoad ? (
                     <div className="flex flex-column align-items-center py-6 gap-3 text-color-secondary">
                         <i className="pi pi-spin pi-spinner text-3xl text-primary" />
@@ -420,16 +400,13 @@ const Table = ({
                             <div className="flex flex-column align-align-items-end gap-2">
                                 {detailLetter?.status && statusTemplate({ status: detailLetter.status } as TableData)}
                                 {archivedDocument ? (
-                                    <Button
-                                        label="Lihat Arsip"
+                                    <Button label="Lihat Arsip"
                                         icon="pi pi-folder-open"
                                         size="small"
                                         outlined
-                                        onClick={() => router.push(`/edms/archive_document/${archivedDocument.id_dokumen}/versions`)}
-                                    />
+                                        onClick={() => router.push(`/edms/archive_document/${archivedDocument.id_dokumen}/versions`)} />
                                 ) : (
-                                    <Button
-                                        label="Arsipkan"
+                                    <Button label="Arsipkan"
                                         icon="pi pi-archive"
                                         size="small"
                                         severity="success"
@@ -437,8 +414,7 @@ const Table = ({
                                         disabled={detailFiles.length < 1}
                                         onClick={confirmArchiveLetter}
                                         tooltip={detailFiles.length < 1 ? "Upload file surat terlebih dahulu" : "Arsipkan surat sebagai dokumen"}
-                                        tooltipOptions={{ position: "left" }}
-                                    />
+                                        tooltipOptions={{ position: "left" }} />
                                 )}
                             </div>
                         </div>
@@ -471,7 +447,7 @@ const Table = ({
                                 <Tag value={`${detailFiles.length} file`} severity="info" />
                             </div>
 
-                            {detailFiles.length > 0 ? (
+                            {detailFiles.length> 0 ? (
                                 <div className="grid">
                                     <div className="col-12 lg:col-5">
                                         <div className="flex flex-column gap-2">
@@ -488,7 +464,7 @@ const Table = ({
                                                             </div>
                                                         </div>
                                                         <div className="flex gap-1">
-                                                            <Button icon="pi pi-eye" rounded text size="small" tooltip="Lihat file" onClick={() => previewUploadedFile(file)} />
+                                                            <Button icon="pi pi-eye" text size="small" tooltip="Lihat file" onClick={() => previewUploadedFile(file)} />
                                                             <Button icon="pi pi-download" rounded text size="small" tooltip="Download" onClick={() => downloadUploadedFile(file)} />
                                                         </div>
                                                     </div>

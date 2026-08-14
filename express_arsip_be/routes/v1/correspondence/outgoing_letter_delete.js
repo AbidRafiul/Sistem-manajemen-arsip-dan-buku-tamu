@@ -53,7 +53,7 @@ const outgoingLetterDelete = async (req, res) => {
       }
     }
 
-    const oLetter = await DB("trs_surat_keluar")
+    const oLetter = await DB("trx_surat_keluar")
       .where("id_surat_keluar", oPayload.id_surat_keluar)
       .whereNot("status", "dihapus")
       .first();
@@ -68,7 +68,7 @@ const outgoingLetterDelete = async (req, res) => {
     const dNow = new Date();
 
     await DB.transaction(async (trx) => {
-      await trx("trs_surat_keluar")
+      await trx("trx_surat_keluar")
         .where("id_surat_keluar", oPayload.id_surat_keluar)
         .update({
           status: "dihapus",
@@ -76,7 +76,7 @@ const outgoingLetterDelete = async (req, res) => {
           updated_at: dNow,
         });
 
-      await trx("trs_tracking_surat_keluar").insert({
+      await trx("trx_tracking_surat_keluar").insert({
         id_surat_keluar: oPayload.id_surat_keluar,
         status: "dihapus",
         aktivitas: "surat_dihapus",

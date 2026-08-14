@@ -178,31 +178,22 @@ export const validateSignature = async (req, res, next) => {
     if (oUser.kode_peran !== 'SUPERADMIN' && oUser.kode_peran !== 'SA') {
       if (oUser.id_cabang) {
         allowedCabangIds = new Set([oUser.id_cabang]);
-        // Ambil SEMUA keturunan (anak, cucu, cicit, dst)
-        let added = true;
-        while (added) {
-          added = false;
-          for (const c of allCabangs) {
-            if (allowedCabangIds.has(c.id_induk) && !allowedCabangIds.has(c.id_cabang)) {
-              allowedCabangIds.add(c.id_cabang);
-              added = true;
-            }
+        // Hanya ambil keturunan SATU LEVEL ke bawah (anak langsung)
+        for (const c of allCabangs) {
+          if (c.id_induk === oUser.id_cabang && !allowedCabangIds.has(c.id_cabang)) {
+            allowedCabangIds.add(c.id_cabang);
           }
         }
       }
     }
 
-    // Helper untuk ekspansi cabang beserta seluruh anak-anak cabangnya (Hierarchical Sub-branches)
+    // Helper untuk ekspansi cabang beserta anak-anak cabangnya (SATU LEVEL SAJA)
     const expandCabangDescendants = (initialIds) => {
       const expandedSet = new Set(initialIds);
-      let added = true;
-      while (added) {
-        added = false;
-        for (const c of allCabangs) {
-          if (expandedSet.has(c.id_induk) && !expandedSet.has(c.id_cabang)) {
-            expandedSet.add(c.id_cabang);
-            added = true;
-          }
+      for (const c of allCabangs) {
+        // Cek apakah cabang induknya ada di dalam initialIds (bukan expandedSet agar tidak menjalar ke bawah)
+        if (initialIds.includes(c.id_induk) && !expandedSet.has(c.id_cabang)) {
+          expandedSet.add(c.id_cabang);
         }
       }
       return Array.from(expandedSet);

@@ -65,15 +65,15 @@ const letterDispositionCreate = async (req, res) => {
     }
 
     const dispositionTable = await getExistingTable([
-      "trs_disposisi_surat",
+      "trx_disposisi_surat",
       "trx_incoming_letter_dispositions",
     ]);
     const letterTable = await getExistingTable([
-      "trs_surat_masuk",
+      "trx_surat_masuk",
       "trx_incoming_letters",
     ]);
     const trackingTable = await getExistingTable([
-      "trs_tracking_surat_masuk",
+      "trx_tracking_surat_masuk",
       "trx_incoming_letter_trackings",
     ]);
 

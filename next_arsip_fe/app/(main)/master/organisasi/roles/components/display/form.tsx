@@ -21,46 +21,49 @@ const Form = ({ state, setState, formik, handleDelete, handleSave }: any) => {
     const deleteFooterTemplate = (
         <div className="flex justify-content-center gap-2">
             <Button label="Batal" icon="pi pi-times" severity="secondary" outlined onClick={hideDialog} disabled={state.load} />
-            <Button type="button" label="Hapus" icon="pi pi-check" severity="danger" loading={state?.load} disabled={state?.load} onClick={handleDelete} />
+            <Button type="button" label="Ya, Hapus" icon="pi pi-trash" severity="danger" loading={state?.load} disabled={state?.load} onClick={handleDelete} />
         </div>
     );
             return (
         <>
             <Dialog visible={isDialogVisible} style={{ width: '70%' }} header={state.add ? 'Tambah Data' : 'Ubah Data'} modal onHide={hideDialog}>
-                <form onSubmit={formik?.handleSubmit} className="flex gap-2 flex-column mt-2">
+                <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
                     <div className="flex md:flex-row flex-column gap-2 w-full">
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="kode_peran" className="font-bold">kode peran</label>
+                            <label htmlFor="kode_peran" className="font-semibold text-sm text-700">kode peran</label>
                             <div className="p-inputgroup">
-                                <InputText id="kode_peran" name="kode_peran" value={formik?.values.kode_peran} style={{ padding: '1rem' }} onChange={formik?.handleChange} className={isFormFieldInvalid('kode_peran') ? 'p-invalid' : ''} />
+                                <InputText id="kode_peran" name="kode_peran" value={formik?.values.kode_peran}  onChange={formik?.handleChange} className={isFormFieldInvalid('kode_peran') ? 'p-invalid' : ''} />
                             </div>
                             {getFormErrorMessage('kode_peran')}
                         </div>
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="nama_peran" className="font-bold">nama peran</label>
+                            <label htmlFor="nama_peran" className="font-semibold text-sm text-700">nama peran</label>
                             <div className="p-inputgroup">
-                                <InputText id="nama_peran" name="nama_peran" value={formik?.values.nama_peran} style={{ padding: '1rem' }} onChange={formik?.handleChange} className={isFormFieldInvalid('nama_peran') ? 'p-invalid' : ''} />
+                                <InputText id="nama_peran" name="nama_peran" value={formik?.values.nama_peran}  onChange={formik?.handleChange} className={isFormFieldInvalid('nama_peran') ? 'p-invalid' : ''} />
                             </div>
                             {getFormErrorMessage('nama_peran')}
                         </div>
                     </div>
                     <div className="flex md:flex-row flex-column gap-2 w-full">
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="deskripsi" className="font-bold">deskripsi</label>
+                            <label htmlFor="deskripsi" className="font-semibold text-sm text-700">deskripsi</label>
                             <div className="p-inputgroup">
-                                <InputText id="deskripsi" name="deskripsi" value={formik?.values.deskripsi} style={{ padding: '1rem' }} onChange={formik?.handleChange} className={isFormFieldInvalid('deskripsi') ? 'p-invalid' : ''} />
+                                <InputText id="deskripsi" name="deskripsi" value={formik?.values.deskripsi}  onChange={formik?.handleChange} className={isFormFieldInvalid('deskripsi') ? 'p-invalid' : ''} />
                             </div>
                             {getFormErrorMessage('deskripsi')}
                         </div>
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="status" className="font-bold">Status</label>
+                            <label htmlFor="status" className="font-semibold text-sm text-700">Status</label>
                             <div className="p-inputgroup">
                                 <Dropdown id="status" name="status" value={formik?.values.status} options={[{label: "Aktif", value: "active"}, {label: "Tidak Aktif", value: "nonactive"}]} onChange={formik?.handleChange} className={isFormFieldInvalid('status') ? 'p-invalid w-full' : 'w-full'} />
                             </div>
                             {getFormErrorMessage('status')}
                         </div>
                     </div>
-                    <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} className="mt-2" loading={state?.load} disabled={state?.load} />
+                    <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                        
+                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className=" w-full" loading={state?.load} disabled={state?.load} />
+                    </div>
                 </form>
             </Dialog>
 

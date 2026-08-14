@@ -117,7 +117,7 @@ export default function AnalyticsChart({ weeklyTrend, isLoading }: AnalyticsChar
             </div>
             
             <div style={{ height: '280px', position: 'relative' }}>
-                {dataPoints.length > 0 ? (
+                {dataPoints.length> 0 ? (
                     <Chart type="line" data={oChartData} options={chartOptions} style={{ width: '100%', height: '100%' }} />
                 ) : (
                     <div className="flex flex-column align-items-center justify-content-center h-full text-color-secondary text-center p-4">

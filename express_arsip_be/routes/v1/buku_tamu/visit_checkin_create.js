@@ -241,7 +241,7 @@ router.post(
         updated_at: currentDateTime
       };
 
-      const [idKunjungan] = await DB("trs_kunjungan").insert(oData);
+      const [idKunjungan] = await DB("trx_kunjungan").insert(oData);
 
       try {
         const cGuestName = nama_tamu || "Seorang tamu";
@@ -329,7 +329,7 @@ router.post(
             );
           }
           
-          await DB("trs_kunjungan_anggota").insert({
+          await DB("trx_kunjungan_anggota").insert({
             id_kunjungan: idKunjungan,
             nama_anggota: member.name || member.nama_anggota || "",
             nomor_telepon: member.phone || member.nomor_telepon || null,
@@ -360,7 +360,7 @@ router.post(
         // 5. KIRIM NOTIFIKASI WA GANDA (KE TAMU & HOST)
         // ==========================================
         try {
-          let resolvedHostName = HostName || null;
+          let resolvedHostName = nama_host || null;
           let oHost = null;
 
           if (resolvedHostUserId) {
@@ -374,10 +374,10 @@ router.post(
           }
 
           // A. Kirim Notifikasi WA ke TAMU
-          if (PhoneNumber) {
-            const cleanGuestPhone = String(PhoneNumber).replace(/[^0-9+]/g, '');
+          if (nomor_telepon) {
+            const cleanGuestPhone = String(nomor_telepon).replace(/[^0-9+]/g, '');
             const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${VisitCode}`;
-            const waPesanTamu = `Halo Bpk/Ibu ${GuestName},
+            const waPesanTamu = `Halo Bpk/Ibu ${nama_tamu},
 
 Selamat datang! Proses Check-In kunjungan Anda di Lobi telah BERHASIL pada waktu ${formatDateSystem()}.
 

@@ -161,14 +161,10 @@ const Page = () => {
 
             const myIdPengguna = (session as any)?.user?.IdPengguna || (session as any)?.user?.id || '';
 
-            // Bypass filter cabang agar dropdown menampilkan seluruh data organisasi
+            // Membiarkan filter mengalir sesuai context dari Global Branch Switcher
             const bypassFilters: Record<string, string> = {
                 'x-uniqueid': String(myIdPengguna),
-                'x-timestamp': new Date().toISOString(),
-                'x-filter-cabang': '',
-                'x-filter-departemen': '',
-                'x-filter-divisi': '',
-                'x-filter-unit-kerja': ''
+                'x-timestamp': new Date().toISOString()
             };
 
             vaEndpoints.forEach((oItem) => {
@@ -223,7 +219,7 @@ const Page = () => {
             const vaData = await postData(cEndPoint, oBody, oHeaders);
             showSuccess(toast, vaData.data?.data?.message || 'Berhasil Menyimpan Data');
             formik.resetForm();
-            setState((p) => ({ ...p, add: false, edit: false, delete: false }));
+            setState((p: any) => ({ ...p, add: false, edit: false, delete: false }));
 
             // Refresh tabel
             getData(apiEndpointGet);

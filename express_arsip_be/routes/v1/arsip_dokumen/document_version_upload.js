@@ -40,12 +40,12 @@ const uploadDocumentVersion = async (req, res) => {
     // Verifikasi dokumen aktif
     let oDocument;
     if (cKodeDokumen) {
-      oDocument = await DB("trs_dokumen")
+      oDocument = await DB("trx_dokumen")
         .where("kode_dokumen", cKodeDokumen)
         .where("status", "active")
         .first();
     } else {
-      oDocument = await DB("trs_dokumen")
+      oDocument = await DB("trx_dokumen")
         .where("id_dokumen", nIdDokumen)
         .where("status", "active")
         .first();
@@ -60,7 +60,7 @@ const uploadDocumentVersion = async (req, res) => {
     }
 
     // Hitung nomor versi berikutnya
-    const oLastVersion = await DB("trs_versi_dokumen")
+    const oLastVersion = await DB("trx_versi_dokumen")
       .select("nomor_versi")
       .where("kode_dokumen", oDocument.kode_dokumen)
       .orderBy("nomor_versi", "desc")
@@ -83,7 +83,7 @@ const uploadDocumentVersion = async (req, res) => {
       updated_at: dNow,
     };
 
-    const [nVersionId] = await DB("trs_versi_dokumen").insert(oData);
+    const [nVersionId] = await DB("trx_versi_dokumen").insert(oData);
 
     // Audit Trail Log
     await logDocumentChange({

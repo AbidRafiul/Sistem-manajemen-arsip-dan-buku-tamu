@@ -98,14 +98,12 @@ const Page = () => {
                             Visualisasi data, tracking alur pengiriman, dan grafik status surat keluar secara real-time.
                         </p>
                     </div>
-                    <Button
-                        icon="pi pi-refresh"
+                    <Button icon="pi pi-refresh"
                         outlined
                         loading={loading}
                         label="Refresh Data"
                         onClick={fetchStats}
-                        size="small"
-                    />
+                        size="small" />
                 </div>
             </Card>
 

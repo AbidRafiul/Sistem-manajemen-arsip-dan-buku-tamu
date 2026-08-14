@@ -21,6 +21,8 @@ interface AuthResponse {
     datetime?: string;
 }
 
+import { getBasicToken } from "@/lib/tools/encryptTools";
+
 export const POST = async (req: NextRequest) => {
     try {
         const credentials = await req.json();
@@ -29,7 +31,8 @@ export const POST = async (req: NextRequest) => {
         const tokenResponse = await axios.get<TokenData>(`${process.env.API_URL}/auth/token`, {
             headers: {
                 'Content-Type': 'application/json',
-                'X-Timestamp': formatDateCalendar(dNow)
+                'X-Timestamp': formatDateCalendar(dNow),
+                'Authorization': getBasicToken()
             }
         });
 

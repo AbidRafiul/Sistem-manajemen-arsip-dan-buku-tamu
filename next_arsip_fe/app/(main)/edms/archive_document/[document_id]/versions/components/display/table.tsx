@@ -119,19 +119,15 @@ const Table: React.FC<TableProps> = ({
 
     const versionPreviewTemplate = (rowData: VersionData) => (
         <div className="flex gap-1 justify-content-center">
-            <Button
-                icon="pi pi-eye"
-                rounded
+            <Button icon="pi pi-eye"
                 text
                 severity="info"
                 size="small"
                 tooltip={rowData.file_path ? "Pratinjau Dokumen" : "Belum ada file berkas"}
                 tooltipOptions={{ position: 'top' }}
                 onClick={() => handleFetchPreviewUrl(rowData.file_path || '')}
-                disabled={!rowData.file_path}
-            />
-            <Button
-                icon="pi pi-file-word"
+                disabled={!rowData.file_path} />
+            <Button icon="pi pi-file-word"
                 rounded
                 text
                 severity="help"
@@ -139,8 +135,7 @@ const Table: React.FC<TableProps> = ({
                 tooltip="Teks Hasil OCR"
                 tooltipOptions={{ position: 'top' }}
                 onClick={() => handleFetchOcrText(rowData)}
-                disabled={!rowData.file_path}
-            />
+                disabled={!rowData.file_path} />
         </div>
     );
 
@@ -150,42 +145,35 @@ const Table: React.FC<TableProps> = ({
 
         return (
             <div className="flex gap-1 justify-content-center align-items-center">
-                <Button
-                    icon="pi pi-download"
+                <Button icon="pi pi-download"
                     rounded
                     text
                     severity="secondary"
                     size="small"
                     tooltip="Unduh File"
                     tooltipOptions={{ position: 'top' }}
-                    onClick={() => downloadVersion(rowData)}
-                />
+                    onClick={() => downloadVersion(rowData)} />
                 {status === 'approved' && !isLatest && (
-                    <Button
-                        icon="pi pi-replay"
+                    <Button icon="pi pi-replay"
                         rounded
                         text
                         severity="warning"
                         size="small"
                         tooltip="Rollback ke versi ini"
                         tooltipOptions={{ position: 'top' }}
-                        onClick={() => rollbackVersion(rowData)}
-                    />
+                        onClick={() => rollbackVersion(rowData)} />
                 )}
                 {status === 'pending' && canApproveVersion && (
                     <>
-                        <Button
-                            icon="pi pi-check"
+                        <Button icon="pi pi-check"
                             rounded
                             text
                             severity="success"
                             size="small"
                             tooltip="Setujui Versi"
                             tooltipOptions={{ position: 'top' }}
-                            onClick={() => approveVersion(rowData.id_versi, 'approved')}
-                        />
-                        <Button
-                            icon="pi pi-times"
+                            onClick={() => approveVersion(rowData.id_versi, 'approved')} />
+                        <Button icon="pi pi-times"
                             rounded
                             text
                             severity="danger"
@@ -196,8 +184,7 @@ const Table: React.FC<TableProps> = ({
                                 setSelectedVersionId(rowData.id_versi);
                                 setRejectNotes('');
                                 setRejectDialogVisible(true);
-                            }}
-                        />
+                            }} />
                     </>
                 )}
             </div>
@@ -205,18 +192,15 @@ const Table: React.FC<TableProps> = ({
     };
 
     const approveDialogFooter = (
-        <div className="flex justify-content-end gap-2 mt-3">
-            <Button
-                label="Batal"
+        <div className="flex mt-4 pt-3 border-top-1 surface-border">
+            <Button label="Batal"
                 icon="pi pi-times"
                 outlined
                 severity="secondary"
                 onClick={closeApproveDialog}
                 disabled={load}
-                className="p-button-sm font-semibold"
-            />
-            <Button
-                label="Ya, Setujui"
+                className="p-button-sm font-semibold" />
+            <Button label="Ya, Setujui"
                 icon="pi pi-check"
                 severity="success"
                 loading={load}
@@ -226,29 +210,24 @@ const Table: React.FC<TableProps> = ({
                     await approveVersion(selectedVersionId, 'approved');
                     closeApproveDialog();
                 }}
-                className="p-button-sm font-semibold"
-            />
+                className="p-button-sm font-semibold" />
         </div>
     );
 
     const rejectDialogFooter = (
-        <div className="flex justify-content-end gap-2 mt-3">
-            <Button
-                label="Batal"
+        <div className="flex mt-4 pt-3 border-top-1 surface-border">
+            <Button label="Batal"
                 icon="pi pi-times"
                 outlined
                 severity="secondary"
                 onClick={() => setRejectDialogVisible(false)}
-                className="p-button-sm font-semibold"
-            />
-            <Button
-                label="Tolak Versi"
+                className="p-button-sm font-semibold" />
+            <Button label="Tolak Versi"
                 icon="pi pi-check"
                 severity="danger"
                 onClick={submitRejection}
                 disabled={!rejectNotes.trim()}
-                className="p-button-sm font-semibold"
-            />
+                className="p-button-sm font-semibold" />
         </div>
     );
 
@@ -256,37 +235,31 @@ const Table: React.FC<TableProps> = ({
         <div className="card p-5">
             <div className="flex flex-column md:flex-row md:align-items-center justify-content-between gap-3 mb-4">
                 <div>
-                    <Button
-                        type="button"
+                    <Button type="button"
                         icon="pi pi-arrow-left"
                         label="Kembali ke Daftar Arsip"
                         text
                         className="p-0 mb-2"
-                        onClick={() => router.push('/edms/archive_document')}
-                    />
+                        onClick={() => router.push('/edms/archive_document')} />
                     <h3 className="text-2xl font-bold text-color mb-1">Versi Dokumen</h3>
                     <span className="text-color-secondary text-sm">
                         {detailData?.document?.nomor_dokumen || '-'} - {detailData?.document?.nama_dokumen || '-'}
                     </span>
                 </div>
                 <div className="flex gap-2">
-                    <Button
-                        size="small"
+                    <Button size="small"
                         label="Audit Trail (Riwayat)"
                         icon="pi pi-clock"
                         severity="info"
                         outlined
                         onClick={() => router.push(`/edms/archive_document/${detailData?.document?.id_dokumen}/history`)}
-                        disabled={!detailData?.document?.id_dokumen}
-                    />
-                    <Button
-                        size="small"
-                        label="Muat Ulang"
+                        disabled={!detailData?.document?.id_dokumen} />
+                    <Button size="small"
+                        label="Refresh"
                         icon="pi pi-refresh"
                         outlined
                         loading={load}
-                        onClick={fetchDocumentDetail}
-                    />
+                        onClick={fetchDocumentDetail} />
                 </div>
             </div>
 
@@ -319,8 +292,7 @@ const Table: React.FC<TableProps> = ({
                         <input
                             type="file"
                             className="p-inputtext w-full text-sm"
-                            onChange={(e) => setNewVersionFile(e.target.files?.[0] || null)}
-                        />
+                            onChange={(e) => setNewVersionFile(e.target.files?.[0] || null)} />
                     </div>
                     <div className="flex-1 w-full">
                         <label className="block text-color-secondary mb-1 text-sm font-semibold">Catatan Perubahan</label>
@@ -328,17 +300,14 @@ const Table: React.FC<TableProps> = ({
                             className="w-full text-sm"
                             placeholder="Contoh: Memperbarui konten, memperbaiki typo..."
                             value={changeNotes}
-                            onChange={(e) => setChangeNotes(e.target.value)}
-                        />
+                            onChange={(e) => setChangeNotes(e.target.value)} />
                     </div>
-                    <Button
-                        label="Unggah"
+                    <Button label="Unggah"
                         icon="pi pi-upload"
                         size="small"
                         disabled={!newVersionFile || !changeNotes.trim() || load}
                         loading={load}
-                        onClick={uploadVersion}
-                    />
+                        onClick={uploadVersion} />
                 </div>
             </div>
 
@@ -349,8 +318,7 @@ const Table: React.FC<TableProps> = ({
                 paginator
                 emptyMessage="Belum ada versi dokumen"
                 className="text-sm"
-                dataKey="id_versi"
-            >
+                dataKey="id_versi">
                 <Column field="nomor_versi" header="Versi" sortable style={{ width: '80px', textAlign: 'center' }} />
                 <Column field="catatan_perubahan" header="Catatan Perubahan" />
                 <Column field="diunggah_oleh" header="Diunggah Oleh" body={(rowData: VersionData) => rowData.diunggah_oleh || '-'} />
@@ -373,8 +341,7 @@ const Table: React.FC<TableProps> = ({
                 modal
                 footer={approveDialogFooter}
                 closable={!load}
-                onHide={closeApproveDialog}
-            >
+                onHide={closeApproveDialog}>
                 <div className="flex flex-column gap-3 pt-2">
                     <div className="p-3 border-round-lg border-1 bg-green-50 border-green-100">
                         <div className="flex align-align-items-center gap-3">
@@ -409,8 +376,7 @@ const Table: React.FC<TableProps> = ({
                 modal
                 className="p-fluid"
                 footer={rejectDialogFooter}
-                onHide={() => setRejectDialogVisible(false)}
-            >
+                onHide={() => setRejectDialogVisible(false)}>
                 <div className="flex flex-column gap-3">
                     <div className="flex align-items-center gap-2 text-red-600 font-semibold mb-2">
                         <i className="pi pi-exclamation-triangle text-2xl"></i>
@@ -431,8 +397,7 @@ const Table: React.FC<TableProps> = ({
                             rows={5}
                             autoResize
                             placeholder="Contoh: File dokumen buram atau data tidak sesuai dengan draft awal."
-                            className="w-full text-sm"
-                        />
+                            className="w-full text-sm" />
                     </div>
                 </div>
             </Dialog>
@@ -451,8 +416,7 @@ const Table: React.FC<TableProps> = ({
                 onHide={() => {
                     setIsOcrDialogVisible(false);
                     setOcrText('');
-                }}
-            >
+                }}>
                 <div className="pt-2">
                     <div className="surface-100 p-4 border-round-lg font-mono text-sm line-height-3 style-scroll max-h-30rem overflow-y-auto whitespace-pre-wrap border-1 surface-border">
                         {ocrText || 'Teks kosong atau belum diekstrak.'}
@@ -475,8 +439,7 @@ const Table: React.FC<TableProps> = ({
                     setIsPreviewVisible(false);
                     setPreviewUrl('');
                 }}
-                pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}
-            >
+                pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}>
                 <div className="pt-3">
                     {previewUrl ? (
                         <iframe
@@ -484,8 +447,7 @@ const Table: React.FC<TableProps> = ({
                             width="100%"
                             height="600px"
                             style={{ border: 'none', borderRadius: '8px' }}
-                            title="Preview Arsip"
-                        />
+                            title="Preview Arsip" />
                     ) : (
                         <div className="flex flex-column align-items-center justify-content-center py-5 text-color-secondary">
                             <i className="pi pi-spin pi-spinner text-3xl mb-3" />

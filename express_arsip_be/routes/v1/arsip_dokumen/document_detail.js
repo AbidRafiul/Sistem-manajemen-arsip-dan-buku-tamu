@@ -16,7 +16,7 @@ const getDocumentDetail = async (req, res) => {
     }
 
     // Ambil data dokumen + join ke semua master
-    const oDocument = await DB("trs_dokumen as d")
+    const oDocument = await DB("trx_dokumen as d")
       .select(
         "d.id_dokumen",
         "d.kode_dokumen",
@@ -68,7 +68,7 @@ const getDocumentDetail = async (req, res) => {
     }
 
     // Ambil semua versi dokumen (terbaru dulu), beserta info approval (relasi: kode_dokumen)
-    const vaVersions = await DB("trs_versi_dokumen")
+    const vaVersions = await DB("trx_versi_dokumen")
       .select(
         "id_versi",
         "kode_dokumen",
@@ -87,7 +87,7 @@ const getDocumentDetail = async (req, res) => {
       .orderBy("nomor_versi", "desc");
 
     // Ambil riwayat peminjaman (terbaru dulu) (relasi: kode_dokumen)
-    const vaLoans = await DB("trs_peminjaman_arsip")
+    const vaLoans = await DB("trx_peminjaman_arsip")
       .select(
         "id_peminjaman",
         "kode_dokumen",
@@ -108,7 +108,7 @@ const getDocumentDetail = async (req, res) => {
       .orderBy("id_peminjaman", "desc");
 
     // Cek apakah ada proposal pemusnahan aktif (relasi: kode_dokumen)
-    const oDestructionProposal = await DB("trs_usulan_pemusnahan")
+    const oDestructionProposal = await DB("trx_usulan_pemusnahan")
       .select(
         "id_usulan",
         "kode_dokumen",

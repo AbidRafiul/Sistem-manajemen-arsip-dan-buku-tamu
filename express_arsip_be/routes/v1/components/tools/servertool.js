@@ -27,16 +27,17 @@ export const getLastKodeRegister = async (key, len) => {
 export const getDescendantBranchIds = async (knex, startBranchId) => {
   if (!startBranchId) return [];
   const branchIds = [Number(startBranchId)];
-  let currentParentIds = [Number(startBranchId)];
-  while (currentParentIds.length > 0) {
-    const children = await knex("mst_cabang").select("id_cabang").whereIn("id_induk", currentParentIds).whereNot("status", "deleted");
-    if (children.length === 0) {
-      break;
-    }
+  // Ambil hanya keturunan satu level ke bawah (immediate children)
+  const children = await knex("mst_cabang")
+    .select("id_cabang")
+    .where("id_induk", Number(startBranchId))
+    .whereNot("status", "deleted");
+    
+  if (children.length > 0) {
     const childIds = children.map(c => c.id_cabang);
     branchIds.push(...childIds);
-    currentParentIds = childIds;
   }
+  
   return branchIds;
 };
 export const generateDailyVisitCode = async () => {

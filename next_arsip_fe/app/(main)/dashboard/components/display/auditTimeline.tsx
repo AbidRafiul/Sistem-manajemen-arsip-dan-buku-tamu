@@ -43,7 +43,7 @@ export default function AuditTimeline({ logs, isLoading }: AuditTimelineProps) {
             </div>
             
             <div style={{ height: '350px', overflowY: 'auto', paddingRight: '8px' }} className="flex flex-column gap-3">
-                {logs && logs.length > 0 ? (
+                {logs && logs.length> 0 ? (
                     logs.map((item) => (
                         <div key={item.id} className="flex align-align-items-center gap-3 p-3 bg-gray-50 border-round-xl border-1 border-100 hover:bg-gray-100 transition-duration-150 shadow-sm">
                             <div className="flex align-items-center justify-content-center border-circle text-white shadow-1" style={{ width: '2.5rem', height: '2.5rem', backgroundColor: item.color, flexShrink: 0 }}>

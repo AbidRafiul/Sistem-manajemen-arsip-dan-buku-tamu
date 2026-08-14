@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.delete("/:id", async (req, res) => {
   try {
-    const used = await DB("trs_sequence_penomoran_surat")
+    const used = await DB("trx_sequence_penomoran_surat")
       .where("id_penomoran_surat", req.params.id)
       .first();
 

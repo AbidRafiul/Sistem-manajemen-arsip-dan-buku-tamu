@@ -82,7 +82,7 @@ const extractIsiSuratFromFinal = (value?: string | null) => {
     if (!text) return "";
 
     const hormatIndex = text.toLowerCase().indexOf("dengan hormat");
-    if (hormatIndex >= 0) {
+    if (hormatIndex>= 0) {
         text = text.slice(hormatIndex).replace(/^dengan hormat,?\s*/i, "").trim();
     }
 
@@ -172,7 +172,7 @@ const buildDetailPdfPreviewUrl = async (detailLetter: any, config?: any) => {
         const wrappedLines = paragraph ? doc.splitTextToSize(paragraph, maxWidth - (startX - marginX)) : [""];
 
         for (const line of wrappedLines) {
-            if (cursorY > 232) {
+            if (cursorY> 232) {
                 doc.addPage();
                 cursorY = 22;
             }
@@ -184,7 +184,7 @@ const buildDetailPdfPreviewUrl = async (detailLetter: any, config?: any) => {
         cursorY += 2;
     }
 
-    if (cursorY > 220) {
+    if (cursorY> 220) {
         doc.addPage();
     }
 
@@ -337,8 +337,7 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                 value={config.label}
                 severity={config.severity}
                 icon={config.icon}
-                style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }}
-            />
+                style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }} />
         );
     };
 
@@ -362,26 +361,21 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
 
     const actionTemplate = (rowData: any) => (
         <div className="flex gap-1 justify-content-center">
-            <Button
-                icon="pi pi-eye"
-                rounded
+            <Button icon="pi pi-eye"
                 text
                 size="small"
                 tooltip="Lihat Detail & Riwayat"
                 tooltipOptions={{ position: "top" }}
-                onClick={() => openDetail(rowData)}
-            />
+                onClick={() => openDetail(rowData)} />
             {rowData.status === "menunggu_approval" && (
-                <Button
-                    icon="pi pi-check-square"
+                <Button icon="pi pi-check-square"
                     rounded
                     text
                     severity="success"
                     size="small"
                     tooltip="Proses Persetujuan"
                     tooltipOptions={{ position: "top" }}
-                    onClick={() => openProcessDialog(rowData)}
-                />
+                    onClick={() => openProcessDialog(rowData)} />
             )}
         </div>
     );
@@ -396,8 +390,7 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
             <div className="flex flex-column md:flex-row flex-wrap gap-2 align-items-stretch md:align-items-center w-full xl:justify-content-end">
                 <span
                     className="p-input-icon-left w-full"
-                    style={{ flex: "1 1 14rem", minWidth: "14rem", maxWidth: "22rem" }}
-                >
+                    style={{ flex: "1 1 14rem", minWidth: "14rem", maxWidth: "22rem" }}>
                     <i className="pi pi-search" />
                     <InputText
                         value={state.searchVal}
@@ -413,8 +406,7 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                         }}
                         placeholder="Cari surat..."
                         className="text-sm w-full"
-                        style={{ height: "2.5rem" }}
-                    />
+                        style={{ height: "2.5rem" }} />
                 </span>
 
                 <div className="w-full" style={{ flex: "1 1 11rem", minWidth: "11rem", maxWidth: "15rem" }}>
@@ -425,8 +417,7 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                         placeholder="Filter Status"
                         className="w-full text-sm"
                         panelClassName="text-sm"
-                        style={{ height: "2.5rem" }}
-                    />
+                        style={{ height: "2.5rem" }} />
                 </div>
 
                 <div className="w-full" style={{ flex: "1 1 11rem", minWidth: "11rem", maxWidth: "15rem" }}>
@@ -439,20 +430,17 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                         placeholder="Filter Jenis"
                         className="w-full text-sm"
                         panelClassName="text-sm"
-                        style={{ height: "2.5rem" }}
-                    />
+                        style={{ height: "2.5rem" }} />
                 </div>
 
-                <Button
-                    icon="pi pi-filter"
+                <Button icon="pi pi-filter"
                     aria-label="Terapkan filter"
                     outlined
                     size="small"
                     onClick={refreshData}
                     tooltip="Terapkan filter"
                     className="align-self-start md:align-self-auto"
-                    style={{ width: "2.5rem", height: "2.5rem", flex: "0 0 auto" }}
-                />
+                    style={{ width: "2.5rem", height: "2.5rem", flex: "0 0 auto" }} />
             </div>
         </div>
     );
@@ -505,24 +493,20 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                 </div>
 
                 <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
-                    <Button
-                        size="small"
+                    <Button size="small"
                         label={`Proses Terpilih${state.selectedLetters.length ? ` (${state.selectedLetters.length})` : ""}`}
                         icon="pi pi-check-square"
                         severity="success"
                         outlined
                         disabled={state.selectedLetters.length === 0}
-                        onClick={() => openProcessDialog("bulk")}
-                    />
+                        onClick={() => openProcessDialog("bulk")} />
                     <Divider layout="vertical" />
-                    <Button
-                        size="small"
+                    <Button size="small"
                         label="Refresh"
                         icon="pi pi-refresh"
                         outlined
                         loading={state.load}
-                        onClick={refreshData}
-                    />
+                        onClick={refreshData} />
                 </div>
 
                 <DataTable
@@ -545,8 +529,7 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data"
                     rowHover
-                    className="text-sm"
-                >
+                    className="text-sm">
                     <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
                     <Column field="nomor_surat" header="Nomor Surat" sortable style={{ minWidth: "150px" }} />
                     <Column header="Perihal" body={letterTemplate} style={{ minWidth: "220px" }} />
@@ -579,8 +562,7 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                         setProcessDialog(false);
                         setProcessingTarget(null);
                     }
-                }}
-            >
+                }}>
                 <div className="flex flex-column gap-3 pt-2">
                     {processingTarget !== "bulk" && processingTarget && (
                         <div className="p-3 surface-50 border-round-lg border-1 surface-border">
@@ -601,13 +583,11 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                             rows={4}
                             autoResize
                             placeholder="Tulis alasan persetujuan atau alasan penolakan di sini..."
-                            className="text-sm w-full"
-                        />
+                            className="text-sm w-full" />
                     </div>
 
-                    <div className="flex justify-content-end gap-2 mt-3 border-top-1 surface-border pt-3">
-                        <Button
-                            label="Batal"
+                    <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                        <Button label="Batal"
                             outlined
                             severity="secondary"
                             disabled={submitLoad}
@@ -615,24 +595,19 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                                 setProcessDialog(false);
                                 setProcessingTarget(null);
                             }}
-                            className="text-sm"
-                        />
-                        <Button
-                            label="Tolak Surat"
+                            className="text-sm" />
+                        <Button label="Tolak Surat"
                             icon="pi pi-times"
                             severity="danger"
                             loading={submitLoad}
                             onClick={() => handleProcess("reject")}
-                            className="text-sm"
-                        />
-                        <Button
-                            label="Setujui Surat"
+                            className="text-sm" />
+                        <Button label="Setujui Surat"
                             icon="pi pi-check"
                             severity="success"
                             loading={submitLoad}
                             onClick={() => handleProcess("approve")}
-                            className="text-sm"
-                        />
+                            className="text-sm" />
                     </div>
                 </div>
             </Dialog>
@@ -649,8 +624,7 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                 modal
                 style={{ width: "56rem", maxWidth: "96vw" }}
                 onHide={() => setState((p: any) => ({ ...p, detail: false, detailData: null }))}
-                pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}
-            >
+                pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}>
                 {state.detailLoad ? (
                     <div className="flex flex-column align-items-center py-6 gap-3 text-color-secondary">
                         <i className="pi pi-spin pi-spinner text-3xl text-primary" />
@@ -667,15 +641,13 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                                 </div>
                             </div>
                             <div className="flex flex-column align-align-items-end gap-2">
-                                <Button
-                                    icon="pi pi-file-pdf"
+                                <Button icon="pi pi-file-pdf"
                                     label="Preview PDF"
                                     outlined
                                     size="small"
                                     disabled={!detailLetter?.isi_surat_final}
                                     loading={pdfPreviewLoading}
-                                    onClick={openPdfPreview}
-                                />
+                                    onClick={openPdfPreview} />
                                 {detailLetter?.status && statusTemplate({ status: detailLetter.status } as any)}
                             </div>
                         </div>
@@ -707,7 +679,7 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                                 Alur & Histori Approval
                             </div>
 
-                            {detailTrackings.length > 0 ? (
+                            {detailTrackings.length> 0 ? (
                                 <div className="flex flex-column gap-4 pl-3 py-2 position-relative" style={{ borderLeft: "2px solid var(--surface-200)" }}>
                                     {detailTrackings.map((tracking: any, idx: number) => (
                                         <div key={tracking.id_tracking || idx} className="relative flex align-align-items-center gap-3">
@@ -754,7 +726,7 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                                 <Tag value={`${detailFiles.length} file`} severity="info" />
                             </div>
 
-                            {detailFiles.length > 0 ? (
+                            {detailFiles.length> 0 ? (
                                 <div className="flex flex-column gap-2">
                                     {detailFiles.map((file: any, idx: number) => (
                                         <div key={file.id_file_surat_keluar || idx} className="p-3 surface-50 border-round-lg border-1 surface-border flex align-items-center justify-content-between gap-3">
@@ -771,8 +743,7 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                                                     href={`${process.env.NEXT_PUBLIC_URL_API?.replace('/api/v1', '') || ''}/${file.path_file}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="no-underline"
-                                                >
+                                                    className="no-underline">
                                                     <Button icon="pi pi-download" rounded text size="small" tooltip="Download File" />
                                                 </a>
                                             )}
@@ -807,15 +778,13 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                         setPdfPreviewUrl("");
                     }
                 }}
-                pt={{ content: { className: "h-full" } }}
-            >
+                pt={{ content: { className: "h-full" } }}>
                 <div className="h-full">
                     {pdfPreviewUrl ? (
                         <PDFViewerDynamic
                             pdfUrl={pdfPreviewUrl}
                             paperSize="A4"
-                            fileName={detailLetter?.nomor_surat || "preview-surat-keluar"}
-                        />
+                            fileName={detailLetter?.nomor_surat || "preview-surat-keluar"} />
                     ) : (
                         <div className="flex flex-column align-items-center justify-content-center h-full gap-3 text-color-secondary">
                             <i className="pi pi-spin pi-spinner text-3xl text-primary" />

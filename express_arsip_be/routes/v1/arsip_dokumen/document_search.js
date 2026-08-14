@@ -28,7 +28,7 @@ const searchDocuments = async (req, res) => {
 
     // Helper base query for document metadata
     const buildBaseQuery = () => {
-      const q = DB("trs_dokumen as d")
+      const q = DB("trx_dokumen as d")
         .select(
           "d.id_dokumen",
           "d.kode_dokumen",
@@ -44,7 +44,7 @@ const searchDocuments = async (req, res) => {
           "d.created_at",
           "d.updated_at",
           DB.raw(
-            "(SELECT file_path FROM trs_versi_dokumen WHERE trs_versi_dokumen.kode_dokumen = d.kode_dokumen AND status_persetujuan = 'approved' ORDER BY nomor_versi DESC LIMIT 1) as file_path"
+            "(SELECT file_path FROM trx_versi_dokumen WHERE trx_versi_dokumen.kode_dokumen = d.kode_dokumen AND status_persetujuan = 'approved' ORDER BY nomor_versi DESC LIMIT 1) as file_path"
           ),
           "dt.nama_jenis_dokumen",
           "dc.nama_kategori_dokumen",
@@ -113,7 +113,7 @@ const searchDocuments = async (req, res) => {
       let contentMatches = [];
 
       try {
-        contentMatches = await DB("trs_konten_dokumen as k")
+        contentMatches = await DB("trx_konten_dokumen as k")
           .select("k.kode_dokumen", "k.konten_teks", "k.sumber_konten", "k.id_versi")
           .whereRaw(
             "MATCH(k.konten_teks) AGAINST(? IN BOOLEAN MODE)",
@@ -126,7 +126,7 @@ const searchDocuments = async (req, res) => {
       }
 
       if (!contentMatches || contentMatches.length === 0) {
-        contentMatches = await DB("trs_konten_dokumen as k")
+        contentMatches = await DB("trx_konten_dokumen as k")
           .select("k.kode_dokumen", "k.konten_teks", "k.sumber_konten", "k.id_versi")
           .where("k.konten_teks", "like", `%${cleanQuery}%`)
           .andWhere("k.status_ocr", "completed");

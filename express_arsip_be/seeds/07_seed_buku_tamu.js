@@ -7,7 +7,7 @@ export async function seed(knex) {
   await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
 
   // 2. Bersihkan tabel kunjungan tamu
-  await knex("trs_kunjungan").truncate();
+  await knex("trx_kunjungan").truncate();
 
   // 3. Pastikan tujuan kunjungan (mst_tujuan_kunjungan) yang umum sudah tersedia
   const purposes = [
@@ -142,7 +142,7 @@ export async function seed(knex) {
     }
   ];
 
-  await knex("trs_kunjungan").insert(guests);
+  await knex("trx_kunjungan").insert(guests);
 
   // 7. Hidupkan kembali pengecekan foreign key
   await knex.raw("SET FOREIGN_KEY_CHECKS = 1;");

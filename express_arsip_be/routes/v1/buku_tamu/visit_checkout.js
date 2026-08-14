@@ -21,7 +21,7 @@ router.put("/:id", async (req, res) => {
       });
     }
 
-    const checkKunjungan = await DB("trs_kunjungan")
+    const checkKunjungan = await DB("trx_kunjungan")
       .where("id_kunjungan", id)
       .first();
 
@@ -47,7 +47,7 @@ router.put("/:id", async (req, res) => {
       updated_at: formatDateSystem()
     };
 
-    await DB("trs_kunjungan")
+    await DB("trx_kunjungan")
       .where("id_kunjungan", id)
       .update(oDataUpdate);
 

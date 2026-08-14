@@ -27,8 +27,8 @@ const getArchiveLoans = async (req, res) => {
       return res.status(422).json(oResult);
     }
 
-    const oData = DB("trs_peminjaman_arsip as l")
-      .leftJoin("trs_dokumen as d", "l.kode_dokumen", "d.kode_dokumen")
+    const oData = DB("trx_peminjaman_arsip as l")
+      .leftJoin("trx_dokumen as d", "l.kode_dokumen", "d.kode_dokumen")
       .leftJoin("mst_pengguna as u", function () {
         this.on(DB.raw("d.nama_pic COLLATE utf8mb4_unicode_ci = u.nama_lengkap COLLATE utf8mb4_unicode_ci"));
       })

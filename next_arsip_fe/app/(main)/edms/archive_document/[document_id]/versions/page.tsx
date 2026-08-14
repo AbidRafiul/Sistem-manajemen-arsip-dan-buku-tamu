@@ -91,7 +91,7 @@ const Page = () => {
         try {
             const res = await fileDownload(apiEndpointVersionDownload, { id_versi: version.id_versi });
             const parts = version.file_path.split('.');
-            const ext = parts.length > 1 ? parts.pop() : 'pdf';
+            const ext = parts.length> 1 ? parts.pop() : 'pdf';
             const fileName = `${detailData?.document?.nomor_dokumen || 'doc'}_V${version.nomor_versi}.${ext}`;
             const blob = new Blob([res.data]);
             const url = window.URL.createObjectURL(blob);
@@ -180,6 +180,14 @@ const Page = () => {
             showError(toast, 'Berkas dokumen belum diunggah untuk versi ini');
             return;
         }
+        
+        const ext = fileName.split('.').pop()?.toLowerCase() || '';
+        const supported = ['pdf', 'jpg', 'jpeg', 'png', 'txt', 'webp', 'svg'];
+        if (!supported.includes(ext)) {
+            showError(toast, `Peringatan: Format dokumen .${ext} tidak didukung untuk pratinjau langsung di browser. Silakan gunakan tombol Unduh.`);
+            return;
+        }
+
         setLoad(true);
         try {
             const res = await getData(apiEndpointDocumentPreview, { file_name: fileName });
@@ -247,8 +255,7 @@ const Page = () => {
                 setIsPreviewVisible={setIsPreviewVisible}
                 setPreviewUrl={setPreviewUrl}
                 router={router}
-                toast={toast}
-            />
+                toast={toast} />
         </>
     );
 };

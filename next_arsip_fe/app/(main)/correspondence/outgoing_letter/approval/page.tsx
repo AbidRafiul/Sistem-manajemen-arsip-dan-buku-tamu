@@ -136,7 +136,7 @@ const Page = () => {
                 successCount++;
             }
 
-            if (successCount > 0) {
+            if (successCount> 0) {
                 showSuccess(toast, `${successCount} surat berhasil di${type === "approve" ? "setujui" : "tolak"}`);
                 await getData(apiEndpointGet, buildPayload());
             }
@@ -167,8 +167,7 @@ const Page = () => {
                 toast={toast} 
                 fetchLetterTypes={fetchLetterTypes}
                 fetchDetail={fetchDetail}
-                handleProcessApproval={handleProcessApproval}
-            />
+                handleProcessApproval={handleProcessApproval} />
         </>
 
     );

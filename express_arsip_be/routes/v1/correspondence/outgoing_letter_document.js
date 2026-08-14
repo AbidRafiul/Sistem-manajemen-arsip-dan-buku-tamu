@@ -6,7 +6,7 @@ import { status, datetime } from "../components/tools/general.js";
 const router = express.Router();
 router.get("/:id_surat_keluar", async (req, res) => {
   try {
-    const surat = await DB("trs_surat_keluar as tsk").leftJoin("mst_jenis_surat as mjs", "tsk.id_jenis_surat", "mjs.jenis_surat_id").leftJoin("mst_template_surat as mts", "tsk.id_template", "mts.id_template").select("tsk.id_surat_keluar", "tsk.nomor_surat", "tsk.nomor_agenda", "tsk.tanggal_surat", "tsk.perihal", "tsk.tujuan", "tsk.instansi_tujuan", "tsk.media_pengiriman", "tsk.isi_surat_final", "tsk.nama_pengirim", "tsk.jabatan", "mts.nama_template", "mjs.nama_jenis_surat").where("tsk.id_surat_keluar", req.params.id_surat_keluar).first();
+    const surat = await DB("trx_surat_keluar as tsk").leftJoin("mst_jenis_surat as mjs", "tsk.id_jenis_surat", "mjs.jenis_surat_id").leftJoin("mst_template_surat as mts", "tsk.id_template", "mts.id_template").select("tsk.id_surat_keluar", "tsk.nomor_surat", "tsk.nomor_agenda", "tsk.tanggal_surat", "tsk.perihal", "tsk.tujuan", "tsk.instansi_tujuan", "tsk.media_pengiriman", "tsk.isi_surat_final", "tsk.nama_pengirim", "tsk.jabatan", "mts.nama_template", "mjs.nama_jenis_surat").where("tsk.id_surat_keluar", req.params.id_surat_keluar).first();
     if (!surat) {
       return res.status(404).json({
         status: status.BAD_REQUEST,

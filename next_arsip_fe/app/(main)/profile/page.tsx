@@ -8,12 +8,12 @@ import ProfileForm from './components/display/form';
 import apiGetData from '@/lib/axios/getData';
 import putData from '@/lib/axios/putData';
 import { showError, showSuccess } from '@/lib/tools/generalTools';
-import { apiEndpointGet, apiEndpointUpdate } from './endpoints';
+import { apiEndpointGet, apiEndpointUpdate } from './components/endpoints';
 
 const ProfilePage = () => {
     const { data: session, update } = useSession();
     const toast = useRef<Toast>(null);
-    const [state, setState] = useState({
+    const [state, setState] = useState<{ load: boolean; initialData: any }>({
         load: false,
         initialData: null
     });
@@ -25,13 +25,6 @@ const ProfilePage = () => {
             const profile = res?.data?.data;
             if (profile) {
                 setState((p) => ({ ...p, initialData: profile }));
-                formik.setValues({
-                    nama_lengkap: profile.nama_lengkap || '',
-                    nama_pengguna: profile.nama_pengguna || '',
-                    telepon: profile.telepon || '',
-                    surel: profile.surel || '',
-                    kata_sandi: ''
-                });
             }
         } catch (error: any) {
             showError(toast, error?.message || 'Gagal memuat profil');
@@ -45,12 +38,15 @@ const ProfilePage = () => {
     }, []);
 
     const formik = useFormik({
+        enableReinitialize: true,
         initialValues: {
-            nama_lengkap: '',
-            nama_pengguna: '',
-            telepon: '',
-            surel: '',
-            kata_sandi: ''
+            nama_lengkap: (state.initialData as any)?.nama_lengkap || '',
+            nama_pengguna: (state.initialData as any)?.nama_pengguna || '',
+            telepon: (state.initialData as any)?.telepon || '',
+            surel: (state.initialData as any)?.surel || '',
+            sandi_lama: '',
+            sandi_baru: '',
+            validasi_sandi_baru: ''
         },
         validate: (data: any) => {
             let errors: any = {};
@@ -64,9 +60,24 @@ const ProfilePage = () => {
             if (data.surel && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(data.surel)) {
                 errors.surel = 'Format email tidak valid.';
             }
-            if (data.kata_sandi && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$/.test(data.kata_sandi)) {
-                errors.kata_sandi = 'Kata sandi minimal 8 karakter dan mengandung huruf besar, huruf kecil, angka, dan karakter spesial.';
+            if (data.sandi_lama && !data.sandi_baru) {
+                errors.sandi_baru = 'Sandi baru wajib diisi jika sandi lama diisi.';
             }
+            if (data.sandi_baru && !data.sandi_lama) {
+                errors.sandi_lama = 'Sandi lama wajib diisi untuk mengubah sandi.';
+            }
+            if (data.sandi_baru && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$/.test(data.sandi_baru)) {
+                errors.sandi_baru = 'Kata sandi minimal 8 karakter dan mengandung huruf besar, huruf kecil, angka, dan karakter spesial.';
+            }
+            if (data.sandi_baru && data.sandi_baru !== data.validasi_sandi_baru) {
+                errors.validasi_sandi_baru = 'Validasi sandi tidak cocok dengan sandi baru.';
+            }
+            
+            // Check if username changed but no old password provided
+            if (state.initialData?.nama_pengguna !== data.nama_pengguna && !data.sandi_lama) {
+                errors.sandi_lama = 'Sandi lama wajib diisi untuk verifikasi perubahan nama pengguna.';
+            }
+
             return errors;
         },
         onSubmit: async (values) => {
@@ -79,8 +90,11 @@ const ProfilePage = () => {
                     surel: values.surel
                 };
 
-                if (values.kata_sandi) {
-                    payload.kata_sandi = values.kata_sandi;
+                if (values.sandi_baru) {
+                    payload.sandi_lama = values.sandi_lama;
+                    payload.sandi_baru = values.sandi_baru;
+                } else if (values.sandi_lama) {
+                    payload.sandi_lama = values.sandi_lama;
                 }
 
                 const response = await putData(apiEndpointUpdate, payload);
@@ -118,7 +132,7 @@ const ProfilePage = () => {
                         <span className="text-color-secondary text-lg">Kelola informasi pribadi dan keamanan akun Anda.</span>
                     </div>
 
-                    <div className="w-full xl:w-9 mt-4">
+                    <div className="w-full mt-4">
                         <ProfileForm formik={formik} state={state} setState={setState} />
                     </div>
                 </div>

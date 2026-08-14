@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { FilterMatchMode } from "primereact/api";
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
-import DocumentTable from "../components/display/document-table";
+import DocumentTable from "../components/display/document_table";
 import { 
     apiEndpointSigned, 
     apiEndpointDetail,
@@ -111,8 +111,7 @@ const Page = () => {
                 openDetail={openDetail}
                 finalizeDocument={finalizeDocument}
                 signDocument={signDocument}
-                getData={getData}
-            />
+                getData={getData} />
         </div>
     );
 };

@@ -1,4 +1,19 @@
 import "dotenv/config";
+/**
+ * @copyright (c) 2026 PT Marstech Global (info@marstech.co.id)
+ * @project Sistem Arsip dan Buku Tamu
+ * @file app.js
+ * @description File untuk menggabungkan semua routing setup dan middleware
+ * 
+ * @author Standard Template
+ * @created 2026-08-12
+ * 
+ * @contributors
+ * - Development Team
+ * 
+ * @lastModified 2026-08-12
+ * @version 1.0.1
+ */
 import cors from "cors";
 import express from "express";
 
@@ -12,9 +27,17 @@ import Logger from "./middleware/logger.js";
 
 const app = express();
 
+const allowedOrigins = (process.env.ORIGIN || process.env.ORIGIN1 || "http://localhost:3000").split(",").map((origin) => origin.trim());
+
 app.use(
   cors({
-    origin: process.env.ORIGIN1 || "http://localhost:3000",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
     allowedHeaders: [
       "Content-Type",

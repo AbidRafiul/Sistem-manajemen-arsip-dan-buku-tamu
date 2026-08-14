@@ -31,14 +31,14 @@ const getDashboardSummary = async (req, res) => {
 
     // ── 1. Query semua metric secara paralel ──────────────────────────────────
     // Metric 1: Arsip Aktif
-    const qArsipAktif = DB("trs_dokumen as d")
+    const qArsipAktif = DB("trx_dokumen as d")
       .count("* as total")
       .where("d.status", "active")
       .first();
     applyMultiTenantFilter(qArsipAktif, req, 'd');
 
     // Metric 2: Tamu Berkunjung Hari Ini
-    const qTamuHariIni = DB("trs_kunjungan as t")
+    const qTamuHariIni = DB("trx_kunjungan as t")
       .leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna")
       .count("* as total")
       .whereRaw("DATE(t.created_at) = CURDATE()")
@@ -49,11 +49,11 @@ const getDashboardSummary = async (req, res) => {
       qTamuHariIni.whereIn(DB.raw('COALESCE(t.id_cabang, u.id_cabang)'), bIds);
     }
 
-    const dispositionColumns = await getTableColumns("trs_disposisi_surat");
-    const disposisiToUserCol = pickColumn(dispositionColumns, ["kepada_pengguna_id", "to_user_id", "to_id_pengguna"]) || "to_user_id";
+    const dispositionColumns = await getTableColumns("trx_disposisi_surat");
+    const disposisiToUserCol = pickColumn(dispositionColumns, ["kepada_pengguna_id", "to_user_id", "to_id_pengguna"]) || "kepada_pengguna_id";
 
     // Metric 3: Surat Disposisi Menunggu Tindak Lanjut
-    const qDisposisi = DB("trs_disposisi_surat as tld")
+    const qDisposisi = DB("trx_disposisi_surat as tld")
       .leftJoin("mst_pengguna as u", `tld.${disposisiToUserCol}`, "u.id_pengguna")
       .count("* as total")
       .where("tld.status", "baru")
@@ -61,7 +61,7 @@ const getDashboardSummary = async (req, res) => {
     applyMultiTenantFilter(qDisposisi, req, 'u');
 
     // Metric 4: Retensi Expired
-    const qRetensi = DB("trs_dokumen as d")
+    const qRetensi = DB("trx_dokumen as d")
       .join("mst_jadwal_retensi as rs", "d.kode_retensi", "rs.kode_retensi")
       .count("* as total")
       .where("d.status", "active")
@@ -70,7 +70,7 @@ const getDashboardSummary = async (req, res) => {
     applyMultiTenantFilter(qRetensi, req, 'd');
 
     // Chart: Dokumen diunggah 7 hari terakhir (per hari)
-    const qChart = DB("trs_dokumen as d")
+    const qChart = DB("trx_dokumen as d")
       .select(DB.raw("DATE(d.created_at) as tanggal"), DB.raw("COUNT(*) as total"))
       .whereRaw("d.created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)")
       .where("d.status", "active")
@@ -134,7 +134,15 @@ const getDashboardSummary = async (req, res) => {
       "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6",
     ];
 
-    const vaAuditLogs = vaAuditRaw.map((oLog, nIndex) => {
+    const _getConsistentColor = (str) => {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return vaColorPalette[Math.abs(hash) % vaColorPalette.length];
+    };
+
+    const vaAuditLogs = vaAuditRaw.map((oLog) => {
       const cRelativeTime = _getRelativeTime(oLog.created_at);
 
       return {
@@ -142,7 +150,7 @@ const getDashboardSummary = async (req, res) => {
         user: oLog.nama_pengguna,
         action: oLog.aksi,
         time: cRelativeTime,
-        color: vaColorPalette[nIndex % vaColorPalette.length],
+        color: _getConsistentColor(oLog.nama_pengguna),
       };
     });
 

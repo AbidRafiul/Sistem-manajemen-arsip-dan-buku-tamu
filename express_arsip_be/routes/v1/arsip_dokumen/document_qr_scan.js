@@ -32,7 +32,7 @@ const scanDocumentQR = async (req, res) => {
     }
 
     // Cari dokumen secara fleksibel berdasarkan qr_code, nomor_dokumen, atau id_dokumen
-    const oDocument = await DB("trs_dokumen as d")
+    const oDocument = await DB("trx_dokumen as d")
       .select(
         "d.id_dokumen",
         "d.kode_dokumen",
@@ -75,7 +75,7 @@ const scanDocumentQR = async (req, res) => {
     }
 
     // Ambil versi terbaru yang approved
-    const oLatestVersion = await DB("trs_versi_dokumen")
+    const oLatestVersion = await DB("trx_versi_dokumen")
       .select("id_versi", "nomor_versi", "file_path", "created_at")
       .where("kode_dokumen", oDocument.kode_dokumen)
       .where("status_persetujuan", "approved")
@@ -83,7 +83,7 @@ const scanDocumentQR = async (req, res) => {
       .first();
 
     // Status peminjaman aktif
-    const oActiveLoan = await DB("trs_peminjaman_arsip")
+    const oActiveLoan = await DB("trx_peminjaman_arsip")
       .select("id_peminjaman", "nama_peminjam", "tanggal_pinjam", "tanggal_pengembalian", "status")
       .where("kode_dokumen", oDocument.kode_dokumen)
       .where("status", "borrowed")

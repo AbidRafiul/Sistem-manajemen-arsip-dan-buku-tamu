@@ -7,10 +7,10 @@ export async function seed(knex) {
   await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
 
   // 2. Bersihkan tabel-tabel transaksi dan master terkait kearsipan
-  await knex("trs_usulan_pemusnahan").truncate();
-  await knex("trs_peminjaman_arsip").truncate();
-  await knex("trs_versi_dokumen").truncate();
-  await knex("trs_dokumen").truncate();
+  await knex("trx_usulan_pemusnahan").truncate();
+  await knex("trx_peminjaman_arsip").truncate();
+  await knex("trx_versi_dokumen").truncate();
+  await knex("trx_dokumen").truncate();
   await knex("mst_jadwal_retensi").truncate();
   await knex("mst_tingkat_kerahasiaan").truncate();
   await knex("mst_kategori_dokumen").truncate();
@@ -69,7 +69,7 @@ export async function seed(knex) {
   ];
   await knex("mst_jadwal_retensi").insert(retentions);
 
-  // 4. SEED TRANSAKSI ARSIP DOKUMEN (trs_dokumen) - 4 Data (1 per cabang utama)
+  // 4. SEED TRANSAKSI ARSIP DOKUMEN (trx_dokumen) - 4 Data (1 per cabang utama)
 
   const docs = [
     {
@@ -153,9 +153,9 @@ export async function seed(knex) {
       updated_at: dNow
     }
   ];
-  await knex("trs_dokumen").insert(docs);
+  await knex("trx_dokumen").insert(docs);
 
-  // 5. SEED VERSI DOKUMEN (trs_versi_dokumen) - 1 versi per dokumen
+  // 5. SEED VERSI DOKUMEN (trx_versi_dokumen) - 1 versi per dokumen
 
   const versions = [
     { id_versi: 1001, tanggal_transaksi: "2026-07-03", kode_dokumen: "DOC-ADM-2026-001", nomor_versi: 1, catatan_perubahan: "Versi awal (Draft Masukan)", file_path: "uploads/documents/st_monitoring_v1.pdf", diunggah_oleh: "staff.arsip@example.local", status_persetujuan: "approved", disetujui_oleh: "superadmin@admin.com", disetujui_pada: dNow, catatan_persetujuan: "Disetujui untuk digunakan", created_at: dNow, updated_at: dNow },
@@ -163,9 +163,9 @@ export async function seed(knex) {
     { id_versi: 1003, tanggal_transaksi: "2026-07-03", kode_dokumen: "DOC-HRD-2026-003", nomor_versi: 1, catatan_perubahan: "SK Pengangkatan (Ttd Direksi)", file_path: "uploads/documents/sk_karyawan_tetap.pdf", diunggah_oleh: "staff.arsip@example.local", status_persetujuan: "approved", disetujui_oleh: "superadmin@admin.com", disetujui_pada: dNow, catatan_persetujuan: "Disetujui", created_at: dNow, updated_at: dNow },
     { id_versi: 1004, tanggal_transaksi: "2026-07-03", kode_dokumen: "DOC-HUK-2026-004", nomor_versi: 1, catatan_perubahan: "MoU & PKS Final Cloud Service", file_path: "uploads/documents/pks_cloud_marshtech.pdf", diunggah_oleh: "staff.arsip@example.local", status_persetujuan: "approved", disetujui_oleh: "superadmin@admin.com", disetujui_pada: dNow, catatan_persetujuan: "Disetujui legalitas", created_at: dNow, updated_at: dNow }
   ];
-  await knex("trs_versi_dokumen").insert(versions);
+  await knex("trx_versi_dokumen").insert(versions);
 
-  // 6. SEED PEMINJAMAN ARSIP (trs_peminjaman_arsip) - 1 data peminjaman
+  // 6. SEED PEMINJAMAN ARSIP (trx_peminjaman_arsip) - 1 data peminjaman
 
   const loans = [
     {
@@ -185,9 +185,9 @@ export async function seed(knex) {
       updated_at: dNow
     }
   ];
-  await knex("trs_peminjaman_arsip").insert(loans);
+  await knex("trx_peminjaman_arsip").insert(loans);
 
-  // 7. SEED USULAN PEMUSNAHAN (trs_usulan_pemusnahan) - 1 data
+  // 7. SEED USULAN PEMUSNAHAN (trx_usulan_pemusnahan) - 1 data
 
   const destructions = [
     {
@@ -203,7 +203,7 @@ export async function seed(knex) {
       updated_at: dNow
     }
   ];
-  await knex("trs_usulan_pemusnahan").insert(destructions);
+  await knex("trx_usulan_pemusnahan").insert(destructions);
 
   // 8. Hidupkan kembali foreign key checks
   await knex.raw("SET FOREIGN_KEY_CHECKS = 1;");

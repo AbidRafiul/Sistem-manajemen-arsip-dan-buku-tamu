@@ -15,7 +15,7 @@ router.post("/", async (req, res) => {
         message: "VisitationId wajib diisi"
       });
     }
-    const oRow = await DB("trs_kunjungan as t").select("t.*", "mp.nama_tujuan_kunjungan as VisitPurposeName", "u.nama_lengkap as HostFullname", "c.nama_cabang as BranchName").leftJoin("mst_tujuan_kunjungan as mp", "t.id_tujuan_kunjungan", "mp.id_tujuan_kunjungan").leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna").leftJoin("mst_cabang as c", "t.id_cabang", "c.id_cabang").where("t.id_kunjungan", oPayload.VisitationId).first();
+    const oRow = await DB("trx_kunjungan as t").select("t.*", "mp.nama_tujuan_kunjungan as VisitPurposeName", "u.nama_lengkap as HostFullname", "c.nama_cabang as BranchName").leftJoin("mst_tujuan_kunjungan as mp", "t.id_tujuan_kunjungan", "mp.id_tujuan_kunjungan").leftJoin("mst_pengguna as u", "t.id_user_host", "u.id_pengguna").leftJoin("mst_cabang as c", "t.id_cabang", "c.id_cabang").where("t.id_kunjungan", oPayload.VisitationId).first();
     if (!oRow) {
       return res.status(404).json({
         status: "01",
@@ -41,7 +41,7 @@ router.post("/", async (req, res) => {
     // Fetch group members if visit is a group
     let groupMembers = [];
     if (oRow.tipe_kunjungan === "group") {
-      groupMembers = await DB("trs_kunjungan_anggota").where("id_kunjungan", oRow.id_kunjungan);
+      groupMembers = await DB("trx_kunjungan_anggota").where("id_kunjungan", oRow.id_kunjungan);
 
       // Map file URLs for group members
       groupMembers = await Promise.all(groupMembers.map(async m => {

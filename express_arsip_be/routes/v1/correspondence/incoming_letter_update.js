@@ -41,7 +41,7 @@ const incomingLetterUpdate = async (req, res) => {
     };
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
       uniqueField: ["nomor_agenda"],
-      table: "trs_surat_masuk",
+      table: "trx_surat_masuk",
       excludedField: "surat_masuk_id",
       allowUnknown: false,
     });
@@ -51,7 +51,7 @@ const incomingLetterUpdate = async (req, res) => {
         message: cValidate,
       });
     }
-    const oLetter = await DB("trs_surat_masuk").where("surat_masuk_id", oPayload.surat_masuk_id).first();
+    const oLetter = await DB("trx_surat_masuk").where("surat_masuk_id", oPayload.surat_masuk_id).first();
     if (!oLetter) {
       return res.status(404).json({
         status: status.BAD_REQUEST,
@@ -128,7 +128,7 @@ const incomingLetterUpdate = async (req, res) => {
     });
 
     await DB.transaction(async (trx) => {
-      await trx("trs_surat_masuk")
+      await trx("trx_surat_masuk")
         .where("surat_masuk_id", oPayload.surat_masuk_id)
         .update(oUpdate);
 

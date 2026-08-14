@@ -17,7 +17,7 @@ export const getOcrStatus = async (req, res) => {
       });
     }
 
-    let query = DB("trs_konten_dokumen").where("kode_dokumen", cKodeDokumen);
+    let query = DB("trx_konten_dokumen").where("kode_dokumen", cKodeDokumen);
     if (nIdVersi) {
       query = query.where("id_versi", nIdVersi);
     }

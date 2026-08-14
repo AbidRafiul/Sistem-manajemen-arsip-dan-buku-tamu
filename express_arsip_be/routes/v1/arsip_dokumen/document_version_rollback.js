@@ -25,12 +25,12 @@ const rollbackDocumentVersion = async (req, res) => {
     // Verifikasi dokumen aktif
     let oDocument;
     if (cKodeDokumen) {
-      oDocument = await DB("trs_dokumen")
+      oDocument = await DB("trx_dokumen")
         .where("kode_dokumen", cKodeDokumen)
         .where("status", "active")
         .first();
     } else {
-      oDocument = await DB("trs_dokumen")
+      oDocument = await DB("trx_dokumen")
         .where("id_dokumen", nIdDokumen)
         .where("status", "active")
         .first();
@@ -45,7 +45,7 @@ const rollbackDocumentVersion = async (req, res) => {
     }
 
     // Ambil versi target yang akan di-rollback
-    const oTargetVersion = await DB("trs_versi_dokumen")
+    const oTargetVersion = await DB("trx_versi_dokumen")
       .where("id_versi", nTargetVersionId)
       .where("kode_dokumen", oDocument.kode_dokumen)
       .where("status_persetujuan", "approved")
@@ -61,7 +61,7 @@ const rollbackDocumentVersion = async (req, res) => {
     }
 
     // Ambil nomor versi terbaru untuk menentukan nomor versi baru
-    const oLastVersion = await DB("trs_versi_dokumen")
+    const oLastVersion = await DB("trx_versi_dokumen")
       .select("nomor_versi")
       .where("kode_dokumen", oDocument.kode_dokumen)
       .orderBy("nomor_versi", "desc")
@@ -85,7 +85,7 @@ const rollbackDocumentVersion = async (req, res) => {
       updated_at: dNow,
     };
 
-    const [nNewVersionId] = await DB("trs_versi_dokumen").insert(oNewVersion);
+    const [nNewVersionId] = await DB("trx_versi_dokumen").insert(oNewVersion);
 
     // Audit Trail Log
     await logDocumentChange({

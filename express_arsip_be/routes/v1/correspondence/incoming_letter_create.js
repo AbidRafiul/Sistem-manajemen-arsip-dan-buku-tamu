@@ -19,7 +19,7 @@ const getAgendaYear = () =>
 const generateAgendaNumber = async (trx) => {
   const cYear = getAgendaYear();
   const cPrefix = `${AGENDA_PREFIX}-${cYear}-`;
-  const oLastAgenda = await trx("trs_surat_masuk")
+  const oLastAgenda = await trx("trx_surat_masuk")
     .select("nomor_agenda")
     .where("nomor_agenda", "like", `${cPrefix}%`)
     .orderBy("nomor_agenda", "desc")
@@ -74,7 +74,7 @@ const incomingLetterCreate = async (req, res) => {
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
       uniqueField: ["nomor_agenda"],
-      table: "trs_surat_masuk",
+      table: "trx_surat_masuk",
       allowUnknown: false,
     });
 
@@ -152,7 +152,7 @@ const incomingLetterCreate = async (req, res) => {
     const nIncomingLetterId = await DB.transaction(async (trx) => {
       const cNomorAgenda =
         oPayload.nomor_agenda || (await generateAgendaNumber(trx));
-      const vaInserted = await trx("trs_surat_masuk").insert({
+      const vaInserted = await trx("trx_surat_masuk").insert({
         nomor_agenda: cNomorAgenda,
         nomor_surat: oPayload.nomor_surat,
         tanggal_surat: oPayload.tanggal_surat,

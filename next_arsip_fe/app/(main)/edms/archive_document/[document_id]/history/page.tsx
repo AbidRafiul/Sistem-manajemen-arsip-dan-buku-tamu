@@ -114,7 +114,7 @@ const HistoryPage = () => {
                         {item.ip_alamat && <div><i className="pi pi-desktop mr-1" />IP: {item.ip_alamat}</div>}
                     </div>
 
-                    {item.detail_json && Object.keys(item.detail_json).length > 0 && (
+                    {item.detail_json && Object.keys(item.detail_json).length> 0 && (
                         <div className="mt-2 surface-100 p-3 border-round-lg text-xs">
                             <div className="font-semibold text-color mb-2">
                                 {item.aksi === 'update' ? 'Detail Perubahan Field:' : 'Detail Informasi:'}
@@ -155,14 +155,12 @@ const HistoryPage = () => {
             <div className="card p-5 mb-4 border-round-xl shadow-1">
                 <div className="flex flex-column md:flex-row md:align-items-center justify-content-between gap-3 mb-3">
                     <div>
-                        <Button
-                            type="button"
+                        <Button type="button"
                             icon="pi pi-arrow-left"
                             label="Kembali ke Daftar Versi"
                             text
                             className="p-0 mb-2 text-primary"
-                            onClick={() => router.push(`/edms/archive_document/${documentId}/versions`)}
-                        />
+                            onClick={() => router.push(`/edms/archive_document/${documentId}/versions`)} />
                         <h2 className="text-3xl font-bold text-color mb-1 flex align-items-center gap-2">
                             <i className="pi pi-clock text-primary text-3xl" />
                             Riwayat Perubahan Dokumen (Audit Trail)
@@ -172,14 +170,12 @@ const HistoryPage = () => {
                         </span>
                     </div>
 
-                    <Button
-                        label="Muat Ulang"
+                    <Button label="Refresh"
                         icon="pi pi-refresh"
                         outlined
                         size="small"
                         loading={load}
-                        onClick={fetchData}
-                    />
+                        onClick={fetchData} />
                 </div>
 
                 <Divider />
@@ -203,8 +199,7 @@ const HistoryPage = () => {
                             value={historyList}
                             marker={customizedMarker}
                             content={customizedContent}
-                            className="customized-timeline"
-                        />
+                            className="customized-timeline" />
                     </div>
                 )}
             </div>

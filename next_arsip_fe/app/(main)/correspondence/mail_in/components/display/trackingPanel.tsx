@@ -49,8 +49,7 @@ const renderStatusTag = (statusValue?: string) => {
             value={statusLabel[status] || status}
             severity={severityMap[status] || "info"}
             icon={iconMap[status] || "pi pi-circle"}
-            style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }}
-        />
+            style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }} />
     );
 };
 
@@ -106,8 +105,7 @@ const TrackingPanel = ({ dispositions, loading }: TrackingPanelProps) => (
             }
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
             className="text-sm"
-            rowHover
-        >
+            rowHover>
             <Column header="Penerima" body={trackingReceiverTemplate} style={{ minWidth: "200px" }} />
             <Column header="Diproses Oleh" body={trackingProcessedTemplate} style={{ minWidth: "180px" }} />
             <Column header="Waktu Proses" body={trackingTimeTemplate} style={{ width: "140px" }} />

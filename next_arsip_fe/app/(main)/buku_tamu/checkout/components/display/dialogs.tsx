@@ -48,8 +48,7 @@ export function CheckoutDialog({
                 root: { className: 'border-round-2xl' },
                 header: { className: 'surface-50 border-bottom-1 surface-border py-3 px-4' },
                 content: { className: 'p-4' }
-            }}
-        >
+            }}>
             <div className="flex flex-column gap-3 p-fluid mt-1">
                 <div className="field">
                     <label htmlFor="checkoutToken" className="font-semibold block mb-2 text-sm text-800">
@@ -60,8 +59,7 @@ export function CheckoutDialog({
                         value={checkoutToken}
                         onChange={(e) => onTokenChange(e.target.value)}
                         placeholder="Contoh: VIST-123456"
-                        className="p-inputtext-sm"
-                    />
+                        className="p-inputtext-sm" />
                 </div>
                 <div className="field">
                     <label htmlFor="checkoutNotes" className="font-semibold block mb-2 text-sm text-800">
@@ -74,28 +72,23 @@ export function CheckoutDialog({
                         rows={4}
                         placeholder="Masukkan catatan tambahan jika diperlukan..."
                         className="p-inputtext-sm"
-                        autoResize
-                    />
+                        autoResize />
                 </div>
             </div>
 
-            <div className="flex justify-content-end gap-2 mt-4 pt-3 border-top-1 surface-border">
-                <Button
-                    label="Batal"
+            <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                <Button label="Batal"
                     severity="secondary"
                     outlined
                     className="py-2 px-4 font-semibold text-sm border-round-lg"
                     onClick={onHide}
-                    disabled={loading}
-                />
-                <Button
-                    label="Konfirmasi Checkout"
+                    disabled={loading} />
+                <Button label="Konfirmasi Checkout"
                     icon="pi pi-check"
                     loading={loading}
                     className="py-2 px-4 font-semibold text-sm border-round-lg text-white"
                     style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)', border: 'none' }}
-                    onClick={onConfirm}
-                />
+                    onClick={onConfirm} />
             </div>
         </Dialog>
     );
@@ -138,8 +131,7 @@ export function DetailVisitorDialog({
                 root: { className: 'border-round-2xl shadow-6' },
                 header: { className: 'surface-50 border-bottom-1 surface-border py-3 px-4' },
                 content: { className: 'p-4' }
-            }}
-        >
+            }}>
             <div className="grid text-sm mt-1">
                 <div className="col-12 md:col-6 mb-3">
                     <span className="text-xs uppercase text-500 font-bold tracking-wider block mb-1">Nama Lengkap Tamu</span>
@@ -159,8 +151,7 @@ export function DetailVisitorDialog({
                         <Tag
                             value={record.status}
                             severity={getStatusSeverity(record.status)}
-                            style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
-                        />
+                            style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }} />
                     </div>
                 </div>
                 <div className="col-12 md:col-6 mb-3">
@@ -250,13 +241,12 @@ export function DetailVisitorDialog({
                     <span className="text-xs uppercase text-500 font-bold tracking-wider block mb-1">Catatan Tambahan</span>
                     <div
                         className="p-3 border-round-lg mt-1 text-800 leading-normal"
-                        style={{ backgroundColor: '#F8FAFC', border: '1px solid #EFF6FF' }}
-                    >
+                        style={{ backgroundColor: '#F8FAFC', border: '1px solid #EFF6FF' }}>
                         {record.visit_notes || record.catatan_kunjungan || 'Tidak ada catatan tambahan.'}
                     </div>
                 </div>
 
-                {record.tipe_kunjungan === 'group' && record.group_members && record.group_members.length > 0 && (
+                {record.tipe_kunjungan === 'group' && record.group_members && record.group_members.length> 0 && (
                     <>
                         <div className="col-12">
                             <Divider className="my-2" style={{ borderColor: '#F1F5F9' }} />
@@ -287,12 +277,10 @@ export function DetailVisitorDialog({
             </div>
 
             <div className="flex justify-content-end mt-4 pt-3 border-top-1 surface-border">
-                <Button
-                    label="Tutup"
+                <Button label="Tutup"
                     className="py-2 px-4 font-semibold text-sm border-round-lg"
                     style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%)', border: 'none' }}
-                    onClick={onHide}
-                />
+                    onClick={onHide} />
             </div>
         </Dialog>
     );
@@ -380,8 +368,7 @@ export function ScanQRDialog({
                 root: { className: 'border-round-2xl shadow-6' },
                 header: { className: 'surface-50 border-bottom-1 surface-border py-3 px-4' },
                 content: { className: 'p-4 flex flex-column align-items-center' }
-            }}
-        >
+            }}>
             <div className="text-center mb-3">
                 <p className="text-sm text-600 m-0">Arahkan QR Code Kunjungan tamu ke area kamera di bawah ini</p>
             </div>
@@ -395,19 +382,10 @@ export function ScanQRDialog({
                         top: '50%',
                         boxShadow: '0 0 8px var(--primary-color)',
                         animation: 'scan-anim 2s infinite ease-in-out'
-                    }}
-                />
+                    }} />
             </div>
 
-            <Button
-                type="button"
-                label="Batal"
-                severity="secondary"
-                outlined
-                className="w-full py-2 font-semibold text-sm border-round-lg mt-2"
-                onClick={handleClose}
-                disabled={loading}
-            />
+            
 
             <style jsx>{`
                 @keyframes scan-anim {
@@ -456,8 +434,7 @@ export function RejectDialog({
                 root: { className: 'border-round-2xl shadow-6' },
                 header: { className: 'surface-50 border-bottom-1 surface-border py-3 px-4' },
                 content: { className: 'p-4' }
-            }}
-        >
+            }}>
             <div className="flex flex-column gap-3 p-fluid mt-1">
                 {rejectRecord && (
                     <div className="surface-50 p-3 border-round-xl border-1 surface-border flex flex-column gap-1 text-sm">
@@ -489,28 +466,23 @@ export function RejectDialog({
                         rows={3}
                         placeholder="Tuliskan alasan penolakan untuk disampaikan ke tamu..."
                         className="p-inputtext-sm"
-                        autoResize
-                    />
+                        autoResize />
                 </div>
             </div>
 
-            <div className="flex justify-content-end gap-2 mt-4 pt-3 border-top-1 surface-border">
-                <Button
-                    label="Batal"
+            <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                <Button label="Batal"
                     severity="secondary"
                     outlined
                     className="py-2 px-4 font-semibold text-sm border-round-lg"
                     onClick={onHide}
-                    disabled={loading}
-                />
-                <Button
-                    label="Tolak Kunjungan"
+                    disabled={loading} />
+                <Button label="Tolak Kunjungan"
                     icon="pi pi-times"
                     severity="danger"
                     loading={loading}
                     className="py-2 px-4 font-semibold text-sm border-round-lg text-white"
-                    onClick={onConfirm}
-                />
+                    onClick={onConfirm} />
             </div>
         </Dialog>
     );

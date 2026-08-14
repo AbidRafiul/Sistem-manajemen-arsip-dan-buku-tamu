@@ -39,19 +39,19 @@ const groupBranches = (list: BranchRaw[]): any[] => {
     }
 
     const groups: any[] = [];
-    if (pusat.length > 0) {
+    if (pusat.length> 0) {
         groups.push({
             label: 'Kantor Pusat',
             items: pusat
         });
     }
-    if (cabang.length > 0) {
+    if (cabang.length> 0) {
         groups.push({
             label: 'Kantor Cabang',
             items: cabang
         });
     }
-    if (unit.length > 0) {
+    if (unit.length> 0) {
         groups.push({
             label: 'Unit / Kecamatan',
             items: unit
@@ -126,25 +126,46 @@ export default function RegistrasiKunjunganPage() {
             const rCode = (session.user as any).roleCode;
             const isSA = rCode === 'SUPERADMIN';
             const bId = (session.user as any).id_cabang;
-            console.log("SESSION LOADED:", { rCode, isSA, bId, disableBranchSelect });
-            if (!isSA && bId) {
-                const branchIdNum = Number(bId);
-                setFormData((prev) => ({ ...prev, id_cabang: branchIdNum }));
-                fetchHosts(branchIdNum);
-            } else if (isSA) {
-                if (typeof window !== 'undefined') {
-                    try {
-                        const saved = localStorage.getItem('globalFilter');
-                        if (saved) {
-                            const parsed = JSON.parse(saved);
-                            if (parsed.id_cabang) {
-                                const branchIdNum = Number(parsed.id_cabang);
-                                setFormData((prev) => ({ ...prev, id_cabang: branchIdNum }));
-                                fetchHosts(branchIdNum);
+
+            const loadHostForBranch = () => {
+                if (!isSA && bId) {
+                    const branchIdNum = Number(bId);
+                    setFormData((prev) => ({ ...prev, id_cabang: branchIdNum }));
+                    fetchHosts(branchIdNum);
+                } else if (isSA) {
+                    if (typeof window !== 'undefined') {
+                        try {
+                            const saved = localStorage.getItem('globalFilter');
+                            if (saved) {
+                                const parsed = JSON.parse(saved);
+                                if (parsed.id_cabang) {
+                                    const branchIdNum = Number(parsed.id_cabang);
+                                    setFormData((prev) => ({ ...prev, id_cabang: branchIdNum }));
+                                    fetchHosts(branchIdNum);
+                                } else {
+                                    // Jika tidak ada filter, kosongkan
+                                    setFormData((prev) => ({ ...prev, id_cabang: null as any }));
+                                    setHostUserOptions([]);
+                                }
                             }
-                        }
-                    } catch (e) {}
+                        } catch (e) {}
+                    }
                 }
+            };
+
+            // Panggil saat pertama kali komponen dirender / session berubah
+            loadHostForBranch();
+
+            // Tangkap event jika pengguna mengubah filter cabang di header (Pusat Surabaya -> Pusat Jakarta dsb)
+            const handleGlobalFilterChanged = () => {
+                loadHostForBranch();
+            };
+
+            if (typeof window !== 'undefined') {
+                window.addEventListener('globalFilterChanged', handleGlobalFilterChanged);
+                return () => {
+                    window.removeEventListener('globalFilterChanged', handleGlobalFilterChanged);
+                };
             }
         }
     }, [session]);
@@ -229,7 +250,7 @@ export default function RegistrasiKunjunganPage() {
                 submitData.append('tanda_tangan_data', formData.signature_data);
             }
 
-            if (formData.visit_type === 'group' && formData.group_members && formData.group_members.length > 0) {
+            if (formData.visit_type === 'group' && formData.group_members && formData.group_members.length> 0) {
                 const membersToSend = formData.group_members.map((m) => ({
                     name: m.name,
                     phone: m.phone,
@@ -278,15 +299,13 @@ export default function RegistrasiKunjunganPage() {
             <div className="flex justify-content-between align-items-center mb-3">
                 <h2 className="m-0 text-900 font-bold text-2xl">Registrasi Kunjungan</h2>
                 <div className="flex flex-wrap gap-2">
-                    <Button 
-                        type="button" 
+                    <Button type="button" 
                         icon="pi pi-external-link" 
                         label="Halaman Visitor (Publik)" 
                         severity="info" 
                         outlined 
                         size="small"
-                        onClick={() => window.open('/visitor/booking', '_blank')} 
-                    />
+                        onClick={() => window.open('/visitor/booking', '_blank')} />
                 </div>
             </div>
 
@@ -302,8 +321,7 @@ export default function RegistrasiKunjunganPage() {
                 branchOptions={branchOptions}
                 loading={loading}
                 disableBranchSelect={disableBranchSelect}
-                handleSubmit={handleSubmit}
-            />
+                handleSubmit={handleSubmit} />
 
             <VisitorCardModal
                 visible={showCardDialog}
@@ -311,8 +329,7 @@ export default function RegistrasiKunjunganPage() {
                     setShowCardDialog(false);
                     router.push('/buku_tamu/checkout');
                 }}
-                cardData={generatedCard}
-            />
+                cardData={generatedCard} />
         </>
     );
 }

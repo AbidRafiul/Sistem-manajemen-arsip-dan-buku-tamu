@@ -16,7 +16,7 @@ const getDocumentHistory = async (req, res) => {
       });
     }
 
-    const vaHistory = await DB("trs_riwayat_dokumen")
+    const vaHistory = await DB("trx_riwayat_dokumen")
       .select(
         "id_riwayat",
         "kode_dokumen",

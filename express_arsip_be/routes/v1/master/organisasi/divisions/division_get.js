@@ -25,21 +25,10 @@ router.post("/get-data", async (req, res) => {
 
     if (req.headers["x-filter-cabang"]) {
       const vaParentBranchIds = req.headers["x-filter-cabang"].split(",").map(Number);
-      let vaAllBranchIds = [];
-      if (req.headers["x-exact-cabang"] === 'true') {
-        vaAllBranchIds = vaParentBranchIds;
-      } else {
-        for (const nBranchId of vaParentBranchIds) {
-          if (!isNaN(nBranchId)) {
-            const descendantIds = await getDescendantBranchIds(DB, nBranchId);
-            vaAllBranchIds.push(...descendantIds);
-          }
-        }
-      }
-      if (vaAllBranchIds.length > 0) {
+      if (vaParentBranchIds.length > 0) {
         query = query
           .join("mst_departemen", "mst_divisi.id_departemen", "mst_departemen.id_departemen")
-          .whereIn("mst_departemen.id_cabang", vaAllBranchIds);
+          .whereIn("mst_departemen.id_cabang", vaParentBranchIds);
       }
     }
     if (req.headers["x-filter-departemen"]) {

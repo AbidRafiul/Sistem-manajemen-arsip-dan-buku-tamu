@@ -41,8 +41,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                                 }
                                 setState(p => ({ ...p, searchVal: value, filters: _filters }));
                             }}
-                            placeholder="Cari menu..."
-                        />
+                            placeholder="Cari menu..." />
                     </span>
                 </div>
             </div>
@@ -54,12 +53,8 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
         return (
             <div className="flex gap-2 justify-content-center">
                 {canUpdate && (
-                    <Button
-                        icon="pi pi-pencil"
-                        rounded
+                    <Button icon="pi pi-pencil"
                         outlined
-                        severity="warning"
-                        className="p-button-sm"
                         onClick={() => {
                             // Isi formik dengan data baris yang diklik
                             formik.setValues({
@@ -75,18 +70,13 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                                 id_peran: rowData.id_peran || []
                             });
                             setState(p => ({ ...p, edit: true }));
-                        }}
-                    />
+                        }} />
                 )}
                 {canDelete && (
-                    <Button
-                        icon="pi pi-trash"
-                        rounded
+                    <Button icon="pi pi-trash"
                         outlined
                         severity="danger"
-                        className="p-button-sm"
-                        onClick={() => setState((p) => ({ ...p, selectedData: [rowData], delete: true }))}
-                    />
+                        onClick={() => setState((p) => ({ ...p, selectedData: [rowData], delete: true }))} />
                 )}
             </div>
         );
@@ -114,42 +104,36 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
             <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
                 {canCreate && (
                     <>
-                        <Button
-                            size="small"
-                            label="Baru"
+                        <Button size="small"
+                            label="Tambah"
                             icon="pi pi-plus"
                             outlined
                             severity="success"
                             onClick={() => {
                                 formik.resetForm();
                                 setState(p => ({ ...p, add: true, selectedData: [] }));
-                            }}
-                        />
+                            }} />
                         <Divider layout="vertical" />
                     </>
                 )}
                 {canDelete && (
                     <>
-                        <Button
-                            size="small"
-                            label={`Hapus${state.selectedData.length > 0 ? ` (${state.selectedData.length})` : ''}`}
+                        <Button size="small"
+                            label={`Hapus${state.selectedData.length> 0 ? ` (${state.selectedData.length})` : ''}`}
                             icon="pi pi-trash"
                             outlined
                             severity="danger"
                             onClick={() => setState(p => ({ ...p, delete: true }))}
-                            disabled={!state.selectedData || state.selectedData.length === 0}
-                        />
+                            disabled={!state.selectedData || state.selectedData.length === 0} />
                         <Divider layout="vertical" />
                     </>
                 )}
-                <Button
-                    size="small"
-                    label="Muat Ulang"
+                <Button size="small"
+                    label="Refresh"
                     icon="pi pi-refresh"
                     outlined
                     onClick={() => getData('/setup/menu/data')}
-                    loading={state.load}
-                />
+                    loading={state.load} />
             </div>
 
             <DataTable
@@ -166,8 +150,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                 emptyMessage="Tidak ada data menu ditemukan."
                 loading={state.load}
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data"
-            >
+                currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
                 <Column field="kode_menu" header="Kode Menu" sortable></Column>
                 <Column field="nama_menu" header="Nama Menu" sortable></Column>

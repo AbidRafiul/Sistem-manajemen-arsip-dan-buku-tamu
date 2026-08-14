@@ -111,8 +111,7 @@ export default function ProposalTable({
         return (
             <div className="flex gap-2 justify-content-center">
                 {isSubmitted && (
-                    <Button
-                        type="button"
+                    <Button type="button"
                         label="Review"
                         icon="pi pi-shield"
                         size="small"
@@ -123,12 +122,10 @@ export default function ProposalTable({
                         onClick={() => {
                             setSelectedProposal(rowData);
                             setReviewDialog(true);
-                        }}
-                    />
+                        }} />
                 )}
                 {isApproved && (
-                    <Button
-                        type="button"
+                    <Button type="button"
                         label="Eksekusi"
                         icon="pi pi-trash"
                         size="small"
@@ -138,8 +135,7 @@ export default function ProposalTable({
                         onClick={() => {
                             setSelectedProposal(rowData);
                             setExecuteDialog(true);
-                        }}
-                    />
+                        }} />
                 )}
                 {!isSubmitted && !isApproved && (
                     <span className="text-gray-400 text-xs italic">-</span>
@@ -181,8 +177,7 @@ export default function ProposalTable({
                         placeholder="Filter Status"
                         showClear
                         className="text-xs"
-                        style={{ minWidth: '15rem', height: '2.25rem' }}
-                    />
+                        style={{ minWidth: '15rem', height: '2.25rem' }} />
                     <span className="p-input-icon-left">
                         <i className="pi pi-search" />
                         <InputText
@@ -190,8 +185,7 @@ export default function ProposalTable({
                             onChange={(e) => setSearchVal(e.target.value)}
                             placeholder="Cari..."
                             className="text-sm"
-                            style={{ height: '2.25rem' }}
-                        />
+                            style={{ height: '2.25rem' }} />
                     </span>
                 </div>
             </div>
@@ -210,8 +204,7 @@ export default function ProposalTable({
                 loading={loading}
                 className="text-sm"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data"
-            >
+                currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data">
                 <Column field="kode_dokumen" header="Kode Dokumen" sortable className="font-semibold text-primary"></Column>
                 <Column field="nomor_dokumen" header="No. Dokumen" sortable></Column>
                 <Column field="nama_dokumen" header="Nama Dokumen" sortable style={{ minWidth: '150px' }}></Column>
@@ -235,10 +228,9 @@ export default function ProposalTable({
                     setReviewDialog(false);
                     setSelectedProposal(null);
                     setReviewNotes('');
-                }}
-            >
+                }}>
                 {selectedProposal && (
-                    <form onSubmit={handleReviewSubmit} className="flex flex-column gap-3 pt-3 text-sm">
+                    <form onSubmit={handleReviewSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
                         <div className="surface-50 p-3 border-round border-1 surface-border">
                             <div className="mb-2"><strong>Dokumen:</strong> {selectedProposal.nama_dokumen} ({selectedProposal.nomor_dokumen})</div>
                             <div className="mb-2"><strong>Alasan Usulan:</strong> {selectedProposal.alasan_usulan}</div>
@@ -251,8 +243,7 @@ export default function ProposalTable({
                                 value={reviewStatus}
                                 options={statusOptions}
                                 onChange={(e) => setReviewStatus(e.value)}
-                                className="w-full"
-                            />
+                                className="w-full" />
                         </div>
 
                         <div className="flex flex-column gap-1">
@@ -262,32 +253,15 @@ export default function ProposalTable({
                                 value={reviewNotes}
                                 onChange={(e) => setReviewNotes(e.target.value)}
                                 rows={3}
-                                placeholder="Masukkan catatan penolakan atau instruksi persetujuan..."
-                            />
+                                placeholder="Masukkan catatan penolakan atau instruksi persetujuan..." />
                         </div>
 
-                        <div className="flex justify-content-end gap-2 mt-2">
-                            <Button
-                                type="button"
-                                label="Batal"
-                                outlined
-                                severity="secondary"
+                        <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                            
+                            <Button type="submit"
+                                label="Tinjau"
                                 size="small"
-                                onClick={() => {
-                                    setReviewDialog(false);
-                                    setSelectedProposal(null);
-                                    setReviewNotes('');
-                                }}
-                                disabled={submittingReview}
-                            />
-                            <Button
-                                type="submit"
-                                label="Simpan Tinjauan"
-                                icon="pi pi-check"
-                                severity="warning"
-                                size="small"
-                                loading={submittingReview}
-                            />
+                                loading={submittingReview} />
                         </div>
                     </form>
                 )}
@@ -303,10 +277,9 @@ export default function ProposalTable({
                     setExecuteDialog(false);
                     setSelectedProposal(null);
                     setBaFile('');
-                }}
-            >
+                }}>
                 {selectedProposal && (
-                    <form onSubmit={handleExecuteSubmit} className="flex flex-column gap-3 pt-3 text-sm">
+                    <form onSubmit={handleExecuteSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
                         <div className="surface-50 p-3 border-round border-1 surface-border">
                             <div className="mb-2"><strong>Dokumen:</strong> {selectedProposal.nama_dokumen} ({selectedProposal.nomor_dokumen})</div>
                             <div className="mb-2"><strong>Alasan Usulan:</strong> {selectedProposal.alasan_usulan}</div>
@@ -322,35 +295,19 @@ export default function ProposalTable({
                                 value={baFile}
                                 onChange={(e) => setBaFile(e.target.value)}
                                 required
-                                placeholder="Contoh: BA-PEMUSNAHAN/2026/001"
-                            />
+                                placeholder="Contoh: BA-PEMUSNAHAN/2026/001" />
                             <small className="text-color-secondary mt-1">
                                 Memasukkan data ini menandakan dokumen telah secara fisik dimusnahkan. Dokumen akan dinonaktifkan permanen di sistem.
                             </small>
                         </div>
 
-                        <div className="flex justify-content-end gap-2 mt-2">
-                            <Button
-                                type="button"
-                                label="Batal"
-                                outlined
-                                severity="secondary"
-                                size="small"
-                                onClick={() => {
-                                    setExecuteDialog(false);
-                                    setSelectedProposal(null);
-                                    setBaFile('');
-                                }}
-                                disabled={submittingExecution}
-                            />
-                            <Button
-                                type="submit"
-                                label="Eksekusi Pemusnahan"
-                                icon="pi pi-trash"
+                        <div className="flex mt-4 pt-3 border-top-1 surface-border">
+                            
+                            <Button type="submit"
+                                label="Selesaikan Pemusnahan"
                                 severity="danger"
                                 size="small"
-                                loading={submittingExecution}
-                            />
+                                loading={submittingExecution} />
                         </div>
                     </form>
                 )}

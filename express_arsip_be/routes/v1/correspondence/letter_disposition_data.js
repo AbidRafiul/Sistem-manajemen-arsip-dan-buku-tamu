@@ -43,12 +43,12 @@ const letterDispositionData = async (req, res) => {
       return candidates.find((column) => columns.includes(column)) || null;
     };
 
-    const cols = await getTableColumns("trs_disposisi_surat");
-    const fromCol = pickColumn(cols, ["from_user_id", "dari_pengguna_id", "from_id_pengguna"]) || "from_user_id";
-    const toCol = pickColumn(cols, ["to_user_id", "kepada_pengguna_id", "to_id_pengguna"]) || "to_user_id";
+    const cols = await getTableColumns("trx_disposisi_surat");
+    const fromCol = pickColumn(cols, ["from_user_id", "dari_pengguna_id", "from_id_pengguna"]) || "dari_pengguna_id";
+    const toCol = pickColumn(cols, ["to_user_id", "kepada_pengguna_id", "to_id_pengguna"]) || "kepada_pengguna_id";
 
-    const oQuery = DB("trs_disposisi_surat as tld")
-      .leftJoin("trs_surat_masuk as til", "tld.surat_masuk_id", "til.surat_masuk_id")
+    const oQuery = DB("trx_disposisi_surat as tld")
+      .leftJoin("trx_surat_masuk as til", "tld.surat_masuk_id", "til.surat_masuk_id")
       .leftJoin("mst_instruksi_disposisi as mdi", "tld.instruksi_disposisi_id", "mdi.instruksi_disposisi_id")
       .leftJoin("mst_pengguna as dari_pengguna", `tld.${fromCol}`, "dari_pengguna.id_pengguna")
       .leftJoin("mst_pengguna as kepada_pengguna", `tld.${toCol}`, "kepada_pengguna.id_pengguna")
@@ -82,7 +82,6 @@ const letterDispositionData = async (req, res) => {
         "tld.updated_at"
       )
       .orderBy("tld.created_at", "desc");
-
     if (oPayload.surat_masuk_id) {
       oQuery.where("tld.surat_masuk_id", oPayload.surat_masuk_id);
     }
