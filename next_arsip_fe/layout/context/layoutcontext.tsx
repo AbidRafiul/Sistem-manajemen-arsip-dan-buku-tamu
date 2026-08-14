@@ -94,6 +94,11 @@ export const LayoutProvider = ({ children }: ChildContainerProps) => {
         return window.innerWidth > 991;
     };
 
+    // Apply scale to root element globally for all pages (including public pages)
+    React.useEffect(() => {
+        document.documentElement.style.fontSize = layoutConfig.scale + 'px';
+    }, [layoutConfig.scale]);
+
     const value: LayoutContextProps = {
         layoutConfig,
         setLayoutConfig,
