@@ -82,11 +82,11 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
             </div>
 
             <DataTable value={state.data} selection={state.selectedData} onSelectionChange={(e) => setState(p => ({ ...p, selectedData: e.value }))} dataKey="id_peran" paginator rows={10} rowsPerPageOptions={[5, 10, 25]} globalFilterFields={["kode_peran", "nama_peran", "deskripsi", "status"]} filters={state.filters} header={renderHeader()} emptyMessage="Tidak ada data ditemukan." loading={state.load} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
-                <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
-                <Column field="kode_peran" header="Kode" sortable></Column>
-                <Column field="nama_peran" header="Nama" sortable></Column>
-                <Column body={statusBodyTemplate} header="Status"></Column>
-                <Column body={actionBodyTemplate} exportable={false} align="center" header="Aksi" style={{ minWidth: '8rem', textAlign: 'center' }}></Column>
+                <Column align="center" selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
+                <Column align="center" field="kode_peran" header="Kode" sortable></Column>
+                <Column align="center" field="nama_peran" header="Nama" sortable></Column>
+                <Column align="center" body={statusBodyTemplate} header="Status"></Column>
+                <Column align="center" body={actionBodyTemplate} exportable={false} align="center" header="Aksi" style={{ minWidth: '8rem', textAlign: 'center' }}></Column>
             </DataTable>
         </div>
     );

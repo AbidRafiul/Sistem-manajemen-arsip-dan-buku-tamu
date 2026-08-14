@@ -64,7 +64,9 @@ router.post("/", async (req, res) => {
       query = query.where("mu.id_unit_kerja", req.headers["x-filter-unit-kerja"]);
     }
 
-    const vaData = await query.orderBy("mu.id_pengguna", "asc");
+    const vaData = await query
+      .groupBy("mu.id_pengguna")
+      .orderBy("mu.id_pengguna", "asc");
 
     return res.status(200).json({
       status: status.SUKSES,

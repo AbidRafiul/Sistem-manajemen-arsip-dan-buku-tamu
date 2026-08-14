@@ -279,13 +279,13 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                     currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data"
                     className="p-datatable-sm"
                     rowHover>
-                    <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
-                    <Column field="id_pengguna" header="Unique ID" className="font-semibold text-800" style={{ width: '130px' }}></Column>
-                    <Column field="nama_lengkap" header="Name" className="font-medium text-900"></Column>
-                    <Column field="nama_pengguna" header="Username" className="font-medium"></Column>
-                    <Column field="telepon" header="Phone" style={{ width: '150px' }}></Column>
-                    <Column field="role" body={roleBodyTemplate} header="Role" style={{ width: '130px' }}></Column>
-                    <Column
+                    <Column align="center" selectionMode="multiple" headerStyle={{ width: '3rem' }} />
+                    <Column align="center" field="id_pengguna" header="Unique ID" className="font-semibold text-800" style={{ width: '130px' }}></Column>
+                    <Column align="center" field="nama_lengkap" header="Name" className="font-medium text-900"></Column>
+                    <Column align="center" field="nama_pengguna" header="Username" className="font-medium"></Column>
+                    <Column align="center" field="telepon" header="Phone" style={{ width: '150px' }}></Column>
+                    <Column align="center" field="role" body={roleBodyTemplate} header="Role" style={{ width: '130px' }}></Column>
+                    <Column align="center"
                         field="status"
                         body={(rowData) => {
                             // Karena di DB nilainya 'active' (string), bukan '1'
@@ -293,8 +293,8 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                             return <Tag value={isActive ? 'Aktif' : 'Tidak Aktif'} severity={isActive ? 'success' : 'danger'} className="text-xs font-semibold px-2 py-1" rounded style={{ minWidth: '105px' }} />;
                         }}
                         header="Status" style={{ width: '110px' }}></Column>
-                    <Column field="created_at" sortable body={(rowData) => formatDateCalendar(rowData.created_at)} header="Datetime" style={{ width: '150px' }}></Column>
-                    <Column headerStyle={{ textAlign: 'center' }} header="Action" body={actionBodyTemplate} style={{ width: '120px' }}></Column>
+                    <Column align="center" field="created_at" sortable body={(rowData) => formatDateCalendar(rowData.created_at)} header="Datetime" style={{ width: '150px' }}></Column>
+                    <Column align="center" headerStyle={{ textAlign: 'center' }} header="Action" body={actionBodyTemplate} style={{ width: '120px' }}></Column>
                 </DataTable>
             </div>
 

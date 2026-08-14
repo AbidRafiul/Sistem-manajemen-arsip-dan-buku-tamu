@@ -58,16 +58,22 @@ export const LayoutProvider = ({ children }: ChildContainerProps) => {
         
         if (savedFilter) {
             try {
-                setLayoutState(prev => ({ ...prev, globalFilter: JSON.parse(savedFilter) }));
+                const parsed = JSON.parse(savedFilter);
+                localStorage.setItem('globalFilter', savedFilter); // SYNC SECARA SINKRON!
+                setLayoutState(prev => ({ ...prev, globalFilter: parsed }));
             } catch (e) {}
         } else if ((session?.user as any)?.nama_cabang) {
+            const defaultFilter = {
+                id_cabang: (session?.user as any).id_cabang as number,
+                nama_cabang: (session?.user as any).nama_cabang as string,
+                id_departemen: null,
+                id_divisi: null,
+                id_unit_kerja: null
+            };
+            localStorage.setItem('globalFilter', JSON.stringify(defaultFilter)); // SYNC SECARA SINKRON!
             setLayoutState(prev => ({
                 ...prev,
-                globalFilter: {
-                    ...prev.globalFilter,
-                    id_cabang: (session?.user as any).id_cabang as number,
-                    nama_cabang: (session?.user as any).nama_cabang as string
-                }
+                globalFilter: defaultFilter
             }));
         }
         setIsLoaded(true);
@@ -79,6 +85,7 @@ export const LayoutProvider = ({ children }: ChildContainerProps) => {
             const userId = (session.user as any)?.IdPengguna || (session.user as any)?.id || 'default';
             const storageKey = `globalFilter_${userId}`;
             localStorage.setItem(storageKey, JSON.stringify(layoutState.globalFilter));
+            localStorage.setItem('globalFilter', JSON.stringify(layoutState.globalFilter)); // SYNC UNTUK AXIOS POSTDATA
         }
     }, [layoutState.globalFilter, isLoaded, session]);
 
