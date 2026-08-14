@@ -49,50 +49,24 @@ const documentPreview = async (req, res) => {
     const cBucketName = process.env.MINIO_BUCKET_NAME || "arsip-bucket";
     const cObjectName = cFilePath.replace(/^\/?uploads\//i, "").replace(/^\//, "");
 
-    minioClient.presignedGetObject(cBucketName, cObjectName, 3600, (err, presignedUrl) => {
-      let finalUrl = presignedUrl;
-
-      if (err) {
-        console.warn("Gagal men-generate presigned URL dari MinIO, fallback ke URL lokal:", err.message);
-        const serverUrl = process.env.APP_SERVER || "http://127.0.0.1:8000";
-        finalUrl = `${serverUrl.replace(/\/$/, "")}/uploads/${cObjectName}`;
-      }
-
-      return res.status(200).json({
-        status: "success",
-        preview_url: finalUrl,
-        url: finalUrl,
-        data: {
-          preview_url: finalUrl,
-          url: finalUrl,
-        },
-      });
-    } catch (statErr) {
-      // If object doesn't exist in MinIO or MinIO is unreachable, fallback to local URL
-      console.warn("Object tidak ditemukan di MinIO atau MinIO error, fallback ke URL lokal:", statErr.message);
-      
-      const localFilePath = path.join(process.cwd(), 'public', 'uploads', cObjectName);
-      
-      if (!fs.existsSync(localFilePath)) {
-        return res.status(404).json({
-          status: "error",
-          message: "Berkas fisik dokumen tidak ditemukan di penyimpanan (MinIO maupun Lokal). Silakan unggah ulang dokumen ini.",
-        });
-      }
-
+    let finalUrl;
+    try {
+      finalUrl = await minioClient.presignedGetObject(cBucketName, cObjectName, 3600);
+    } catch (err) {
+      console.warn("Gagal men-generate presigned URL dari MinIO, fallback ke URL lokal:", err.message);
       const serverUrl = process.env.APP_SERVER || "http://127.0.0.1:8000";
-      const finalUrl = `${serverUrl.replace(/\/$/, "")}/uploads/${cObjectName}`;
-      
-      return res.status(200).json({
-        status: "success",
+      finalUrl = `${serverUrl.replace(/\/$/, "")}/uploads/${cObjectName}`;
+    }
+
+    return res.status(200).json({
+      status: "success",
+      preview_url: finalUrl,
+      url: finalUrl,
+      data: {
         preview_url: finalUrl,
         url: finalUrl,
-        data: {
-          preview_url: finalUrl,
-          url: finalUrl,
-        },
-      });
-    }
+      },
+    });
   } catch (error) {
     const oResult = {
       status: "error",
