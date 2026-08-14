@@ -161,9 +161,9 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                                 width: '2.35rem',
                                 height: '2.35rem',
                                 borderRadius: '8px',
-                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                background: 'linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%)',
                                 color: '#FFFFFF',
-                                boxShadow: '0 4px 10px rgba(16, 185, 129, 0.15)'
+                                boxShadow: '0 4px 10px rgba(79, 70, 229, 0.15)'
                             }}
                         />
                         <div className="flex flex-column justify-content-center">
@@ -180,7 +180,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                 {/* Clock & User Profile */}
                 <div className="flex align-items-center gap-2">
                     {/* Clock Text */}
-                    <div className="hidden md:flex align-items-center gap-2 px-3 py-2 border-round-3xl mr-2" style={{ background: 'rgba(16, 185, 129, 0.08)', color: '#10b981' }}>
+                    <div className="hidden md:flex align-items-center gap-2 px-3 py-2 border-round-3xl mr-2" style={{ background: 'rgba(79, 70, 229, 0.08)', color: '#4F46E5' }}>
                         <i className="pi pi-clock" style={{ fontSize: '0.85rem' }}></i>
                         <span className="font-semibold text-xs">{realZonedTime}</span>
                     </div>
@@ -256,8 +256,8 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
 
                                             if (item.tipe === 'surat_masuk') {
                                                 icon = 'pi pi-envelope';
-                                                avatarBg = 'rgba(16, 185, 129, 0.08)';
-                                                avatarColor = '#10b981';
+                                                avatarBg = 'rgba(79, 70, 229, 0.08)';
+                                                avatarColor = '#4F46E5';
                                             } else if (item.tipe === 'disposisi') {
                                                 icon = 'pi pi-share-alt';
                                                 avatarBg = 'rgba(59, 130, 246, 0.08)';
@@ -322,8 +322,8 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                                     onClick={handleMarkAllRead}
                                     text
                                     disabled={unreadCount === 0}
-                                    className="w-full text-center text-xs font-semibold py-2 text-green-600 hover:bg-green-50 border-none"
-                                    style={{ borderRadius: '6px', color: '#10b981' }}
+                                    className="w-full text-center text-xs font-semibold py-2 text-indigo-600 hover:bg-indigo-50 border-none"
+                                    style={{ borderRadius: '6px', color: '#4F46E5' }}
                                 />
                             </div>
                         </OverlayPanel>
@@ -341,7 +341,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                             style={{
                                 width: '2.25rem',
                                 height: '2.25rem',
-                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                background: 'linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%)',
                                 color: '#FFFFFF',
                                 fontWeight: 'bold',
                                 fontSize: '0.85rem',
@@ -366,7 +366,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                                 <Avatar
                                     label={(session?.user?.name || 'SA').slice(0, 2).toUpperCase()}
                                     shape="circle"
-                                    style={{ width: '2.5rem', height: '2.5rem', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#FFFFFF', fontWeight: 'bold' }}
+                                    style={{ width: '2.5rem', height: '2.5rem', background: 'linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%)', color: '#FFFFFF', fontWeight: 'bold' }}
                                 />
                                 <div className="flex flex-column">
                                     <span className="font-semibold text-sm text-900">{session?.user?.name || 'Super Admin'}</span>

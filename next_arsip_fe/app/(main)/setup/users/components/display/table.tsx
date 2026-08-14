@@ -121,15 +121,19 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
 
                 <div className="flex justify-content-between mb-4">
                     <div className="flex flex-row gap-2">
-                        <Button size="small"
-                            label="Tambah"
-                            icon="pi pi-plus"
-                            outlined
-                            severity="success"
-                            onClick={() => {
-                                setState((p) => ({ ...p, selectedUser: [], add: true }));
-                            }} />
-                        <Divider layout="vertical" className="hidden sm:inline-block" />
+                        {permissions.canCreate && (
+                            <>
+                                <Button size="small"
+                                    label="Tambah"
+                                    icon="pi pi-plus"
+                                    outlined
+                                    severity="success"
+                                    onClick={() => {
+                                        setState((p) => ({ ...p, selectedUser: [], add: true }));
+                                    }} />
+                                <Divider layout="vertical" className="hidden sm:inline-block" />
+                            </>
+                        )}
                         <Button size="small"
                             label="Cetak"
                             icon="pi pi-print"
@@ -156,21 +160,25 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                                 }));
                             }} />
                         <Divider layout="vertical" className="hidden sm:inline-block" />
-                        <Button size="small"
-                            label={`Hapus${state.selectedUsers.length> 0 ? ` (${state.selectedUsers.length})` : ''}`}
-                            icon="pi pi-trash"
-                            severity="danger"
-                            outlined
-                            onClick={() => {
-                                if (state.selectedUsers.length < 1) {
-                                    setState((p) => ({ ...p, selectedUser: [], delete: false }));
-                                    return;
-                                }
+                        {permissions.canDelete && (
+                            <>
+                                <Button size="small"
+                                    label={`Hapus${state.selectedUsers.length> 0 ? ` (${state.selectedUsers.length})` : ''}`}
+                                    icon="pi pi-trash"
+                                    severity="danger"
+                                    outlined
+                                    onClick={() => {
+                                        if (state.selectedUsers.length < 1) {
+                                            setState((p) => ({ ...p, selectedUser: [], delete: false }));
+                                            return;
+                                        }
 
-                                setState((p) => ({ ...p, delete: true }));
-                            }}
-                            disabled={state.selectedUsers.length === 0} />
-                        <Divider layout="vertical" className="hidden sm:inline-block" />
+                                        setState((p) => ({ ...p, delete: true }));
+                                    }}
+                                    disabled={state.selectedUsers.length === 0} />
+                                <Divider layout="vertical" className="hidden sm:inline-block" />
+                            </>
+                        )}
                         <Button size="small" label="Refresh" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
                     </div>
 

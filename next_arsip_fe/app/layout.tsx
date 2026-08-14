@@ -1,6 +1,6 @@
 import { LayoutProvider } from '../layout/context/layoutcontext';
 import { PrimeReactProvider } from 'primereact/api';
-import 'primereact/resources/themes/lara-light-green/theme.css';
+import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.css';
 import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';
