@@ -14,7 +14,7 @@ const Form = ({ state, setState, formik }: FormProps) => {
     const getFormErrorMessage = (name: keyof initValue) => {
         return isFormFieldInvalid(name)
             ? <small className="p-error flex align-items-center gap-1 mt-1"><i className="pi pi-exclamation-circle text-xs" />{formik.errors[name] as string}</small>
-            : <small className="p-error">&nbsp;</small>;
+            : null;
     };
 
     const actionOptions = [
@@ -35,10 +35,10 @@ const Form = ({ state, setState, formik }: FormProps) => {
             style={{ width: '40rem', maxWidth: '95vw' }}
             onHide={() => { setState((p) => ({ ...p, add: false, edit: false })); formik.resetForm(); }}
             pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}>
-            <form onSubmit={formik.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
+            <form onSubmit={formik.handleSubmit} className="flex flex-column gap-2 mt-0 fadein animation-duration-300">
                 
-                <div className="flex flex-column gap-1 mb-2">
-                    <label htmlFor="kode_retensi" className="font-semibold text-sm text-900">
+                <div className="flex flex-column gap-2 w-full">
+                    <label htmlFor="kode_retensi" className="text-sm">
                         Kode Retensi <span className="text-red-500">*</span>
                     </label>
                     <InputText
@@ -50,8 +50,8 @@ const Form = ({ state, setState, formik }: FormProps) => {
                     {getFormErrorMessage('kode_retensi')}
                 </div>
 
-                <div className="flex flex-column gap-1 mb-2">
-                    <label htmlFor="nama_retensi" className="font-semibold text-sm text-900">
+                <div className="flex flex-column gap-2 w-full">
+                    <label htmlFor="nama_retensi" className="text-sm">
                         Nama Jadwal Retensi <span className="text-red-500">*</span>
                     </label>
                     <InputText
@@ -63,9 +63,9 @@ const Form = ({ state, setState, formik }: FormProps) => {
                     {getFormErrorMessage('nama_retensi')}
                 </div>
 
-                <div className="grid mb-2">
-                    <div className="col-12 md:col-6 flex flex-column gap-1">
-                        <label htmlFor="kode_kategori_dokumen" className="font-semibold text-sm text-900">
+                <div className="flex flex-column md:flex-row gap-3 w-full">
+                    <div className="flex flex-column gap-2 w-full">
+                        <label htmlFor="kode_kategori_dokumen" className="text-sm">
                             Kategori Dokumen <span className="text-red-500">*</span>
                         </label>
                         <Dropdown
@@ -81,8 +81,8 @@ const Form = ({ state, setState, formik }: FormProps) => {
                             filter />
                         {getFormErrorMessage('kode_kategori_dokumen')}
                     </div>
-                    <div className="col-12 md:col-6 flex flex-column gap-1">
-                        <label htmlFor="tahun_retensi" className="font-semibold text-sm text-900">
+                    <div className="flex flex-column gap-2 w-full">
+                        <label htmlFor="tahun_retensi" className="text-sm">
                             Masa Retensi (Tahun) <span className="text-red-500">*</span>
                         </label>
                         <InputText
@@ -97,8 +97,8 @@ const Form = ({ state, setState, formik }: FormProps) => {
                     </div>
                 </div>
 
-                <div className="flex flex-column gap-1 mb-2">
-                    <label htmlFor="tindakan_retensi" className="font-semibold text-sm text-900">
+                <div className="flex flex-column gap-2 w-full">
+                    <label htmlFor="tindakan_retensi" className="text-sm">
                         Tindakan Akhir Retensi <span className="text-red-500">*</span>
                     </label>
                     <Dropdown
@@ -111,8 +111,8 @@ const Form = ({ state, setState, formik }: FormProps) => {
                     {getFormErrorMessage('tindakan_retensi')}
                 </div>
 
-                <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="deskripsi" className="font-semibold text-sm text-900">
+                <div className="flex flex-column gap-2 w-full">
+                    <label htmlFor="deskripsi" className="text-sm">
                         Deskripsi
                     </label>
                     <InputTextarea
@@ -124,14 +124,8 @@ const Form = ({ state, setState, formik }: FormProps) => {
                         placeholder="Keterangan mengenai jadwal retensi..." />
                 </div>
 
-                <Divider className="my-2" />
-
-                <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                    
-                    <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                        
-                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className=" w-full" loading={state?.load} disabled={state?.load} />
-                    </div>
+                <div className="mt-2">
+                    <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} className="w-full p-button-success" loading={state?.load} disabled={state?.load} />
                 </div>
             </form>
         </Dialog>

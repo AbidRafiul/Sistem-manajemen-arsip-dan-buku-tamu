@@ -75,7 +75,7 @@ const Form = ({
     const getFormErrorMessage = (name: keyof initValue) => {
         return isFormFieldInvalid(name)
             ? <small className="p-error flex align-items-center gap-1 mt-1"><i className="pi pi-exclamation-circle text-xs" />{formik?.errors[name] as string}</small>
-            : <small className="p-error">&nbsp;</small>;
+            : null;
     };
 
     const deleteFooterTemplate = (
@@ -113,10 +113,10 @@ const Form = ({
                 style={{ width: "60rem", maxWidth: "95vw" }}
                 onHide={() => { setState((p: any) => ({ ...p, add: false, edit: false, delete: false })); formik.resetForm(); }}
                 pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}>
-                <form onSubmit={formik.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
+                <form onSubmit={formik.handleSubmit} className="flex flex-column gap-2 mt-0 fadein animation-duration-300">
                     <div className="grid">
-                        <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="nomor_agenda" className="font-semibold text-900">
+                        <div className="col-12 md:col-6 flex flex-column gap-2">
+                            <label htmlFor="nomor_agenda" className="text-sm">
                                 Nomor Agenda {state.edit && <span className="text-red-500">*</span>}
                             </label>
                             <InputText
@@ -130,8 +130,8 @@ const Form = ({
                                 disabled={!state.edit} />
                             {getFormErrorMessage("nomor_agenda")}
                         </div>
-                        <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="nomor_surat" className="font-semibold text-900">Nomor Surat <span className="text-red-500">*</span></label>
+                        <div className="col-12 md:col-6 flex flex-column gap-2">
+                            <label htmlFor="nomor_surat" className="text-sm">Nomor Surat <span className="text-red-500">*</span></label>
                             <InputText
                                 id="nomor_surat"
                                 className={`w-full ${isFormFieldInvalid("nomor_surat") ? "p-invalid" : ""}`}
@@ -140,8 +140,8 @@ const Form = ({
                                 placeholder="Contoh: 001/MEN/VI/2024" />
                             {getFormErrorMessage("nomor_surat")}
                         </div>
-                        <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="tanggal_surat" className="font-semibold text-900">Tanggal Surat <span className="text-red-500">*</span></label>
+                        <div className="col-12 md:col-6 flex flex-column gap-2">
+                            <label htmlFor="tanggal_surat" className="text-sm">Tanggal Surat <span className="text-red-500">*</span></label>
                             <InputText
                                 id="tanggal_surat" type="date"
                                 className={`w-full ${isFormFieldInvalid("tanggal_surat") ? "p-invalid" : ""}`}
@@ -149,8 +149,8 @@ const Form = ({
                                 onChange={(e) => formik.setFieldValue("tanggal_surat", e.target.value)} />
                             {getFormErrorMessage("tanggal_surat")}
                         </div>
-                        <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="tanggal_diterima" className="font-semibold text-900">Tanggal Diterima <span className="text-red-500">*</span></label>
+                        <div className="col-12 md:col-6 flex flex-column gap-2">
+                            <label htmlFor="tanggal_diterima" className="text-sm">Tanggal Diterima <span className="text-red-500">*</span></label>
                             <InputText
                                 id="tanggal_diterima" type="date"
                                 className={`w-full ${isFormFieldInvalid("tanggal_diterima") ? "p-invalid" : ""}`}
@@ -158,8 +158,8 @@ const Form = ({
                                 onChange={(e) => formik.setFieldValue("tanggal_diterima", e.target.value)} />
                             {getFormErrorMessage("tanggal_diterima")}
                         </div>
-                        <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="jenis_surat_id" className="font-semibold text-900">Jenis Surat <span className="text-red-500">*</span></label>
+                        <div className="col-12 md:col-6 flex flex-column gap-2">
+                            <label htmlFor="jenis_surat_id" className="text-sm">Jenis Surat <span className="text-red-500">*</span></label>
                             <Dropdown
                                 id="jenis_surat_id"
                                 className={`w-full ${isFormFieldInvalid("jenis_surat_id") ? "p-invalid" : ""}`}
@@ -174,8 +174,8 @@ const Form = ({
                                 showClear />
                             {getFormErrorMessage("jenis_surat_id")}
                         </div>
-                        <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="nama_pengirim" className="font-semibold text-900">Nama Pengirim <span className="text-red-500">*</span></label>
+                        <div className="col-12 md:col-6 flex flex-column gap-2">
+                            <label htmlFor="nama_pengirim" className="text-sm">Nama Pengirim <span className="text-red-500">*</span></label>
                             <InputText
                                 id="nama_pengirim"
                                 className={`w-full ${isFormFieldInvalid("nama_pengirim") ? "p-invalid" : ""}`}
@@ -184,18 +184,18 @@ const Form = ({
                                 placeholder="Nama pengirim surat" />
                             {getFormErrorMessage("nama_pengirim")}
                         </div>
-                        <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="instansi_pengirim" className="font-semibold text-900">Instansi Pengirim</label>
+                        <div className="col-12 md:col-6 flex flex-column gap-2">
+                            <label htmlFor="instansi_pengirim" className="text-sm">Instansi Pengirim</label>
                             <InputText
                                 id="instansi_pengirim"
                                 className="w-full"
                                 value={formik.values.instansi_pengirim}
                                 onChange={(e) => formik.setFieldValue("instansi_pengirim", e.target.value)}
                                 placeholder="Nama instansi / lembaga" />
-                            <small className="p-error">&nbsp;</small>
+
                         </div>
-                        <div className="col-12 flex flex-column gap-1 mb-2">
-                            <label htmlFor="perihal" className="font-semibold text-900">Perihal <span className="text-red-500">*</span></label>
+                        <div className="col-12 flex flex-column gap-2">
+                            <label htmlFor="perihal" className="text-sm">Perihal <span className="text-red-500">*</span></label>
                             <InputText
                                 id="perihal"
                                 className={`w-full ${isFormFieldInvalid("perihal") ? "p-invalid" : ""}`}
@@ -204,8 +204,8 @@ const Form = ({
                                 placeholder="Perihal / pokok isi surat" />
                             {getFormErrorMessage("perihal")}
                         </div>
-                        <div className="col-12 flex flex-column gap-1 mb-2">
-                            <label htmlFor="keterangan_lampiran" className="font-semibold text-900">Keterangan Lampiran</label>
+                        <div className="col-12 flex flex-column gap-2">
+                            <label htmlFor="keterangan_lampiran" className="text-sm">Keterangan Lampiran</label>
                             <InputTextarea
                                 id="keterangan_lampiran"
                                 className="w-full"
@@ -214,12 +214,12 @@ const Form = ({
                                 onChange={(e) => formik.setFieldValue("keterangan_lampiran", e.target.value)}
                                 placeholder="Deskripsi lampiran surat (opsional)"
                                 style={{ resize: "none" }} />
-                            <small className="p-error">&nbsp;</small>
+
                         </div>
 
                         {/* File Upload */}
-                        <div className="col-12 flex flex-column gap-1 mb-2">
-                            <label className="font-semibold text-900">Upload File Surat</label>
+                        <div className="col-12 flex flex-column gap-2">
+                            <label className="text-sm">Upload File Surat</label>
                             <FileUpload
                                 name="file_surat"
                                 accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
@@ -257,8 +257,8 @@ const Form = ({
                         </div>
 
                         {state.edit && (
-                            <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                                <label htmlFor="status" className="font-semibold text-900">Status</label>
+                            <div className="col-12 md:col-6 flex flex-column gap-2">
+                                <label htmlFor="status" className="text-sm">Status</label>
                                 <Dropdown
                                     id="status"
                                     className="w-full"
@@ -270,14 +270,8 @@ const Form = ({
                         )}
                     </div>
 
-                    <Divider className="my-2" />
-
-                    <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                        
-                        <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                        
-                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className=" w-full" loading={state?.load} disabled={state?.load} />
-                    </div>
+                    <div className="mt-2">
+                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} className="w-full p-button-success" loading={state?.load} disabled={state?.load} />
                     </div>
                 </form>
             </Dialog>

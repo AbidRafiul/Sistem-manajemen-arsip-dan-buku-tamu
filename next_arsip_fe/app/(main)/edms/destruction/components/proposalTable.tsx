@@ -230,15 +230,15 @@ export default function ProposalTable({
                     setReviewNotes('');
                 }}>
                 {selectedProposal && (
-                    <form onSubmit={handleReviewSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
+                    <form onSubmit={handleReviewSubmit} className="flex flex-column gap-2 mt-0 fadein animation-duration-300">
                         <div className="surface-50 p-3 border-round border-1 surface-border">
                             <div className="mb-2"><strong>Dokumen:</strong> {selectedProposal.nama_dokumen} ({selectedProposal.nomor_dokumen})</div>
                             <div className="mb-2"><strong>Alasan Usulan:</strong> {selectedProposal.alasan_usulan}</div>
                             <div><strong>Diusulkan Oleh:</strong> {selectedProposal.diusulkan_oleh} ({formatDate(selectedProposal.diusulkan_pada)})</div>
                         </div>
 
-                        <div className="flex flex-column gap-1">
-                            <label className="font-semibold">Keputusan Tinjauan <span className="text-red-500">*</span></label>
+                        <div className="flex flex-column gap-2">
+                            <label className="text-sm">Keputusan Tinjauan <span className="text-red-500">*</span></label>
                             <Dropdown
                                 value={reviewStatus}
                                 options={statusOptions}
@@ -246,8 +246,8 @@ export default function ProposalTable({
                                 className="w-full" />
                         </div>
 
-                        <div className="flex flex-column gap-1">
-                            <label htmlFor="catatan_tinjauan" className="font-semibold">Catatan Tinjauan</label>
+                        <div className="flex flex-column gap-2">
+                            <label htmlFor="catatan_tinjauan" className="text-sm">Catatan Tinjauan</label>
                             <InputTextarea
                                 id="catatan_tinjauan"
                                 value={reviewNotes}
@@ -256,11 +256,10 @@ export default function ProposalTable({
                                 placeholder="Masukkan catatan penolakan atau instruksi persetujuan..." />
                         </div>
 
-                        <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                            
+                        <div className="mt-2">
                             <Button type="submit"
                                 label="Tinjau"
-                                size="small"
+                                className="w-full p-button-success"
                                 loading={submittingReview} />
                         </div>
                     </form>
@@ -279,15 +278,15 @@ export default function ProposalTable({
                     setBaFile('');
                 }}>
                 {selectedProposal && (
-                    <form onSubmit={handleExecuteSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
+                    <form onSubmit={handleExecuteSubmit} className="flex flex-column gap-2 mt-0 fadein animation-duration-300">
                         <div className="surface-50 p-3 border-round border-1 surface-border">
                             <div className="mb-2"><strong>Dokumen:</strong> {selectedProposal.nama_dokumen} ({selectedProposal.nomor_dokumen})</div>
                             <div className="mb-2"><strong>Alasan Usulan:</strong> {selectedProposal.alasan_usulan}</div>
                             <div><strong>Disetujui Oleh:</strong> {selectedProposal.ditinjau_oleh} ({formatDate(selectedProposal.ditinjau_pada)})</div>
                         </div>
 
-                        <div className="flex flex-column gap-1">
-                            <label htmlFor="file_berita_acara" className="font-semibold">
+                        <div className="flex flex-column gap-2">
+                            <label htmlFor="file_berita_acara" className="text-sm">
                                 Nomor / File Berita Acara <span className="text-red-500">*</span>
                             </label>
                             <InputText
@@ -301,12 +300,10 @@ export default function ProposalTable({
                             </small>
                         </div>
 
-                        <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                            
+                        <div className="mt-2">
                             <Button type="submit"
                                 label="Selesaikan Pemusnahan"
-                                severity="danger"
-                                size="small"
+                                className="w-full p-button-danger"
                                 loading={submittingExecution} />
                         </div>
                     </form>

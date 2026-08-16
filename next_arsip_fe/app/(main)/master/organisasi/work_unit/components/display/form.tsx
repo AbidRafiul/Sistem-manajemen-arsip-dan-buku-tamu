@@ -10,7 +10,7 @@ const Form = ({ state, setState, formik, handleDelete, handleSave }: any) => {
     const isDialogVisible = state.add || state.edit;
         const isFormFieldInvalid = (name: string) => !!(formik?.touched && formik.touched[name] && formik?.errors && formik.errors[name]);
     const getFormErrorMessage = (name: string) => {
-        return isFormFieldInvalid(name) ? <small className="p-error">{formik.errors[name] as string}</small> : <small className="p-error">&nbsp;</small>;
+        return isFormFieldInvalid(name) ? <small className="p-error">{formik.errors[name] as string}</small> : null;
     };
 
         const hideDialog = () => {
@@ -26,53 +26,37 @@ const Form = ({ state, setState, formik, handleDelete, handleSave }: any) => {
     );
             return (
         <>
-            <Dialog visible={isDialogVisible} style={{ width: '70%' }} header={state.add ? 'Tambah Data' : 'Ubah Data'} modal onHide={hideDialog}>
-                <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
-                    <div className="flex md:flex-row flex-column gap-2 w-full">
-                        <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="id_divisi" className="font-semibold text-sm text-700">Divisi</label>
-                            <div className="p-inputgroup">
-                                <Dropdown id="id_divisi" name="id_divisi" value={formik?.values.id_divisi} options={state?.masterData || []} optionLabel="nama_divisi" optionValue="id_divisi" onChange={formik?.handleChange} placeholder="Pilih Divisi" filter showClear className={isFormFieldInvalid('id_divisi') ? 'p-invalid w-full' : 'w-full'} />
-                            </div>
+            <Dialog visible={isDialogVisible} style={{ width: '450px' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header={state.add ? 'Tambah Data' : 'Ubah Data'} modal onHide={hideDialog}>
+                <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-2 mt-0 fadein animation-duration-300">
+                    <div className="flex flex-column gap-2 w-full">
+                            <label htmlFor="id_divisi" className="text-sm">Divisi</label>
+                            <Dropdown id="id_divisi" name="id_divisi" value={formik?.values.id_divisi} options={state?.masterData || []} optionLabel="nama_divisi" optionValue="id_divisi" onChange={formik?.handleChange} placeholder="Pilih Divisi" filter showClear className={isFormFieldInvalid('id_divisi') ? 'p-invalid w-full' : 'w-full'} />
                             {getFormErrorMessage('id_divisi')}
                         </div>
-                        <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="kode_unit_kerja" className="font-semibold text-sm text-700">Kode Unit Kerja</label>
-                            <div className="p-inputgroup">
-                                <InputText id="kode_unit_kerja" name="kode_unit_kerja" value={formik?.values.kode_unit_kerja}  onChange={formik?.handleChange} className={isFormFieldInvalid('kode_unit_kerja') ? 'p-invalid' : ''} />
-                            </div>
+                    <div className="flex flex-column gap-2 w-full">
+                            <label htmlFor="kode_unit_kerja" className="text-sm">Kode Unit Kerja</label>
+                            <InputText id="kode_unit_kerja" name="kode_unit_kerja" value={formik?.values.kode_unit_kerja} onChange={formik?.handleChange} className={isFormFieldInvalid('kode_unit_kerja') ? 'p-invalid w-full' : 'w-full'} />
                             {getFormErrorMessage('kode_unit_kerja')}
                         </div>
-                    </div>
-                    <div className="flex md:flex-row flex-column gap-2 w-full">
-                        <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="nama_unit_kerja" className="font-semibold text-sm text-700">Nama Unit Kerja</label>
-                            <div className="p-inputgroup">
-                                <InputText id="nama_unit_kerja" name="nama_unit_kerja" value={formik?.values.nama_unit_kerja}  onChange={formik?.handleChange} className={isFormFieldInvalid('nama_unit_kerja') ? 'p-invalid' : ''} />
-                            </div>
+                    <div className="flex flex-column gap-2 w-full">
+                            <label htmlFor="nama_unit_kerja" className="text-sm">Nama Unit Kerja</label>
+                            <InputText id="nama_unit_kerja" name="nama_unit_kerja" value={formik?.values.nama_unit_kerja} onChange={formik?.handleChange} className={isFormFieldInvalid('nama_unit_kerja') ? 'p-invalid w-full' : 'w-full'} />
                             {getFormErrorMessage('nama_unit_kerja')}
                         </div>
-                        <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="deskripsi" className="font-semibold text-sm text-700">Deskripsi</label>
-                            <div className="p-inputgroup">
-                                <InputText id="deskripsi" name="deskripsi" value={formik?.values.deskripsi}  onChange={formik?.handleChange} className={isFormFieldInvalid('deskripsi') ? 'p-invalid' : ''} />
-                            </div>
+                    
+                    <div className="flex flex-column gap-2 w-full">
+                            <label htmlFor="deskripsi" className="text-sm">Deskripsi</label>
+                            <InputText id="deskripsi" name="deskripsi" value={formik?.values.deskripsi} onChange={formik?.handleChange} className={isFormFieldInvalid('deskripsi') ? 'p-invalid w-full' : 'w-full'} />
                             {getFormErrorMessage('deskripsi')}
                         </div>
-                    </div>
-                    <div className="flex md:flex-row flex-column gap-2 w-full">
-                        <div className="flex flex-column gap-2 w-full md:w-6">
-                            <label htmlFor="status" className="font-semibold text-sm text-700">Status</label>
-                            <div className="p-inputgroup">
-                                <Dropdown id="status" name="status" value={formik?.values.status} options={[{label: "Aktif", value: "active"}, {label: "Tidak Aktif", value: "nonactive"}]} onChange={formik?.handleChange} className={isFormFieldInvalid('status') ? 'p-invalid w-full' : 'w-full'} />
-                            </div>
+                    <div className="flex flex-column gap-2 w-full">
+                            <label htmlFor="status" className="text-sm">Status</label>
+                            <Dropdown id="status" name="status" value={formik?.values.status} options={[{label: "Aktif", value: "active"}, {label: "Tidak Aktif", value: "nonactive"}]} onChange={formik?.handleChange} className={isFormFieldInvalid('status') ? 'p-invalid w-full' : 'w-full'} />
                             {getFormErrorMessage('status')}
                         </div>
-                    </div>
 
-                    <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                        
-                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className=" w-full" loading={state?.load} disabled={state?.load} />
+                    <div className="mt-2">
+                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} className="w-full p-button-success" loading={state?.load} disabled={state?.load} />
                     </div>
                 </form>
             </Dialog>

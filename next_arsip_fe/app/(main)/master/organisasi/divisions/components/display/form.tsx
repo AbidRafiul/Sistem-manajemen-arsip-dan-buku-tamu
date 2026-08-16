@@ -4,13 +4,12 @@ import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
-import { TableProps } from '../interfaces';
 
 const Form = ({ state, setState, formik, handleDelete, handleSave }: any) => {
     const isDialogVisible = state.add || state.edit;
     const isFormFieldInvalid = (name: string) => !!(formik?.touched && formik.touched[name] && formik?.errors && formik.errors[name]);
     const getFormErrorMessage = (name: string) => {
-        return isFormFieldInvalid(name) ? <small className="p-error">{formik.errors[name] as string}</small> : <small className="p-error">&nbsp;</small>;
+        return isFormFieldInvalid(name) ? <small className="p-error">{formik.errors[name] as string}</small> : null;
     };
 
     const hideDialog = () => {
@@ -24,55 +23,38 @@ const Form = ({ state, setState, formik, handleDelete, handleSave }: any) => {
             <Button type="button" label="Ya, Hapus" icon="pi pi-trash" severity="danger" loading={state?.load} disabled={state?.load} onClick={handleDelete} />
         </div>
     );
+    
     return (
         <>
-            <Dialog visible={isDialogVisible} style={{ width: '70%' }} header={state.add ? 'Tambah Data' : 'Ubah Data'} modal onHide={hideDialog}>
-                <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
-                    <div className="flex md:flex-row flex-column gap-2 w-full">
-                        <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="id_departemen" className="font-semibold text-sm text-700">Departemen</label>
-                            <div className="p-inputgroup">
-                                <Dropdown id="id_departemen" name="id_departemen" value={formik?.values.id_departemen} options={state?.masterData || []} optionLabel="nama_departemen" optionValue="id_departemen" onChange={formik?.handleChange} placeholder="Pilih Departemen" filter showClear className={isFormFieldInvalid('id_departemen') ? 'p-invalid w-full' : 'w-full'} />
-                            </div>
-                            {getFormErrorMessage('id_departemen')}
-                        </div>
-                        <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="kode_divisi" className="font-semibold text-sm text-700">Kode Divisi</label>
-                            <div className="p-inputgroup">
-                                <InputText id="kode_divisi" name="kode_divisi" value={formik?.values.kode_divisi}  onChange={formik?.handleChange} className={isFormFieldInvalid('kode_divisi') ? 'p-invalid' : ''} />
-                            </div>
-                            {getFormErrorMessage('kode_divisi')}
-                        </div>
+            <Dialog visible={isDialogVisible} style={{ width: '450px' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header={state.add ? 'Tambah Data' : 'Ubah Data'} modal onHide={hideDialog}>
+                <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-2 mt-0 fadein animation-duration-300">
+                    <div className="flex flex-column gap-2 w-full">
+                        <label htmlFor="id_departemen" className="text-sm">Departemen</label>
+                        <Dropdown id="id_departemen" name="id_departemen" value={formik?.values.id_departemen} options={state?.masterData || []} optionLabel="nama_departemen" optionValue="id_departemen" onChange={formik?.handleChange} placeholder="Pilih Departemen" filter showClear className={isFormFieldInvalid('id_departemen') ? 'p-invalid w-full' : 'w-full'} />
+                        {getFormErrorMessage('id_departemen')}
                     </div>
-                    <div className="flex md:flex-row flex-column gap-2 w-full">
-                        <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="nama_divisi" className="font-semibold text-sm text-700">Nama Divisi</label>
-                            <div className="p-inputgroup">
-                                <InputText id="nama_divisi" name="nama_divisi" value={formik?.values.nama_divisi}  onChange={formik?.handleChange} className={isFormFieldInvalid('nama_divisi') ? 'p-invalid' : ''} />
-                            </div>
-                            {getFormErrorMessage('nama_divisi')}
-                        </div>
-                        <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="deskripsi" className="font-semibold text-sm text-700">Deskripsi</label>
-                            <div className="p-inputgroup">
-                                <InputText id="deskripsi" name="deskripsi" value={formik?.values.deskripsi}  onChange={formik?.handleChange} className={isFormFieldInvalid('deskripsi') ? 'p-invalid' : ''} />
-                            </div>
-                            {getFormErrorMessage('deskripsi')}
-                        </div>
+                    <div className="flex flex-column gap-2 w-full">
+                        <label htmlFor="kode_divisi" className="text-sm">Kode Divisi</label>
+                        <InputText id="kode_divisi" name="kode_divisi" value={formik?.values.kode_divisi} onChange={formik?.handleChange} className={isFormFieldInvalid('kode_divisi') ? 'p-invalid w-full' : 'w-full'} />
+                        {getFormErrorMessage('kode_divisi')}
                     </div>
-                    <div className="flex md:flex-row flex-column gap-2 w-full">
-                        <div className="flex flex-column gap-2 w-full md:w-6">
-                            <label htmlFor="status" className="font-semibold text-sm text-700">Status</label>
-                            <div className="p-inputgroup">
-                                <Dropdown id="status" name="status" value={formik?.values.status} options={[{ label: "Aktif", value: "active" }, { label: "Tidak Aktif", value: "nonactive" }]} onChange={formik?.handleChange} className={isFormFieldInvalid('status') ? 'p-invalid w-full' : 'w-full'} />
-                            </div>
-                            {getFormErrorMessage('status')}
-                        </div>
+                    <div className="flex flex-column gap-2 w-full">
+                        <label htmlFor="nama_divisi" className="text-sm">Nama Divisi</label>
+                        <InputText id="nama_divisi" name="nama_divisi" value={formik?.values.nama_divisi} onChange={formik?.handleChange} className={isFormFieldInvalid('nama_divisi') ? 'p-invalid w-full' : 'w-full'} />
+                        {getFormErrorMessage('nama_divisi')}
                     </div>
-
-                    <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                        
-                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className=" w-full" loading={state?.load} disabled={state?.load} />
+                    <div className="flex flex-column gap-2 w-full">
+                        <label htmlFor="deskripsi" className="text-sm">Deskripsi</label>
+                        <InputText id="deskripsi" name="deskripsi" value={formik?.values.deskripsi} onChange={formik?.handleChange} className={isFormFieldInvalid('deskripsi') ? 'p-invalid w-full' : 'w-full'} />
+                        {getFormErrorMessage('deskripsi')}
+                    </div>
+                    <div className="flex flex-column gap-2 w-full">
+                        <label htmlFor="status" className="text-sm">Status</label>
+                        <Dropdown id="status" name="status" value={formik?.values.status} options={[{ label: "Aktif", value: "active" }, { label: "Tidak Aktif", value: "nonactive" }]} onChange={formik?.handleChange} className={isFormFieldInvalid('status') ? 'p-invalid w-full' : 'w-full'} />
+                        {getFormErrorMessage('status')}
+                    </div>
+                    <div className="mt-2">
+                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} className="w-full p-button-success" loading={state?.load} disabled={state?.load} />
                     </div>
                 </form>
             </Dialog>

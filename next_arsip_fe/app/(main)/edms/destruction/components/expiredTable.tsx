@@ -179,7 +179,7 @@ export default function ExpiredTable({
                     setReason('');
                 }}>
                 {selectedDoc && (
-                    <form onSubmit={handleProposeDestruction} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
+                    <form onSubmit={handleProposeDestruction} className="flex flex-column gap-2 mt-0 fadein animation-duration-300">
                         <div className="surface-50 p-3 border-round border-1 surface-border">
                             <div className="mb-2"><strong>Nomor Dokumen:</strong> {selectedDoc.nomor_dokumen}</div>
                             <div className="mb-2"><strong>Nama Dokumen:</strong> {selectedDoc.nama_dokumen}</div>
@@ -187,8 +187,8 @@ export default function ExpiredTable({
                             <div><strong>Tindakan:</strong> {selectedDoc.tindakan_retensi === 'destroy' ? 'Musnahkan' : 'Tinjau Kembali'}</div>
                         </div>
 
-                        <div className="flex flex-column gap-1">
-                            <label htmlFor="alasan_usulan" className="font-semibold">
+                        <div className="flex flex-column gap-2">
+                            <label htmlFor="alasan_usulan" className="text-sm">
                                 Alasan Pemusnahan <span className="text-red-500">*</span>
                             </label>
                             <InputTextarea
@@ -200,11 +200,10 @@ export default function ExpiredTable({
                                 placeholder="Masukkan alasan mengapa dokumen ini diusulkan untuk dimusnahkan..." />
                         </div>
 
-                        <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                            
+                        <div className="mt-2">
                             <Button type="submit"
                                 label="Usulkan"
-                                size="small"
+                                className="w-full p-button-success"
                                 loading={submitting} />
                         </div>
                     </form>
