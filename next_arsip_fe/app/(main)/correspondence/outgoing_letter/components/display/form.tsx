@@ -1219,7 +1219,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                 </div>
 
                 <div className="mt-2">
-                    <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} className="w-full p-button-success" loading={state?.load} disabled={state?.load} />
+                    <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} className="w-full p-button-primary" loading={state?.load} disabled={state?.load} />
                 </div>
             </form>
         </Dialog>

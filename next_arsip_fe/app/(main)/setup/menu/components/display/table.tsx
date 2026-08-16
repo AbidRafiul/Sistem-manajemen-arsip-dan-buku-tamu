@@ -108,7 +108,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                             label="Tambah"
                             icon="pi pi-plus"
                             outlined
-                            severity="success"
+                            severity="primary"
                             onClick={() => {
                                 formik.resetForm();
                                 setState(p => ({ ...p, add: true, selectedData: [] }));

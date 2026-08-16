@@ -76,7 +76,7 @@ export default function PrintPageSetting({
                 <Button
                     label="Export XLSX"
                     icon="pi pi-file"
-                    className="p-button-success mr-2"
+                    className="p-button-primary mr-2"
                     onClick={exportXLSX}
                 />
             )}

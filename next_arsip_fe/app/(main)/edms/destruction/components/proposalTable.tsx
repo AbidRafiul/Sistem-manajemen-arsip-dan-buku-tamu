@@ -94,7 +94,7 @@ export default function ProposalTable({
             case 'submitted':
                 return <Tag value="Menunggu Tinjauan" severity="warning" className="font-semibold text-xs" />;
             case 'approved':
-                return <Tag value="Disetujui (Siap Musnah)" severity="success" className="font-semibold text-xs" />;
+                return <Tag value="Disetujui (Siap Musnah)" severity="primary" className="font-semibold text-xs" />;
             case 'rejected':
                 return <Tag value="Ditolak" severity="danger" className="font-semibold text-xs" />;
             case 'executed':
@@ -259,7 +259,7 @@ export default function ProposalTable({
                         <div className="mt-2">
                             <Button type="submit"
                                 label="Tinjau"
-                                className="w-full p-button-success"
+                                className="w-full p-button-primary"
                                 loading={submittingReview} />
                         </div>
                     </form>

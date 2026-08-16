@@ -251,7 +251,7 @@ const Page = () => {
               label="Tambah"
               icon="pi pi-plus"
               outlined
-              severity="success"
+              severity="primary"
               onClick={() => {
                 formik.resetForm();
                 setPreview('');
@@ -422,7 +422,7 @@ const Page = () => {
 
           <div className="mt-2">
             
-            <Button type="submit" label={formik.values.id_penomoran_surat ? 'Perbarui' : 'Simpan'} className="w-full p-button-success" loading={load} disabled={load} />
+            <Button type="submit" label={formik.values.id_penomoran_surat ? 'Perbarui' : 'Simpan'} className="w-full p-button-primary" loading={load} disabled={load} />
           </div>
         </form>
       </Dialog>

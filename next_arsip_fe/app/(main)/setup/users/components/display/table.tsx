@@ -127,7 +127,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                                     label="Tambah"
                                     icon="pi pi-plus"
                                     outlined
-                                    severity="success"
+                                    severity="primary"
                                     onClick={() => {
                                         setState((p) => ({ ...p, selectedUser: [], add: true }));
                                     }} />

@@ -168,7 +168,7 @@ const Table: React.FC<TableProps> = ({
                         <Button icon="pi pi-check"
                             rounded
                             text
-                            severity="success"
+                            severity="primary"
                             size="small"
                             tooltip="Setujui Versi"
                             tooltipOptions={{ position: 'top' }}
@@ -202,7 +202,7 @@ const Table: React.FC<TableProps> = ({
                 className="p-button-sm font-semibold" />
             <Button label="Ya, Setujui"
                 icon="pi pi-check"
-                severity="success"
+                severity="primary"
                 loading={load}
                 disabled={!selectedVersionId}
                 onClick={async () => {

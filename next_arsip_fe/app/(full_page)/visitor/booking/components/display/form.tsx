@@ -134,7 +134,7 @@ export default function VisitorBookingForm({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-column gap-4 w-full">
+        <form onSubmit={handleSubmit} className="flex flex-column gap-2 w-full">
             {styleOverrides()}
 
             {/* SEKSI 1: PROFIL TAMU */}
@@ -354,7 +354,7 @@ export default function VisitorBookingForm({
                     </div>
 
                     {form.visit_type === 'group' && (
-                        <div className="col-12 field flex flex-column gap-3 mb-0 border-top-1 border-100 pt-3">
+                        <div className="col-12 field flex flex-column gap-2 mb-0 border-top-1 border-100 pt-3">
                             <div className="flex justify-content-between align-items-center mb-2">
                                 <span className="font-bold text-sm text-800">Daftar Anggota Rombongan</span>
                                 <Button
@@ -546,21 +546,23 @@ export default function VisitorBookingForm({
             </div>
 
             {/* BUTTONS ACTIONS */}
-            <div className="flex flex-column sm:flex-row justify-content-end gap-2 mt-2 pt-3 border-top-1 border-100">
+            <div className="flex justify-content-end gap-2 mt-4 pt-3 border-top-1 surface-border">
                 <Button
                     type="button"
                     label="Bersihkan Form"
                     icon="pi pi-refresh"
-                    className="p-button-outlined p-button-secondary font-semibold border-round-lg py-3 px-4 text-sm"
+                    severity="secondary"
+                    outlined
+                    className="px-4 w-auto"
                     onClick={handleReset}
                 />
                 <Button
                     type="submit"
                     label="Jadwalkan Kunjungan"
-                    icon="pi pi-calendar-plus"
+                    icon="pi pi-check"
                     loading={loading}
-                    className="font-bold border-round-lg py-3 px-5 text-sm text-white"
-                    style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', border: 'none', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)' }}
+                    severity="primary"
+                    className="w-auto px-4"
                 />
             </div>
             <Dialog

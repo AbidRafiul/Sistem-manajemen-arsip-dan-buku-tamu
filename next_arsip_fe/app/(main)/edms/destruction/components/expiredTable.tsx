@@ -203,7 +203,7 @@ export default function ExpiredTable({
                         <div className="mt-2">
                             <Button type="submit"
                                 label="Usulkan"
-                                className="w-full p-button-success"
+                                className="w-full p-button-primary"
                                 loading={submitting} />
                         </div>
                     </form>

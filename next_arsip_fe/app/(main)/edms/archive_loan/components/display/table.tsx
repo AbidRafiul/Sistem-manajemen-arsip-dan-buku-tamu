@@ -92,7 +92,7 @@ const Table = ({
                         <Button icon="pi pi-check"
                             rounded
                             text
-                            severity="success"
+                            severity="primary"
                             size="small"
                             tooltip="Setujui Peminjaman"
                             tooltipOptions={{ position: 'top' }}
@@ -189,7 +189,7 @@ const Table = ({
                             label="Pinjam Dokumen"
                             icon="pi pi-plus"
                             outlined
-                            severity="success"
+                            severity="primary"
                             onClick={() => { formik.resetForm(); setState(p => ({ ...p, add: true })); }} />
                         <Divider layout="vertical" />
                     </>

@@ -75,7 +75,7 @@ const Table = ({ state, setState, formik, handleDelete, getData, toast }: TableP
             <div className="flex flex-row flex-wrap align-items-center justify-content-between gap-2 mb-3">
                 <div className="flex flex-row flex-wrap align-items-center gap-2">
                     {canCreate && (
-                        <Button size="small" label="Tambah" icon="pi pi-plus" outlined severity="success" onClick={() => {
+                        <Button size="small" label="Tambah" icon="pi pi-plus" outlined severity="primary" onClick={() => {
                             formik.resetForm();
                             setState(p => ({ ...p, add: true, selectedData: [] }));
                         }} />

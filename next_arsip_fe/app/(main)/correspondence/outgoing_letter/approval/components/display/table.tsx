@@ -371,7 +371,7 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                 <Button icon="pi pi-check-square"
                     rounded
                     text
-                    severity="success"
+                    severity="primary"
                     size="small"
                     tooltip="Proses Persetujuan"
                     tooltipOptions={{ position: "top" }}
@@ -496,7 +496,7 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                     <Button size="small"
                         label={`Proses Terpilih${state.selectedLetters.length ? ` (${state.selectedLetters.length})` : ""}`}
                         icon="pi pi-check-square"
-                        severity="success"
+                        severity="primary"
                         outlined
                         disabled={state.selectedLetters.length === 0}
                         onClick={() => openProcessDialog("bulk")} />
@@ -604,7 +604,7 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                             className="text-sm" />
                         <Button label="Setujui Surat"
                             icon="pi pi-check"
-                            severity="success"
+                            severity="primary"
                             loading={submitLoad}
                             onClick={() => handleProcess("approve")}
                             className="text-sm" />

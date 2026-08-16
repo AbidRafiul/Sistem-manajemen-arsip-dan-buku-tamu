@@ -153,7 +153,7 @@ const Form = ({
                 </div>
 
                 <div className="mt-2">
-                    <Button type="submit" label="Kirim Permintaan" className="w-full p-button-success" loading={state?.load} disabled={state?.load} />
+                    <Button type="submit" label="Kirim Permintaan" className="w-full p-button-primary" loading={state?.load} disabled={state?.load} />
                 </div>
             </form>
         </Dialog>

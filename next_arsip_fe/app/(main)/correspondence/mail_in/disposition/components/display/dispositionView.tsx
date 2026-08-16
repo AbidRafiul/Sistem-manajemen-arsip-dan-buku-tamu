@@ -223,7 +223,7 @@ const DispositionView = ({
                     <Button size="small" icon="pi pi-share-alt" text severity="info" tooltip="Teruskan" tooltipOptions={{ position: "top" }} onClick={() => onOpenForward(row)} />
                 )}
                 {!isDone && (
-                    <Button size="small" icon="pi pi-check" text severity="success" tooltip="Selesaikan" tooltipOptions={{ position: "top" }} onClick={() => onOpenAction("complete", row)} />
+                    <Button size="small" icon="pi pi-check" text severity="primary" tooltip="Selesaikan" tooltipOptions={{ position: "top" }} onClick={() => onOpenAction("complete", row)} />
                 )}
                 {isDone && <span className="text-xs text-color-secondary">—</span>}
             </div>
