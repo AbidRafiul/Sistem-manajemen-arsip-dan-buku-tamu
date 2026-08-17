@@ -25,6 +25,19 @@ router.post("/delete", async (req, res) => {
 
     await DB("mst_cabang").whereIn("id_cabang", oPayload.id).update({ status: 'deleted', updated_at: new Date() });
 
+    // Cascade delete
+    const depts = await DB("mst_departemen").whereIn("id_cabang", oPayload.id).select("id_departemen");
+    const deptIds = depts.map(d => d.id_departemen);
+    if (deptIds.length > 0) {
+      await DB("mst_departemen").whereIn("id_departemen", deptIds).update({ status: 'deleted', updated_at: new Date() });
+      const divs = await DB("mst_divisi").whereIn("id_departemen", deptIds).select("id_divisi");
+      const divIds = divs.map(d => d.id_divisi);
+      if (divIds.length > 0) {
+        await DB("mst_divisi").whereIn("id_divisi", divIds).update({ status: 'deleted', updated_at: new Date() });
+        await DB("mst_unit_kerja").whereIn("id_divisi", divIds).update({ status: 'deleted', updated_at: new Date() });
+      }
+    }
+
     return res.status(200).json({ status: status.SUKSES, message: "Berhasil dihapus!", datetime: formatDateSystem() });
   } catch (error) {
     const oResult = { status: status.BAD_REQUEST, message: "Gagal menghapus", datetime: datetime() };

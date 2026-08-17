@@ -23,7 +23,7 @@ const getDocumentType = async (req, res) => {
         "status"
 
       )
-      .where("status", "active")
+      .whereNot("status", "deleted")
       .orderBy("created_at", "desc");
 
     return res.status(200).json({

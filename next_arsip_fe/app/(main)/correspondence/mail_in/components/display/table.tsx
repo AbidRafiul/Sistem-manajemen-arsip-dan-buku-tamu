@@ -288,7 +288,7 @@ const Table = ({
                                 label="Tambah Surat"
                                 icon="pi pi-plus"
                                 outlined
-                                severity="primary"
+                               
                                 onClick={() => { formik.resetForm(); setState((p) => ({ ...p, selectedLetters: [], add: true, edit: false, delete: false })); }} />
                             <Divider layout="vertical" />
                         </>
@@ -409,7 +409,7 @@ const Table = ({
                                     <Button label="Arsipkan"
                                         icon="pi pi-archive"
                                         size="small"
-                                        severity="primary"
+                                       
                                         loading={state.load}
                                         disabled={detailFiles.length < 1}
                                         onClick={confirmArchiveLetter}

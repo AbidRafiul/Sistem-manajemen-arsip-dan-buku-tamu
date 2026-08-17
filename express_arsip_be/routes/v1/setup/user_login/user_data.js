@@ -65,6 +65,7 @@ router.post("/", async (req, res) => {
     }
 
     const vaData = await query
+      .whereNot("mu.status", "deleted")
       .groupBy("mu.id_pengguna")
       .orderBy("mu.id_pengguna", "asc");
 

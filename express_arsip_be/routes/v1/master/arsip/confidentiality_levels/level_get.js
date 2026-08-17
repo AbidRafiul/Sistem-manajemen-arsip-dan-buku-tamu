@@ -24,7 +24,7 @@ const getConfidentialityLevel = async (req, res) => {
         "status"
 
       )
-      .where("status", "active")
+      .whereNot("status", "deleted")
       .orderBy("tingkat_kerahasiaan", "asc");
 
     return res.status(200).json({

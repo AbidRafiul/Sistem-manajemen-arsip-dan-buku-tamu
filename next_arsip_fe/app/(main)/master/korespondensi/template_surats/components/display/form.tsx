@@ -50,7 +50,7 @@ Hormat kami,
 
 const Form = ({ state, setState, formik, handleDelete }: any) => {
   const isDialogVisible = state.add || state.edit;
-  const letterTypeOptions = (state.letterTypes || []).map((item: any) => ({ label: item.nama_jenis_surat, value: item.jenis_surat_id }));
+  const letterTypeOptions = (state.letterTypes || []).filter((item: any) => item.status === 'active' || item.jenis_surat_id === formik.values.jenis_surat_id).map((item: any) => ({ label: item.nama_jenis_surat, value: item.jenis_surat_id }));
 
   const previewText = useMemo(() => {
     return (formik.values.isi_template || '').trim() || 'Isi template akan muncul di sini';

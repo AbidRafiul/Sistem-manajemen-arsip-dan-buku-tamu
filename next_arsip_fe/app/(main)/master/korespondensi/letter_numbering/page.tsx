@@ -251,7 +251,7 @@ const Page = () => {
               label="Tambah"
               icon="pi pi-plus"
               outlined
-              severity="primary"
+             
               onClick={() => {
                 formik.resetForm();
                 setPreview('');
@@ -340,7 +340,7 @@ const Page = () => {
               <Dropdown
                 id="jenis_surat_id"
                 value={formik.values.jenis_surat_id}
-                options={letterTypes}
+                options={letterTypes.filter((item: any) => item.status === 'active' || item.jenis_surat_id === formik.values.jenis_surat_id)}
                 optionLabel="nama_jenis_surat"
                 optionValue="jenis_surat_id"
                 className={formik.touched.jenis_surat_id && formik.errors.jenis_surat_id ? 'p-invalid' : ''}

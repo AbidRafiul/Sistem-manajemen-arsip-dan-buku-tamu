@@ -127,7 +127,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                                     label="Tambah"
                                     icon="pi pi-plus"
                                     outlined
-                                    severity="primary"
+                                   
                                     onClick={() => {
                                         setState((p) => ({ ...p, selectedUser: [], add: true }));
                                     }} />
@@ -290,7 +290,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                         body={(rowData) => {
                             // Karena di DB nilainya 'active' (string), bukan '1'
                             const isActive = rowData.status === 'active';
-                            return <Tag value={isActive ? 'Aktif' : 'Tidak Aktif'} severity={isActive ? 'success' : 'danger'} className="text-xs font-semibold px-2 py-1" rounded style={{ minWidth: '105px' }} />;
+                            return <Tag value={isActive ? 'Aktif' : 'Nonaktif'} severity={isActive ? 'success' : 'danger'} className="text-xs font-semibold px-2 py-1" rounded style={{ minWidth: '105px' }} />;
                         }}
                         header="Status" style={{ width: '110px' }}></Column>
                     <Column align="center" field="created_at" sortable body={(rowData) => formatDateCalendar(rowData.created_at)} header="Datetime" style={{ width: '150px' }}></Column>

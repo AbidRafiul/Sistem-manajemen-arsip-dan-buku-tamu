@@ -18,7 +18,7 @@ const deleteRetentionSchedule = async (req, res) => {
   try {
     const nUpdated = await DB("mst_jadwal_retensi")
       .where("id_jadwal_retensi", cIdJadwalRetensi)
-      .update({ status: "nonactive", updated_at: new Date() });
+      .update({ status: "deleted", updated_at: new Date() });
 
     if (!nUpdated) {
       return res.status(404).json({

@@ -313,13 +313,13 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
                                     onClick={() => handleOpenDetail(detailLetter)} />
                                 <Button label="Finalisasi"
                                     icon="pi pi-check"
-                                    severity="primary"
+                                   
                                     outlined
                                     disabled={!permissions.canCreate}
                                     loading={finalizing}
                                     onClick={confirmFinalize} />
                                 <Button label="Tanda Tangani Dokumen" 
-                                    severity="primary" 
+                                    
                                     onClick={handleSignDocument} 
                                     loading={signing} />
                                 <Button label="Tandatangani"

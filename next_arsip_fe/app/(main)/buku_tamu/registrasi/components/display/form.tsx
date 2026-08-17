@@ -425,7 +425,7 @@ export default function RegistrasiForm({
 
                 <div className="flex gap-2 mt-4 pt-3 border-top-1 surface-border justify-content-end">
                     <Button type="button" label="Reset Form" icon="pi pi-refresh" severity="secondary" outlined className="px-4 w-auto" onClick={() => handleChange('reset', null)} />
-                    <Button type="submit" label="Simpan Registrasi" icon="pi pi-check" severity="primary" className="w-auto px-4" loading={loading} disabled={loading} />
+                    <Button type="submit" label="Simpan Registrasi" icon="pi pi-check" className="w-auto px-4" loading={loading} disabled={loading} />
                 </div>
             </div>
             <Dialog

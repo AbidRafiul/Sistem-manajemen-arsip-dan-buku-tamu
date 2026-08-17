@@ -75,7 +75,7 @@ const Table = ({ state, setState, formik, getData, handleDelete }: any) => {
       </div>
 
       <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
-        {canCreate && <Button type="button" size="small" label="Tambah" icon="pi pi-plus" outlined severity="primary" onClick={() => {
+        {canCreate && <Button type="button" size="small" label="Tambah" icon="pi pi-plus" outlined onClick={() => {
           formik.resetForm();
           setState((p: State) => ({ ...p, add: true, selectedData: [] }));
         }} />}

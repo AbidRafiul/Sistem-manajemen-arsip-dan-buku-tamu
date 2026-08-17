@@ -37,11 +37,12 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
 
     // Logika Cascading Dropdown (Hierarki Organisasi)
     const filteredDepartments = (state.masterData?.departments || []).filter((d: any) =>
-        !formik?.values.id_cabang || d.id_cabang === formik?.values.id_cabang
+        (d.status === 'active' || d.id_departemen === formik?.values.id_departemen) && (!formik?.values.id_cabang || d.id_cabang === formik?.values.id_cabang)
     );
     const validDeptIds = filteredDepartments.map((d: any) => d.id_departemen || d.id);
 
     const filteredDivisions = (state.masterData?.divisions || []).filter((div: any) => {
+        if (div.status !== 'active' && div.id_divisi !== formik?.values.id_divisi) return false;
         if (formik?.values.id_departemen) return div.id_departemen === formik?.values.id_departemen;
         if (formik?.values.id_cabang) return validDeptIds.includes(div.id_departemen);
         return true;
@@ -49,6 +50,7 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
     const validDivIds = filteredDivisions.map((div: any) => div.id_divisi || div.id);
 
     const filteredWorkUnits = (state.masterData?.workUnits || []).filter((u: any) => {
+        if (u.status !== 'active' && u.id_unit_kerja !== formik?.values.id_unit_kerja) return false;
         if (formik?.values.id_divisi) return u.id_divisi === formik?.values.id_divisi;
         if (formik?.values.id_departemen || formik?.values.id_cabang) return validDivIds.includes(u.id_divisi);
         return true;
@@ -94,7 +96,7 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                     <div className="flex flex-column md:flex-row gap-3 w-full">
                         <div className="flex flex-column gap-2 w-full">
                             <label htmlFor="id_cabang" className="text-sm">Cabang</label>
-                            <Dropdown id="id_cabang" name="id_cabang" value={formik?.values.id_cabang} options={state.masterData?.branches || []} optionLabel="nama_cabang" optionValue="id_cabang" onChange={(e) => { formik?.setFieldValue('id_cabang', e.value || ''); formik?.setFieldValue('id_departemen', ''); formik?.setFieldValue('id_divisi', ''); formik?.setFieldValue('id_unit_kerja', ''); }} placeholder="Pilih Cabang" className="w-full" filter showClear />
+                            <Dropdown id="id_cabang" name="id_cabang" value={formik?.values.id_cabang} options={state.masterData?.branches?.filter((d: any) => d.status === 'active' || d.id_cabang === formik?.values.id_cabang) || []} optionLabel="nama_cabang" optionValue="id_cabang" onChange={(e) => { formik?.setFieldValue('id_cabang', e.value || ''); formik?.setFieldValue('id_departemen', ''); formik?.setFieldValue('id_divisi', ''); formik?.setFieldValue('id_unit_kerja', ''); }} placeholder="Pilih Cabang" className="w-full" filter showClear />
                         </div>
                         <div className="flex flex-column gap-2 w-full">
                             <label htmlFor="id_departemen" className="text-sm">Departemen</label>
@@ -116,12 +118,12 @@ const Form = ({ state, setState, formik, handleSave, handleDelete }: FormProps) 
                     <div className="flex flex-column md:flex-row gap-3 w-full">
                         <div className="flex flex-column gap-2 w-full">
                             <label htmlFor="id_jabatan" className="text-sm">Posisi</label>
-                            <Dropdown id="id_jabatan" name="id_jabatan" value={formik?.values.id_jabatan} options={state.masterData?.positions || []} optionLabel="nama_jabatan" optionValue="id_jabatan" onChange={(e) => formik?.setFieldValue('id_jabatan', e.value || '')} placeholder="Pilih Posisi" className="w-full" filter showClear />
+                            <Dropdown id="id_jabatan" name="id_jabatan" value={formik?.values.id_jabatan} options={state.masterData?.positions?.filter((d: any) => d.status === 'active' || d.id_jabatan === formik?.values.id_jabatan) || []} optionLabel="nama_jabatan" optionValue="id_jabatan" onChange={(e) => formik?.setFieldValue('id_jabatan', e.value || '')} placeholder="Pilih Posisi" className="w-full" filter showClear />
                         </div>
                         {formik.values.id_peran === 1 && state.edit ? null : (
                             <div className="flex flex-column gap-2 w-full">
                                 <label htmlFor="role" className="text-sm">Role</label>
-                                <Dropdown id="role_peran" name="role_peran" options={state.masterData?.roles || []} optionLabel="nama_peran" optionValue="id_peran" value={formik?.values.id_peran} onChange={(e) => formik?.setFieldValue('id_peran', e.value)} placeholder="Pilih Role" className={isFormFieldInvalid('id_peran') ? 'p-invalid w-full' : 'w-full'} filter />
+                                <Dropdown id="role_peran" name="role_peran" options={state.masterData?.roles?.filter((d: any) => d.status === 'active' || d.id_peran === formik?.values.id_peran) || []} optionLabel="nama_peran" optionValue="id_peran" value={formik?.values.id_peran} onChange={(e) => formik?.setFieldValue('id_peran', e.value)} placeholder="Pilih Role" className={isFormFieldInvalid('id_peran') ? 'p-invalid w-full' : 'w-full'} filter />
                                 {getFormErrorMessage('id_peran')}
                             </div>
                         )}

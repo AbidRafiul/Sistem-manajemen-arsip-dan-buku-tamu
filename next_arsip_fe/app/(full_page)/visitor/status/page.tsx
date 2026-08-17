@@ -63,7 +63,7 @@ export default function VisitorStatusPage() {
     const getApprovalTag = (statusPersetujuan: string) => {
         switch (statusPersetujuan?.toLowerCase()) {
             case 'approved':
-                return <Tag severity="primary" value="Disetujui / Approved" icon="pi pi-check-circle" className="px-3 py-2 text-xs font-bold border-round-lg" />;
+                return <Tag value="Disetujui / Approved" icon="pi pi-check-circle" className="px-3 py-2 text-xs font-bold border-round-lg" />;
             case 'rejected':
                 return <Tag severity="danger" value="Ditolak / Rejected" icon="pi pi-times-circle" className="px-3 py-2 text-xs font-bold border-round-lg" />;
             case 'pending':

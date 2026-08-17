@@ -127,7 +127,7 @@ const Table = ({
                         label="New"
                         icon="pi pi-plus"
                         outlined
-                        severity="primary"
+                       
                         onClick={() => {
                             setState(p => ({ ...p, selectedUser: [], add: true }))
                         }} />

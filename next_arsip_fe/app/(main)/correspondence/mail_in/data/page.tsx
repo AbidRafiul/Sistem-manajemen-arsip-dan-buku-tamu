@@ -136,16 +136,22 @@ const Page = () => {
             const res = vaData.data;
             const incomingLetterId = getIncomingLetterId(vaData, input);
 
+            let uploadErrorMessage = "";
             if (input.file_surat) {
                 try {
                     await uploadLetterFile(input, incomingLetterId);
                 } catch (error: any) {
                     const e = error?.response?.data || error;
-                    showError(toast, e?.message || "Surat tersimpan, tapi file gagal diupload");
+                    uploadErrorMessage = e?.message || "File surat gagal diupload";
                 }
             }
 
-            showSuccess(toast, res?.message || "Berhasil Menyimpan Data");
+            if (uploadErrorMessage) {
+                showError(toast, `Surat tersimpan, tetapi ${uploadErrorMessage.toLowerCase()}`);
+            } else {
+                showSuccess(toast, res?.message || "Berhasil Menyimpan Data");
+            }
+
             formik.resetForm();
             setState((p) => ({
                 ...p,

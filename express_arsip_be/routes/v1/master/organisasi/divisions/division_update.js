@@ -21,7 +21,8 @@ router.post("/update", async (req, res) => {
         id_departemen: Joi.number().required().label("ID Departemen"),
         kode_divisi: Joi.string().required().label("Kode Divisi"),
         nama_divisi: Joi.string().required().label("Nama Divisi"),
-        deskripsi: Joi.string().optional().allow(null, "").label("Deskripsi")
+        deskripsi: Joi.string().optional().allow(null, "").label("Deskripsi"),
+        status: Joi.string().optional().valid('active', 'nonactive', 'deleted').label("Status")
       },
       { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
       oPayload,
@@ -41,8 +42,14 @@ router.post("/update", async (req, res) => {
         kode_divisi: oPayload.kode_divisi ? (oPayload.kode_divisi.toUpperCase().startsWith("DV-") ? `DV-${oPayload.kode_divisi.substring(3)}` : `DV-${oPayload.kode_divisi}`) : null,
         nama_divisi: oPayload.nama_divisi || null,
         deskripsi: oPayload.deskripsi || null,
+        status: oPayload.status || 'active',
         updated_at: new Date(),
       });
+
+    // Cascade update to nonactive
+    if (oPayload.status === 'nonactive') {
+      await DB("mst_unit_kerja").where("id_divisi", oPayload.id_divisi).update({ status: 'nonactive', updated_at: new Date() });
+    }
 
     if (!nUpdated) return res.status(404).json({ message: "Data tidak ditemukan", datetime: formatDateSystem() });
     return res.status(200).json({ status: status.SUKSES, message: "Berhasil diupdate!", datetime: formatDateSystem() });

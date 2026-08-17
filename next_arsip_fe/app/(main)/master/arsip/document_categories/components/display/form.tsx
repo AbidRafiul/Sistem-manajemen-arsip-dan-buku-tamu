@@ -34,7 +34,7 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
                             id="kode_klasifikasi" 
                             name="kode_klasifikasi" 
                             value={formik?.values.kode_klasifikasi} 
-                            options={state.classifications.map((item: any) => ({
+                            options={state.classifications.filter((item: any) => item.status === 'active' || item.kode_klasifikasi === formik?.values.kode_klasifikasi).map((item: any) => ({
                                 label: `${item.kode_klasifikasi} - ${item.nama_klasifikasi}`,
                                 value: item.kode_klasifikasi
                             }))} 

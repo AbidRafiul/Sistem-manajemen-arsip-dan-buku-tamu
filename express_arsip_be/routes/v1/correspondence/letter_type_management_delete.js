@@ -23,7 +23,7 @@ router.delete("/:jenis_surat_id", async (req, res) => {
   try {
     const nUpdated = await DB("mst_jenis_surat")
       .where("jenis_surat_id", nJenisSuratId)
-      .update({ status: "nonactive", updated_at: new Date() });
+      .update({ status: "deleted", updated_at: new Date() });
 
     if (!nUpdated) {
       return res.status(404).json({

@@ -71,7 +71,7 @@ const Form = ({ state, setState, formik, handleDelete, handleSave }: any) => {
                         </div>
                     <div className="flex flex-column gap-2 w-full">
                             <label htmlFor="status" className="text-sm">Status</label>
-                            <Dropdown id="status" name="status" value={formik?.values.status} options={[{label: "Aktif", value: "active"}, {label: "Tidak Aktif", value: "nonactive"}]} onChange={formik?.handleChange} className={isFormFieldInvalid('status') ? 'p-invalid w-full' : 'w-full'} />
+                            <Dropdown id="status" name="status" value={formik?.values.status} options={[{label: "Aktif", value: "active"}, {label: "Nonaktif", value: "nonactive"}]} onChange={formik?.handleChange} className={isFormFieldInvalid('status') ? 'p-invalid w-full' : 'w-full'} />
                             {getFormErrorMessage('status')}
                         </div>
 <div className="mt-2">

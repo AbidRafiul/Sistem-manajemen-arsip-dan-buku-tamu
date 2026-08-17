@@ -30,7 +30,7 @@ const Form = ({ state, setState, formik, handleDelete, handleSave }: any) => {
                 <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-2 mt-0 fadein animation-duration-300">
                     <div className="flex flex-column gap-2 w-full">
                         <label htmlFor="id_departemen" className="text-sm">Departemen</label>
-                        <Dropdown id="id_departemen" name="id_departemen" value={formik?.values.id_departemen} options={state?.masterData || []} optionLabel="nama_departemen" optionValue="id_departemen" onChange={formik?.handleChange} placeholder="Pilih Departemen" filter showClear className={isFormFieldInvalid('id_departemen') ? 'p-invalid w-full' : 'w-full'} />
+                        <Dropdown id="id_departemen" name="id_departemen" value={formik?.values.id_departemen} options={state?.masterData?.filter((d: any) => d.status === 'active' || d.id_departemen === formik?.values.id_departemen) || []} optionLabel="nama_departemen" optionValue="id_departemen" onChange={formik?.handleChange} placeholder="Pilih Departemen" filter showClear className={isFormFieldInvalid('id_departemen') ? 'p-invalid w-full' : 'w-full'} />
                         {getFormErrorMessage('id_departemen')}
                     </div>
                     <div className="flex flex-column gap-2 w-full">
@@ -50,7 +50,7 @@ const Form = ({ state, setState, formik, handleDelete, handleSave }: any) => {
                     </div>
                     <div className="flex flex-column gap-2 w-full">
                         <label htmlFor="status" className="text-sm">Status</label>
-                        <Dropdown id="status" name="status" value={formik?.values.status} options={[{ label: "Aktif", value: "active" }, { label: "Tidak Aktif", value: "nonactive" }]} onChange={formik?.handleChange} className={isFormFieldInvalid('status') ? 'p-invalid w-full' : 'w-full'} />
+                        <Dropdown id="status" name="status" value={formik?.values.status} options={[{ label: "Aktif", value: "active" }, { label: "Nonaktif", value: "nonactive" }]} onChange={formik?.handleChange} className={isFormFieldInvalid('status') ? 'p-invalid w-full' : 'w-full'} />
                         {getFormErrorMessage('status')}
                     </div>
                     <div className="mt-2">

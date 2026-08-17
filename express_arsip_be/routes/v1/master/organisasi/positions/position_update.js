@@ -21,7 +21,8 @@ router.post("/update", async (req, res) => {
         kode_jabatan: Joi.string().required().label("Kode Jabatan"),
         nama_jabatan: Joi.string().required().label("Nama Jabatan"),
         tingkat_jabatan: Joi.any().optional().allow(null, "").label("Tingkat Jabatan"),
-        deskripsi: Joi.string().optional().allow(null, "").label("Deskripsi")
+        deskripsi: Joi.string().optional().allow(null, "").label("Deskripsi"),
+        status: Joi.string().optional().valid('active', 'nonactive', 'deleted').label("Status")
       },
       { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
       oPayload,
@@ -41,6 +42,7 @@ router.post("/update", async (req, res) => {
         nama_jabatan: oPayload.nama_jabatan || null,
         tingkat_jabatan: oPayload.tingkat_jabatan || null,
         deskripsi: oPayload.deskripsi || null,
+        status: oPayload.status || 'active',
         updated_at: new Date(),
       });
 

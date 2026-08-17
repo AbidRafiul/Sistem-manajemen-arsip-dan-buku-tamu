@@ -167,7 +167,7 @@ const ProfileForm = ({ formik, state, setState }: any) => {
                     type="submit" 
                     label="Simpan Perubahan" 
                     icon="pi pi-check" 
-                    severity="primary"
+                   
                     className="shadow-2 px-4 w-auto" 
                     loading={state?.load} 
                     disabled={state?.load} 

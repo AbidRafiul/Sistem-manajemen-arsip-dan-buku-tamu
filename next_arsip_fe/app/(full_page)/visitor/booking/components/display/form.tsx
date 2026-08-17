@@ -561,7 +561,7 @@ export default function VisitorBookingForm({
                     label="Jadwalkan Kunjungan"
                     icon="pi pi-check"
                     loading={loading}
-                    severity="primary"
+                   
                     className="w-auto px-4"
                 />
             </div>

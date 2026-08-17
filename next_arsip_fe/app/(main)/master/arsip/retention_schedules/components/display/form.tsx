@@ -71,7 +71,7 @@ const Form = ({ state, setState, formik }: FormProps) => {
                         <Dropdown
                             id="kode_kategori_dokumen"
                             value={formik.values.kode_kategori_dokumen}
-                            options={state.categories.map((item: any) => ({
+                            options={state.categories.filter((item: any) => item.status === 'active' || item.kode_kategori_dokumen === formik?.values.kode_kategori_dokumen).map((item: any) => ({
                                 label: `${item.kode_kategori_dokumen} - ${item.nama_kategori_dokumen}`,
                                 value: item.kode_kategori_dokumen
                             }))}

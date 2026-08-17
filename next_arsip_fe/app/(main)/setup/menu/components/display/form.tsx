@@ -38,7 +38,7 @@ const Form = ({ state, setState, formik, toast, getData, handleSave, handleDelet
 
     const statusOptions = [
         { label: 'Aktif', value: 1 },
-        { label: 'Tidak Aktif', value: 0 }
+        { label: 'Nonaktif', value: 0 }
     ];
 
     return (
