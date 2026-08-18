@@ -76,6 +76,7 @@ const letterDispositionComplete = async (req, res) => {
         .where("disposisi_surat_id", oPayload.disposisi_id)
         .update({
           status: "selesai",
+          catatan_tindakan: oPayload.complete_note || null,
           received_at: oDisposition.received_at || dNow,
           processed_at: oDisposition.processed_at || dNow,
           completed_at: dNow,

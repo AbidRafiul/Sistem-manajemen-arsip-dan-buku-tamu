@@ -1,5 +1,8 @@
 'use client'
 
+import { useState, useEffect } from "react";
+import { showError } from "@/lib/tools/generalTools";
+
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { Chip } from "primereact/chip";
@@ -66,6 +69,13 @@ export interface DispositionViewProps {
     onSaveDisposition: () => void;
     onSaveAction: () => void;
     onRefresh: () => void;
+    
+    detailVisible?: boolean;
+    detailLoad?: boolean;
+    detailData?: any;
+    onCloseDetail?: () => void;
+    onOpenDetail?: (letterId: number) => void;
+    getFileBlob?: (file: any) => Promise<any>;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -75,6 +85,12 @@ const formatDate = (value?: string) => {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "-";
     return new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "short", year: "numeric" }).format(date);
+};
+
+const formatFileSize = (size?: number | null) => {
+    if (!size) return "-";
+    if (size < 1024 * 1024) return `${Math.ceil(size / 1024)} KB`;
+    return `${(size / (1024 * 1024)).toFixed(2)} MB`;
 };
 
 const getStatus = (value?: string) => String(value || "baru").toLowerCase();
@@ -122,6 +138,7 @@ const dialogTitleConfig: Record<DialogMode, { title: string; icon: string; color
 // ─── Main View Component ───────────────────────────────────────────────────────
 
 const DispositionView = ({
+    toast,
     letters,
     dispositions,
     users,
@@ -145,8 +162,62 @@ const DispositionView = ({
     onSaveDisposition,
     onSaveAction,
     onRefresh,
+    detailVisible,
+    detailLoad,
+    detailData,
+    onCloseDetail,
+    onOpenDetail,
+    getFileBlob,
 }: DispositionViewProps) => {
 
+    const [previewFile, setPreviewFile] = useState<{ url: string; mimeType: string; fileName: string } | null>(null);
+
+    const detailLetter = detailData?.surat || detailData?.letter || null;
+    const detailFiles = detailData?.files || [];
+
+    const closePreview = () => {
+        if (previewFile?.url) window.URL.revokeObjectURL(previewFile.url);
+        setPreviewFile(null);
+    };
+
+    const previewUploadedFile = async (file: any) => {
+        closePreview();
+        try {
+            if (!getFileBlob) return;
+            const res = await getFileBlob(file);
+            const mimeType = file.tipe_mime_file || res.headers["content-type"] || "application/octet-stream";
+            const blob = new Blob([res.data], { type: mimeType });
+            setPreviewFile({ url: window.URL.createObjectURL(blob), mimeType, fileName: file.nama_file || "file-surat" });
+        } catch (error: any) {
+            console.error("Preview error", error);
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "File surat gagal dibuka");
+        }
+    };
+
+    const downloadUploadedFile = async (file: any) => {
+        try {
+            if (!getFileBlob) return;
+            const res = await getFileBlob(file);
+            const blob = new Blob([res.data], { type: file.tipe_mime_file || "application/octet-stream" });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = file.nama_file || "file-surat";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error: any) {
+            console.error("Download error", error);
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || "File surat gagal didownload");
+        }
+    };
+
+    useEffect(() => {
+        return () => { if (previewFile?.url) window.URL.revokeObjectURL(previewFile.url); };
+    }, [previewFile?.url]);
     const pendingLetters = letters.filter((l) => l.status !== "selesai");
     const completionRate = letters.length ? Math.round(((statusSummary.selesai || 0) / letters.length) * 100) : 0;
 
@@ -206,7 +277,8 @@ const DispositionView = ({
     const dispositionInstructionTemplate = (row: Record<string, any>) => (
         <div>
             <div className="font-semibold text-sm text-900">{row.nama_instruksi || row.instruksi || "-"}</div>
-            {row.catatan_disposisi && <div className="text-xs text-color-secondary mt-1">{row.catatan_disposisi}</div>}
+            {row.catatan_disposisi && <div className="text-xs text-color-secondary mt-1"><i className="pi pi-send text-xs mr-1" />{row.catatan_disposisi}</div>}
+            {row.catatan_tindakan && <div className="text-xs text-orange-500 mt-1"><i className="pi pi-check-circle text-xs mr-1" />{row.catatan_tindakan}</div>}
         </div>
     );
 
@@ -216,6 +288,9 @@ const DispositionView = ({
         const isProcess = status === "diproses";
         return (
             <div className="flex gap-1 align-items-center justify-content-center">
+                {onOpenDetail && (
+                    <Button size="small" icon="pi pi-eye" text tooltip="Lihat Detail" tooltipOptions={{ position: "top" }} onClick={() => onOpenDetail(row.surat_masuk_id)} />
+                )}
                 {!isDone && !isProcess && (
                     <Button size="small" icon="pi pi-play" text severity="warning" tooltip="Proses" tooltipOptions={{ position: "top" }} onClick={() => onOpenAction("process", row)} />
                 )}
@@ -533,6 +608,124 @@ const DispositionView = ({
                                 severity={dialogMode === "complete" ? "success" : "warning"}
                                 size="small"
                                 onClick={onSaveAction} loading={loading} />
+                        </div>
+                    </div>
+                )}
+            </Dialog>
+
+            {/* ── Detail Dialog ──────────────────────────────────── */}
+            <Dialog
+                header={
+                    <div className="flex align-items-center gap-2">
+                        <i className="pi pi-envelope text-primary" />
+                        <span className="font-bold text-900">Detail Surat Masuk</span>
+                    </div>
+                }
+                visible={Boolean(detailVisible)}
+                modal
+                style={{ width: "72rem", maxWidth: "96vw" }}
+                onHide={() => { closePreview(); onCloseDetail?.(); }}
+                pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}>
+                {detailLoad ? (
+                    <div className="flex flex-column align-items-center py-6 gap-3 text-color-secondary">
+                        <i className="pi pi-spin pi-spinner text-3xl text-primary" />
+                        <span className="text-sm font-medium">Memuat detail surat...</span>
+                    </div>
+                ) : (
+                    <div className="flex flex-column gap-4 pt-3">
+                        <div className="flex align-align-items-center justify-content-between gap-3 p-3 surface-50 border-round-xl border-1 surface-border">
+                            <div>
+                                <h3 className="m-0 text-900 font-bold text-lg">{detailLetter?.perihal || "-"}</h3>
+                                <div className="flex gap-2 mt-2 flex-wrap">
+                                    <Chip label={`Agenda: ${detailLetter?.nomor_agenda || "-"}`} className="text-xs" style={{ height: "auto", padding: "0.2rem 0.6rem" }} />
+                                    <Chip label={`Surat: ${detailLetter?.nomor_surat || "-"}`} className="text-xs" style={{ height: "auto", padding: "0.2rem 0.6rem" }} />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid text-sm">
+                            {[
+                                { label: "Pengirim", value: detailLetter?.nama_pengirim },
+                                { label: "Instansi", value: detailLetter?.instansi_pengirim },
+                                { label: "Tanggal Surat", value: detailLetter?.tanggal_surat ? formatDate(detailLetter.tanggal_surat) : "-" },
+                                { label: "Tanggal Diterima", value: detailLetter?.tanggal_diterima ? formatDate(detailLetter.tanggal_diterima) : "-" },
+                                { label: "Jenis Surat", value: detailLetter?.nama_jenis_surat },
+                                { label: "Lampiran", value: detailLetter?.keterangan_lampiran },
+                            ].map(({ label, value }) => (
+                                <div key={label} className="col-12 md:col-4">
+                                    <div className="text-color-secondary text-xs font-bold uppercase mb-1" style={{ letterSpacing: "0.08em" }}>{label}</div>
+                                    <div className="font-semibold text-900">{value || "-"}</div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <Divider className="my-0" />
+
+                        <div>
+                            <div className="flex align-items-center justify-content-between mb-3">
+                                <div className="font-bold text-900 flex align-items-center gap-2">
+                                    <i className="pi pi-paperclip text-primary" />
+                                    File Surat
+                                </div>
+                                <Tag value={`${detailFiles?.length || 0} file`} severity="info" />
+                            </div>
+
+                            {detailFiles && detailFiles.length > 0 ? (
+                                <div className="grid">
+                                    <div className="col-12 lg:col-5">
+                                        <div className="flex flex-column gap-2">
+                                            {detailFiles.map((file: any) => (
+                                                <div key={file.file_surat_masuk_id} className="p-3 surface-50 border-round-lg border-1 surface-border">
+                                                    <div className="flex justify-content-between align-align-items-center gap-2">
+                                                        <div className="flex align-items-center gap-2">
+                                                            <div className="flex align-items-center justify-content-center border-round" style={{ width: "2rem", height: "2rem", background: "#EEF2FF", color: "#4F46E5", flexShrink: 0 }}>
+                                                                <i className="pi pi-file text-sm" />
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-semibold text-sm text-900">{file.nama_file || "File surat"}</div>
+                                                                <div className="text-xs text-color-secondary mt-1">{file.tipe_mime_file || "-"} - {formatFileSize(file.ukuran_file)}</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-1">
+                                                            <Button icon="pi pi-eye" text size="small" tooltip="Lihat file" onClick={() => previewUploadedFile(file)} />
+                                                            <Button icon="pi pi-download" rounded text size="small" tooltip="Download" onClick={() => downloadUploadedFile(file)} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="col-12 lg:col-7">
+                                        <div className="surface-50 border-round-lg border-1 surface-border p-3 flex align-items-center justify-content-center" style={{ minHeight: "26rem" }}>
+                                            {previewFile ? (
+                                                previewFile.mimeType.startsWith("image/") ? (
+                                                    <img src={previewFile.url} alt={previewFile.fileName} className="w-full" style={{ maxHeight: "34rem", objectFit: "contain" }} />
+                                                ) : previewFile.mimeType === "application/pdf" ? (
+                                                    <iframe src={previewFile.url} title={previewFile.fileName} className="w-full" style={{ minHeight: "34rem", border: "none" }} />
+                                                ) : (
+                                                    <div className="flex flex-column align-items-center text-center gap-3 text-color-secondary">
+                                                        <i className="pi pi-file text-5xl text-300" />
+                                                        <div>
+                                                            <div className="font-semibold text-900">{previewFile.fileName}</div>
+                                                            <p className="m-0 mt-1 text-sm">Format ini tidak bisa dipreview. Gunakan tombol download.</p>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            ) : (
+                                                <div className="flex flex-column align-items-center text-center gap-3 text-color-secondary">
+                                                    <i className="pi pi-file-pdf text-5xl text-300" />
+                                                    <div>
+                                                        <div className="font-semibold text-900">Preview File</div>
+                                                        <p className="m-0 mt-1 text-sm">Klik ikon mata di samping file untuk preview.</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <Message severity="info" text="Belum ada file surat yang diupload." className="w-full" />
+                            )}
                         </div>
                     </div>
                 )}

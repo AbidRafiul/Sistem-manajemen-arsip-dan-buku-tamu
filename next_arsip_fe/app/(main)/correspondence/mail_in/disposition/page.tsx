@@ -8,12 +8,15 @@ import { apiEndpointGet } from '../components/endpoints';
 import { TableData } from '../components/interfaces';
 import { mapIncomingLetterRow } from '../components/mappers';
 import DispositionView from './components/display/dispositionView';
+import fileDownload from "@/lib/axios/fileDownload";
 
 const dispositionEndpoint = '/correspondence/letter-disposition-data';
 const dispositionCreateEndpoint = '/correspondence/letter-disposition-create';
 const dispositionProcessEndpoint = '/correspondence/letter-disposition-process';
 const dispositionCompleteEndpoint = '/correspondence/letter-disposition-complete';
 const dispositionReferenceEndpoint = '/correspondence/disposition-reference-data';
+const apiEndpointDetail = '/correspondence/incoming-letter-detail';
+const apiEndpointFileDownload = '/correspondence/incoming-file-download';
 
 type DialogMode = 'create' | 'forward' | 'process' | 'complete';
 
@@ -85,6 +88,11 @@ const Page = () => {
     const [selectedDisposition, setSelectedDisposition] = useState<Record<string, any> | null>(null);
     const [form, setForm] = useState(emptyForm);
     const [actionNote, setActionNote] = useState('');
+    
+    // Detail Dialog States
+    const [detailVisible, setDetailVisible] = useState(false);
+    const [detailLoad, setDetailLoad] = useState(false);
+    const [detailData, setDetailData] = useState<any>(null);
 
     const fetchData = useCallback(
         async (keyword = search) => {
@@ -147,6 +155,22 @@ const Page = () => {
             dari_pengguna_id: disposition.kepada_pengguna_id || null
         });
         setDialogMode('forward');
+    };
+
+    const openDetailDialog = async (letterId: number) => {
+        setDetailVisible(true);
+        setDetailLoad(true);
+        setDetailData(null);
+        try {
+            const res = await postData(apiEndpointDetail, { surat_masuk_id: letterId });
+            setDetailData(res.data?.data || null);
+        } catch (error: any) {
+            const e = error?.response?.data || error;
+            showError(toast, e?.message || 'Detail surat gagal diambil');
+            setDetailVisible(false);
+        } finally {
+            setDetailLoad(false);
+        }
     };
 
     const openActionDialog = (mode: 'process' | 'complete', disposition: Record<string, any>) => {
@@ -269,7 +293,17 @@ const Page = () => {
                 onCloseDialog={closeDialog}
                 onSaveDisposition={saveDisposition}
                 onSaveAction={saveAction}
-                onRefresh={() => fetchData(search)} />
+                onRefresh={() => fetchData(search)}
+                
+                // Detail Props
+                detailVisible={detailVisible}
+                detailLoad={detailLoad}
+                detailData={detailData}
+                onCloseDetail={() => { setDetailVisible(false); setDetailData(null); }}
+                onOpenDetail={openDetailDialog}
+                getFileBlob={async (file: any) => {
+                    return fileDownload(apiEndpointFileDownload, { file_surat_masuk_id: file.file_surat_masuk_id });
+                }} />
         </div>
     );
 };
