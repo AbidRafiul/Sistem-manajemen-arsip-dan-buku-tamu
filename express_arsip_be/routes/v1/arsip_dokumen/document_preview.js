@@ -51,7 +51,7 @@ const documentPreview = async (req, res) => {
 
     try {
       await minioClient.statObject(cBucketName, cObjectName);
-      
+
       let finalUrl;
       try {
         finalUrl = await minioClient.presignedGetObject(cBucketName, cObjectName, 3600);
@@ -73,9 +73,9 @@ const documentPreview = async (req, res) => {
     } catch (statErr) {
       // If object doesn't exist in MinIO or MinIO is unreachable, fallback to local URL
       console.warn("Object tidak ditemukan di MinIO atau MinIO error, fallback ke URL lokal:", statErr.message);
-      
+
       const localFilePath = path.join(process.cwd(), 'public', 'uploads', cObjectName);
-      
+
       if (!fs.existsSync(localFilePath)) {
         return res.status(404).json({
           status: "error",
@@ -85,7 +85,7 @@ const documentPreview = async (req, res) => {
 
       const serverUrl = process.env.APP_SERVER || "http://127.0.0.1:8000";
       const finalUrl = `${serverUrl.replace(/\/$/, "")}/uploads/${cObjectName}`;
-      
+
       return res.status(200).json({
         status: "success",
         preview_url: finalUrl,
