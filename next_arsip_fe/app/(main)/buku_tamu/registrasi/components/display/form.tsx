@@ -130,7 +130,7 @@ export default function RegistrasiForm({
 
     return (
         <form onSubmit={handleSubmit} className="grid">
-            <div className="col-12 lg:col-6 p-fluid flex flex-column gap-3">
+            <div className="col-12 lg:col-6 p-fluid flex flex-column gap-2">
                 <Card
                     title={
                         <div className="flex align-items-center gap-2 mb-2">
@@ -139,7 +139,7 @@ export default function RegistrasiForm({
                         </div>
                     }
                     className="border-none shadow-1 border-round-2xl p-2 bg-white">
-                    <div className="flex flex-column gap-3 mt-2">
+                    <div className="flex flex-column gap-2">
                         <div className="field">
                             <label htmlFor="guest_name" className="font-semibold block mb-2 text-sm text-800">
                                 Nama Lengkap Tamu <span className="p-error">*</span>
@@ -230,14 +230,14 @@ export default function RegistrasiForm({
                                 </div>
                             )}
                         </div>
-                        <div className="field mt-3">
+                        <div className="field">
                             <SignaturePad onChange={(val) => handleChange('signature_data', val)} />
                         </div>
                     </div>
                 </Card>
             </div>
 
-            <div className="col-12 lg:col-6 p-fluid flex flex-column gap-3">
+            <div className="col-12 lg:col-6 p-fluid flex flex-column gap-2">
                 <Card
                     title={
                         <div className="flex align-items-center gap-2 mb-2">
@@ -246,7 +246,7 @@ export default function RegistrasiForm({
                         </div>
                     }
                     className="border-none shadow-1 border-round-2xl p-2 bg-white">
-                    <div className="flex flex-column gap-3 mt-2">
+                    <div className="flex flex-column gap-2">
                         <div className="field">
                             <label htmlFor="id_cabang" className="font-semibold block mb-2 text-sm text-800">
                                 Kantor / Cabang Tujuan <span className="p-error">*</span>
@@ -423,9 +423,9 @@ export default function RegistrasiForm({
                     </div>
                 </Card>
 
-                <div className="flex gap-3 mt-6 pt-4 border-top-1 surface-border">
+                <div className="flex gap-2 mt-4 pt-3 border-top-1 surface-border justify-content-end">
                     <Button type="button" label="Reset Form" icon="pi pi-refresh" severity="secondary" outlined className="px-4 w-auto" onClick={() => handleChange('reset', null)} />
-                    <Button type="submit" label="Simpan Registrasi" icon="pi pi-check" className=" w-full" loading={loading} disabled={loading} />
+                    <Button type="submit" label="Simpan Registrasi" icon="pi pi-check" className="w-auto px-4" loading={loading} disabled={loading} />
                 </div>
             </div>
             <Dialog

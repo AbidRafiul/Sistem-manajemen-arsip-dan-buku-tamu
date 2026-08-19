@@ -114,7 +114,7 @@ const Table = ({
             icon: "pi pi-archive",
             acceptLabel: "Arsipkan",
             rejectLabel: "Batal",
-            acceptClassName: "p-button-success",
+            acceptClassName: "p-button-primary",
             rejectClassName: "p-button-secondary p-button-outlined",
             accept: onArchiveLetter,
         });
@@ -288,7 +288,7 @@ const Table = ({
                                 label="Tambah Surat"
                                 icon="pi pi-plus"
                                 outlined
-                                severity="success"
+                               
                                 onClick={() => { formik.resetForm(); setState((p) => ({ ...p, selectedLetters: [], add: true, edit: false, delete: false })); }} />
                             <Divider layout="vertical" />
                         </>
@@ -409,7 +409,7 @@ const Table = ({
                                     <Button label="Arsipkan"
                                         icon="pi pi-archive"
                                         size="small"
-                                        severity="success"
+                                       
                                         loading={state.load}
                                         disabled={detailFiles.length < 1}
                                         onClick={confirmArchiveLetter}

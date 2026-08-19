@@ -27,7 +27,7 @@ const Form = ({ state, setState, formik, toast, getData, handleSave, handleDelet
 
     const isFormFieldInvalid = (name: string) => !!(formik.touched[name] && formik.errors[name]);
     const getFormErrorMessage = (name: string) => {
-        return isFormFieldInvalid(name) ? <small className="p-error">{formik.errors[name]}</small> : <small className="p-error">&nbsp;</small>;
+        return isFormFieldInvalid(name) ? <small className="p-error">{formik.errors[name]}</small> : null;
     };
 
     const footerDialog = (
@@ -38,7 +38,7 @@ const Form = ({ state, setState, formik, toast, getData, handleSave, handleDelet
 
     const statusOptions = [
         { label: 'Aktif', value: 1 },
-        { label: 'Tidak Aktif', value: 0 }
+        { label: 'Nonaktif', value: 0 }
     ];
 
     return (
@@ -50,70 +50,61 @@ const Form = ({ state, setState, formik, toast, getData, handleSave, handleDelet
             modal 
             footer={footerDialog} 
             onHide={hideDialog}>
-            <form onSubmit={formik.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
-                <div className="flex md:flex-row flex-column gap-2 w-full">
+            <form onSubmit={formik.handleSubmit} className="flex flex-column gap-2 mt-0 fadein animation-duration-300">
+                <div className="flex flex-column md:flex-row gap-3 w-full">
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="kode_menu" className="font-semibold text-sm text-700">Kode Menu</label>
-                        <div className="p-inputgroup">
-                            <InputText 
+                        <label htmlFor="kode_menu" className="text-sm">Kode Menu</label>
+                        <InputText 
                                 id="kode_menu" 
                                 name="kode_menu" 
                                 value={formik.values.kode_menu} 
                                 
                                 onChange={formik.handleChange} 
                                 className={isFormFieldInvalid('kode_menu') ? 'p-invalid' : ''} />
-                        </div>
                         {getFormErrorMessage('kode_menu')}
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="nama_menu" className="font-semibold text-sm text-700">Nama Menu</label>
-                        <div className="p-inputgroup">
-                            <InputText 
+                        <label htmlFor="nama_menu" className="text-sm">Nama Menu</label>
+                        <InputText 
                                 id="nama_menu" 
                                 name="nama_menu" 
                                 value={formik.values.nama_menu} 
                                 
                                 onChange={formik.handleChange} 
                                 className={isFormFieldInvalid('nama_menu') ? 'p-invalid' : ''} />
-                        </div>
                         {getFormErrorMessage('nama_menu')}
                     </div>
                 </div>
 
-                <div className="flex md:flex-row flex-column gap-2 w-full">
+                <div className="flex flex-column md:flex-row gap-3 w-full">
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="jalur_menu" className="font-semibold text-sm text-700">URL (Jalur)</label>
-                        <div className="p-inputgroup">
-                            <InputText 
+                        <label htmlFor="jalur_menu" className="text-sm">URL (Jalur)</label>
+                        <InputText 
                                 id="jalur_menu" 
                                 name="jalur_menu" 
                                 value={formik.values.jalur_menu} 
                                 
                                 onChange={formik.handleChange} 
                                 placeholder="Contoh: /dashboard" />
-                        </div>
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="ikon_menu" className="font-semibold text-sm text-700">Ikon (PrimeIcons)</label>
-                        <div className="p-inputgroup">
-                            <InputText 
+                        <label htmlFor="ikon_menu" className="text-sm">Ikon (PrimeIcons)</label>
+                        <InputText 
                                 id="ikon_menu" 
                                 name="ikon_menu" 
                                 value={formik.values.ikon_menu} 
                                 
                                 onChange={formik.handleChange} 
                                 placeholder="Contoh: pi pi-home" />
-                        </div>
                     </div>
                 </div>
 
-                <div className="flex md:flex-row flex-column gap-2 w-full">
+                <div className="flex flex-column md:flex-row gap-3 w-full">
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="id_menu_induk" className="font-semibold text-sm text-700">Induk Menu (Kosongkan jika ini menu utama)</label>
-                        <div className="p-inputgroup">
-                            <Dropdown 
+                        <label htmlFor="id_menu_induk" className="text-sm">Induk Menu (Kosongkan jika ini menu utama)</label>
+                        <Dropdown 
                                 id="id_menu_induk" 
                                 name="id_menu_induk" 
                                 value={formik.values.id_menu_induk} 
@@ -125,13 +116,11 @@ const Form = ({ state, setState, formik, toast, getData, handleSave, handleDelet
                                 filter
                                 showClear
                                 className="w-full" />
-                        </div>
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="id_peran" className="font-semibold text-sm text-700">Hak Akses Peran</label>
-                        <div className="p-inputgroup">
-                            <MultiSelect 
+                        <label htmlFor="id_peran" className="text-sm">Hak Akses Peran</label>
+                        <MultiSelect 
                                 id="id_peran" 
                                 name="id_peran" 
                                 value={formik.values.id_peran} 
@@ -143,35 +132,30 @@ const Form = ({ state, setState, formik, toast, getData, handleSave, handleDelet
                                 display="chip"
                                 filter
                                 className="w-full" />
-                        </div>
                     </div>
                 </div>
 
-                <div className="flex md:flex-row flex-column gap-2 w-full">
+                <div className="flex flex-column md:flex-row gap-3 w-full">
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="urutan" className="font-semibold text-sm text-700">Urutan Tampil</label>
-                        <div className="p-inputgroup">
-                            <InputNumber 
+                        <label htmlFor="urutan" className="text-sm">Urutan Tampil</label>
+                        <InputNumber 
                                 id="urutan" 
                                 value={formik.values.urutan} 
                                 onValueChange={(e) => formik.setFieldValue('urutan', e.value)} 
                                 min={0} 
                                 className="w-full" />
-                        </div>
                         {getFormErrorMessage('urutan')}
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="status_aktif" className="font-semibold text-sm text-700">Status</label>
-                        <div className="p-inputgroup">
-                            <Dropdown 
+                        <label htmlFor="status_aktif" className="text-sm">Status</label>
+                        <Dropdown 
                                 id="status_aktif" 
                                 name="status_aktif" 
                                 value={formik.values.status_aktif} 
                                 options={statusOptions} 
                                 onChange={formik.handleChange} 
                                 className="w-full" />
-                        </div>
                     </div>
                 </div>
             </form>

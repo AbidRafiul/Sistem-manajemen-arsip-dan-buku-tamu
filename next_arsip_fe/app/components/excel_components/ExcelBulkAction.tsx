@@ -211,7 +211,7 @@ const ExcelBulkAction: React.FC<ExcelBulkActionProps> = ({
                 <Button
                     label="Export Excel"
                     icon="pi pi-file-excel"
-                    severity="success"
+                   
                     outlined
                     onClick={handleExport}
                     disabled={!data || data.length === 0}
@@ -241,7 +241,7 @@ const ExcelBulkAction: React.FC<ExcelBulkActionProps> = ({
                                 type="button"
                                 label="Unduh Template (.xlsx)"
                                 icon="pi pi-download"
-                                severity="success"
+                               
                                 size="small"
                                 onClick={handleDownloadTemplate}
                                 className="w-auto py-1 px-3 text-xs shadow-1"
@@ -271,7 +271,7 @@ const ExcelBulkAction: React.FC<ExcelBulkActionProps> = ({
                                 disabled={isImporting}
                             />
                             {parsedRows.length > 0 && (
-                                <Tag severity="success" value={`${parsedRows.length} Baris Siap Diimpor`} icon="pi pi-check" className="text-xs px-3 py-1" />
+                                <Tag value={`${parsedRows.length} Baris Siap Diimpor`} icon="pi pi-check" className="text-xs px-3 py-1" />
                             )}
                         </div>
                     </div>
@@ -332,7 +332,7 @@ const ExcelBulkAction: React.FC<ExcelBulkActionProps> = ({
                                     type="button"
                                     label={isImporting ? `Mengimpor (${progress.current}/${progress.total})...` : "Mulai Sekarang"}
                                     icon="pi pi-check"
-                                    severity="success"
+                                   
                                     onClick={handleBulkImport}
                                     disabled={isImporting || parsedRows.length === 0}
                                     loading={isImporting}

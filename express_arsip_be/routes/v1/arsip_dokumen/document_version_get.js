@@ -22,13 +22,13 @@ const getDocumentVersions = async (req, res) => {
       oDocument = await DB("trx_dokumen")
         .select("id_dokumen", "kode_dokumen")
         .where("kode_dokumen", cKodeDokumen)
-        .where("status", "active")
+        .whereNot("status", "deleted")
         .first();
     } else {
       oDocument = await DB("trx_dokumen")
         .select("id_dokumen", "kode_dokumen")
         .where("id_dokumen", nIdDokumen)
-        .where("status", "active")
+        .whereNot("status", "deleted")
         .first();
     }
 

@@ -90,7 +90,7 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
             icon: "pi pi-file",
             acceptLabel: "Finalisasi",
             rejectLabel: "Batal",
-            acceptClassName: "p-button-success",
+            acceptClassName: "p-button-primary",
             accept: handleFinalizeDocument,
         });
     };
@@ -107,7 +107,7 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
             icon: "pi pi-pencil",
             acceptLabel: "Tandatangani",
             rejectLabel: "Batal",
-            acceptClassName: "p-button-success",
+            acceptClassName: "p-button-primary",
             accept: handleSignDocument,
         });
     };
@@ -313,13 +313,13 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
                                     onClick={() => handleOpenDetail(detailLetter)} />
                                 <Button label="Finalisasi"
                                     icon="pi pi-check"
-                                    severity="success"
+                                   
                                     outlined
                                     disabled={!permissions.canCreate}
                                     loading={finalizing}
                                     onClick={confirmFinalize} />
                                 <Button label="Tanda Tangani Dokumen" 
-                                    severity="success" 
+                                    
                                     onClick={handleSignDocument} 
                                     loading={signing} />
                                 <Button label="Tandatangani"

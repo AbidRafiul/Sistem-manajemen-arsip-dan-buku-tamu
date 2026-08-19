@@ -10,11 +10,11 @@ const ProfileForm = ({ formik, state, setState }: any) => {
     const isFormFieldInvalid = (name: string) => !!(formik.touched[name] && formik.errors[name]);
 
     const getFormErrorMessage = (name: string) => {
-        return isFormFieldInvalid(name) ? <small className="p-error">{formik.errors[name]}</small> : <small className="p-error">&nbsp;</small>;
+        return isFormFieldInvalid(name) ? <small className="p-error">{formik.errors[name]}</small> : null;
     };
 
     return (
-        <form onSubmit={formik.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-500">
+        <form onSubmit={formik.handleSubmit} className="flex flex-column gap-2 mt-2 fadein animation-duration-500">
             {/* Informasi Dasar */}
             <div className="surface-card p-4 shadow-1 border-round-xl">
                 <div className="flex align-items-center gap-3 pb-3 mb-4 border-bottom-1 surface-border">
@@ -167,8 +167,8 @@ const ProfileForm = ({ formik, state, setState }: any) => {
                     type="submit" 
                     label="Simpan Perubahan" 
                     icon="pi pi-check" 
-                    className="shadow-2" 
-                    style={{ backgroundColor: '#10b981', border: 'none' }}
+                   
+                    className="shadow-2 px-4 w-auto" 
                     loading={state?.load} 
                     disabled={state?.load} 
                 />

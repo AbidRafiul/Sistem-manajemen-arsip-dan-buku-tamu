@@ -20,7 +20,7 @@ router.post("/get-data", async (req, res) => {
         "deskripsi",
         "status"
       )
-      .where("status", "active");
+      .whereNot("status", "deleted");
 
     if (req.headers["x-filter-cabang"]) {
       const vaParentBranchIds = req.headers["x-filter-cabang"].split(",").map(Number);

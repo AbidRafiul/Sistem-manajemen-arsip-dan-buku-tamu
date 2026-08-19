@@ -251,7 +251,7 @@ const Page = () => {
               label="Tambah"
               icon="pi pi-plus"
               outlined
-              severity="success"
+             
               onClick={() => {
                 formik.resetForm();
                 setPreview('');
@@ -322,10 +322,10 @@ const Page = () => {
             }
             formik.handleSubmit(e);
           }}
-          className="flex flex-column gap-3 mt-3">
+          className="flex flex-column gap-2 mt-0">
           <div className="grid">
             <div className="col-12 md:col-6 flex flex-column gap-2">
-              <label htmlFor="nama_penomoran" className="font-semibold text-sm text-700">Nama Penomoran</label>
+              <label htmlFor="nama_penomoran" className="text-sm">Nama Penomoran</label>
               <InputText
                 id="nama_penomoran"
                 value={formik.values.nama_penomoran}
@@ -336,11 +336,11 @@ const Page = () => {
               )}
             </div>
             <div className="col-12 md:col-6 flex flex-column gap-2">
-              <label htmlFor="jenis_surat_id" className="font-semibold text-sm text-700">Jenis Surat</label>
+              <label htmlFor="jenis_surat_id" className="text-sm">Jenis Surat</label>
               <Dropdown
                 id="jenis_surat_id"
                 value={formik.values.jenis_surat_id}
-                options={letterTypes}
+                options={letterTypes.filter((item: any) => item.status === 'active' || item.jenis_surat_id === formik.values.jenis_surat_id)}
                 optionLabel="nama_jenis_surat"
                 optionValue="jenis_surat_id"
                 className={formik.touched.jenis_surat_id && formik.errors.jenis_surat_id ? 'p-invalid' : ''}
@@ -352,7 +352,7 @@ const Page = () => {
               )}
             </div>
             <div className="col-12 flex flex-column gap-2">
-              <label htmlFor="format_nomor" className="font-semibold text-sm text-700">Format Nomor</label>
+              <label htmlFor="format_nomor" className="text-sm">Format Nomor</label>
               <InputText
                 id="format_nomor"
                 value={formik.values.format_nomor}
@@ -368,7 +368,7 @@ const Page = () => {
               </div>
             </div>
             <div className="col-12 md:col-4 flex flex-column gap-2">
-              <label htmlFor="jumlah_digit" className="font-semibold text-sm text-700">Jumlah Digit</label>
+              <label htmlFor="jumlah_digit" className="text-sm">Jumlah Digit</label>
               <InputNumber
                 inputId="jumlah_digit"
                 value={formik.values.jumlah_digit}
@@ -380,7 +380,7 @@ const Page = () => {
               )}
             </div>
             <div className="col-12 md:col-4 flex flex-column gap-2">
-              <label htmlFor="nomor_awal" className="font-semibold text-sm text-700">Nomor Awal</label>
+              <label htmlFor="nomor_awal" className="text-sm">Nomor Awal</label>
               <InputNumber
                 inputId="nomor_awal"
                 value={formik.values.nomor_awal}
@@ -392,19 +392,19 @@ const Page = () => {
               )}
             </div>
             <div className="col-12 md:col-4 flex flex-column gap-2">
-              <label htmlFor="status_aktif" className="font-semibold text-sm text-700">Status</label>
+              <label htmlFor="status_aktif" className="text-sm">Status</label>
               <Dropdown id="status_aktif" value={formik.values.status_aktif} options={statusOptions} onChange={(e) => formik.setFieldValue('status_aktif', e.value)} />
             </div>
             <div className="col-12 md:col-4 flex flex-column gap-2">
-              <label htmlFor="periode_reset" className="font-semibold text-sm text-700">Periode Reset</label>
+              <label htmlFor="periode_reset" className="text-sm">Periode Reset</label>
               <Dropdown id="periode_reset" value={formik.values.periode_reset} options={periodeOptions} onChange={(e) => formik.setFieldValue('periode_reset', e.value)} />
             </div>
             <div className="col-12 md:col-4 flex flex-column gap-2">
-              <label htmlFor="cakupan_sequence" className="font-semibold text-sm text-700">Cakupan Sequence</label>
+              <label htmlFor="cakupan_sequence" className="text-sm">Cakupan Sequence</label>
               <Dropdown id="cakupan_sequence" value={formik.values.cakupan_sequence} options={cakupanOptions} onChange={(e) => formik.setFieldValue('cakupan_sequence', e.value)} />
             </div>
             <div className="col-12 md:col-4 flex flex-column gap-2">
-              <label htmlFor="tahap_penerbitan_nomor" className="font-semibold text-sm text-700">Tahap Penerbitan</label>
+              <label htmlFor="tahap_penerbitan_nomor" className="text-sm">Tahap Penerbitan</label>
               <Dropdown id="tahap_penerbitan_nomor" value={formik.values.tahap_penerbitan_nomor} options={tahapOptions} onChange={(e) => formik.setFieldValue('tahap_penerbitan_nomor', e.value)} />
             </div>
           </div>
@@ -420,9 +420,9 @@ const Page = () => {
             </div>
           </div>
 
-          <div className="flex mt-4 pt-3 border-top-1 surface-border">
+          <div className="mt-2">
             
-            <Button type="submit" label={formik.values.id_penomoran_surat ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className=" w-full" loading={load} disabled={load} />
+            <Button type="submit" label={formik.values.id_penomoran_surat ? 'Perbarui' : 'Simpan'} className="w-full p-button-primary" loading={load} disabled={load} />
           </div>
         </form>
       </Dialog>

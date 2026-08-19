@@ -101,7 +101,7 @@ const getDocuments = async (req, res) => {
     if (cStatus) {
       oQuery.where("d.status", cStatus);
     } else {
-      oQuery.where("d.status", "active");
+      oQuery.whereNot("d.status", "deleted");
     }
 
     // Filter: pencarian teks (nama, nomor, PIC, tags)

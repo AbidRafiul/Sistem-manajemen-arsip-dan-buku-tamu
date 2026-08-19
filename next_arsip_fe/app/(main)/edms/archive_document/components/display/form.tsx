@@ -19,7 +19,7 @@ const Form = ({
     const getFormErrorMessage = (name: keyof initValue) => {
         return isFormFieldInvalid(name)
             ? <small className="p-error flex align-items-center gap-1 mt-1"><i className="pi pi-exclamation-circle text-xs" />{formik?.errors[name]}</small>
-            : <small className="p-error">&nbsp;</small>;
+            : null;
     };
 
     return (
@@ -35,11 +35,11 @@ const Form = ({
             style={{ width: '44rem', maxWidth: '95vw' }}
             onHide={() => { setState((p) => ({ ...p, add: false, edit: false })); formik?.resetForm(); }}
             pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}>
-            <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
+            <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-2 mt-0 fadein animation-duration-300">
 
-                <div className="grid mb-2">
-                    <div className="col-12 md:col-6 flex flex-column gap-1">
-                        <label htmlFor="kode_klasifikasi" className="font-semibold text-sm text-900">
+                <div className="flex flex-column md:flex-row gap-3 w-full">
+                    <div className="flex flex-column gap-2 w-full">
+                        <label htmlFor="kode_klasifikasi" className="text-sm">
                             Klasifikasi Arsip <span className="text-red-500">*</span>
                         </label>
                         <Dropdown
@@ -59,8 +59,8 @@ const Form = ({
                             filter />
                         {getFormErrorMessage('kode_klasifikasi')}
                     </div>
-                    <div className="col-12 md:col-6 flex flex-column gap-1">
-                        <label htmlFor="kode_jenis_dokumen" className="font-semibold text-sm text-900">
+                    <div className="flex flex-column gap-2 w-full">
+                        <label htmlFor="kode_jenis_dokumen" className="text-sm">
                             Jenis Dokumen <span className="text-red-500">*</span>
                         </label>
                         <Dropdown
@@ -78,9 +78,9 @@ const Form = ({
                     </div>
                 </div>
 
-                <div className="grid mb-2">
-                    <div className="col-12 md:col-6 flex flex-column gap-1">
-                        <label htmlFor="kode_kategori_dokumen" className="font-semibold text-sm text-900">
+                <div className="flex flex-column md:flex-row gap-3 w-full">
+                    <div className="flex flex-column gap-2 w-full">
+                        <label htmlFor="kode_kategori_dokumen" className="text-sm">
                             Kategori Dokumen <span className="text-red-500">*</span>
                         </label>
                         <Dropdown
@@ -119,8 +119,8 @@ const Form = ({
                             </div>
                         )}
                     </div>
-                    <div className="col-12 md:col-6 flex flex-column gap-1">
-                        <label htmlFor="kode_tingkat_kerahasiaan" className="font-semibold text-sm text-900">
+                    <div className="flex flex-column gap-2 w-full">
+                        <label htmlFor="kode_tingkat_kerahasiaan" className="text-sm">
                             Tingkat Kerahasiaan <span className="text-red-500">*</span>
                         </label>
                         <Dropdown
@@ -137,11 +137,9 @@ const Form = ({
                     </div>
                 </div>
 
-
-
-                <div className="flex flex-column gap-1 mb-3">
+                <div className="flex flex-column gap-2 w-full">
                     <div className="flex justify-content-between align-items-center">
-                        <label htmlFor="nomor_dokumen" className="font-semibold text-sm text-900">
+                        <label htmlFor="nomor_dokumen" className="text-sm">
                             Nomor Dokumen <span className="text-red-500">*</span>
                         </label>
                         {handleGenerateAutoNumber && !state.edit && (
@@ -163,8 +161,8 @@ const Form = ({
                     {getFormErrorMessage('nomor_dokumen')}
                 </div>
 
-                <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="nama_dokumen" className="font-semibold text-sm text-900">
+                <div className="flex flex-column gap-2 w-full">
+                    <label htmlFor="nama_dokumen" className="text-sm">
                         Nama Dokumen <span className="text-red-500">*</span>
                     </label>
                     <InputText
@@ -176,8 +174,8 @@ const Form = ({
                     {getFormErrorMessage('nama_dokumen')}
                 </div>
 
-                <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="tanggal" className="font-semibold text-sm text-900">
+                <div className="flex flex-column gap-2 w-full">
+                    <label htmlFor="tanggal" className="text-sm">
                         Tanggal Dokumen <span className="text-red-500">*</span>
                     </label>
                     <InputText
@@ -189,8 +187,8 @@ const Form = ({
                     {getFormErrorMessage('tanggal')}
                 </div>
 
-                <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="lokasi_fisik" className="font-semibold text-sm text-900">
+                <div className="flex flex-column gap-2 w-full">
+                    <label htmlFor="lokasi_fisik" className="text-sm">
                         Lokasi Fisik <span className="text-color-secondary font-normal">(Opsional)</span>
                     </label>
                     <InputText
@@ -203,8 +201,8 @@ const Form = ({
                 </div>
 
                 {!state.edit && (
-                    <div className="flex flex-column gap-1 mb-3">
-                        <label htmlFor="file" className="font-semibold text-sm text-900">
+                    <div className="flex flex-column gap-2 w-full">
+                        <label htmlFor="file" className="text-sm">
                             Upload Dokumen (PDF/Word) <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -220,8 +218,8 @@ const Form = ({
                     </div>
                 )}
 
-                <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="nama_pic" className="font-semibold text-sm text-900">
+                <div className="flex flex-column gap-2 w-full">
+                    <label htmlFor="nama_pic" className="text-sm">
                         Nama PIC <span className="text-red-500">*</span>
                     </label>
                     <InputText
@@ -233,14 +231,8 @@ const Form = ({
                     {getFormErrorMessage('nama_pic')}
                 </div>
 
-                <Divider className="my-2" />
-
-                <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                    
-                    <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                        
-                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className=" w-full" loading={state?.load} disabled={state?.load} />
-                    </div>
+                <div className="mt-2">
+                    <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} className="w-full p-button-primary" loading={state?.load} disabled={state?.load} />
                 </div>
             </form>
         </Dialog>

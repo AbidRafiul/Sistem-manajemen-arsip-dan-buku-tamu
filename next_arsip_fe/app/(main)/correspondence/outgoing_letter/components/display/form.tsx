@@ -655,9 +655,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                 <i className="pi pi-exclamation-circle text-xs" />
                 {formik.errors[name] as string}
             </small>
-        ) : (
-            <small className="p-error">&nbsp;</small>
-        );
+        ) : null;
 
     const clearUploadedPdf = () => {
         formik.setFieldValue("file_surat", null);
@@ -914,10 +912,10 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                 formik.resetForm();
             }}
             pt={{ header: { className: "border-bottom-1 surface-border pb-3" } }}>
-            <form onSubmit={formik.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
+            <form onSubmit={formik.handleSubmit} className="flex flex-column gap-2 mt-0 fadein animation-duration-300">
                 <div className="grid">
-                    <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                        <label htmlFor="nomor_surat" className="font-semibold text-900">
+                    <div className="col-12 md:col-6 flex flex-column gap-2">
+                        <label htmlFor="nomor_surat" className="text-sm">
                             Nomor Surat <span className="text-red-500">*</span>
                         </label>
                         <InputText
@@ -938,8 +936,8 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                         {getFormErrorMessage("nomor_surat")}
                     </div>
 
-                    <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                        <label className="font-semibold text-900" style={{ fontFamily: "inherit" }}>Mode Input Surat</label>
+                    <div className="col-12 md:col-6 flex flex-column gap-2">
+                        <label className="text-sm" style={{ fontFamily: "inherit" }}>Mode Input Surat</label>
                         <div className="surface-100 border-1 surface-border p-1 border-round-xl flex align-items-center w-full gap-1">
                             <button
                                 type="button"
@@ -973,8 +971,8 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                         </small>
                     </div>
 
-                    <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                        <label htmlFor="tanggal_surat" className="font-semibold text-900">
+                    <div className="col-12 md:col-6 flex flex-column gap-2">
+                        <label htmlFor="tanggal_surat" className="text-sm">
                             Tanggal Surat <span className="text-red-500">*</span>
                         </label>
                         <Calendar
@@ -989,8 +987,8 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                         {getFormErrorMessage("tanggal_surat")}
                     </div>
 
-                    <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                        <label htmlFor="tanggal_kirim" className="font-semibold text-900">Tanggal Kirim</label>
+                    <div className="col-12 md:col-6 flex flex-column gap-2">
+                        <label htmlFor="tanggal_kirim" className="text-sm">Tanggal Kirim</label>
                         <Calendar
                             id="tanggal_kirim"
                             className="w-full"
@@ -999,11 +997,11 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                             dateFormat="yy-mm-dd"
                             showIcon
                             placeholder="Pilih tanggal kirim" />
-                        <small className="p-error">&nbsp;</small>
+
                     </div>
 
-                    <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                        <label htmlFor="id_jenis_surat" className="font-semibold text-900">
+                    <div className="col-12 md:col-6 flex flex-column gap-2">
+                        <label htmlFor="id_jenis_surat" className="text-sm">
                             Jenis Surat <span className="text-red-500">*</span>
                         </label>
                         <Dropdown
@@ -1021,8 +1019,8 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                         {getFormErrorMessage("id_jenis_surat")}
                     </div>
 
-                    <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                        <label htmlFor="status" className="font-semibold text-900">Status</label>
+                    <div className="col-12 md:col-6 flex flex-column gap-2">
+                        <label htmlFor="status" className="text-sm">Status</label>
                         <Dropdown
                             id="status"
                             className="w-full"
@@ -1033,8 +1031,8 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                         {getFormErrorMessage("status")}
                     </div>
 
-                    <div className="col-12 flex flex-column gap-1 mb-2">
-                        <label htmlFor="perihal" className="font-semibold text-900">
+                    <div className="col-12 flex flex-column gap-2">
+                        <label htmlFor="perihal" className="text-sm">
                             Perihal <span className="text-red-500">*</span>
                         </label>
                         <InputText
@@ -1047,8 +1045,8 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                         {getFormErrorMessage("perihal")}
                     </div>
 
-                    <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                        <label htmlFor="tujuan" className="font-semibold text-900">
+                    <div className="col-12 md:col-6 flex flex-column gap-2">
+                        <label htmlFor="tujuan" className="text-sm">
                             Tujuan <span className="text-red-500">*</span>
                         </label>
                         <InputText
@@ -1061,19 +1059,19 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                         {getFormErrorMessage("tujuan")}
                     </div>
 
-                    <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                        <label htmlFor="instansi_tujuan" className="font-semibold text-900">Instansi Tujuan</label>
+                    <div className="col-12 md:col-6 flex flex-column gap-2">
+                        <label htmlFor="instansi_tujuan" className="text-sm">Instansi Tujuan</label>
                         <InputText
                             id="instansi_tujuan"
                             className="w-full"
                             value={formik.values.instansi_tujuan}
                             onChange={(e) => formik.setFieldValue("instansi_tujuan", e.target.value)}
                             placeholder="Nama instansi tujuan" />
-                        <small className="p-error">&nbsp;</small>
+
                     </div>
 
-                    <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                        <label htmlFor="media_pengiriman" className="font-semibold text-900">Media Pengiriman</label>
+                    <div className="col-12 md:col-6 flex flex-column gap-2">
+                        <label htmlFor="media_pengiriman" className="text-sm">Media Pengiriman</label>
                         <Dropdown
                             id="media_pengiriman"
                             className="w-full"
@@ -1082,12 +1080,12 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                             onChange={(e) => formik.setFieldValue("media_pengiriman", e.value || "")}
                             placeholder="Pilih media pengiriman"
                             showClear />
-                        <small className="p-error">&nbsp;</small>
+
                     </div>
 
                     {suratInputMode === "sistem" ? (
-                        <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="id_template" className="font-semibold text-900">Template Surat</label>
+                        <div className="col-12 md:col-6 flex flex-column gap-2">
+                            <label htmlFor="id_template" className="text-sm">Template Surat</label>
                             <Dropdown
                                 id="id_template"
                                 className="w-full"
@@ -1101,11 +1099,11 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                                 placeholder="Pilih template"
                                 filter
                                 showClear />
-                            <small className="p-error">&nbsp;</small>
+    
                         </div>
                     ) : (
-                        <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                            <label htmlFor="file_surat" className="font-semibold text-900">
+                        <div className="col-12 md:col-6 flex flex-column gap-2">
+                            <label htmlFor="file_surat" className="text-sm">
                                 Upload File Eksternal Surat (PDF / Word)
                             </label>
                             <input
@@ -1144,30 +1142,30 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                         </div>
                     )}
 
-                    <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                        <label htmlFor="nama_pengirim" className="font-semibold text-900">Nama Pengirim</label>
+                    <div className="col-12 md:col-6 flex flex-column gap-2">
+                        <label htmlFor="nama_pengirim" className="text-sm">Nama Pengirim</label>
                         <InputText
                             id="nama_pengirim"
                             className="w-full"
                             value={formik.values.nama_pengirim}
                             onChange={(e) => formik.setFieldValue("nama_pengirim", e.target.value)}
                             placeholder="Nama penandatangan / pengirim" />
-                        <small className="p-error">&nbsp;</small>
+
                     </div>
 
-                    <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
-                        <label htmlFor="jabatan" className="font-semibold text-900">Jabatan</label>
+                    <div className="col-12 md:col-6 flex flex-column gap-2">
+                        <label htmlFor="jabatan" className="text-sm">Jabatan</label>
                         <InputText
                             id="jabatan"
                             className="w-full"
                             value={formik.values.jabatan}
                             onChange={(e) => formik.setFieldValue("jabatan", e.target.value)}
                             placeholder="Jabatan penandatangan / pengirim" />
-                        <small className="p-error">&nbsp;</small>
+
                     </div>
 
                     <div className="col-12 flex flex-column gap-2 mb-2">
-                        <label htmlFor="isi_surat" className="font-semibold text-900">Isi Surat</label>
+                        <label htmlFor="isi_surat" className="text-sm">Isi Surat</label>
                         <InputTextarea
                             id="isi_surat"
                             className="w-full"
@@ -1183,7 +1181,7 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                     {suratInputMode === "sistem" && (
                         <div className="col-12 flex flex-column gap-2 mb-2">
                             <div className="flex align-items-center justify-content-between gap-2 flex-wrap">
-                                <label htmlFor="isi_surat_final" className="font-semibold text-900">Preview Naskah Final</label>
+                                <label htmlFor="isi_surat_final" className="text-sm">Preview Naskah Final</label>
                                 <div className="flex align-items-center gap-2 flex-wrap">
                                     <Button type="button"
                                         size="small"
@@ -1220,14 +1218,8 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                     )}
                 </div>
 
-                <Divider className="my-2" />
-
-                <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                    
-                    <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                        
-                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className=" w-full" loading={state?.load} disabled={state?.load} />
-                    </div>
+                <div className="mt-2">
+                    <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} className="w-full p-button-primary" loading={state?.load} disabled={state?.load} />
                 </div>
             </form>
         </Dialog>

@@ -9,7 +9,7 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
     const isDialogVisible = state.add || state.edit;
     const isFormFieldInvalid = (name: string) => !!(formik?.touched && formik.touched[name] && formik?.errors && formik.errors[name]);
     const getFormErrorMessage = (name: string) => {
-        return isFormFieldInvalid(name) ? <small className="p-error block mt-1">{formik.errors[name] as string}</small> : <small className="p-error block mt-1">&nbsp;</small>;
+        return isFormFieldInvalid(name) ? <small className="p-error">{formik.errors[name] as string}</small> : null;
     };
 
     const hideDialog = () => {
@@ -26,49 +26,45 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
 
     return (
         <>
-            <Dialog visible={isDialogVisible} style={{ width: '500px' }} header={state.add ? 'Tambah Kategori Dokumen' : 'Ubah Kategori Dokumen'} modal onHide={hideDialog} className="p-fluid">
-                <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
+            <Dialog visible={isDialogVisible} style={{ width: '450px' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header={state.add ? 'Tambah Kategori Dokumen' : 'Ubah Kategori Dokumen'} modal onHide={hideDialog}>
+                <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-2 mt-0 fadein animation-duration-300">
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="kode_klasifikasi" className="font-semibold text-sm text-700">Klasifikasi Arsip</label>
+                        <label htmlFor="kode_klasifikasi" className="text-sm">Klasifikasi Arsip</label>
                         <Dropdown 
                             id="kode_klasifikasi" 
                             name="kode_klasifikasi" 
                             value={formik?.values.kode_klasifikasi} 
-                            options={state.classifications.map((item: any) => ({
+                            options={state.classifications.filter((item: any) => item.status === 'active' || item.kode_klasifikasi === formik?.values.kode_klasifikasi).map((item: any) => ({
                                 label: `${item.kode_klasifikasi} - ${item.nama_klasifikasi}`,
                                 value: item.kode_klasifikasi
                             }))} 
                             onChange={formik?.handleChange} 
-                            className={isFormFieldInvalid('kode_klasifikasi') ? 'p-invalid' : ''} 
+                            className={isFormFieldInvalid('kode_klasifikasi') ? 'p-invalid w-full' : 'w-full'} 
                             placeholder="Pilih Klasifikasi Arsip"
                             filter />
                         {getFormErrorMessage('kode_klasifikasi')}
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="kode_kategori_dokumen" className="font-semibold text-sm text-700">Kode Kategori</label>
-                        <InputText id="kode_kategori_dokumen" name="kode_kategori_dokumen" value={formik?.values.kode_kategori_dokumen} onChange={formik?.handleChange} className={isFormFieldInvalid('kode_kategori_dokumen') ? 'p-invalid' : ''} placeholder="Contoh: ADM-UMUM, KEU-TRANS" />
+                        <label htmlFor="kode_kategori_dokumen" className="text-sm">Kode Kategori</label>
+                        <InputText id="kode_kategori_dokumen" name="kode_kategori_dokumen" value={formik?.values.kode_kategori_dokumen} onChange={formik?.handleChange} className={isFormFieldInvalid('kode_kategori_dokumen') ? 'p-invalid w-full' : 'w-full'} placeholder="Contoh: ADM-UMUM, KEU-TRANS" />
                         {getFormErrorMessage('kode_kategori_dokumen')}
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="nama_kategori_dokumen" className="font-semibold text-sm text-700">Nama Kategori</label>
-                        <InputText id="nama_kategori_dokumen" name="nama_kategori_dokumen" value={formik?.values.nama_kategori_dokumen} onChange={formik?.handleChange} className={isFormFieldInvalid('nama_kategori_dokumen') ? 'p-invalid' : ''} placeholder="Contoh: Administrasi Umum, Keuangan Transaksi" />
+                        <label htmlFor="nama_kategori_dokumen" className="text-sm">Nama Kategori</label>
+                        <InputText id="nama_kategori_dokumen" name="nama_kategori_dokumen" value={formik?.values.nama_kategori_dokumen} onChange={formik?.handleChange} className={isFormFieldInvalid('nama_kategori_dokumen') ? 'p-invalid w-full' : 'w-full'} placeholder="Contoh: Administrasi Umum, Keuangan Transaksi" />
                         {getFormErrorMessage('nama_kategori_dokumen')}
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="deskripsi" className="font-semibold text-sm text-700">Deskripsi</label>
-                        <InputText id="deskripsi" name="deskripsi" value={formik?.values.deskripsi} onChange={formik?.handleChange} className={isFormFieldInvalid('deskripsi') ? 'p-invalid' : ''} placeholder="Keterangan singkat kategori dokumen" />
+                        <label htmlFor="deskripsi" className="text-sm">Deskripsi</label>
+                        <InputText id="deskripsi" name="deskripsi" value={formik?.values.deskripsi} onChange={formik?.handleChange} className={isFormFieldInvalid('deskripsi') ? 'p-invalid w-full' : 'w-full'} placeholder="Keterangan singkat kategori dokumen" />
                         {getFormErrorMessage('deskripsi')}
                     </div>
 
-                    <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                        
-                        <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                        
-                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className=" w-full" loading={state?.load} disabled={state?.load} />
-                    </div>
+                    <div className="mt-2">
+                        <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} className="w-full p-button-primary" loading={state?.load} disabled={state?.load} />
                     </div>
                 </form>
             </Dialog>

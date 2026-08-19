@@ -50,7 +50,7 @@ Hormat kami,
 
 const Form = ({ state, setState, formik, handleDelete }: any) => {
   const isDialogVisible = state.add || state.edit;
-  const letterTypeOptions = (state.letterTypes || []).map((item: any) => ({ label: item.nama_jenis_surat, value: item.jenis_surat_id }));
+  const letterTypeOptions = (state.letterTypes || []).filter((item: any) => item.status === 'active' || item.jenis_surat_id === formik.values.jenis_surat_id).map((item: any) => ({ label: item.nama_jenis_surat, value: item.jenis_surat_id }));
 
   const previewText = useMemo(() => {
     return (formik.values.isi_template || '').trim() || 'Isi template akan muncul di sini';
@@ -73,32 +73,32 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
   return (
     <>
       <Dialog visible={isDialogVisible} style={{ width: '760px' }} header={state.edit ? 'Ubah Template Surat' : 'Tambah Template Surat'} modal onHide={hideDialog} className="p-fluid">
-        <form onSubmit={formik.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
+        <form onSubmit={formik.handleSubmit} className="flex flex-column gap-2 mt-0 fadein animation-duration-300">
           <div className="grid">
             <div className="col-12 md:col-6 flex flex-column gap-2">
-              <label htmlFor="kode_template" className="font-semibold text-sm text-700">Kode Template</label>
+              <label htmlFor="kode_template" className="text-sm">Kode Template</label>
               <InputText id="kode_template" name="kode_template" value={formik.values.kode_template} onChange={formik.handleChange} />
             </div>
             <div className="col-12 md:col-6 flex flex-column gap-2">
-              <label htmlFor="nama_template" className="font-semibold text-sm text-700">Nama Template</label>
+              <label htmlFor="nama_template" className="text-sm">Nama Template</label>
               <InputText id="nama_template" name="nama_template" value={formik.values.nama_template} onChange={formik.handleChange} />
             </div>
             <div className="col-12 md:col-6 flex flex-column gap-2">
-              <label htmlFor="jenis_surat_id" className="font-semibold text-sm text-700">Jenis Surat</label>
+              <label htmlFor="jenis_surat_id" className="text-sm">Jenis Surat</label>
               <Dropdown id="jenis_surat_id" name="jenis_surat_id" value={formik.values.jenis_surat_id} options={letterTypeOptions} onChange={(e) => formik.setFieldValue('jenis_surat_id', e.value)} placeholder="Pilih jenis surat" />
             </div>
             <div className="col-12 md:col-6 flex flex-column gap-2">
-              <label htmlFor="status" className="font-semibold text-sm text-700">Status</label>
+              <label htmlFor="status" className="text-sm">Status</label>
               <Dropdown id="status" name="status" value={formik.values.status} options={statusOptions} onChange={formik.handleChange} />
             </div>
             <div className="col-12 flex flex-column gap-2">
-              <label htmlFor="deskripsi" className="font-semibold text-sm text-700">Deskripsi</label>
+              <label htmlFor="deskripsi" className="text-sm">Deskripsi</label>
               <InputText id="deskripsi" name="deskripsi" value={formik.values.deskripsi} onChange={formik.handleChange} />
             </div>
           </div>
 
           <div className="flex flex-column gap-2">
-            <label className="font-semibold text-sm text-700">Placeholder</label>
+            <label className="text-sm">Placeholder</label>
             <div className="flex flex-wrap gap-2">
               {placeholderOptions.map((item) => (
                 <Button key={item} type="button" size="small" text onClick={() => insertPlaceholder(item)} label={item} />
@@ -108,7 +108,7 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
           </div>
 
           <div className="flex flex-column gap-2">
-            <label htmlFor="isi_template" className="font-semibold text-sm text-700">Editor Isi Surat</label>
+            <label htmlFor="isi_template" className="text-sm">Editor Isi Surat</label>
             <InputTextarea id="isi_template" name="isi_template" rows={10} value={formik.values.isi_template} onChange={formik.handleChange} autoResize />
           </div>
           <div className="surface-50 border-round p-3 border-1 surface-border">
@@ -116,9 +116,8 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
             <pre className="m-0 text-sm" style={{ whiteSpace: 'pre-wrap' }}>{previewText}</pre>
           </div>
 
-          <div className="flex mt-4 pt-3 border-top-1 surface-border">
-            
-            <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} icon="pi pi-check" className=" w-full" loading={state?.load} disabled={state?.load} />
+          <div className="mt-2">
+            <Button type="submit" label={state?.edit ? 'Perbarui' : 'Simpan'} className="w-full p-button-primary" loading={state?.load} disabled={state?.load} />
           </div>
         </form>
       </Dialog>

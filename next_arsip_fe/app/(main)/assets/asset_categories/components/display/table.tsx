@@ -84,7 +84,7 @@ const Table = ({
                     label="Tambah"
                     icon="pi pi-plus"
                     outlined
-                    severity="success"
+                   
                     onClick={() => {
                         setState(p => ({ ...p, selectedUser: [], add: true }))
                     }} />

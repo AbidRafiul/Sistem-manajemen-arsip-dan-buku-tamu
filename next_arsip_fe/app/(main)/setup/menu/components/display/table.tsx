@@ -90,7 +90,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
     // Render Status
     const statusBodyTemplate = (rowData: any) => {
         const isActive = rowData.status_aktif === 1 || rowData.status_aktif === 'active';
-        return <Tag value={isActive ? 'AKTIF' : 'TIDAK AKTIF'} severity={isActive ? 'success' : 'danger'} className="text-sm" />;
+        return <Tag value={isActive ? 'AKTIF' : 'Nonaktif'} severity={isActive ? 'success' : 'danger'} className="text-sm" />;
     };
 
     return (
@@ -108,7 +108,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                             label="Tambah"
                             icon="pi pi-plus"
                             outlined
-                            severity="success"
+                           
                             onClick={() => {
                                 formik.resetForm();
                                 setState(p => ({ ...p, add: true, selectedData: [] }));

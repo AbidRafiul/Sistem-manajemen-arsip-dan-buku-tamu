@@ -4,6 +4,7 @@ import DB from "../../../core/config/knex.js";
 import { validatePayload, Logging } from "../components/tools/servertool.js";
 import { status } from "../components/tools/general.js";
 import { insertIncomingLetterTracking } from "../components/tools/tracking_helper.js";
+import { createNotification } from "../components/tools/notification_helper.js";
 
 const router = express.Router();
 const letterDispositionProcess = async (req, res) => {
@@ -71,6 +72,7 @@ const letterDispositionProcess = async (req, res) => {
         .where("disposisi_surat_id", oPayload.disposisi_id)
         .update({
           status: "diproses",
+          catatan_tindakan: oPayload.process_note || null,
           received_at: oDisposition.received_at || dNow,
           processed_at: dNow,
           updated_by: nActorId,
@@ -100,6 +102,42 @@ const letterDispositionProcess = async (req, res) => {
         updated_at: dNow,
       });
     });
+
+    // Kirim notifikasi ke pemberi disposisi (pimpinan) dan Superadmin
+    try {
+      const perihal = oLetter.perihal || `Surat Masuk #${oLetter.surat_masuk_id}`;
+
+      if (oDisposition.dari_pengguna_id) {
+        await createNotification({
+          id_pengguna: oDisposition.dari_pengguna_id,
+          judul: "Disposisi Mulai Diproses",
+          pesan: `Disposisi surat "${perihal}" mulai DIPROSES dengan catatan: ${oPayload.process_note || "Tidak ada catatan"}.`,
+          tipe: "disposisi",
+          tautan: "/correspondence/mail_in/data",
+        });
+      }
+
+      const superadmins = await DB("mst_pengguna as p")
+        .join("mst_pengguna_peran as pp", "p.id_pengguna", "pp.id_pengguna")
+        .join("mst_peran as r", "pp.id_peran", "r.id_peran")
+        .whereIn("r.kode_peran", ["SUPERADMIN", "SA"])
+        .andWhere("p.status", "active")
+        .select("p.id_pengguna");
+
+      for (const sa of superadmins) {
+        if (sa.id_pengguna !== oDisposition.dari_pengguna_id) {
+          await createNotification({
+            id_pengguna: sa.id_pengguna,
+            judul: "Disposisi Mulai Diproses",
+            pesan: `Disposisi surat "${perihal}" mulai diproses.`,
+            tipe: "disposisi",
+            tautan: "/correspondence/mail_in/data",
+          });
+        }
+      }
+    } catch (notifError) {
+      console.error("Gagal kirim notifikasi disposisi diproses:", notifError.message);
+    }
 
     return res.status(200).json({
       status: status.SUKSES,
