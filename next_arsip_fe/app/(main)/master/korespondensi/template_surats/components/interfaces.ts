@@ -26,6 +26,8 @@ export interface State {
   letterTypes: any[];
   previewVisible: boolean;
   previewContent: string;
+  activeStep: number;
+  submittedData: any;
 }
 
 export const initialFilters = { global: { value: null, matchMode: FilterMatchMode.CONTAINS } };
