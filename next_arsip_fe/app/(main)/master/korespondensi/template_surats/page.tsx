@@ -149,12 +149,16 @@ const Page = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
+  const isFormActive = state.add || state.edit;
+
   return (
     <>
-
       <Toast ref={toast} position="top-right" />
-      <Table state={state} setState={setState} formik={formik} getData={getData} handleDelete={handleDelete} />
-      <Form state={state} setState={setState} formik={formik} handleDelete={handleDelete} />
+      {!isFormActive ? (
+        <Table state={state} setState={setState} formik={formik} getData={getData} handleDelete={handleDelete} />
+      ) : (
+        <Form state={state} setState={setState} formik={formik} handleDelete={handleDelete} />
+      )}
     </>
   );
 };
