@@ -249,7 +249,7 @@ const Table = ({
                             label="Tambah Dokumen"
                             icon="pi pi-plus"
                             outlined
-                            severity="success"
+                           
                             onClick={() => {
                                 const name = (state.session?.user as any)?.name || (state.session?.user as any)?.nama_pengguna || '';
                                 formik.resetForm({
@@ -666,7 +666,7 @@ const Table = ({
                         {!cameraActive ? (
                             <Button label="Buka Kamera Live"
                                 icon="pi pi-video"
-                                severity="success"
+                               
                                 className="p-button-sm font-bold"
                                 onClick={startCameraScanner} />
                         ) : (
@@ -805,7 +805,7 @@ const Table = ({
                                     }} />
                                 <Button icon="pi pi-save"
                                     label="Simpan Lokasi"
-                                    severity="success"
+                                   
                                     loading={state.updatingLocation}
                                     onClick={() => {
                                         const el = document.getElementById('lokasi_fisik_update') as HTMLInputElement;

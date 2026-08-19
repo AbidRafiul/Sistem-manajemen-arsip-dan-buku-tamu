@@ -49,7 +49,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
 
     const statusBodyTemplate = (rowData: any) => {
         const isActive = rowData.status === 'active';
-        return <Tag value={isActive ? 'Aktif' : 'Tidak Aktif'} severity={isActive ? 'success' : 'danger'} className="text-sm" />;
+        return <Tag value={isActive ? 'Aktif' : 'Nonaktif'} severity={isActive ? 'success' : 'danger'} className="text-sm" />;
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -68,7 +68,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
             <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
 
                 {canCreate && (
-                    <Button size="small" label="Tambah" icon="pi pi-plus" outlined severity="success" onClick={() => {
+                    <Button size="small" label="Tambah" icon="pi pi-plus" outlined onClick={() => {
                         formik.resetForm();
                         setState(p => ({ ...p, add: true, selectedData: [] }));
                     }} />
@@ -82,11 +82,11 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
             </div>
 
             <DataTable value={state.data} selection={state.selectedData} onSelectionChange={(e) => setState(p => ({ ...p, selectedData: e.value }))} dataKey="id_peran" paginator rows={10} rowsPerPageOptions={[5, 10, 25]} globalFilterFields={["kode_peran", "nama_peran", "deskripsi", "status"]} filters={state.filters} header={renderHeader()} emptyMessage="Tidak ada data ditemukan." loading={state.load} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
-                <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
-                <Column field="kode_peran" header="Kode" sortable></Column>
-                <Column field="nama_peran" header="Nama" sortable></Column>
-                <Column body={statusBodyTemplate} header="Status"></Column>
-                <Column body={actionBodyTemplate} exportable={false} align="center" header="Aksi" style={{ minWidth: '8rem', textAlign: 'center' }}></Column>
+                <Column align="center" selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
+                <Column align="center" field="kode_peran" header="Kode" sortable></Column>
+                <Column align="center" field="nama_peran" header="Nama" sortable></Column>
+                <Column align="center" body={statusBodyTemplate} header="Status"></Column>
+                <Column align="center" body={actionBodyTemplate} exportable={false} header="Aksi" style={{ minWidth: '8rem', textAlign: 'center' }}></Column>
             </DataTable>
         </div>
     );

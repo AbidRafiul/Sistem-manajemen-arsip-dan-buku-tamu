@@ -170,7 +170,7 @@ const Table = ({
             icon: "pi pi-archive",
             acceptLabel: "Arsipkan",
             rejectLabel: "Batal",
-            acceptClassName: "p-button-success",
+            acceptClassName: "p-button-primary",
             rejectClassName: "p-button-secondary p-button-outlined",
             accept: onArchiveLetter,
         });
@@ -468,7 +468,7 @@ const Table = ({
                         label="Tambah Surat"
                         icon="pi pi-plus"
                         outlined
-                        severity="success"
+                       
                         onClick={() => {
                             formik.resetForm();
                             setState((p) => ({ ...p, selectedLetters: [], add: true, edit: false }));
@@ -583,7 +583,7 @@ const Table = ({
                                         return (
                                             <Tag 
                                                 value="Sudah Diarsipkan" 
-                                                severity="success" 
+                                                
                                                 icon="pi pi-bookmark-fill" 
                                                 style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }} />
                                         );
@@ -591,7 +591,7 @@ const Table = ({
                                         return (
                                             <Button label="Arsipkan ke EDMS"
                                                 icon="pi pi-archive"
-                                                severity="success"
+                                               
                                                 size="small"
                                                 loading={archiving}
                                                 onClick={confirmArchiveLetter}

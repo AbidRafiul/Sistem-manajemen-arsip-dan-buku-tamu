@@ -52,7 +52,7 @@ router.post("/", async (req, res) => {
       await trx("mst_pengguna")
         .whereIn("id_pengguna", oPayload.id_pengguna)
         .update({
-          status: "nonactive",
+          status: "deleted",
           updated_at: formatDateSystem(),
         });
 
@@ -60,7 +60,7 @@ router.post("/", async (req, res) => {
       await trx("mst_pengguna_peran")
         .whereIn("id_pengguna", oPayload.id_pengguna)
         .update({
-          status: "nonactive",
+          status: "deleted",
           updated_at: formatDateSystem(),
         });
     });

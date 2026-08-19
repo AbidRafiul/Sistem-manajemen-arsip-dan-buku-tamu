@@ -38,13 +38,10 @@ const incomingLetterUpload = async (req, res) => {
 
     const oLetter = await DB("trx_surat_masuk as sm")
       .leftJoin("mst_cabang as c", "sm.id_cabang", "c.id_cabang")
-      .leftJoin("mst_unit_kerja as uk", "sm.id_unit_kerja", "uk.id_unit_kerja")
       .select(
         "sm.*",
         "c.kode_cabang",
-        "c.nama_cabang",
-        "uk.kode_unit_kerja",
-        "uk.nama_unit_kerja"
+        "c.nama_cabang"
       )
       .where("sm.surat_masuk_id", oPayload.surat_masuk_id)
       .first();
@@ -56,19 +53,15 @@ const incomingLetterUpload = async (req, res) => {
       });
     }
 
-    const oUploadResult = await uploadFileToMinio(oFile, {
+    const cBucketNameTemp = process.env.MINIO_BUCKET_NAME || "arsip-bucket";
+    cObjectName = await uploadFileToMinio(cBucketNameTemp, oFile, {
       idCabang: oLetter.id_cabang,
-      idUnitKerja: oLetter.id_unit_kerja,
-      subFolder: "korespondensi/surat-masuk",
-      customPrefix: getMinioPrefix(
-        oLetter.nama_cabang || oLetter.kode_cabang,
-        oLetter.nama_unit_kerja || oLetter.kode_unit_kerja
-      ),
-      referenceNumber: oLetter.nomor_surat || oLetter.nomor_agenda,
+      modul: "korespondensi/surat-masuk",
+      nomorDokumen: oLetter.nomor_surat || oLetter.nomor_agenda,
+      namaDokumen: oLetter.perihal || "",
     });
 
-    cObjectName = oUploadResult.objectName;
-    cBucketName = oUploadResult.bucketName;
+    cBucketName = cBucketNameTemp;
 
     const dNow = new Date();
 

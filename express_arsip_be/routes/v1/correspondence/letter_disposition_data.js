@@ -71,6 +71,7 @@ const letterDispositionData = async (req, res) => {
         "mdi.nama_instruksi",
         "tld.instruksi",
         "tld.catatan_disposisi",
+        "tld.catatan_tindakan",
         "tld.batas_waktu",
         "tld.status",
         "tld.received_at",

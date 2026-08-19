@@ -40,7 +40,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
 
     const statusBodyTemplate = (rowData: any) => {
         const isActive = rowData.status === 'active';
-        return <Tag value={isActive ? 'Aktif' : 'Tidak Aktif'} severity={isActive ? 'success' : 'danger'} className="text-sm" />;
+        return <Tag value={isActive ? 'Aktif' : 'Nonaktif'} severity={isActive ? 'success' : 'danger'} className="text-sm" />;
     };
 
     useEffect(() => {
@@ -48,16 +48,16 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
     }, []);
 
     return (
-        <div className="card shadow-2 border-round-lg p-4 bg-white">
-            <div className="flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h3 className="text-2xl font-bold m-0 text-900">Manajemen Klasifikasi Arsip</h3>
-                    <p className="text-sm text-600 mt-1">Kelola kode klasifikasi arsip untuk penomoran surat, dokumen dinas, dan pengarsipan sistematis.</p>
+        <div className="card shadow-2 border-1 surface-border border-round-xl p-4 bg-white">
+            <div className="flex flex-column gap-2 mb-6 px-1">
+                <h3 className="text-2xl font-semibold m-0 text-900">Data Master Klasifikasi Arsip</h3>
+                <div className="text-sm text-600">
+                    Kelola kode klasifikasi arsip untuk penomoran surat, dokumen dinas, dan pengarsipan sistematis.
                 </div>
             </div>
 
             <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
-                <Button type="button" size="small" label="Tambah" icon="pi pi-plus" outlined severity="success" onClick={() => {
+                <Button type="button" size="small" label="Tambah" icon="pi pi-plus" outlined onClick={() => {
                     formik.resetForm();
                     setState(p => ({ ...p, add: true, selectedData: [] }));
                 }} />

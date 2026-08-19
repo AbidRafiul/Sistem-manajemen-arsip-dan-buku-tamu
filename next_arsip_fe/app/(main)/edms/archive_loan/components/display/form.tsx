@@ -41,7 +41,7 @@ const Form = ({
     const getFormErrorMessage = (name: keyof initValue) => {
         return isFormFieldInvalid(name)
             ? <small className="p-error flex align-items-center gap-1 mt-1"><i className="pi pi-exclamation-circle text-xs" />{formik?.errors[name]}</small>
-            : <small className="p-error">&nbsp;</small>;
+            : null;
     };
 
     const documentOptions = state.documents.map(doc => {
@@ -66,10 +66,10 @@ const Form = ({
             style={{ width: '44rem', maxWidth: '95vw' }}
             onHide={() => { setState((p) => ({ ...p, add: false })); formik?.resetForm(); }}
             pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}>
-            <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-4 mt-2 fadein animation-duration-300">
+            <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-2 mt-0 fadein animation-duration-300">
 
-                <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="qr_scan" className="font-semibold text-sm text-900">
+                <div className="flex flex-column gap-2 w-full">
+                    <label htmlFor="qr_scan" className="text-sm">
                         Scan QR Code Dokumen <span className="text-color-secondary font-normal">(Opsional - Untuk Auto Select)</span>
                     </label>
                     <div className="p-inputgroup">
@@ -93,8 +93,8 @@ const Form = ({
                     <small className="text-xs text-color-secondary">Gunakan alat pemindai (scanner) USB atau masukkan kode manual dan tekan Enter.</small>
                 </div>
 
-                <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="kode_dokumen" className="font-semibold text-sm text-900">
+                <div className="flex flex-column gap-2 w-full">
+                    <label htmlFor="kode_dokumen" className="text-sm">
                         Dokumen <span className="text-red-500">*</span>
                     </label>
                     <Dropdown
@@ -111,8 +111,8 @@ const Form = ({
                     {getFormErrorMessage('kode_dokumen')}
                 </div>
 
-                <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="nama_peminjam" className="font-semibold text-sm text-900">
+                <div className="flex flex-column gap-2 w-full">
+                    <label htmlFor="nama_peminjam" className="text-sm">
                         Nama Peminjam <span className="text-red-500">*</span>
                     </label>
                     <InputText
@@ -124,8 +124,8 @@ const Form = ({
                     {getFormErrorMessage('nama_peminjam')}
                 </div>
 
-                <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="tanggal_pengembalian" className="font-semibold text-sm text-900">
+                <div className="flex flex-column gap-2 w-full">
+                    <label htmlFor="tanggal_pengembalian" className="text-sm">
                         Rencana Tanggal Pengembalian <span className="text-red-500">*</span>
                     </label>
                     <InputText
@@ -137,8 +137,8 @@ const Form = ({
                     {getFormErrorMessage('tanggal_pengembalian')}
                 </div>
 
-                <div className="flex flex-column gap-1 mb-3">
-                    <label htmlFor="keperluan" className="font-semibold text-sm text-900">
+                <div className="flex flex-column gap-2 w-full">
+                    <label htmlFor="keperluan" className="text-sm">
                         Keperluan <span className="text-red-500">*</span>
                     </label>
                     <InputTextarea
@@ -152,11 +152,8 @@ const Form = ({
                     {getFormErrorMessage('keperluan')}
                 </div>
 
-                <Divider className="my-2" />
-
-                <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                    
-                    <Button type="submit" label="Kirim Permintaan" icon="pi pi-check" className=" w-full" loading={state?.load} disabled={state?.load} />
+                <div className="mt-2">
+                    <Button type="submit" label="Kirim Permintaan" className="w-full p-button-primary" loading={state?.load} disabled={state?.load} />
                 </div>
             </form>
         </Dialog>

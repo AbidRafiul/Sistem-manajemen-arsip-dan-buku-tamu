@@ -21,7 +21,8 @@ router.post("/update", async (req, res) => {
         id_divisi: Joi.number().required().label("ID Divisi"),
         kode_unit_kerja: Joi.string().required().label("Kode Unit Kerja"),
         nama_unit_kerja: Joi.string().required().label("Nama Unit Kerja"),
-        deskripsi: Joi.string().optional().allow(null, "").label("Deskripsi")
+        deskripsi: Joi.string().optional().allow(null, "").label("Deskripsi"),
+        status: Joi.string().optional().valid('active', 'nonactive', 'deleted').label("Status")
       },
       { "string.empty": "{#label} tidak boleh kosong", "any.required": "{#label} wajib diisi" },
       oPayload,
@@ -41,6 +42,7 @@ router.post("/update", async (req, res) => {
         kode_unit_kerja: oPayload.kode_unit_kerja ? (oPayload.kode_unit_kerja.toUpperCase().startsWith("UK-") ? `UK-${oPayload.kode_unit_kerja.substring(3)}` : `UK-${oPayload.kode_unit_kerja}`) : null,
         nama_unit_kerja: oPayload.nama_unit_kerja || null,
         deskripsi: oPayload.deskripsi || null,
+        status: oPayload.status || 'active',
         updated_at: new Date(),
       });
 

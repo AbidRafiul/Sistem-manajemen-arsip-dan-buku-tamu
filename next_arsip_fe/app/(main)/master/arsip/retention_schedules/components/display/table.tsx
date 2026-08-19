@@ -40,7 +40,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
 
     const statusBodyTemplate = (rowData: any) => {
         const isActive = rowData.status === 'active';
-        return <Tag value={isActive ? 'Aktif' : 'Tidak Aktif'} severity={isActive ? 'success' : 'danger'} className="text-sm" />;
+        return <Tag value={isActive ? 'Aktif' : 'Nonaktif'} severity={isActive ? 'success' : 'danger'} className="text-sm" />;
     };
 
     const actionTextTemplate = (rowData: any) => {
@@ -72,7 +72,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
             </div>
 
             <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
-                <Button type="button" size="small" label="Tambah" icon="pi pi-plus" outlined severity="success" onClick={() => {
+                <Button type="button" size="small" label="Tambah" icon="pi pi-plus" outlined onClick={() => {
                     formik.resetForm();
                     setState(p => ({ ...p, add: true, selectedData: [] }));
                 }} />

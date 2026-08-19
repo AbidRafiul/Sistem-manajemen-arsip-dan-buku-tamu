@@ -34,18 +34,20 @@ const incomingLetterDelete = async (req, res) => {
         message: "Surat masuk tidak ditemukan"
       });
     }
+    const { insertIncomingLetterTracking } = await import("../components/tools/tracking_helper.js");
     const dNow = new Date();
     await DB.transaction(async trx => {
       await trx("trx_surat_masuk").where("surat_masuk_id", oPayload.surat_masuk_id).update({
         status: "dihapus",
         updated_at: dNow
       });
-      await trx("trx_tracking_surat_masuk").insert({
+      await insertIncomingLetterTracking(trx, {
         surat_masuk_id: oPayload.surat_masuk_id,
-        status: "dihapus",
-        aktivitas: "surat_dihapus",
+        status_sebelumnya: oLetter.status,
+        status_saat_ini: "dihapus",
+        nama_aksi: "surat_dihapus",
         catatan: "Surat masuk dihapus",
-        tanggal: dNow,
+        processed_at: dNow,
         created_at: dNow,
         updated_at: dNow
       });

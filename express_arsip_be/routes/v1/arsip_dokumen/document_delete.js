@@ -26,7 +26,7 @@ const deleteDocument = async (req, res) => {
     const oDocs = await DB("trx_dokumen")
       .select("id_dokumen", "kode_dokumen", "nama_dokumen")
       .whereIn("id_dokumen", vaDocumentId)
-      .where("status", "active");
+      .whereNot("status", "deleted");
 
     if (!oDocs || oDocs.length === 0) {
       const oResult = {
@@ -38,13 +38,13 @@ const deleteDocument = async (req, res) => {
     }
 
     const oData = {
-      status: "nonactive",
+      status: "deleted",
       updated_at: dNow,
     };
 
     await DB("trx_dokumen")
       .whereIn("id_dokumen", vaDocumentId)
-      .where("status", "active")
+      .whereNot("status", "deleted")
       .update(oData);
 
     // Audit trail log for each deleted document
@@ -52,8 +52,8 @@ const deleteDocument = async (req, res) => {
       await logDocumentChange({
         kodeDokumen: doc.kode_dokumen,
         aksi: "delete",
-        deskripsi: `Dokumen '${doc.nama_dokumen}' telah dinonaktifkan / dihapus`,
-        detailJson: { status: "nonactive" },
+        deskripsi: `Dokumen '${doc.nama_dokumen}' telah dihapus`,
+        detailJson: { status: "deleted" },
         req,
       });
     }

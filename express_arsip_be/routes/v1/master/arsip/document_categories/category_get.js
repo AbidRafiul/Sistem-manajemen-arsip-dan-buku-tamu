@@ -23,7 +23,7 @@ const getDocumentCategory = async (req, res) => {
         "deskripsi",
         "status"
       )
-      .where("status", "active")
+      .whereNot("status", "deleted")
       .orderBy("created_at", "desc");
 
     return res.status(200).json({
