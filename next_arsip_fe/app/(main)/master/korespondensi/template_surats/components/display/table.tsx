@@ -9,9 +9,19 @@ import { InputText } from 'primereact/inputtext';
 import { Tag } from 'primereact/tag';
 import { useEffect } from 'react';
 import { State } from '../interfaces';
+import Form from './form';
 
 const Table = ({ state, setState, formik, getData, handleDelete }: any) => {
   const { canCreate, canUpdate, canDelete } = usePermissions();
+
+  useEffect(() => {
+    getData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (state.add || state.edit) {
+    return <Form state={state} setState={setState} formik={formik} handleDelete={handleDelete} />;
+  }
 
   const renderHeader = () => (
     <div className="flex flex-wrap align-items-center justify-content-between gap-3">
@@ -60,10 +70,7 @@ const Table = ({ state, setState, formik, getData, handleDelete }: any) => {
     </div>
   );
 
-  useEffect(() => {
-    getData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
 
   return (
     <div className="card shadow-2 border-round-lg p-4 bg-white">
