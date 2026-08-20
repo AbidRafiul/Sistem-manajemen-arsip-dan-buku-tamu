@@ -1,6 +1,5 @@
 /**
- * Migration to add standard audit fields (created_by, updated_by, tz, created_at, updated_at)
- * across operational and master data tables.
+ * Migration to add standard tz (timezone) field across operational and master data tables.
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
@@ -39,29 +38,11 @@ export async function up(knex) {
     const hasTable = await knex.schema.hasTable(tableName);
     if (!hasTable) continue;
 
-    const hasCreatedBy = await knex.schema.hasColumn(tableName, "created_by");
-    const hasUpdatedBy = await knex.schema.hasColumn(tableName, "updated_by");
     const hasTz = await knex.schema.hasColumn(tableName, "tz");
-    const hasCreatedAt = await knex.schema.hasColumn(tableName, "created_at");
-    const hasUpdatedAt = await knex.schema.hasColumn(tableName, "updated_at");
 
-    if (!hasCreatedBy || !hasUpdatedBy || !hasTz || !hasCreatedAt || !hasUpdatedAt) {
+    if (!hasTz) {
       await knex.schema.alterTable(tableName, (table) => {
-        if (!hasCreatedBy) {
-          table.integer("created_by").unsigned().nullable();
-        }
-        if (!hasUpdatedBy) {
-          table.integer("updated_by").unsigned().nullable();
-        }
-        if (!hasTz) {
-          table.string("tz", 50).defaultTo("Asia/Jakarta").nullable();
-        }
-        if (!hasCreatedAt) {
-          table.timestamp("created_at").defaultTo(knex.fn.now()).nullable();
-        }
-        if (!hasUpdatedAt) {
-          table.timestamp("updated_at").defaultTo(knex.fn.now()).nullable();
-        }
+        table.string("tz", 50).defaultTo("Asia/Jakarta").nullable();
       });
     }
   }
