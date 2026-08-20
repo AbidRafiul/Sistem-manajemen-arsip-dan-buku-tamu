@@ -37,15 +37,15 @@ export default function MonitoringView({
             {/* Custom Styles for Pulse Animation and Premium Cards */}
             <style jsx global>{`
                 @keyframes pulse-live {
-                    0% { transform: scale(0.9); opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-                    70% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
-                    100% { transform: scale(0.9); opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+                    0% { transform: scale(0.95); opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+                    70% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+                    100% { transform: scale(0.95); opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
                 }
                 .live-pulse-dot {
                     display: inline-block;
-                    width: 8px;
-                    height: 8px;
-                    background-color: #ef4444;
+                    width: 7px;
+                    height: 7px;
+                    background-color: #10b981;
                     border-radius: 50%;
                     animation: pulse-live 2s infinite;
                 }
@@ -71,10 +71,10 @@ export default function MonitoringView({
             {/* Header Section */}
             <div className="flex flex-column md:flex-row md:align-items-center justify-content-between gap-3">
                 <div>
-                    <div className="flex align-items-center gap-2 mb-1">
-                        <span className="live-pulse-dot" />
-                        <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: '0.1em' }}>
-                            Monitoring Live Aktif
+                    <div className="inline-flex align-items-center gap-2 px-3 py-1 border-round-lg bg-indigo-50 text-indigo-700 mb-2" style={{ border: '1px solid rgba(99, 102, 241, 0.15)' }}>
+                        <i className="pi pi-chart-line text-xs text-indigo-600" />
+                        <span className="font-semibold text-xs" style={{ letterSpacing: '0.02em' }}>
+                            Dashboard Pemantauan Buku Tamu
                         </span>
                     </div>
                     <h2 className="m-0 text-900 font-bold text-2xl mb-1">

@@ -508,55 +508,55 @@ const Page = () => {
     return <>
         <Toast ref={toast} position="top-right" />
 
-            <Table
-                getDocuments={getDocuments}
-                getDocumentDetail={getDocumentDetail}
-                deleteDocuments={deleteDocuments}
-                uploadVersion={uploadVersion}
-                downloadVersion={downloadVersion}
-                rollbackVersion={rollbackVersion}
-                approveVersion={approveVersion}
-                handleFetchPreviewUrl={handleFetchPreviewUrl}
-                handleGenerateQR={handleGenerateQR}
-                handleScanQR={handleScanQR}
-                handleUpdateLocation={handleUpdateLocation}
-                handleGenerateAutoNumber={handleGenerateAutoNumber}
-                state={state}
-                setState={setState}
-                formik={formik}
-                toast={toast} />
+        <Table
+            getDocuments={getDocuments}
+            getDocumentDetail={getDocumentDetail}
+            deleteDocuments={deleteDocuments}
+            uploadVersion={uploadVersion}
+            downloadVersion={downloadVersion}
+            rollbackVersion={rollbackVersion}
+            approveVersion={approveVersion}
+            handleFetchPreviewUrl={handleFetchPreviewUrl}
+            handleGenerateQR={handleGenerateQR}
+            handleScanQR={handleScanQR}
+            handleUpdateLocation={handleUpdateLocation}
+            handleGenerateAutoNumber={handleGenerateAutoNumber}
+            state={state}
+            setState={setState}
+            formik={formik}
+            toast={toast} />
 
-            {/* Document Preview Dialog */}
-            <Dialog
-                visible={state.isPreviewVisible}
-                header={
-                    <div className="flex align-items-center gap-2">
-                        <i className="pi pi-file-pdf text-primary" />
-                        <span className="font-bold text-900">Pratinjau Dokumen</span>
-                    </div>
-                }
-                modal
-                style={{ width: '60rem', maxWidth: '95vw' }}
-                onHide={() => {
-                    setState((p) => ({ ...p, isPreviewVisible: false, previewUrl: '' }));
-                }}
-                pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}>
-                <div className="pt-3">
-                    {state.previewUrl ? (
-                        <iframe
-                            src={state.previewUrl}
-                            width="100%"
-                            height="600px"
-                            style={{ border: 'none', borderRadius: '8px' }}
-                            title="Preview Arsip" />
-                    ) : (
-                        <div className="flex flex-column align-items-center justify-content-center py-5 text-color-secondary">
-                            <i className="pi pi-spin pi-spinner text-3xl mb-3" />
-                            <span>Memuat dokumen...</span>
-                        </div>
-                    )}
+        {/* Document Preview Dialog */}
+        <Dialog
+            visible={state.isPreviewVisible}
+            header={
+                <div className="flex align-items-center gap-2">
+                    <i className="pi pi-file-pdf text-primary" />
+                    <span className="font-bold text-900">Pratinjau Dokumen</span>
                 </div>
-            </Dialog>
+            }
+            modal
+            style={{ width: '60rem', maxWidth: '95vw' }}
+            onHide={() => {
+                setState((p) => ({ ...p, isPreviewVisible: false, previewUrl: '' }));
+            }}
+            pt={{ header: { className: 'border-bottom-1 surface-border pb-3' } }}>
+            <div className="pt-3">
+                {state.previewUrl ? (
+                    <iframe
+                        src={state.previewUrl}
+                        width="100%"
+                        height="600px"
+                        style={{ border: 'none', borderRadius: '8px' }}
+                        title="Preview Arsip" />
+                ) : (
+                    <div className="flex flex-column align-items-center justify-content-center py-5 text-color-secondary">
+                        <i className="pi pi-spin pi-spinner text-3xl mb-3" />
+                        <span>Memuat dokumen...</span>
+                    </div>
+                )}
+            </div>
+        </Dialog>
     </>
 }
 

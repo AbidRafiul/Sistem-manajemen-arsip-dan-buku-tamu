@@ -49,9 +49,12 @@ const getDashboardSummary = async (req, res) => {
       qTamuHariIni.whereIn(DB.raw('COALESCE(t.id_cabang, u.id_cabang)'), bIds);
     }
 
+    const dispositionColumns = await getTableColumns("trx_disposisi_surat");
+    const disposisiToUserCol = pickColumn(dispositionColumns, ["kepada_pengguna_id", "to_user_id", "to_id_pengguna"]) || "kepada_pengguna_id";
+
     // Metric 3: Surat Disposisi Menunggu Tindak Lanjut
     const qDisposisi = DB("trx_disposisi_surat as tld")
-      .leftJoin("mst_pengguna as u", "tld.kepada_pengguna_id", "u.id_pengguna")
+      .leftJoin("mst_pengguna as u", `tld.${disposisiToUserCol}`, "u.id_pengguna")
       .count("* as total")
       .where("tld.status", "baru")
       .first();

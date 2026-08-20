@@ -244,11 +244,15 @@ router.post(
       const [idKunjungan] = await DB("trx_kunjungan").insert(oData);
 
       try {
+        const cGuestName = nama_tamu || "Seorang tamu";
+        const cGuestCompany = instansi_tamu && instansi_tamu !== "-" ? ` (${instansi_tamu})` : "";
+        const notifMsg = `Tamu ${cGuestName}${cGuestCompany} telah tiba / check-in`;
+
         if (resolvedHostUserId) {
           await createNotification({
             id_pengguna: resolvedHostUserId,
             judul: "Registrasi Tamu Baru",
-            pesan: `${nama_tamu || "Seorang tamu"} (${instansi_tamu || "Instansi tidak diketahui"}) telah check-in`,
+            pesan: notifMsg,
             tipe: "kunjungan",
             tautan: "/buku_tamu/monitoring",
           });
@@ -265,7 +269,7 @@ router.post(
               await createNotification({
                 id_pengguna: sa.id_pengguna,
                 judul: "Registrasi Tamu Baru",
-                pesan: `${nama_tamu || "Seorang tamu"} (${instansi_tamu || "Instansi tidak diketahui"}) telah check-in`,
+                pesan: notifMsg,
                 tipe: "kunjungan",
                 tautan: "/buku_tamu/monitoring",
               });
@@ -293,7 +297,7 @@ router.post(
             await createNotification({
               id_pengguna: userId,
               judul: "Registrasi Tamu Baru",
-              pesan: `${nama_tamu || "Seorang tamu"} (${instansi_tamu || "Instansi tidak diketahui"}) telah check-in untuk menemui host`,
+              pesan: notifMsg,
               tipe: "kunjungan",
               tautan: "/buku_tamu/monitoring",
             });

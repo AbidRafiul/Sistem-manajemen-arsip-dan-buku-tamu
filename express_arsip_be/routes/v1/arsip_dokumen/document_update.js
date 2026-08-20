@@ -88,6 +88,9 @@ const updateDocument = async (req, res) => {
       return res.status(422).json(oResult);
     }
 
+    const nUserId = req.context?.id_pengguna || req.auth?.id_pengguna || req.auth?.id || null;
+    const cTz = req.headers["x-timezone"] || "Asia/Jakarta";
+
     const oData = {
       kode_klasifikasi: cClassificationCode,
       kode_jenis_dokumen: cDocumentTypeCode,
@@ -101,6 +104,8 @@ const updateDocument = async (req, res) => {
       tanggal_kedaluwarsa: dExpiredDate,
       nama_pic: cPicName,
       lokasi_fisik: cPhysicalLocation,
+      updated_by: nUserId,
+      tz: cTz,
       updated_at: dNow,
     };
 

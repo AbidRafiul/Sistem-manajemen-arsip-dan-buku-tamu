@@ -228,25 +228,25 @@ router.post(
 
       const oData = {
         id_cabang: targetBranchId,
-        nama_tamu: nama_tamu,
-        nomor_telepon: nomor_telepon,
-        email_tamu: email_tamu,
-        instansi_tamu: instansi_tamu,
-        jabatan_tamu: jabatan_tamu,
-        jenis_identitas: jenis_identitas && jenis_identitas !== "" ? String(jenis_identitas).toLowerCase() : null,
-        nomor_identitas: nomor_identitas && nomor_identitas !== "" ? nomor_identitas : null,
-        id_tujuan_kunjungan: id_tujuan_kunjungan,
+        nama_tamu: nama_tamu || oPayload.GuestName || "",
+        nomor_telepon: nomor_telepon || oPayload.PhoneNumber || "",
+        email_tamu: email_tamu || oPayload.GuestEmail || null,
+        instansi_tamu: instansi_tamu || oPayload.GuestCompany || null,
+        jabatan_tamu: jabatan_tamu || oPayload.GuestPosition || null,
+        jenis_identitas: (jenis_identitas || oPayload.IdentityType) ? String(jenis_identitas || oPayload.IdentityType).toLowerCase() : null,
+        nomor_identitas: nomor_identitas || oPayload.IdentityNumber || null,
+        id_tujuan_kunjungan: id_tujuan_kunjungan || oPayload.VisitPurposeId,
         id_user_host: resolvedHostUserId || null,
-        nama_host: nama_host,
-        catatan_kunjungan: catatan_kunjungan,
+        nama_host: nama_host || oPayload.HostName || null,
+        catatan_kunjungan: catatan_kunjungan || oPayload.VisitNotes || null,
         foto_wajah: PhotoFace,
         foto_identitas: PhotoIdentity,
         tanda_tangan: TandaTangan,
-        tipe_kunjungan: tipe_kunjungan || "personal",
-        jumlah_tamu: jumlah_tamu ? Number(jumlah_tamu) : 1,
+        tipe_kunjungan: tipe_kunjungan || oPayload.VisitType || "personal",
+        jumlah_tamu: jumlah_tamu ? Number(jumlah_tamu) : (oPayload.GuestCount ? Number(oPayload.GuestCount) : 1),
         kode_kunjungan: VisitCode,
         token_qr: QRToken,
-        waktu_masuk: waktu_masuk,
+        waktu_masuk: waktu_masuk || oPayload.CheckInTime,
         status: "Rencana",
         status_persetujuan: initialStatusPersetujuan,
         created_at: formatDateSystem(),
@@ -256,9 +256,10 @@ router.post(
 
       // Simpan anggota rombongan jika ada
       let parsedGroupMembers = [];
-      if (anggota_rombongan && anggota_rombongan !== "") {
+      const rawGroupMembers = anggota_rombongan || oPayload.GroupMembers;
+      if (rawGroupMembers && rawGroupMembers !== "") {
         try {
-          parsedGroupMembers = JSON.parse(anggota_rombongan);
+          parsedGroupMembers = typeof rawGroupMembers === 'string' ? JSON.parse(rawGroupMembers) : rawGroupMembers;
         } catch (err) {
           console.error("Gagal parsing anggota_rombongan:", err);
         }
@@ -290,6 +291,14 @@ router.post(
       }
 
       try {
+        const GuestName = nama_tamu || oPayload.GuestName || oPayload.nama_tamu || "";
+        const GuestCompany = instansi_tamu || oPayload.GuestCompany || oPayload.instansi_tamu || "";
+        const VisitPurposeId = id_tujuan_kunjungan || oPayload.VisitPurposeId || oPayload.id_tujuan_kunjungan;
+        const HostName = nama_host || oPayload.HostName || oPayload.nama_host || "";
+        const PhoneNumber = nomor_telepon || oPayload.PhoneNumber || oPayload.nomor_telepon || "";
+        const CheckInTime = waktu_masuk || oPayload.CheckInTime || oPayload.waktu_masuk || "";
+        const VisitNotes = catatan_kunjungan || oPayload.VisitNotes || oPayload.catatan_kunjungan || "";
+
         let purposeName = "Kunjungan";
         if (VisitPurposeId) {
           const purposeObj = await DB("mst_tujuan_kunjungan").where("id_tujuan_kunjungan", VisitPurposeId).first();
@@ -388,10 +397,14 @@ ${closingMsg}`;
             await sendWhatsAppMessage(oHost.telepon, waHost);
           }
 
+          const cGuestName = nama_tamu || "Seorang tamu";
+          const cGuestCompany = instansi_tamu && instansi_tamu !== "-" ? ` (${instansi_tamu})` : "";
+          const notifMsg = `${cGuestName}${cGuestCompany} mendaftarkan rencana kunjungan`;
+
           await createNotification({
             id_pengguna: resolvedHostUserId,
             judul: "Rencana Kunjungan Baru",
-            pesan: `${GuestName || "Seorang tamu"} (${GuestCompany || "Instansi tidak diketahui"}) mendaftarkan rencana kunjungan`,
+            pesan: notifMsg,
             tipe: "kunjungan",
             tautan: "/buku_tamu/monitoring",
           });
@@ -408,13 +421,17 @@ ${closingMsg}`;
               await createNotification({
                 id_pengguna: sa.id_pengguna,
                 judul: "Rencana Kunjungan Baru",
-                pesan: `${GuestName || "Seorang tamu"} (${GuestCompany || "Instansi tidak diketahui"}) mendaftarkan rencana kunjungan`,
+                pesan: notifMsg,
                 tipe: "kunjungan",
                 tautan: "/buku_tamu/monitoring",
               });
             }
           }
         } else {
+          const cGuestName = nama_tamu || "Seorang tamu";
+          const cGuestCompany = instansi_tamu && instansi_tamu !== "-" ? ` (${instansi_tamu})` : "";
+          const notifMsg = `${cGuestName}${cGuestCompany} mendaftarkan rencana kunjungan`;
+
           // If no host is selected, notify all active users in the target branch
           const branchUsers = await DB("mst_pengguna")
             .where("id_cabang", targetBranchId)
@@ -437,7 +454,7 @@ ${closingMsg}`;
             await createNotification({
               id_pengguna: userId,
               judul: "Rencana Kunjungan Baru",
-              pesan: `${GuestName || "Seorang tamu"} (${GuestCompany || "Instansi tidak diketahui"}) mendaftarkan rencana kunjungan`,
+              pesan: notifMsg,
               tipe: "kunjungan",
               tautan: "/buku_tamu/monitoring",
             });

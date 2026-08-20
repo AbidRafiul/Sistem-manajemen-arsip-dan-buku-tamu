@@ -20,6 +20,7 @@ const isBypassed = (url) => {
   const lower = url.toLowerCase();
   return (
     lower.includes("/purposes") ||
+    lower.includes("/branches") ||
     lower.includes("/buku_tamu/visit_data/branches") ||
     lower.includes("/visit_checkin") ||
     lower.includes("/visit_booking") ||
