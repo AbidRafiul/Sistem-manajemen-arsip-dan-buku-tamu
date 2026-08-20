@@ -3,10 +3,12 @@
  * @returns { Promise<void> }
  */
 export async function seed(knex) {
-  // Do not delete existing to prevent foreign key errors
+  await knex.raw("SET FOREIGN_KEY_CHECKS = 0;");
 
-  const now = new Date();
-  
+  // Fetch valid jenis_surat_id from mst_jenis_surat if available
+  const oJenisSurat = await knex("mst_jenis_surat").select("jenis_surat_id").first();
+  const nJenisSuratId = oJenisSurat?.jenis_surat_id || 1;
+
   // Create some dates for the last 7 days
   const dates = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date();
@@ -19,7 +21,7 @@ export async function seed(knex) {
       nomor_surat: `001/SK/${Date.now()}`,
       nomor_agenda: `AG-${Date.now()}-1`,
       tanggal_surat: dates[0].split(' ')[0],
-      id_jenis_surat: 385,
+      id_jenis_surat: nJenisSuratId,
       perihal: 'Surat Undangan Rapat',
       tujuan: 'Bapak Budi',
       status: 'terkirim',
@@ -31,7 +33,7 @@ export async function seed(knex) {
       nomor_surat: `002/SK/${Date.now()}`,
       nomor_agenda: `AG-${Date.now()}-2`,
       tanggal_surat: dates[1].split(' ')[0],
-      id_jenis_surat: 385,
+      id_jenis_surat: nJenisSuratId,
       perihal: 'Pengajuan Dana',
       tujuan: 'Direktur Keuangan',
       status: 'menunggu_approval',
@@ -43,7 +45,7 @@ export async function seed(knex) {
       nomor_surat: `003/SK/${Date.now()}`,
       nomor_agenda: `AG-${Date.now()}-3`,
       tanggal_surat: dates[2].split(' ')[0],
-      id_jenis_surat: 385,
+      id_jenis_surat: nJenisSuratId,
       perihal: 'Laporan Bulanan',
       tujuan: 'Manager Operasional',
       status: 'disetujui',
@@ -55,7 +57,7 @@ export async function seed(knex) {
       nomor_surat: `004/SK/${Date.now()}`,
       nomor_agenda: `AG-${Date.now()}-4`,
       tanggal_surat: dates[3].split(' ')[0],
-      id_jenis_surat: 385,
+      id_jenis_surat: nJenisSuratId,
       perihal: 'Surat Peringatan',
       tujuan: 'Karyawan A',
       status: 'ditolak',
@@ -67,7 +69,7 @@ export async function seed(knex) {
       nomor_surat: `005/SK/${Date.now()}`,
       nomor_agenda: `AG-${Date.now()}-5`,
       tanggal_surat: dates[4].split(' ')[0],
-      id_jenis_surat: 385,
+      id_jenis_surat: nJenisSuratId,
       perihal: 'Permohonan Cuti',
       tujuan: 'HRD',
       status: 'selesai',
@@ -78,4 +80,6 @@ export async function seed(knex) {
   ];
 
   await knex('trx_surat_keluar').insert(dummyData);
+
+  await knex.raw("SET FOREIGN_KEY_CHECKS = 1;");
 }

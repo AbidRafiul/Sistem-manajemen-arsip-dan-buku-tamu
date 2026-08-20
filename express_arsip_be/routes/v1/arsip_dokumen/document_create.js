@@ -87,8 +87,8 @@ const createDocument = async (req, res) => {
       nIdCabang = req.context?.id_cabang || req.auth?.id_cabang || null;
     }
 
-    // Generate QR Code string unik (format: DOC-<uuid>)
-    const cQRCode = `DOC-${uuidv4()}`;
+    const nUserId = req.context?.id_pengguna || req.auth?.id_pengguna || req.auth?.id || null;
+    const cTz = req.headers["x-timezone"] || "Asia/Jakarta";
 
     const oData = {
       id_cabang: nIdCabang,
@@ -106,6 +106,9 @@ const createDocument = async (req, res) => {
       lokasi_fisik: cPhysicalLocation,
       qr_code: cQRCode,
       status: "active",
+      created_by: nUserId,
+      updated_by: nUserId,
+      tz: cTz,
       created_at: dNow,
       updated_at: dNow,
     };
