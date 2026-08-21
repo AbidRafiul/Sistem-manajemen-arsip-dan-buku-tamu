@@ -14,7 +14,7 @@ router.post("/delete", async (req, res) => {
       return res.status(400).json({ status: status.BAD_REQUEST, message: "Array ID wajib diisi", datetime: formatDateSystem() });
     }
 
-    await DB("mst_peran").whereIn("id_peran", oPayload.id).update({ status: 'deleted', updated_at: new Date() });
+    await DB("mst_peran").whereIn("id_peran", oPayload.id).update({ status: 'deleted', updated_at: new Date() , tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'});
 
     return res.status(200).json({ status: status.SUKSES, message: "Berhasil dihapus!", datetime: formatDateSystem() });
   } catch (error) {

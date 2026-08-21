@@ -24,7 +24,7 @@ const oSortColumns = {
   perihal: "tsk.perihal",
   status: "tsk.status",
   created_at: "tsk.created_at",
-  updated_at: "tsk.updated_at",
+  updated_at:  "tsk.updated_at",
   waktu_tanda_tangan: "ttd_latest.waktu_tanda_tangan"
 };
 const ALLOWED_LETTER_STATUSES = ["disetujui", "terkirim", "selesai"];

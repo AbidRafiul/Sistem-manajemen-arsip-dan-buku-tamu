@@ -23,7 +23,7 @@ router.delete("/:jenis_surat_id", async (req, res) => {
   try {
     const nUpdated = await DB("mst_jenis_surat")
       .where("jenis_surat_id", nJenisSuratId)
-      .update({ status: "deleted", updated_at: new Date() });
+      .update({ status: "deleted", updated_at: new Date() , tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'});
 
     if (!nUpdated) {
       return res.status(404).json({

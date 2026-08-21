@@ -24,7 +24,7 @@ const SORT_COLUMNS = {
   perihal: "tsk.perihal",
   status: "tsk.status",
   created_at: "tsk.created_at",
-  updated_at: "tsk.updated_at",
+  updated_at:  "tsk.updated_at",
   waktu_tanda_tangan: "ttd_latest.waktu_tanda_tangan"
 };
 const ALLOWED_LETTER_STATUSES = ["disetujui", "terkirim", "selesai"];
@@ -219,7 +219,7 @@ router.post("/verifikasi", upload.single("file"), async (req, res) => {
       created_by: getUserId(req),
       updated_by: getUserId(req),
       created_at: verificationTime,
-      updated_at: verificationTime
+      updated_at: verificationTime, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
     };
     await DB("trx_verifikasi_dokumen").insert(verificationInsert);
     return res.status(200).json({

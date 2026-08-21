@@ -38,9 +38,17 @@ async function postData(endpoint: string, data = {}, customHeader = {}) {
             } catch (e) {}
         }
 
+        let userTz = "Asia/Jakarta";
+        try {
+            userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        } catch (e) {
+            console.error("Failed to get timezone", e);
+        }
+
         // 1. Gabungkan X-Level dengan customHeader (kalau misalnya ada tambahan lain dari luar)
         const mergedCustomHeaders = {
             'X-Level': '1',
+            'x-timezone': userTz,
             ...filterHeaders,
             ...customHeader,
         };

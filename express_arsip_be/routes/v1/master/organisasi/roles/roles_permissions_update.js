@@ -32,7 +32,7 @@ router.post("/update", async (req, res) => {
           hak_hapus: p.hak_hapus ? 1 : 0,
           hak_setuju: p.hak_setuju ? 1 : 0,
           created_at: dNow,
-          updated_at: dNow
+          updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
         });
       }
     }

@@ -66,7 +66,7 @@ const outgoingLetterReject = async (req, res) => {
         .update({
           status: "ditolak",
           updated_by: nActorId,
-          updated_at: dNow,
+          updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
         });
 
       // 2. Insert into tracking
@@ -78,7 +78,7 @@ const outgoingLetterReject = async (req, res) => {
         tanggal: dNow,
         dibuat_oleh: nActorId,
         created_at: dNow,
-        updated_at: dNow,
+        updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
       });
     });
 

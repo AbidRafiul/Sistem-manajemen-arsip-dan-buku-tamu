@@ -18,7 +18,7 @@ const deleteTemplateSurat = async (req, res) => {
       .where("id_template", Number(id))
       .update({
         status: "inactive",
-        updated_at: new Date(),
+        updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
       });
 
     if (!updated) {

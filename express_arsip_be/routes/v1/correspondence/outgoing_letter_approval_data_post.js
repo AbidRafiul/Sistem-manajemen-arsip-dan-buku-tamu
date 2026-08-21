@@ -15,7 +15,7 @@ const SORT_COLUMNS = {
   id_jenis_surat: "tsk.id_jenis_surat",
   status: "tsk.status",
   created_at: "tsk.created_at",
-  updated_at: "tsk.updated_at",
+  updated_at:  "tsk.updated_at",
 };
 
 const toPositiveNumber = (value, fallback) => {

@@ -93,7 +93,7 @@ const createDocumentCategory = async (req, res) => {
             nama_kategori_dokumen: oPayload.nama_kategori_dokumen,
             deskripsi: oPayload.deskripsi || null,
             status: oPayload.status || "active",
-            updated_at: new Date()
+            updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
           });
 
         return res.status(201).json({
@@ -112,7 +112,7 @@ const createDocumentCategory = async (req, res) => {
       deskripsi: oPayload.deskripsi || null,
       status: oPayload.status || "active",
       created_at: dNow,
-      updated_at: dNow,
+      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     });
 
     return res.status(201).json({
