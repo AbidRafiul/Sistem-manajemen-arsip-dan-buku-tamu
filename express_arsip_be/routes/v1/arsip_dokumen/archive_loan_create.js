@@ -85,7 +85,7 @@ const createArchiveLoan = async (req, res) => {
       terlambat: 0,
       tanggal_transaksi: dLoanDate,
       created_at: dNow,
-      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     const [nLoanId] = await DB("trx_peminjaman_arsip").insert(oData);

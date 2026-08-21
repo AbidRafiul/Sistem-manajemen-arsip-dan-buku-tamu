@@ -105,8 +105,8 @@ const updateDocument = async (req, res) => {
       nama_pic: cPicName,
       lokasi_fisik: cPhysicalLocation,
       updated_by: nUserId,
-      tz: cTz,
-      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      zona_waktu: cTz,
+      updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     await DB("trx_dokumen")
