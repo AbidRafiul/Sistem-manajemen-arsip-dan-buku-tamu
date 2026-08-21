@@ -41,7 +41,7 @@ router.post("/update", async (req, res) => {
         nama_peran: oPayload.nama_peran || null,
         deskripsi: oPayload.deskripsi || null,
         status: oPayload.status || 'active',
-        updated_at: new Date(),
+        updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
       });
 
     if (!nUpdated) return res.status(404).json({ message: "Data tidak ditemukan", datetime: formatDateSystem() });

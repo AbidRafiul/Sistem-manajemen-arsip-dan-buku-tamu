@@ -39,7 +39,7 @@ const deleteDocument = async (req, res) => {
 
     const oData = {
       status: "deleted",
-      updated_at: dNow,
+      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     await DB("trx_dokumen")

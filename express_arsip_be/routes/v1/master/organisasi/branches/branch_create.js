@@ -45,7 +45,7 @@ router.post("/create", async (req, res) => {
       surel: oPayload.surel || null,
       status: "active",
       created_at: dNow,
-      updated_at: dNow,
+      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     });
 
     return res.status(201).json({ status: status.SUKSES, message: "Berhasil ditambahkan!", datetime: formatDateSystem() });

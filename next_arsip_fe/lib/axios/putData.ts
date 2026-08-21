@@ -19,8 +19,16 @@ Axios.interceptors.response.use(
 
 async function putData(endpoint: string, data = {}, customHeader = {}) {
     try {
+        let userTz = "Asia/Jakarta";
+        try {
+            userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        } catch (e) {
+            console.error("Failed to get timezone", e);
+        }
+
         const mergedCustomHeaders = {
             'X-Level': '1',
+            'x-timezone': userTz,
             ...customHeader,
         };
 

@@ -6,33 +6,19 @@
  */
 export async function up(knex) {
   const targetTables = [
-    "trx_dokumen",
-    "trx_versi_dokumen",
-    "trx_peminjaman_arsip",
-    "trx_usulan_pemusnahan",
-    "trx_kunjungan",
-    "trx_kunjungan_anggota",
-    "trx_konten_dokumen",
-    "trx_riwayat_dokumen",
-    "trx_notifikasi",
-    "trx_surat_masuk",
-    "trx_surat_keluar",
-    "trx_disposisi_surat",
-    "trx_file_surat_keluar",
-    "trx_file_surat_masuk",
-    "mst_jenis_dokumen",
-    "mst_kategori_dokumen",
-    "mst_klasifikasi_arsip",
-    "mst_jadwal_retensi",
-    "mst_tingkat_kerahasiaan",
-    "mst_jenis_surat",
-    "mst_template_surat",
-    "mst_penomoran_surat",
-    "mst_cabang",
-    "mst_departemen",
-    "mst_divisi",
-    "mst_unit_kerja",
-    "mst_jabatan"
+    "mst_cabang", "mst_departemen", "mst_divisi", "mst_instruksi_disposisi",
+    "mst_jabatan", "mst_jadwal_retensi", "mst_jenis_dokumen", "mst_jenis_surat",
+    "mst_kategori_dokumen", "mst_klasifikasi_arsip", "mst_menu", "mst_navigasi",
+    "mst_pengguna", "mst_pengguna_peran", "mst_penomoran_surat", "mst_peran",
+    "mst_peran_menu", "mst_posisi_tanda_tangan", "mst_riwayat_audit",
+    "mst_sertifikat_elektronik", "mst_template_surat", "mst_tingkat_kerahasiaan",
+    "mst_tujuan_kunjungan", "mst_unit_kerja", "navigasi_pengguna", "config", "log",
+    "trx_disposisi_surat", "trx_dokumen", "trx_file_surat_keluar", "trx_file_surat_masuk",
+    "trx_konten_dokumen", "trx_kunjungan", "trx_kunjungan_anggota", "trx_log_tanda_tangan",
+    "trx_notifikasi", "trx_peminjaman_arsip", "trx_riwayat_dokumen",
+    "trx_sequence_penomoran_surat", "trx_surat_keluar", "trx_surat_masuk",
+    "trx_tanda_tangan_dokumen", "trx_tracking_surat_keluar", "trx_tracking_surat_masuk",
+    "trx_usulan_pemusnahan", "trx_verifikasi_dokumen", "trx_versi_dokumen"
   ];
 
   for (const tableName of targetTables) {
@@ -73,33 +59,19 @@ export async function up(knex) {
  */
 export async function down(knex) {
   const targetTables = [
-    "trx_dokumen",
-    "trx_versi_dokumen",
-    "trx_peminjaman_arsip",
-    "trx_usulan_pemusnahan",
-    "trx_kunjungan",
-    "trx_kunjungan_anggota",
-    "trx_konten_dokumen",
-    "trx_riwayat_dokumen",
-    "trx_notifikasi",
-    "trx_surat_masuk",
-    "trx_surat_keluar",
-    "trx_disposisi_surat",
-    "trx_file_surat_keluar",
-    "trx_file_surat_masuk",
-    "mst_jenis_dokumen",
-    "mst_kategori_dokumen",
-    "mst_klasifikasi_arsip",
-    "mst_jadwal_retensi",
-    "mst_tingkat_kerahasiaan",
-    "mst_jenis_surat",
-    "mst_template_surat",
-    "mst_penomoran_surat",
-    "mst_cabang",
-    "mst_departemen",
-    "mst_divisi",
-    "mst_unit_kerja",
-    "mst_jabatan"
+    "mst_cabang", "mst_departemen", "mst_divisi", "mst_instruksi_disposisi",
+    "mst_jabatan", "mst_jadwal_retensi", "mst_jenis_dokumen", "mst_jenis_surat",
+    "mst_kategori_dokumen", "mst_klasifikasi_arsip", "mst_menu", "mst_navigasi",
+    "mst_pengguna", "mst_pengguna_peran", "mst_penomoran_surat", "mst_peran",
+    "mst_peran_menu", "mst_posisi_tanda_tangan", "mst_riwayat_audit",
+    "mst_sertifikat_elektronik", "mst_template_surat", "mst_tingkat_kerahasiaan",
+    "mst_tujuan_kunjungan", "mst_unit_kerja", "navigasi_pengguna", "config", "log",
+    "trx_disposisi_surat", "trx_dokumen", "trx_file_surat_keluar", "trx_file_surat_masuk",
+    "trx_konten_dokumen", "trx_kunjungan", "trx_kunjungan_anggota", "trx_log_tanda_tangan",
+    "trx_notifikasi", "trx_peminjaman_arsip", "trx_riwayat_dokumen",
+    "trx_sequence_penomoran_surat", "trx_surat_keluar", "trx_surat_masuk",
+    "trx_tanda_tangan_dokumen", "trx_tracking_surat_keluar", "trx_tracking_surat_masuk",
+    "trx_usulan_pemusnahan", "trx_verifikasi_dokumen", "trx_versi_dokumen"
   ];
 
   for (const tableName of targetTables) {

@@ -88,6 +88,7 @@ export const contextMiddleware = (req, res, next) => {
     url: req.url,
     body: req.body,
     auth: req?.auth || null,
+    timezone: req.headers["x-timezone"] || "Asia/Jakarta",
   };
 
   als.run(oStore, () => {
@@ -170,7 +171,10 @@ export const validateSignature = async (req, res, next) => {
       peran: oUser.peran,
     };
 
-    req.context = oUser;
+    req.context = {
+      ...oUser,
+      timezone: req.headers["x-timezone"] || "Asia/Jakarta"
+    };
 
     // RBAC: Data Isolation by Cabang (Hierarchical)
     let allowedCabangIds = null;

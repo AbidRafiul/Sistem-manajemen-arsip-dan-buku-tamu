@@ -24,7 +24,7 @@ const SORT_COLUMNS = {
   perihal: "tsk.perihal",
   status: "tsk.status",
   created_at: "tsk.created_at",
-  updated_at: "tsk.updated_at",
+  updated_at:  "tsk.updated_at",
   waktu_tanda_tangan: "ttd_latest.waktu_tanda_tangan"
 };
 const ALLOWED_LETTER_STATUSES = ["disetujui", "terkirim", "selesai"];
@@ -182,7 +182,7 @@ router.post("/surat-keluar/:id_surat_keluar/finalisasi", async (req, res) => {
     await DB.transaction(async trx => {
       await trx("trx_file_surat_keluar").where("id_surat_keluar", oPayload.id_surat_keluar).where("status", "active").update({
         status: "nonactive",
-        updated_at: new Date()
+        updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
       });
       await trx("trx_file_surat_keluar").insert({
         id_surat_keluar: oPayload.id_surat_keluar,
@@ -195,7 +195,7 @@ router.post("/surat-keluar/:id_surat_keluar/finalisasi", async (req, res) => {
         created_by: getUserId(req),
         updated_by: getUserId(req),
         created_at: new Date(),
-        updated_at: new Date()
+        updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
       });
       const existingFlow = await trx("trx_alur_tanda_tangan").where("id_surat_keluar", oPayload.id_surat_keluar).first();
       if (existingFlow) {
@@ -204,7 +204,7 @@ router.post("/surat-keluar/:id_surat_keluar/finalisasi", async (req, res) => {
           urutan_aktif: 1,
           dimulai_pada: existingFlow.dimulai_pada || new Date(),
           updated_by: getUserId(req),
-          updated_at: new Date()
+          updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
         });
       } else {
         await trx("trx_alur_tanda_tangan").insert({
@@ -216,7 +216,7 @@ router.post("/surat-keluar/:id_surat_keluar/finalisasi", async (req, res) => {
           created_by: getUserId(req),
           updated_by: getUserId(req),
           created_at: new Date(),
-          updated_at: new Date()
+          updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
         });
       }
       await trx("trx_tracking_surat_keluar").insert({
@@ -227,7 +227,7 @@ router.post("/surat-keluar/:id_surat_keluar/finalisasi", async (req, res) => {
         tanggal: new Date(),
         dibuat_oleh: getUserId(req),
         created_at: new Date(),
-        updated_at: new Date()
+        updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
       });
     });
     await recordSignatureLog({

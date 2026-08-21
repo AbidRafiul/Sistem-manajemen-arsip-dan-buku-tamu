@@ -49,9 +49,17 @@ async function getData(endpoint: string, params: Record<string, any> = {}, custo
             } catch (e) {}
         }
 
+        let userTz = "Asia/Jakarta";
+        try {
+            userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        } catch (e) {
+            console.error("Failed to get timezone", e);
+        }
+
         // 1. Gabungkan header tambahan
         const mergedCustomHeaders = {
             'X-Level': "1",
+            'x-timezone': userTz,
             ...filterHeaders,
             ...customHeader
         };

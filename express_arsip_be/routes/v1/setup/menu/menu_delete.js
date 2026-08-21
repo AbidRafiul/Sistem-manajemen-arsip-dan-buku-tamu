@@ -10,7 +10,7 @@ router.post("/", async (req, res) => {
     await DB("mst_peran_menu").whereIn("id_menu", IdMenu).del();
     await DB("mst_menu").whereIn("id_menu", IdMenu).update({
       status_aktif: 0,
-      updated_at: new Date()
+      updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
     });
 
     // Optional cache refresh
