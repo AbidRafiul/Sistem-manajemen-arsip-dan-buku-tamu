@@ -16,7 +16,7 @@ router.delete("/:id", async (req, res) => {
       .update({
         status_aktif: 0,
         updated_by: req.body?.updated_by || null,
-        updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+        updated_at: new Date(), zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
       });
 
     if (!updated) {

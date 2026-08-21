@@ -110,7 +110,7 @@ const incomingLetterArchive = async (req, res) => {
         qr_code: `DOC-${uuidv4()}`,
         status: "active",
         created_at: dNow,
-        updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+        updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
       });
 
       const cKodeDokumen = `${oLetter.nomor_agenda}-${nDocumentId}`;
@@ -130,7 +130,7 @@ const incomingLetterArchive = async (req, res) => {
         catatan_persetujuan: "Versi awal dari file surat masuk",
         tanggal_transaksi: dNow,
         created_at: dNow,
-        updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+        updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
       });
 
       await insertIncomingLetterTracking(trx, {
@@ -145,7 +145,7 @@ const incomingLetterArchive = async (req, res) => {
         processed_at: dNow,
         created_by: oPayload.created_by || null,
         created_at: dNow,
-        updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+        updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
       });
 
       return {

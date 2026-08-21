@@ -188,18 +188,18 @@ export const sanitizeString = (str, {
 
   //deteksi pola berbahaya 
   const suspiciousPatterns = [/<\s*script\b[^>]*>.*?<\s*\/\s*script\s*>/is, /<\s*script\b/ig,
-  // open script
-  /<\?php\b.*?\?>/is,
-  // PHP block
-  /<\s*\?[^>]+>/is,
-  // any <? ... > (caution)
-  /on\w+\s*=\s*(['"]).*?\1/ig,
-  // inline event handlers
-  /(system|exec|shell_exec|passthru|popen|`|eval)\s*\(/ig,
-  // execution functions
-  /base64_decode\s*\(/ig, /phpinfo\s*\(/ig, /\/\*\s*.*?\s*\*\//s,
-  // block comments (could hide payload)
-  /<\s*iframe\b/ig, /<\s*img\b[^>]*on/i];
+    // open script
+    /<\?php\b.*?\?>/is,
+    // PHP block
+    /<\s*\?[^>]+>/is,
+    // any <? ... > (caution)
+    /on\w+\s*=\s*(['"]).*?\1/ig,
+    // inline event handlers
+    /(system|exec|shell_exec|passthru|popen|`|eval)\s*\(/ig,
+    // execution functions
+    /base64_decode\s*\(/ig, /phpinfo\s*\(/ig, /\/\*\s*.*?\s*\*\//s,
+    // block comments (could hide payload)
+    /<\s*iframe\b/ig, /<\s*img\b[^>]*on/i];
   for (const p of suspiciousPatterns) {
     if (p.test(s)) {
       if (mode === "detect") return {

@@ -238,7 +238,7 @@ router.post(
         status: "in",
         status_persetujuan: "approved",
         created_at: currentDateTime,
-        updated_at: currentDateTime, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+        updated_at: currentDateTime, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
       };
 
       const [idKunjungan] = await DB("trx_kunjungan").insert(oData);
@@ -336,7 +336,7 @@ router.post(
             nomor_identitas: member.idNumber || member.nomor_identitas || null,
             foto_identitas: memberPhotoPath,
             created_at: currentDateTime,
-            updated_at: currentDateTime, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+            updated_at: currentDateTime, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
           });
         });
         await Promise.all(insertPromises);

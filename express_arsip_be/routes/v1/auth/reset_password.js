@@ -163,7 +163,7 @@ router.post("/", async (req, res) => {
 
     await DB("mst_pengguna").where(idColumn, oUser.id_pengguna).update({
       [passwordColumn]: cHashedNewkata_sandi,
-      updated_at: formatDateSystem(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      updated_at: formatDateSystem(), zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     });
 
     // 6. Catat Aktivitas ke CCTV
