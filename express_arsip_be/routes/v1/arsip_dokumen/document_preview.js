@@ -1,8 +1,11 @@
+import express from "express";
 import minioClient from "../../../core/config/minio.js";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import fs from "fs";
 import path from "path";
+
+const router = express.Router();
 
 const documentPreview = async (req, res) => {
   try {
@@ -115,4 +118,5 @@ const documentPreview = async (req, res) => {
   }
 };
 
-export default documentPreview;
+router.get("/", documentPreview);
+export default router;

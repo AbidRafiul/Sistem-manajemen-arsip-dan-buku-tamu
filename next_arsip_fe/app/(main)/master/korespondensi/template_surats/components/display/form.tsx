@@ -1,5 +1,6 @@
 'use client';
 
+import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
@@ -49,7 +50,7 @@ Hormat kami,
 {{nama_pengirim}}
 {{jabatan}}`;
 
-const Form = ({ state, setState, formik }: any) => {
+const Form = ({ state, setState, formik, handleDelete }: any) => {
   const letterTypeOptions = (state.letterTypes || []).filter((item: any) => item.status === 'active' || item.jenis_surat_id === formik.values.jenis_surat_id).map((item: any) => ({ label: item.nama_jenis_surat, value: item.jenis_surat_id }));
 
   const previewText = useMemo(() => {
@@ -92,21 +93,27 @@ const Form = ({ state, setState, formik }: any) => {
     return isFormFieldInvalid(name) ? <small className="p-error">{formik?.errors[name] as string}</small> : null;
   };
 
-  return (
-    <div className="card border-none shadow-none">
-      <div className="flex justify-content-between align-items-start mb-4">
-        <div className="flex flex-column gap-1">
-          <h3 className="text-xl md:text-2xl font-semibold m-0 text-900">
-            {state.edit ? 'Perubahan Template Surat' : 'Penambahan Template Surat Baru'}
-          </h3>
-          <p className="text-500 text-sm m-0">
-            Atur konfigurasi template surat lengkap dengan variabel placeholder dan editor isi surat.
-          </p>
-        </div>
-        <Button type="button" icon="pi pi-arrow-left" label="Kembali" outlined severity="secondary" size="small" className="text-sm px-3 py-2" onClick={handleCancel} loading={state?.load} />
-      </div>
+  const deleteFooterTemplate = (
+    <div className="flex justify-content-center gap-2">
+      <Button type="button" label="Batal" icon="pi pi-times" className="p-button-outlined p-button-secondary" onClick={handleCancel} />
+      <Button type="button" label="Ya, Hapus" icon="pi pi-trash" severity="danger" loading={state?.load} disabled={state?.load} onClick={handleDelete} />
+    </div>
+  );
 
-      <form onSubmit={formik.handleSubmit}>
+  return (
+    <>
+      <Dialog 
+        visible={state.add || state.edit} 
+        onHide={handleCancel}
+        header={state.edit ? 'Perubahan Template Surat' : 'Penambahan Template Surat Baru'}
+        modal
+        style={{ width: '60vw' }}
+        breakpoints={{ '960px': '85vw', '641px': '100vw' }}
+      >
+        <p className="text-500 text-sm m-0 mb-4">
+          Atur konfigurasi template surat lengkap dengan variabel placeholder dan editor isi surat.
+        </p>
+        <form onSubmit={formik.handleSubmit}>
         <div className="py-2">
           <TabView activeIndex={state.activeStep} onTabChange={(e) => setState((p: any) => ({ ...p, activeStep: e.index }))}>
             {/* TAB 0: INFORMASI DASAR */}
@@ -120,7 +127,7 @@ const Form = ({ state, setState, formik }: any) => {
               }
             >
               <div className="pt-4 pb-2 animation-duration-300 fadein">
-                <div className="mb-4">
+                <div className="mb-3">
                   <h3 className="m-0 text-lg font-bold text-900">
                     Informasi Identitas Template
                   </h3>
@@ -128,30 +135,30 @@ const Form = ({ state, setState, formik }: any) => {
                 </div>
 
                 <div className="grid formgrid p-fluid">
-                  <div className="field col-12 md:col-6 mb-4">
-                    <label htmlFor="kode_template" className="font-bold text-xs text-700 uppercase mb-2 block tracking-wider">KODE TEMPLATE <span className="text-red-500">*</span></label>
+                  <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
+                    <label htmlFor="kode_template" className="font-bold text-xs text-700 uppercase tracking-wider">KODE TEMPLATE <span className="text-red-500">*</span></label>
                     <InputText id="kode_template" name="kode_template" placeholder="Contoh: TPL-UND-01" value={formik.values.kode_template} onChange={formik.handleChange} className={isFormFieldInvalid('kode_template') ? 'p-invalid w-full' : 'w-full'} />
                     {getFormErrorMessage('kode_template')}
                   </div>
                   
-                  <div className="field col-12 md:col-6 mb-4">
-                    <label htmlFor="nama_template" className="font-bold text-xs text-700 uppercase mb-2 block tracking-wider">NAMA TEMPLATE <span className="text-red-500">*</span></label>
+                  <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
+                    <label htmlFor="nama_template" className="font-bold text-xs text-700 uppercase tracking-wider">NAMA TEMPLATE <span className="text-red-500">*</span></label>
                     <InputText id="nama_template" name="nama_template" placeholder="Contoh: Template Undangan Resmi" value={formik.values.nama_template} onChange={formik.handleChange} className={isFormFieldInvalid('nama_template') ? 'p-invalid w-full' : 'w-full'} />
                     {getFormErrorMessage('nama_template')}
                   </div>
 
-                  <div className="field col-12 md:col-6 mb-4">
-                    <label htmlFor="jenis_surat_id" className="font-bold text-xs text-700 uppercase mb-2 block tracking-wider">JENIS SURAT</label>
+                  <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
+                    <label htmlFor="jenis_surat_id" className="font-bold text-xs text-700 uppercase tracking-wider">JENIS SURAT</label>
                     <Dropdown id="jenis_surat_id" name="jenis_surat_id" value={formik.values.jenis_surat_id} options={letterTypeOptions} onChange={(e) => formik.setFieldValue('jenis_surat_id', e.value)} placeholder="Pilih jenis surat" />
                   </div>
 
-                  <div className="field col-12 md:col-6 mb-4">
-                    <label htmlFor="status" className="font-bold text-xs text-700 uppercase mb-2 block tracking-wider">STATUS KEAKTIFAN <span className="text-red-500">*</span></label>
+                  <div className="col-12 md:col-6 flex flex-column gap-1 mb-2">
+                    <label htmlFor="status" className="font-bold text-xs text-700 uppercase tracking-wider">STATUS KEAKTIFAN <span className="text-red-500">*</span></label>
                     <Dropdown id="status" name="status" value={formik.values.status} options={statusOptions} onChange={formik.handleChange} />
                   </div>
 
-                  <div className="field col-12 mb-4">
-                    <label htmlFor="deskripsi" className="font-bold text-xs text-700 uppercase mb-2 block tracking-wider">DESKRIPSI</label>
+                  <div className="col-12 flex flex-column gap-1 mb-2">
+                    <label htmlFor="deskripsi" className="font-bold text-xs text-700 uppercase tracking-wider">DESKRIPSI</label>
                     <InputText id="deskripsi" name="deskripsi" placeholder="Keterangan peruntukan template" value={formik.values.deskripsi} onChange={formik.handleChange} className="w-full" />
                   </div>
                 </div>
@@ -169,16 +176,16 @@ const Form = ({ state, setState, formik }: any) => {
               }
             >
               <div className="pt-4 pb-2 animation-duration-300 fadein">
-                <div className="mb-4">
+                <div className="mb-3">
                   <h3 className="m-0 text-lg font-bold text-900">
                     Editor Isi Surat
                   </h3>
                   <span className="text-sm text-500 mt-1 block">Gunakan placeholder variabel untuk menghasilkan konten surat dinamis.</span>
                 </div>
 
-                <div className="flex flex-column gap-4">
+                <div className="flex flex-column gap-3">
                   <div className="flex flex-column gap-2">
-                    <label className="font-bold text-xs text-700 uppercase block tracking-wider">PLACEHOLDER VARIABEL</label>
+                    <label className="font-bold text-xs text-700 uppercase tracking-wider">PLACEHOLDER VARIABEL</label>
                     <div className="flex flex-wrap gap-2">
                       {placeholderOptions.map((item) => (
                         <Button key={item} type="button" size="small" outlined severity="secondary" onClick={() => insertPlaceholder(item)} label={item} className="p-2 text-sm text-600 bg-white" />
@@ -188,7 +195,7 @@ const Form = ({ state, setState, formik }: any) => {
                   </div>
 
                   <div className="flex flex-column gap-2">
-                    <label htmlFor="isi_template" className="font-bold text-xs text-700 uppercase block tracking-wider">ISI TEMPLATE SURAT <span className="text-red-500">*</span></label>
+                    <label htmlFor="isi_template" className="font-bold text-xs text-700 uppercase tracking-wider">ISI TEMPLATE SURAT <span className="text-red-500">*</span></label>
                     <InputTextarea id="isi_template" name="isi_template" rows={10} value={formik.values.isi_template} onChange={formik.handleChange} className={isFormFieldInvalid('isi_template') ? 'p-invalid w-full' : 'w-full'} autoResize style={{ fontFamily: "monospace", fontSize: "14px" }} />
                     {getFormErrorMessage('isi_template')}
                   </div>
@@ -236,7 +243,18 @@ const Form = ({ state, setState, formik }: any) => {
           )}
         </div>
       </form>
-    </div>
+      </Dialog>
+      
+      <Dialog header="Konfirmasi Hapus" visible={state.delete} onHide={handleCancel} modal style={{ width: '25rem' }} footer={deleteFooterTemplate}>
+        <div className="flex flex-column align-items-center text-center gap-4 py-4">
+            <i className="pi pi-exclamation-triangle text-red-500 text-6xl" />
+            <div>
+                <h3 className="font-bold mb-2">Hapus data ini?</h3>
+                <p className="text-color-secondary">Tindakan ini tidak dapat dibatalkan.</p>
+            </div>
+        </div>
+      </Dialog>
+    </>
   );
 };
 

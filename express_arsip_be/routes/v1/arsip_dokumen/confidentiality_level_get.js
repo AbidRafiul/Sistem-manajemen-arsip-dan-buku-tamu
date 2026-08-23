@@ -1,5 +1,8 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+
+const router = express.Router();
 
 const getConfidentialityLevels = async (req, res) => {
   try {
@@ -43,4 +46,5 @@ const getConfidentialityLevels = async (req, res) => {
   }
 };
 
-export default getConfidentialityLevels;
+router.get("/", getConfidentialityLevels);
+export default router;

@@ -1,5 +1,8 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+
+const router = express.Router();
 
 /**
  * Get audit trail / history log for a document
@@ -58,4 +61,5 @@ const getDocumentHistory = async (req, res) => {
   }
 };
 
-export default getDocumentHistory;
+router.get("/", getDocumentHistory);
+export default router;

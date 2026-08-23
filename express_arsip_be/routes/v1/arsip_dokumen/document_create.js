@@ -1,9 +1,13 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { v4 as uuidv4 } from "uuid";
 import { formatDateSystem } from "../components/tools/general.js";
 import { logDocumentChange } from "../components/tools/audit_trail_helper.js";
 import { processDocumentContent } from "../../../core/components/ocr_service.js";
+import { uploadDocument } from "../../../middleware/upload_document.js";
+
+const router = express.Router();
 
 const createDocument = async (req, res) => {
   const oPayload = req.body;
@@ -210,4 +214,5 @@ const createDocument = async (req, res) => {
   }
 };
 
-export default createDocument;
+router.post("/", uploadDocument, createDocument);
+export default router;

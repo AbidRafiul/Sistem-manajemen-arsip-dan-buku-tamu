@@ -1,5 +1,8 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+
+const router = express.Router();
 
 const updateDocumentLocation = async (req, res) => {
   const oPayload = req.body;
@@ -72,4 +75,5 @@ const updateDocumentLocation = async (req, res) => {
   }
 };
 
-export default updateDocumentLocation;
+router.post("/", updateDocumentLocation);
+export default router;

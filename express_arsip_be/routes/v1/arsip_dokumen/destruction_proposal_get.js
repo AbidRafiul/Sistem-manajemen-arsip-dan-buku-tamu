@@ -1,6 +1,9 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { applyMultiTenantFilter } from "../components/tools/filter_helper.js";
+
+const router = express.Router();
 
 const getDestructionProposals = async (req, res) => {
   try {
@@ -94,4 +97,5 @@ const getDestructionProposals = async (req, res) => {
   }
 };
 
-export default getDestructionProposals;
+router.get("/", getDestructionProposals);
+export default router;

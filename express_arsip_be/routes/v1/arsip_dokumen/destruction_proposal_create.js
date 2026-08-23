@@ -1,6 +1,9 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { createNotification } from "../components/tools/notification_helper.js";
+
+const router = express.Router();
 
 const createDestructionProposal = async (req, res) => {
   const oPayload = req.body;
@@ -146,4 +149,5 @@ const createDestructionProposal = async (req, res) => {
   }
 };
 
-export default createDestructionProposal;
+router.post("/", createDestructionProposal);
+export default router;

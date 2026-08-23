@@ -1,7 +1,10 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { logDocumentChange } from "../components/tools/audit_trail_helper.js";
 import { processDocumentContent } from "../../../core/components/ocr_service.js";
+
+const router = express.Router();
 
 const rollbackDocumentVersion = async (req, res) => {
   const oPayload = req.body;
@@ -139,4 +142,5 @@ const rollbackDocumentVersion = async (req, res) => {
   }
 };
 
-export default rollbackDocumentVersion;
+router.post("/", rollbackDocumentVersion);
+export default router;

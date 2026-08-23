@@ -1,5 +1,8 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+
+const router = express.Router();
 
 const createDocumentVersion = async (req, res) => {
   const oPayload = req.body;
@@ -49,4 +52,5 @@ const createDocumentVersion = async (req, res) => {
   }
 };
 
-export default createDocumentVersion;
+router.post("/", createDocumentVersion);
+export default router;

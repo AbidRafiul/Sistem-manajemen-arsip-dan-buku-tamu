@@ -1,4 +1,8 @@
+import express from "express";
 import { Logging } from "../components/tools/servertool.js";
+import { uploadDocument } from "../../../middleware/upload_document.js";
+
+const router = express.Router();
 
 const uploadDocumentFile = async (req, res) => {
   const oPayload = req.body;
@@ -43,4 +47,5 @@ const uploadDocumentFile = async (req, res) => {
   }
 };
 
-export default uploadDocumentFile;
+router.post("/", uploadDocument, uploadDocumentFile);
+export default router;

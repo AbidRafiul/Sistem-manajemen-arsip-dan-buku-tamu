@@ -119,7 +119,5 @@ const outgoingLetterFileDownload = async (req, res) => {
 };
 
 router.get("/:id_file_surat_keluar?", outgoingLetterFileDownload);
-router.get("/*", outgoingLetterFileDownload);
-router.post("/", outgoingLetterFileDownload);
 
 export default router;

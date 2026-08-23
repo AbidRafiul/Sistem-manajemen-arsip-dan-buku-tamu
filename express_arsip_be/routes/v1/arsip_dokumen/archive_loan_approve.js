@@ -1,6 +1,9 @@
+import express from "express";
 import Knex from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { createNotification } from "../components/tools/notification_helper.js";
+
+const router = express.Router();
 
 const approveArchiveLoan = async (req, res) => {
   const oPayload = req.body;
@@ -159,4 +162,5 @@ const approveArchiveLoan = async (req, res) => {
   }
 };
 
-export default approveArchiveLoan;
+router.post("/", approveArchiveLoan);
+export default router;

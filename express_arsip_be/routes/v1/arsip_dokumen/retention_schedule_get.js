@@ -1,5 +1,8 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+
+const router = express.Router();
 
 const getRetentionSchedules = async (req, res) => {
   try {
@@ -61,4 +64,5 @@ const getRetentionSchedules = async (req, res) => {
   }
 };
 
-export default getRetentionSchedules;
+router.get("/", getRetentionSchedules);
+export default router;

@@ -1,6 +1,9 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { applyMultiTenantFilter } from "../components/tools/filter_helper.js";
+
+const router = express.Router();
 
 const getRetentionExpiredDocuments = async (req, res) => {
   try {
@@ -100,4 +103,5 @@ const getRetentionExpiredDocuments = async (req, res) => {
   }
 };
 
-export default getRetentionExpiredDocuments;
+router.get("/", getRetentionExpiredDocuments);
+export default router;

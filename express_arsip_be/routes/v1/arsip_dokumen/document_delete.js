@@ -1,6 +1,9 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { logDocumentChange } from "../components/tools/audit_trail_helper.js";
+
+const router = express.Router();
 
 const deleteDocument = async (req, res) => {
   const oPayload = req.body;
@@ -87,4 +90,5 @@ const deleteDocument = async (req, res) => {
   }
 };
 
-export default deleteDocument;
+router.post("/", deleteDocument);
+export default router;

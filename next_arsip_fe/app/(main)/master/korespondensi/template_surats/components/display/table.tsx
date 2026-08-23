@@ -19,9 +19,7 @@ const Table = ({ state, setState, formik, getData, handleDelete }: any) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (state.add || state.edit) {
-    return <Form state={state} setState={setState} formik={formik} handleDelete={handleDelete} />;
-  }
+
 
   const renderHeader = () => (
     <div className="flex flex-wrap align-items-center justify-content-between gap-3">

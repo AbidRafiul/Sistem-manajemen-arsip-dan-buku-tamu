@@ -1,7 +1,11 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { logDocumentChange } from "../components/tools/audit_trail_helper.js";
 import { processDocumentContent } from "../../../core/components/ocr_service.js";
+import { uploadDocument } from "../../../middleware/upload_document.js";
+
+const router = express.Router();
 
 const uploadDocumentVersion = async (req, res) => {
   const oPayload = req.body;
@@ -134,4 +138,5 @@ const uploadDocumentVersion = async (req, res) => {
   }
 };
 
-export default uploadDocumentVersion;
+router.post("/", uploadDocument, uploadDocumentVersion);
+export default router;

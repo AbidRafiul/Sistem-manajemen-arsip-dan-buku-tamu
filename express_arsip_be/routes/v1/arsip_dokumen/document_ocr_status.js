@@ -1,5 +1,8 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+
+const router = express.Router();
 
 /**
  * Check OCR status
@@ -42,3 +45,6 @@ export const getOcrStatus = async (req, res) => {
     });
   }
 };
+
+router.get("/", getOcrStatus);
+export default router;

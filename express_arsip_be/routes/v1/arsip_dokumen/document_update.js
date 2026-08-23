@@ -1,6 +1,9 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { logDocumentChange, buildChangeDiff } from "../components/tools/audit_trail_helper.js";
+
+const router = express.Router();
 
 const updateDocument = async (req, res) => {
   const oPayload = req.body;
@@ -161,4 +164,5 @@ const updateDocument = async (req, res) => {
   }
 };
 
-export default updateDocument;
+router.post("/", updateDocument);
+export default router;
