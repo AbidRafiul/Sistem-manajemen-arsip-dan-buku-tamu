@@ -87,13 +87,21 @@ const Table = ({
         return String(value).slice(0, 10);
     };
 
-    const statusTemplate = (rowData: DocumentData) => (
-        <Tag
-            value={rowData.status === 'active' ? 'Aktif' : 'Nonaktif'}
-            severity={rowData.status === 'active' ? 'success' : 'danger'}
-            icon={rowData.status === 'active' ? 'pi pi-check-circle' : 'pi pi-times-circle'}
-            style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem' }} />
-    );
+    const statusTemplate = (rowData: DocumentData) => {
+        const isActive = rowData.status === 'active';
+        let bgClass = isActive ? "bg-green-500" : "bg-red-500";
+        let icon = isActive ? "pi pi-check" : "pi pi-times";
+        let label = isActive ? "Aktif" : "Nonaktif";
+
+        return (
+            <div className="flex align-items-center gap-2">
+                <div className={`${bgClass} flex align-items-center justify-content-center`} style={{ width: '24px', height: '24px', borderRadius: '4px', flexShrink: 0 }}>
+                    <i className={`${icon} text-white`} style={{ fontSize: '0.8rem' }}></i>
+                </div>
+                <span className="text-700 font-medium text-xs">{label}</span>
+            </div>
+        );
+    };
 
     const documentTemplate = (rowData: DocumentData) => (
         <div>
@@ -312,6 +320,23 @@ const Table = ({
                         severity="help"
                         onClick={() => router.push('/edms/archive_document/search')} />
                 </div>
+                <div className="flex align-items-center gap-3 surface-50 p-2 border-round text-sm w-fit" style={{ border: '1px solid var(--surface-200)' }}>
+                    <div className="flex align-items-center gap-2 font-semibold text-600">
+                        <i className="pi pi-info-circle"></i> KETERANGAN STATUS:
+                    </div>
+                    <div className="flex align-items-center gap-2 ml-2">
+                        <div className="bg-green-500 flex align-items-center justify-content-center" style={{ width: '18px', height: '18px', borderRadius: '3px' }}>
+                            <i className="pi pi-check text-white" style={{ fontSize: '0.6rem' }}></i>
+                        </div>
+                        <span className="text-700 font-medium text-xs">Aktif</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 ml-2">
+                        <div className="bg-red-500 flex align-items-center justify-content-center" style={{ width: '18px', height: '18px', borderRadius: '3px' }}>
+                            <i className="pi pi-times text-white" style={{ fontSize: '0.6rem' }}></i>
+                        </div>
+                        <span className="text-700 font-medium text-xs">Nonaktif</span>
+                    </div>
+                </div>
             </div>
 
             {/* Filter Panel */}
@@ -427,6 +452,7 @@ const Table = ({
                 className="p-datatable-sm border-round-xl border-1 surface-border overflow-hidden"
                 stripedRows>
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
+<Column field="status" header="Status" body={statusTemplate} sortable style={{ minWidth: '130px' }} />
                 <Column field="nomor_dokumen" header="Nomor / Nama Dokumen" body={documentTemplate} sortable style={{ minWidth: '16rem' }} />
                 <Column field="nama_jenis_dokumen" header="Tipe" sortable style={{ minWidth: '10rem' }} />
                 <Column field="nama_kategori_dokumen" header="Kategori" sortable style={{ minWidth: '12rem' }} />
@@ -435,8 +461,7 @@ const Table = ({
                 <Column field="nama_pic" header="PIC" body={picTemplate} sortable style={{ minWidth: '12rem' }} />
                 <Column field="tanggal" header="Tgl. Dokumen" body={(r) => formatDateCalendar(r.tanggal, 'yyyy-MM-dd')} sortable style={{ minWidth: '9rem' }} />
                 <Column field="tanggal_kedaluwarsa" header="Tgl. Kedaluwarsa" body={(r) => formatDateCalendar(r.tanggal_kedaluwarsa, 'yyyy-MM-dd')} sortable style={{ minWidth: '9rem' }} />
-                <Column field="status" header="Status" body={statusTemplate} sortable style={{ minWidth: '8rem' }} />
-                <Column header="Berkas" body={previewTemplate} style={{ width: '4rem', textAlign: 'center' }} />
+                                <Column header="Berkas" body={previewTemplate} style={{ width: '3rem', textAlign: 'center' }} />
                 <Column header="Aksi" body={actionTemplate} style={{ minWidth: '13rem', textAlign: 'center' }} />
             </DataTable>
         </Card>

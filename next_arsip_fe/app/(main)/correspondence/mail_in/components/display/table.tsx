@@ -180,8 +180,22 @@ const Table = ({
     );
 
     const statusTemplate = (rowData: TableData) => {
-        const config = getStatusConfig(rowData.status as string);
-        return <Tag value={config.label} severity={config.severity} icon={config.icon} style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }} />;
+        let s = String(rowData.status || "baru").toLowerCase();
+        let bgClass = "bg-blue-500";
+        let icon = "pi pi-circle";
+        if (s === 'baru') { bgClass = "bg-gray-500"; icon = "pi pi-envelope"; }
+        else if (s === 'didisposisi') { bgClass = "bg-orange-500"; icon = "pi pi-share-alt"; }
+        else if (s === 'diproses') { bgClass = "bg-orange-500"; icon = "pi pi-cog"; }
+        else if (s === 'selesai') { bgClass = "bg-green-500"; icon = "pi pi-check-circle"; }
+        
+        let label = s === 'baru' ? 'Baru' : s === 'didisposisi' ? 'Menunggu Disposisi' : s === 'diproses' ? 'Diproses' : s === 'selesai' ? 'Selesai' : s;
+        return (
+            <div className="flex justify-content-center">
+                <div className={`${bgClass} flex align-items-center justify-content-center`} style={{ width: '24px', height: '24px', borderRadius: '4px', flexShrink: 0 }} title={label}>
+                    <i className={`${icon} text-white`} style={{ fontSize: '0.8rem' }}></i>
+                </div>
+            </div>
+        );
     };
 
     const actionTemplate = (rowData: TableData) => (
@@ -339,6 +353,7 @@ const Table = ({
                     rowHover
                     className="text-sm">
                     <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
+                    <Column body={statusTemplate} header="Status" align="center" style={{ width: "80px" }} />
                     <Column field="nomor_agenda" header="No. Surat" body={(r) => (
                         <div>
                             <div className="font-semibold text-sm text-900">{r.nomor_agenda || "-"}</div>
@@ -349,7 +364,6 @@ const Table = ({
                     <Column header="Pengirim" body={senderTemplate} style={{ minWidth: "180px" }} />
                     <Column field="tanggal_diterima" header="Tgl. Terima" sortable body={(r) => formatDateCalendar(r.tanggal_diterima)} style={{ width: "120px" }} />
                     <Column field="nama_jenis_surat" header="Jenis Surat" style={{ width: "120px" }} />
-                    <Column body={statusTemplate} header="Status" style={{ width: "130px", textAlign: "center" }} />
                     <Column field="created_at" header="Dibuat" sortable body={(r) => formatDateCalendar(r.created_at)} style={{ width: "120px" }} />
                     <Column align="center" header="Aksi" body={actionTemplate} style={{ width: "130px", textAlign: "center" }} />
                 </DataTable>

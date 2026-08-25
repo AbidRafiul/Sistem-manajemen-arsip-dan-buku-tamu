@@ -90,18 +90,29 @@ export default function ProposalTable({
     };
 
     const statusBodyTemplate = (rowData: any) => {
+        let label = "Unknown";
+        let bgClass = "bg-gray-500";
+        let icon = "pi pi-circle";
         switch (rowData.status) {
             case 'submitted':
-                return <Tag value="Menunggu Tinjauan" severity="warning" className="font-semibold text-xs" />;
+                label = "Menunggu Tinjauan"; bgClass = "bg-orange-500"; icon = "pi pi-clock"; break;
             case 'approved':
-                return <Tag value="Disetujui (Siap Musnah)" className="font-semibold text-xs" />;
+                label = "Disetujui (Siap Musnah)"; bgClass = "bg-blue-500"; icon = "pi pi-check"; break;
             case 'rejected':
-                return <Tag value="Ditolak" severity="danger" className="font-semibold text-xs" />;
+                label = "Ditolak"; bgClass = "bg-red-500"; icon = "pi pi-times"; break;
             case 'executed':
-                return <Tag value="Telah Dimusnahkan" severity="info" className="font-semibold text-xs" />;
+                label = "Telah Dimusnahkan"; bgClass = "bg-green-500"; icon = "pi pi-check-circle"; break;
             default:
-                return <Tag value={rowData.status} className="font-semibold text-xs" />;
+                label = rowData.status; break;
         }
+
+        return (
+            <div className="flex justify-content-center">
+                <div className={`${bgClass} flex align-items-center justify-content-center`} style={{ width: '24px', height: '24px', borderRadius: '4px', flexShrink: 0 }} title={label}>
+                    <i className={`${icon} text-white`} style={{ fontSize: '0.8rem' }}></i>
+                </div>
+            </div>
+        );
     };
 
     const actionBodyTemplate = (rowData: any) => {
@@ -167,26 +178,57 @@ export default function ProposalTable({
 
     const renderHeader = () => {
         return (
-            <div className="flex flex-wrap align-items-center justify-content-between gap-3 text-sm">
-                <span className="font-bold text-color">Daftar Usulan Pemusnahan</span>
-                <div className="flex gap-2 align-items-center">
-                    <Dropdown
-                        value={statusFilter}
-                        options={proposalStatusFilterOptions}
-                        onChange={(e) => setStatusFilter(e.value)}
-                        placeholder="Filter Status"
-                        showClear
-                        className="text-xs"
-                        style={{ minWidth: '15rem', height: '2.25rem' }} />
-                    <span className="p-input-icon-left">
-                        <i className="pi pi-search" />
-                        <InputText
-                            value={searchVal}
-                            onChange={(e) => setSearchVal(e.target.value)}
-                            placeholder="Cari..."
-                            className="text-sm"
-                            style={{ height: '2.25rem' }} />
-                    </span>
+            <div className="flex flex-column gap-3">
+                <div className="flex align-items-center gap-3 surface-50 p-2 border-round text-sm w-fit" style={{ border: "1px solid var(--surface-200)" }}>
+                    <div className="flex align-items-center gap-2 font-semibold text-600">
+                        <i className="pi pi-info-circle"></i> KETERANGAN STATUS:
+                    </div>
+                    <div className="flex align-items-center gap-2 ml-2">
+                        <div className="bg-orange-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                            <i className="pi pi-clock text-white" style={{ fontSize: "0.6rem" }}></i>
+                        </div>
+                        <span className="text-700 font-medium text-xs">Menunggu Tinjauan</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 ml-2">
+                        <div className="bg-blue-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                            <i className="pi pi-check text-white" style={{ fontSize: "0.6rem" }}></i>
+                        </div>
+                        <span className="text-700 font-medium text-xs">Disetujui</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 ml-2">
+                        <div className="bg-red-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                            <i className="pi pi-times text-white" style={{ fontSize: "0.6rem" }}></i>
+                        </div>
+                        <span className="text-700 font-medium text-xs">Ditolak</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 ml-2">
+                        <div className="bg-green-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                            <i className="pi pi-check-circle text-white" style={{ fontSize: "0.6rem" }}></i>
+                        </div>
+                        <span className="text-700 font-medium text-xs">Telah Dimusnahkan</span>
+                    </div>
+                </div>
+                <div className="flex flex-wrap align-items-center justify-content-between gap-3 text-sm">
+                    <span className="font-bold text-color">Daftar Usulan Pemusnahan</span>
+                    <div className="flex gap-2 align-items-center">
+                        <Dropdown
+                            value={statusFilter}
+                            options={proposalStatusFilterOptions}
+                            onChange={(e) => setStatusFilter(e.value)}
+                            placeholder="Filter Status"
+                            showClear
+                            className="text-xs"
+                            style={{ minWidth: '15rem', height: '2.25rem' }} />
+                        <span className="p-input-icon-left">
+                            <i className="pi pi-search" />
+                            <InputText
+                                value={searchVal}
+                                onChange={(e) => setSearchVal(e.target.value)}
+                                placeholder="Cari..."
+                                className="text-sm"
+                                style={{ height: '2.25rem' }} />
+                        </span>
+                    </div>
                 </div>
             </div>
         );
@@ -205,13 +247,13 @@ export default function ProposalTable({
                 className="text-sm"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data">
+                <Column body={statusBodyTemplate} header="Status" sortable field="status" align="center" style={{ width: '80px' }}></Column>
                 <Column field="kode_dokumen" header="Kode Dokumen" sortable className="font-semibold text-primary"></Column>
                 <Column field="nomor_dokumen" header="No. Dokumen" sortable></Column>
                 <Column field="nama_dokumen" header="Nama Dokumen" sortable style={{ minWidth: '150px' }}></Column>
                 <Column field="alasan_usulan" header="Alasan Usulan" sortable></Column>
                 <Column field="diusulkan_oleh" header="Pengusul" sortable></Column>
                 <Column field="diusulkan_pada" header="Tgl. Usulan" sortable body={rowData => formatDate(rowData.diusulkan_pada)}></Column>
-                <Column body={statusBodyTemplate} header="Status" sortable field="status" style={{ minWidth: '150px' }}></Column>
                 <Column field="ditinjau_oleh" header="Peninjau" sortable body={rowData => rowData.ditinjau_oleh || '-'}></Column>
                 <Column field="catatan_tinjauan" header="Catatan Tinjauan" sortable body={rowData => rowData.catatan_tinjauan || '-'}></Column>
                 <Column field="file_berita_acara" header="Berita Acara" sortable body={rowData => rowData.file_berita_acara || '-'}></Column>

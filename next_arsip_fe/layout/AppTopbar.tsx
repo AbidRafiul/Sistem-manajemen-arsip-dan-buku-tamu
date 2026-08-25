@@ -149,10 +149,6 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
             <div className="flex justify-content-between w-full align-items-center">
                 {/* Brand Logo & Sidebar Toggle */}
                 <div className="flex align-items-center gap-3">
-                    <button ref={menubuttonRef} type="button" className="p-link layout-menu-button layout-topbar-button lg:hidden" onClick={onMenuToggle}>
-                        <i className="pi pi-bars" />
-                    </button>
-
                     <Link href="/" className="layout-topbar-logo flex align-items-center gap-2 no-underline" style={{ cursor: 'pointer', width: 'auto' }}>
                         <Avatar
                             icon="pi pi-shield"
@@ -172,6 +168,10 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                             </span>
                         </div>
                     </Link>
+
+                    <button ref={menubuttonRef} type="button" className="p-link layout-menu-button layout-topbar-button" onClick={onMenuToggle}>
+                        <i className="pi pi-bars" />
+                    </button>
 
                     {/* Branch Switcher */}
                     <BranchSwitcher />

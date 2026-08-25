@@ -267,18 +267,23 @@ const Table = ({
     };
 
     const statusTemplate = (rowData: TableData) => {
-        const config = statusConfig[String(rowData.status).toLowerCase()] || {
-            label: rowData.status || "-",
-            severity: "info",
-            icon: "pi pi-circle",
-        };
-
+        let s = String(rowData.status || "").toLowerCase();
+        let bgClass = "bg-blue-500";
+        let icon = "pi pi-circle";
+        if (s === 'draft') { bgClass = "bg-gray-500"; icon = "pi pi-file-edit"; }
+        else if (s === 'menunggu_approval' || s === 'menunggu') { bgClass = "bg-orange-500"; icon = "pi pi-clock"; }
+        else if (s === 'disetujui') { bgClass = "bg-green-500"; icon = "pi pi-check"; }
+        else if (s === 'ditolak') { bgClass = "bg-red-500"; icon = "pi pi-times"; }
+        else if (s === 'terkirim') { bgClass = "bg-blue-500"; icon = "pi pi-send"; }
+        else if (s === 'selesai') { bgClass = "bg-green-500"; icon = "pi pi-check-circle"; }
+        
+        let label = s === 'draft' ? 'Draft' : (s === 'menunggu_approval' || s === 'menunggu') ? 'Menunggu' : s === 'disetujui' ? 'Disetujui' : s === 'ditolak' ? 'Ditolak' : s === 'terkirim' ? 'Terkirim' : s === 'selesai' ? 'Selesai' : s;
         return (
-            <Tag
-                value={config.label}
-                severity={config.severity}
-                icon={config.icon}
-                style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }} />
+            <div className="flex justify-content-center">
+                <div className={`${bgClass} flex align-items-center justify-content-center`} style={{ width: '24px', height: '24px', borderRadius: '4px', flexShrink: 0 }} title={label}>
+                    <i className={`${icon} text-white`} style={{ fontSize: '0.8rem' }}></i>
+                </div>
+            </div>
         );
     };
 
@@ -514,6 +519,7 @@ const Table = ({
                     rowHover
                     className="text-sm">
                     <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
+                    <Column field="status" header="Status" sortable body={statusTemplate} align="center" style={{ width: "80px" }} />
                     <Column field="nomor_surat" header="Nomor Surat" sortable style={{ minWidth: "150px" }} />
                     <Column header="Perihal" body={letterTemplate} style={{ minWidth: "220px" }} />
                     <Column header="Tujuan" body={destinationTemplate} style={{ minWidth: "180px" }} />
@@ -522,7 +528,6 @@ const Table = ({
                     <Column field="tanggal_kirim" header="Tanggal Kirim" sortable body={(r) => formatDate(r.tanggal_kirim)} style={{ width: "130px" }} />
                     <Column field="media_pengiriman" header="Media" body={(r) => r.media_pengiriman || "-"} style={{ width: "120px" }} />
                     <Column header="File PDF" body={fileMetadataTemplate} style={{ minWidth: "220px" }} />
-                    <Column field="status" header="Status" sortable body={statusTemplate} style={{ width: "155px", textAlign: "center" }} />
                     <Column header="Aksi" body={actionTemplate} style={{ width: "120px", textAlign: "center" }} />
                 </DataTable>
             </Card>

@@ -74,7 +74,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
     };
 
     const actionBodyTemplate = (rowData: TableData) => (
-        <div className="flex gap-2">
+        <div className="flex gap-2 justify-content-center">
             {permissions.canUpdate && (
                 <Button icon="pi pi-pencil"
                     outlined
@@ -182,7 +182,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                         <Button size="small" label="Refresh" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
                     </div>
 
-                    <div className="flex flex-row gap-2">
+                    <div className="align-items-center flex flex-row gap-2">
                         <ExcelBulkAction
                             title="Data Pengguna"
                             data={state.data}
@@ -260,8 +260,27 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                                 };
                             }} />
                     </div>
+                    <div className="flex align-items-center gap-3 surface-50 p-2 border-round text-sm w-fit ml-auto" style={{ border: '1px solid var(--surface-200)' }}>
+                    <div className="flex align-items-center gap-2 font-semibold text-600">
+                        <i className="pi pi-info-circle"></i> KETERANGAN STATUS:
+                    </div>
+                    <div className="flex align-items-center gap-2 ml-2">
+                        <div className="bg-green-500 flex align-items-center justify-content-center" style={{ width: '18px', height: '18px', borderRadius: '3px' }}>
+                            <i className="pi pi-check text-white" style={{ fontSize: '0.6rem' }}></i>
+                        </div>
+                        <span className="text-700 font-medium text-xs">Aktif</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 ml-2">
+                        <div className="bg-red-500 flex align-items-center justify-content-center" style={{ width: '18px', height: '18px', borderRadius: '3px' }}>
+                            <i className="pi pi-times text-white" style={{ fontSize: '0.6rem' }}></i>
+                        </div>
+                        <span className="text-700 font-medium text-xs">Tidak Aktif</span>
+                    </div>
+                </div>
+                
                 </div>
 
+                
                 <DataTable
                     value={state.data}
                     paginator
@@ -280,19 +299,32 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                     className="p-datatable-sm"
                     rowHover>
                     <Column align="center" selectionMode="multiple" headerStyle={{ width: '3rem' }} />
-                    <Column align="center" field="id_pengguna" header="Unique ID" className="font-semibold text-800" style={{ width: '130px' }}></Column>
-                    <Column align="center" field="nama_lengkap" header="Name" className="font-medium text-900"></Column>
-                    <Column align="center" field="nama_pengguna" header="Username" className="font-medium"></Column>
-                    <Column align="center" field="telepon" header="Phone" style={{ width: '150px' }}></Column>
-                    <Column align="center" field="role" body={roleBodyTemplate} header="Role" style={{ width: '130px' }}></Column>
                     <Column align="center"
                         field="status"
                         body={(rowData) => {
                             // Karena di DB nilainya 'active' (string), bukan '1'
                             const isActive = rowData.status === 'active';
-                            return <Tag value={isActive ? 'Aktif' : 'Nonaktif'} severity={isActive ? 'success' : 'danger'} className="text-xs font-semibold px-2 py-1" rounded style={{ minWidth: '105px' }} />;
+                            return (
+                            <div className="flex justify-content-center">
+                                {isActive ? (
+                                    <div className="bg-green-500 flex align-items-center justify-content-center" style={{ width: '24px', height: '24px', borderRadius: '4px' }}>
+                                        <i className="pi pi-check text-white" style={{ fontSize: '0.8rem' }}></i>
+                                    </div>
+                                ) : (
+                                    <div className="bg-red-500 flex align-items-center justify-content-center" style={{ width: '24px', height: '24px', borderRadius: '4px' }}>
+                                        <i className="pi pi-times text-white" style={{ fontSize: '0.8rem' }}></i>
+                                    </div>
+                                )}
+                            </div>
+                        );
                         }}
-                        header="Status" style={{ width: '110px' }}></Column>
+                        header="" style={{ width: '3rem', textAlign: 'center' }}></Column>
+                    <Column align="center" field="id_pengguna" header="Unique ID" className="font-semibold text-800" style={{ width: '130px' }}></Column>
+                    <Column align="center" field="nama_lengkap" header="Name" className="font-medium text-900"></Column>
+                    <Column align="center" field="nama_pengguna" header="Username" className="font-medium"></Column>
+                    <Column align="center" field="telepon" header="Phone" style={{ width: '150px' }}></Column>
+                    <Column align="center" field="role" body={roleBodyTemplate} header="Role" style={{ width: '130px' }}></Column>
+                    
                     <Column align="center" field="created_at" sortable body={(rowData) => formatDateCalendar(rowData.created_at)} header="Datetime" style={{ width: '150px' }}></Column>
                     <Column align="center" headerStyle={{ textAlign: 'center' }} header="Action" body={actionBodyTemplate} style={{ width: '120px' }}></Column>
                 </DataTable>

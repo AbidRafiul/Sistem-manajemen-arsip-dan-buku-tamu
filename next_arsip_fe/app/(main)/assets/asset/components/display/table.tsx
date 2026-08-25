@@ -47,7 +47,7 @@ const Table = ({
     )
 
     const actionBodyTemplate = (rowData: TableData) => (
-        <div className="flex gap-2">
+        <div className="flex gap-2 justify-content-center">
             {canUpdate && (
                 <Button icon="pi pi-pencil"
                     outlined
@@ -180,7 +180,7 @@ const Table = ({
                 <Column field="Name" header="Nama Aset"></Column>
                 <Column field="Location" header="Lokasi"></Column>
                 <Column field="Type" header="Tipe"></Column>
-                <Column body={StatusBadge} header="Status"></Column>
+                <Column body={StatusBadge} header=""  style={{ width: '3rem', textAlign: 'center' }}></Column>
                 <Column field="CategoryName" header="Nama Kategori"></Column>
                 <Column field="DivisionName" header="Nama Divisi"></Column>
                 <Column field="CreatedAt" sortable body={rowData => formatDateCalendar(rowData.CreatedAt)} header="Tanggal & Waktu"></Column>

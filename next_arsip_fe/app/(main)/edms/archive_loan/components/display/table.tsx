@@ -56,7 +56,18 @@ const Table = ({
 
     const statusTemplate = (rowData: LoanData) => {
         const config = getStatusConfig(rowData);
-        return <Tag value={config.label} severity={config.severity} icon={config.icon} style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem' }} />;
+        let bgClass = "bg-blue-500";
+        if (config.severity === "success") bgClass = "bg-green-500";
+        else if (config.severity === "warning") bgClass = "bg-orange-500";
+        else if (config.severity === "danger") bgClass = "bg-red-500";
+
+        return (
+            <div className="flex justify-content-center">
+                <div className={`${bgClass} flex align-items-center justify-content-center`} style={{ width: '24px', height: '24px', borderRadius: '4px', flexShrink: 0 }} title={config.label}>
+                    <i className={`${config.icon} text-white`} style={{ fontSize: '0.8rem' }}></i>
+                </div>
+            </div>
+        );
     };
 
     const borrowerTemplate = (rowData: LoanData) => (
@@ -125,17 +136,42 @@ const Table = ({
     };
 
     const headerTemplate = (
-        <div className="flex flex-wrap align-items-center justify-content-between gap-2">
-            <span className="font-semibold text-color text-sm">Daftar Peminjaman</span>
-            <span className="p-input-icon-left">
-                <i className="pi pi-search" />
-                <InputText
-                    value={state.searchVal || ''}
-                    onChange={(e) => setState(p => ({ ...p, searchVal: e.target.value }))}
-                    placeholder="Cari peminjam atau dokumen..."
-                    className="text-sm"
-                    style={{ height: '2.25rem' }} />
-            </span>
+        <div className="flex flex-column gap-3">
+            <div className="flex align-items-center gap-3 surface-50 p-2 border-round text-sm w-fit" style={{ border: "1px solid var(--surface-200)" }}>
+                <div className="flex align-items-center gap-2 font-semibold text-600">
+                    <i className="pi pi-info-circle"></i> KETERANGAN STATUS:
+                </div>
+                <div className="flex align-items-center gap-2 ml-2">
+                    <div className="bg-orange-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                        <i className="pi pi-clock text-white" style={{ fontSize: "0.6rem" }}></i>
+                    </div>
+                    <span className="text-700 font-medium text-xs">Pending</span>
+                </div>
+                <div className="flex align-items-center gap-2 ml-2">
+                    <div className="bg-blue-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                        <i className="pi pi-info-circle text-white" style={{ fontSize: "0.6rem" }}></i>
+                    </div>
+                    <span className="text-700 font-medium text-xs">Dipinjam</span>
+                </div>
+                <div className="flex align-items-center gap-2 ml-2">
+                    <div className="bg-green-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                        <i className="pi pi-check-circle text-white" style={{ fontSize: "0.6rem" }}></i>
+                    </div>
+                    <span className="text-700 font-medium text-xs">Dikembalikan</span>
+                </div>
+            </div>
+            <div className="flex flex-wrap align-items-center justify-content-between gap-2">
+                <span className="font-semibold text-color text-sm">Daftar Peminjaman</span>
+                <span className="p-input-icon-left">
+                    <i className="pi pi-search" />
+                    <InputText
+                        value={state.searchVal || ''}
+                        onChange={(e) => setState(p => ({ ...p, searchVal: e.target.value }))}
+                        placeholder="Cari peminjam atau dokumen..."
+                        className="text-sm"
+                        style={{ height: '2.25rem' }} />
+                </span>
+            </div>
         </div>
     );
 
@@ -234,12 +270,12 @@ const Table = ({
                 currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data"
                 rowHover
                 className="text-sm">
-                <Column header="Peminjam" body={borrowerTemplate} style={{ minWidth: '180px' }} />
-                <Column header="Dokumen" body={documentTemplate} style={{ minWidth: '180px' }} />
+                <Column body={statusTemplate} header="Status" align="center" style={{ width: '80px' }} />
+                <Column field="nama_peminjam" header="Peminjam" sortable body={borrowerTemplate} style={{ minWidth: '180px' }} />
+                <Column field="nama_dokumen" header="Dokumen" sortable body={documentTemplate} style={{ minWidth: '220px' }} />
                 <Column field="tanggal_pinjam" header="Tgl. Pinjam" sortable body={rowData => formatDateOnly(rowData.tanggal_pinjam)} style={{ width: '120px' }} />
                 <Column field="tanggal_pengembalian" header="Tgl. Jatuh Tempo" sortable body={rowData => formatDateOnly(rowData.tanggal_pengembalian)} style={{ width: '140px' }} />
                 <Column field="tanggal_kembali" header="Tgl. Kembali" sortable body={rowData => formatDateOnly(rowData.tanggal_kembali)} style={{ width: '120px' }} />
-                <Column body={statusTemplate} header="Status" style={{ width: '130px', textAlign: 'center' }} />
                 <Column align="center" header="Aksi" body={actionTemplate} style={{ width: '130px', textAlign: 'center' }} />
             </DataTable>
         </Card>

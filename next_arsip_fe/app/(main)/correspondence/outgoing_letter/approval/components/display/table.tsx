@@ -531,14 +531,14 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                     rowHover
                     className="text-sm">
                     <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
+                    <Column field="status" header="Status" sortable body={statusTemplate} align="center" style={{ width: "80px" }} />
                     <Column field="nomor_surat" header="Nomor Surat" sortable style={{ minWidth: "150px" }} />
                     <Column header="Perihal" body={letterTemplate} style={{ minWidth: "220px" }} />
                     <Column header="Tujuan" body={destinationTemplate} style={{ minWidth: "180px" }} />
                     <Column field="nama_jenis_surat" header="Jenis Surat" body={(r) => r.nama_jenis_surat || "-"} style={{ minWidth: "130px" }} />
                     <Column field="tanggal_surat" header="Tanggal Surat" sortable body={(r) => formatDate(r.tanggal_surat)} style={{ width: "130px" }} />
                     <Column field="tanggal_kirim" header="Tanggal Kirim" sortable body={(r) => formatDate(r.tanggal_kirim)} style={{ width: "130px" }} />
-                    <Column field="status" header="Status" sortable body={statusTemplate} style={{ width: "155px", textAlign: "center" }} />
-                    <Column header="Aksi" body={actionTemplate} style={{ width: "120px", textAlign: "center" }} />
+                                        <Column header="Aksi" body={actionTemplate} style={{ width: "120px", textAlign: "center" }} />
                 </DataTable>
             </Card>
 

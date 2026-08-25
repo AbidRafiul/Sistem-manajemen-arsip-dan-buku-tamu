@@ -90,7 +90,19 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
     // Render Status
     const statusBodyTemplate = (rowData: any) => {
         const isActive = rowData.status_aktif === 1 || rowData.status_aktif === 'active';
-        return <Tag value={isActive ? 'AKTIF' : 'Nonaktif'} severity={isActive ? 'success' : 'danger'} className="text-sm" />;
+        return (
+                            <div className="flex justify-content-center">
+                                {isActive ? (
+                                    <div className="bg-green-500 flex align-items-center justify-content-center" style={{ width: '24px', height: '24px', borderRadius: '4px' }}>
+                                        <i className="pi pi-check text-white" style={{ fontSize: '0.8rem' }}></i>
+                                    </div>
+                                ) : (
+                                    <div className="bg-red-500 flex align-items-center justify-content-center" style={{ width: '24px', height: '24px', borderRadius: '4px' }}>
+                                        <i className="pi pi-times text-white" style={{ fontSize: '0.8rem' }}></i>
+                                    </div>
+                                )}
+                            </div>
+                        );
     };
 
     return (
@@ -134,9 +146,28 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                     outlined
                     onClick={() => getData('/setup/menu/data')}
                     loading={state.load} />
-            </div>
+                <div className="flex align-items-center gap-3 surface-50 p-2 border-round text-sm w-fit ml-auto" style={{ border: '1px solid var(--surface-200)' }}>
+                    <div className="flex align-items-center gap-2 font-semibold text-600">
+                        <i className="pi pi-info-circle"></i> KETERANGAN STATUS:
+                    </div>
+                    <div className="flex align-items-center gap-2 ml-2">
+                        <div className="bg-green-500 flex align-items-center justify-content-center" style={{ width: '18px', height: '18px', borderRadius: '3px' }}>
+                            <i className="pi pi-check text-white" style={{ fontSize: '0.6rem' }}></i>
+                        </div>
+                        <span className="text-700 font-medium text-xs">Aktif</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 ml-2">
+                        <div className="bg-red-500 flex align-items-center justify-content-center" style={{ width: '18px', height: '18px', borderRadius: '3px' }}>
+                            <i className="pi pi-times text-white" style={{ fontSize: '0.6rem' }}></i>
+                        </div>
+                        <span className="text-700 font-medium text-xs">Tidak Aktif</span>
+                    </div>
+                </div>
+                
+                </div>
 
-            <DataTable
+            
+                <DataTable
                 value={state.data}
                 selection={state.selectedData}
                 onSelectionChange={(e) => setState(p => ({ ...p, selectedData: e.value }))}
@@ -152,12 +183,13 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
-                <Column field="kode_menu" header="Kode Menu" sortable></Column>
+                <Column body={statusBodyTemplate} header=""  style={{ width: '3rem', textAlign: 'center' }}></Column>
+                    <Column field="kode_menu" header="Kode Menu" sortable></Column>
                 <Column field="nama_menu" header="Nama Menu" sortable></Column>
                 <Column field="jalur_menu" header="URL (Jalur)"></Column>
                 <Column body={iconBodyTemplate} header="Ikon" align="center"></Column>
                 <Column field="urutan" header="Urutan" sortable align="center"></Column>
-                <Column body={statusBodyTemplate} header="Status"></Column>
+                
                 <Column body={actionBodyTemplate} exportable={false} align="center" header="Aksi" style={{ minWidth: '8rem', textAlign: 'center' }}></Column>
             </DataTable>
         </div>

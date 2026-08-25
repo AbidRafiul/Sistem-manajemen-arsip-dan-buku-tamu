@@ -322,7 +322,7 @@ const Table: React.FC<TableProps> = ({
                 <Column field="nomor_versi" header="Versi" sortable style={{ width: '80px', textAlign: 'center' }} />
                 <Column field="catatan_perubahan" header="Catatan Perubahan" />
                 <Column field="diunggah_oleh" header="Diunggah Oleh" body={(rowData: VersionData) => rowData.diunggah_oleh || '-'} />
-                <Column field="status_persetujuan" header="Status" body={versionStatusTemplate} style={{ width: '120px', textAlign: 'center' }} />
+                <Column field="status_persetujuan" header=""  body={versionStatusTemplate}   style={{ width: '3rem', textAlign: 'center' }} />
                 <Column field="disetujui_oleh" header="Disetujui/Ditolak Oleh" body={(rowData: VersionData) => rowData.disetujui_oleh || '-'} />
                 <Column field="created_at" header="Tanggal Dibuat" body={(rowData: VersionData) => formatDateCalendar(rowData.created_at)} style={{ width: '160px' }} />
                 <Column header="Pratinjau / OCR" body={versionPreviewTemplate} style={{ width: '130px', textAlign: 'center' }} />

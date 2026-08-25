@@ -52,7 +52,7 @@ export default function GuestDataTable({
 
     const actionBodyTemplate = (rowData: any) => {
         return (
-            <div className="flex gap-2">
+            <div className="flex gap-2 justify-content-center">
                 <Button icon="pi pi-eye" severity="info" outlined onClick={() => onDetail(rowData)} tooltip="Detail" />
                 {canApprove && rowData.status_persetujuan === 'pending' && (
                     <>
@@ -151,7 +151,7 @@ export default function GuestDataTable({
                 <Column field="waktu_masuk" header="Check In" body={(r) => r.waktu_masuk && r.waktu_masuk !== '0000-00-00 00:00:00' ? formatDateCalendar(r.waktu_masuk, 'HH:mm dd/MM/yyyy') : '-'} sortable />
                 <Column field="waktu_keluar" header="Check Out" body={(r) => r.waktu_keluar && r.waktu_keluar !== '0000-00-00 00:00:00' ? formatDateCalendar(r.waktu_keluar, 'HH:mm dd/MM/yyyy') : '-'} />
                 <Column field="status_persetujuan" header="Persetujuan" body={approvalBodyTemplate} sortable />
-                <Column field="status" header="Status" body={statusBodyTemplate} sortable />
+                <Column field="status" header=""  body={statusBodyTemplate} sortable  style={{ width: '3rem', textAlign: 'center' }} />
                 <Column align="center" header="Aksi" body={actionBodyTemplate} style={{ minWidth: '10rem' }} />
             </DataTable>
         </div>

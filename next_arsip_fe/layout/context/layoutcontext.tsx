@@ -39,8 +39,7 @@ export const LayoutProvider = ({ children }: ChildContainerProps) => {
         }
 
         if (isDesktop()) {
-            // Do nothing on desktop, cannot toggle sidebar!
-            return;
+            setLayoutState((prevLayoutState) => ({ ...prevLayoutState, staticMenuDesktopInactive: !prevLayoutState.staticMenuDesktopInactive }));
         } else {
             setLayoutState((prevLayoutState) => ({ ...prevLayoutState, staticMenuMobileActive: !prevLayoutState.staticMenuMobileActive }));
         }
