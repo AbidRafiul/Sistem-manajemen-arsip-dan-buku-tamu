@@ -377,67 +377,85 @@ const Table = ({
     );
 
     const headerTemplate = (
-        <div className="flex flex-column xl:flex-row xl:align-items-center justify-content-between gap-3 w-full">
-            <div className="flex align-items-center gap-2" style={{ minWidth: "11rem", flexShrink: 0 }}>
-                <i className="pi pi-list text-primary text-sm" />
-                <span className="font-semibold text-color text-sm white-space-nowrap">Daftar Surat Keluar</span>
+        <div className="flex flex-column gap-3">
+            <div className="flex align-items-center gap-3 overflow-x-auto pb-2 surface-50 p-2 border-round">
+                <div className="font-semibold text-xs text-color-secondary mr-2" style={{ whiteSpace: "nowrap" }}>
+                    KETERANGAN STATUS:
+                </div>
+                <div className="flex align-items-center gap-4">
+                    {Object.entries(statusConfig).map(([key, config]) => (
+                        <div key={key} className="flex align-items-center gap-2" style={{ whiteSpace: "nowrap" }}>
+                            <Tag severity={config.severity} className="p-1 px-2 flex align-items-center justify-content-center" style={{ borderRadius: "6px", minWidth: "30px", height: "24px" }}>
+                                <i className={`${config.icon} text-sm`} />
+                            </Tag>
+                            <span className="text-sm font-medium text-color">{config.label}</span>
+                        </div>
+                    ))}
+                </div>
             </div>
-
-            <div className="flex flex-column md:flex-row flex-wrap gap-2 align-items-stretch md:align-items-center w-full xl:justify-content-end">
-                <span
-                    className="p-input-icon-left w-full"
-                    style={{ flex: "1 1 14rem", minWidth: "14rem", maxWidth: "22rem" }}>
-                    <i className="pi pi-search" />
-                    <InputText
-                        value={state.searchVal}
-                        onChange={(e) => {
-                            const value = e.target.value;
-                            setState((p) => ({
-                                ...p,
-                                searchVal: value,
-                                filters: { global: { value, matchMode: p.filters.global.matchMode } },
-                            }));
-                        }}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") refreshData();
-                        }}
-                        placeholder="Cari surat..."
-                        className="text-sm w-full"
-                        style={{ height: "2.5rem" }} />
-                </span>
-
-                <div className="w-full" style={{ flex: "1 1 11rem", minWidth: "11rem", maxWidth: "15rem" }}>
-                    <Dropdown
-                        value={state.statusFilter}
-                        options={statusOptions}
-                        onChange={(e) => setState((p) => ({ ...p, statusFilter: e.value }))}
-                        placeholder="Filter Status"
-                        className="w-full text-sm"
-                        panelClassName="text-sm"
-                        style={{ height: "2.5rem" }} />
+            
+            <div className="flex flex-column xl:flex-row xl:align-items-center justify-content-between gap-3 w-full">
+                <div className="flex align-items-center gap-2" style={{ minWidth: "11rem", flexShrink: 0 }}>
+                    <i className="pi pi-list text-primary text-sm" />
+                    <span className="font-semibold text-color text-sm white-space-nowrap">Daftar Surat Keluar</span>
                 </div>
 
-                <div className="w-full" style={{ flex: "1 1 11rem", minWidth: "11rem", maxWidth: "15rem" }}>
-                    <Dropdown
-                        value={state.jenisSuratFilter || 0}
-                        options={letterTypeOptions}
-                        optionLabel="nama_jenis_surat"
-                        optionValue="jenis_surat_id"
-                        onChange={(e) => setState((p) => ({ ...p, jenisSuratFilter: e.value || null }))}
-                        placeholder="Filter Jenis"
-                        className="w-full text-sm"
-                        panelClassName="text-sm"
-                        style={{ height: "2.5rem" }} />
-                </div>
+                <div className="flex flex-column md:flex-row flex-wrap gap-2 align-items-stretch md:align-items-center w-full xl:justify-content-end">
+                    <span
+                        className="p-input-icon-left w-full"
+                        style={{ flex: "1 1 14rem", minWidth: "14rem", maxWidth: "22rem" }}>
+                        <i className="pi pi-search" />
+                        <InputText
+                            value={state.searchVal}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                setState((p) => ({
+                                    ...p,
+                                    searchVal: value,
+                                    filters: { global: { value, matchMode: p.filters.global.matchMode } },
+                                }));
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") refreshData();
+                            }}
+                            placeholder="Cari surat..."
+                            className="text-sm w-full"
+                            style={{ height: "2.5rem" }} />
+                    </span>
 
-                <Button icon="pi pi-filter"
-                    aria-label="Terapkan filter"
-                    outlined
-                    size="small"
-                    onClick={refreshData}
-                    tooltip="Terapkan filter"
-                    className="align-self-start md:align-self-auto"
-                    style={{ width: "2.5rem", height: "2.5rem", flex: "0 0 auto" }} />
+                    <div className="w-full" style={{ flex: "1 1 11rem", minWidth: "11rem", maxWidth: "15rem" }}>
+                        <Dropdown
+                            value={state.statusFilter}
+                            options={statusOptions}
+                            onChange={(e) => setState((p) => ({ ...p, statusFilter: e.value }))}
+                            placeholder="Filter Status"
+                            className="w-full text-sm"
+                            panelClassName="text-sm"
+                            style={{ height: "2.5rem" }} />
+                    </div>
+
+                    <div className="w-full" style={{ flex: "1 1 11rem", minWidth: "11rem", maxWidth: "15rem" }}>
+                        <Dropdown
+                            value={state.jenisSuratFilter || 0}
+                            options={letterTypeOptions}
+                            optionLabel="nama_jenis_surat"
+                            optionValue="jenis_surat_id"
+                            onChange={(e) => setState((p) => ({ ...p, jenisSuratFilter: e.value || null }))}
+                            placeholder="Filter Jenis"
+                            className="w-full text-sm"
+                            panelClassName="text-sm"
+                            style={{ height: "2.5rem" }} />
+                    </div>
+
+                    <Button icon="pi pi-filter"
+                        aria-label="Terapkan filter"
+                        outlined
+                        size="small"
+                        onClick={refreshData}
+                        tooltip="Terapkan filter"
+                        className="align-self-start md:align-self-auto"
+                        style={{ width: "2.5rem", height: "2.5rem", flex: "0 0 auto" }} />
+                </div>
             </div>
         </div>
     );
