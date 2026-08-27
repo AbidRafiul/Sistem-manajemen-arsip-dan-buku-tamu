@@ -46,7 +46,7 @@ router.put("/:id", async (req, res) => {
     await DB("mst_penomoran_surat").where("id_penomoran_surat", req.params.id).update({
       ...oPayload,
       created_by: existing.created_by,
-      updated_at: new Date(), zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+      updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
     });
     return res.status(200).json({
       status: status.SUKSES,

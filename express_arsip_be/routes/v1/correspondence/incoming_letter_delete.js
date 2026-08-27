@@ -39,7 +39,7 @@ const incomingLetterDelete = async (req, res) => {
     await DB.transaction(async trx => {
       await trx("trx_surat_masuk").where("surat_masuk_id", oPayload.surat_masuk_id).update({
         status: "dihapus",
-        updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+        updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
       });
       await insertIncomingLetterTracking(trx, {
         surat_masuk_id: oPayload.surat_masuk_id,
@@ -49,7 +49,7 @@ const incomingLetterDelete = async (req, res) => {
         catatan: "Surat masuk dihapus",
         processed_at: dNow,
         created_at: dNow,
-        updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+        updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
       });
     });
     return res.status(200).json({

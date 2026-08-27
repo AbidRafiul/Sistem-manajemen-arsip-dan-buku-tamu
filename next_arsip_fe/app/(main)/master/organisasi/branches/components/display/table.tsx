@@ -54,11 +54,19 @@ const Table = ({ state, setState, formik, handleDelete, getData, toast }: TableP
     };
 
     const statusBodyTemplate = (rowData: any) => {
-        const isActive = rowData.status === 'active';
-        return <Tag value={isActive ? 'Aktif' : 'Nonaktif'} severity={isActive ? 'success' : 'danger'} className="text-sm" />;
+        const isActive = rowData.status === 'active' || rowData.status === 'in' || rowData.status === 'Aktif';
+        return (
+            <div className="flex align-items-center justify-content-center">
+                <div 
+                    className="w-2rem h-2rem border-round flex align-items-center justify-content-center text-white shadow-1"
+                    style={{ background: isActive ? '#22c55e' : '#ef4444', borderRadius: '8px' }}
+                    title={isActive ? 'Aktif' : 'Tidak Aktif'}
+                >
+                    <i className={`pi ${isActive ? 'pi-chevron-down' : 'pi-times'} text-xs font-bold`} />
+                </div>
+            </div>
+        );
     };
-
-
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
@@ -67,7 +75,7 @@ const Table = ({ state, setState, formik, handleDelete, getData, toast }: TableP
 
     return (
         <div className="card shadow-2 border-1 surface-border border-round-xl p-4 bg-white">
-            <div className="flex flex-column gap-2 mb-6 px-1">
+            <div className="flex flex-column gap-2 mb-4 px-1">
                 <h3 className="text-2xl font-semibold m-0 text-900">Data Master Cabang{titleSuffix}</h3>
                 <div className="text-sm text-600">
                     Kelola master cabang organisasi.
@@ -90,15 +98,30 @@ const Table = ({ state, setState, formik, handleDelete, getData, toast }: TableP
                     <Button size="small" label="Refresh" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
                 </div>
             </div>
+
+            {/* KETERANGAN STATUS BAR */}
+            <div className="flex align-items-center gap-3 px-3 py-2 border-1 surface-border border-round-xl bg-white mb-4 shadow-1" style={{ width: 'fit-content' }}>
+                <div className="flex align-items-center gap-2 font-bold text-xs text-700 uppercase tracking-wider">
+                    <i className="pi pi-info-circle text-primary text-base"></i> KETERANGAN STATUS:
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="w-1rem h-1rem border-round inline-block" style={{ background: '#22c55e' }}></span>
+                    <span className="text-700">Aktif</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="w-1rem h-1rem border-round inline-block" style={{ background: '#ef4444' }}></span>
+                    <span className="text-700">Tidak Aktif</span>
+                </div>
+            </div>
             <DataTable value={state.data} selection={state.selectedData} onSelectionChange={(e) => setState(p => ({ ...p, selectedData: e.value }))} dataKey="id_cabang" paginator rows={10} rowsPerPageOptions={[5, 10, 25]} globalFilterFields={["kode_cabang","nama_cabang","alamat","telepon","surel","status"]} filters={state.filters} header={renderHeader()} emptyMessage="Tidak ada data ditemukan." loading={state.load} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
                     <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
+                    <Column body={statusBodyTemplate} header="" style={{ width: '3.5rem', textAlign: 'center' }}></Column>
                     <Column field="kode_cabang" header="Kode" sortable></Column>
                     <Column field="nama_cabang" header="Nama Cabang" sortable></Column>
                     <Column field="nama_induk" header="Induk Cabang" sortable></Column>
                     <Column field="alamat" header="Alamat" sortable></Column>
                     <Column field="telepon" header="Telepon" sortable></Column>
                     <Column field="surel" header="Email" sortable></Column>
-                    <Column body={statusBodyTemplate} header="Status"></Column>
                     <Column body={actionBodyTemplate} exportable={false} align="center" header="Aksi" style={{ minWidth: '8rem', textAlign: 'center' }}></Column>
             </DataTable>
         </div>

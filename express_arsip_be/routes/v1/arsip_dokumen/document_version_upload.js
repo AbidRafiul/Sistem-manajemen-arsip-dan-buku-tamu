@@ -80,7 +80,7 @@ const uploadDocumentVersion = async (req, res) => {
       catatan_persetujuan: null,
       tanggal_transaksi: dNow,
       created_at: dNow,
-      updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     const [nVersionId] = await DB("trx_versi_dokumen").insert(oData);
