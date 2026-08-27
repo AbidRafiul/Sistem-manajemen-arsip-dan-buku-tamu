@@ -27,7 +27,7 @@ export const createNotification = async ({
       tautan,
       status_baca: 0,
       created_at: now,
-      updated_at: now, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      updated_at: now, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     });
   } catch (error) {
     console.error("❌ [Notification Helper Error]:", error);

@@ -67,7 +67,7 @@ const updateTemplateSurat = async (req, res) => {
         isi_template: oPayload.isi_template,
         status: oPayload.status || "active",
         updated_by: oPayload.updated_by || null,
-        updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+        updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
       });
 
     if (!updated) {

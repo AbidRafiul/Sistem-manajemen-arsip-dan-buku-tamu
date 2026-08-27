@@ -11,7 +11,7 @@ router.post("/", async (req, res) => {
     } = req.body;
     await DB("mst_menu").where("id_menu", id_menu).update({
       ...menuData,
-      updated_at: new Date(), zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+      updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
     });
     await DB("mst_peran_menu").where("id_menu", id_menu).del();
     if (Array.isArray(id_peran) && id_peran.length > 0) {
@@ -19,7 +19,7 @@ router.post("/", async (req, res) => {
         id_menu,
         id_peran: id,
         created_at: new Date(),
-        updated_at: new Date(), zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+        updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
       }));
       await DB("mst_peran_menu").insert(vaPeranMenu);
     }

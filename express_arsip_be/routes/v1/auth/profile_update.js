@@ -83,7 +83,7 @@ router.put("/", async (req, res) => {
       nama_pengguna: oPayload.nama_pengguna,
       telepon: oPayload.telepon,
       surel: oPayload.surel || null,
-      updated_at: datetime(), zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      updated_at: datetime(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     if (oPayload.sandi_baru) {

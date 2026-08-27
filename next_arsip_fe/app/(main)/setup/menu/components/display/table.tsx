@@ -89,8 +89,18 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
 
     // Render Status
     const statusBodyTemplate = (rowData: any) => {
-        const isActive = rowData.status_aktif === 1 || rowData.status_aktif === 'active';
-        return <Tag value={isActive ? 'AKTIF' : 'Nonaktif'} severity={isActive ? 'success' : 'danger'} className="text-sm" />;
+        const isActive = rowData.status_aktif === 1 || rowData.status_aktif === 'active' || rowData.status === 'active' || rowData.status === 'in';
+        return (
+            <div className="flex align-items-center justify-content-center">
+                <div 
+                    className="w-2rem h-2rem border-round flex align-items-center justify-content-center text-white shadow-1"
+                    style={{ background: isActive ? '#22c55e' : '#ef4444', borderRadius: '8px' }}
+                    title={isActive ? 'Aktif' : 'Tidak Aktif'}
+                >
+                    <i className={`pi ${isActive ? 'pi-check' : 'pi-times'} text-xs font-bold`} />
+                </div>
+            </div>
+        );
     };
 
     return (
@@ -108,7 +118,6 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                             label="Tambah"
                             icon="pi pi-plus"
                             outlined
-                           
                             onClick={() => {
                                 formik.resetForm();
                                 setState(p => ({ ...p, add: true, selectedData: [] }));
@@ -136,6 +145,21 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                     loading={state.load} />
             </div>
 
+            {/* KETERANGAN STATUS BAR */}
+            <div className="flex align-items-center gap-3 px-3 py-2 border-1 surface-border border-round-xl bg-white mb-3 shadow-1" style={{ width: 'fit-content' }}>
+                <div className="flex align-items-center gap-2 font-bold text-xs text-700 uppercase tracking-wider">
+                    <i className="pi pi-info-circle text-primary text-base"></i> KETERANGAN STATUS:
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="w-1rem h-1rem border-round inline-block" style={{ background: '#22c55e' }}></span>
+                    <span className="text-700">Aktif</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="w-1rem h-1rem border-round inline-block" style={{ background: '#ef4444' }}></span>
+                    <span className="text-700">Tidak Aktif</span>
+                </div>
+            </div>
+
             <DataTable
                 value={state.data}
                 selection={state.selectedData}
@@ -152,12 +176,12 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
+                <Column body={statusBodyTemplate} header="" style={{ width: '3.5rem', textAlign: 'center' }}></Column>
                 <Column field="kode_menu" header="Kode Menu" sortable></Column>
                 <Column field="nama_menu" header="Nama Menu" sortable></Column>
                 <Column field="jalur_menu" header="URL (Jalur)"></Column>
                 <Column body={iconBodyTemplate} header="Ikon" align="center"></Column>
                 <Column field="urutan" header="Urutan" sortable align="center"></Column>
-                <Column body={statusBodyTemplate} header="Status"></Column>
                 <Column body={actionBodyTemplate} exportable={false} align="center" header="Aksi" style={{ minWidth: '8rem', textAlign: 'center' }}></Column>
             </DataTable>
         </div>

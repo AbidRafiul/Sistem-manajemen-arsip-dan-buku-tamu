@@ -68,7 +68,7 @@ const updateDocumentType = async (req, res) => {
         nama_jenis_dokumen: oPayload.nama_jenis_dokumen,
         status: oPayload.status || "active",
         deskripsi: oPayload.deskripsi || null,
-        updated_at: new Date(), zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+        updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
       });
 
     if (!nUpdated) {

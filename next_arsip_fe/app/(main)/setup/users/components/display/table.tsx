@@ -262,6 +262,21 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                     </div>
                 </div>
 
+                {/* KETERANGAN STATUS BAR */}
+                <div className="flex align-items-center gap-3 px-3 py-2 border-1 surface-border border-round-xl bg-white mb-3 shadow-1" style={{ width: 'fit-content' }}>
+                    <div className="flex align-items-center gap-2 font-bold text-xs text-700 uppercase tracking-wider">
+                        <i className="pi pi-info-circle text-primary text-base"></i> KETERANGAN STATUS:
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="w-1rem h-1rem border-round inline-block" style={{ background: '#22c55e' }}></span>
+                        <span className="text-700">Aktif</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="w-1rem h-1rem border-round inline-block" style={{ background: '#ef4444' }}></span>
+                        <span className="text-700">Tidak Aktif</span>
+                    </div>
+                </div>
+
                 <DataTable
                     value={state.data}
                     paginator
@@ -280,19 +295,27 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                     className="p-datatable-sm"
                     rowHover>
                     <Column align="center" selectionMode="multiple" headerStyle={{ width: '3rem' }} />
+                    <Column align="center"
+                        body={(rowData) => {
+                            const isActive = rowData.status === 'active' || rowData.status === 'in' || rowData.status === 'Aktif';
+                            return (
+                                <div className="flex align-items-center justify-content-center">
+                                    <div 
+                                        className="w-2rem h-2rem border-round flex align-items-center justify-content-center text-white shadow-1"
+                                        style={{ background: isActive ? '#22c55e' : '#ef4444', borderRadius: '8px' }}
+                                        title={isActive ? 'Aktif' : 'Tidak Aktif'}
+                                    >
+                                        <i className={`pi ${isActive ? 'pi-chevron-down' : 'pi-times'} text-xs font-bold`} />
+                                    </div>
+                                </div>
+                            );
+                        }}
+                        header="" style={{ width: '3.5rem' }}></Column>
                     <Column align="center" field="id_pengguna" header="Unique ID" className="font-semibold text-800" style={{ width: '130px' }}></Column>
                     <Column align="center" field="nama_lengkap" header="Name" className="font-medium text-900"></Column>
                     <Column align="center" field="nama_pengguna" header="Username" className="font-medium"></Column>
                     <Column align="center" field="telepon" header="Phone" style={{ width: '150px' }}></Column>
                     <Column align="center" field="role" body={roleBodyTemplate} header="Role" style={{ width: '130px' }}></Column>
-                    <Column align="center"
-                        field="status"
-                        body={(rowData) => {
-                            // Karena di DB nilainya 'active' (string), bukan '1'
-                            const isActive = rowData.status === 'active';
-                            return <Tag value={isActive ? 'Aktif' : 'Nonaktif'} severity={isActive ? 'success' : 'danger'} className="text-xs font-semibold px-2 py-1" rounded style={{ minWidth: '105px' }} />;
-                        }}
-                        header="Status" style={{ width: '110px' }}></Column>
                     <Column align="center" field="created_at" sortable body={(rowData) => formatDateCalendar(rowData.created_at)} header="Datetime" style={{ width: '150px' }}></Column>
                     <Column align="center" headerStyle={{ textAlign: 'center' }} header="Action" body={actionBodyTemplate} style={{ width: '120px' }}></Column>
                 </DataTable>

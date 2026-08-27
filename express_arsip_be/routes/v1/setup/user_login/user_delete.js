@@ -53,7 +53,7 @@ router.post("/", async (req, res) => {
         .whereIn("id_pengguna", oPayload.id_pengguna)
         .update({
           status: "deleted",
-          updated_at: formatDateSystem(), zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+          updated_at: formatDateSystem(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
         });
 
       // 2. Nonaktifkan juga di mst_pengguna_peran
@@ -61,7 +61,7 @@ router.post("/", async (req, res) => {
         .whereIn("id_pengguna", oPayload.id_pengguna)
         .update({
           status: "deleted",
-          updated_at: formatDateSystem(), zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+          updated_at: formatDateSystem(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
         });
     });
 

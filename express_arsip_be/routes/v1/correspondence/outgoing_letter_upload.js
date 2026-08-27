@@ -87,7 +87,7 @@ const outgoingLetterUpload = async (req, res) => {
       if (vaReplacedFiles.length > 0) {
         await trx("trx_file_surat_keluar").where("id_surat_keluar", oPayload.id_surat_keluar).where("status", "active").update({
           status: "nonactive",
-          updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+          updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
         });
       }
       vaInserted = await trx("trx_file_surat_keluar").insert({
@@ -99,7 +99,7 @@ const outgoingLetterUpload = async (req, res) => {
         created_by: nActorId,
         status: "active",
         created_at: dNow,
-        updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+        updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
       });
       await trx("trx_tracking_surat_keluar").insert({
         id_surat_keluar: oPayload.id_surat_keluar,
@@ -109,7 +109,7 @@ const outgoingLetterUpload = async (req, res) => {
         tanggal: dNow,
         dibuat_oleh: nActorId,
         created_at: dNow,
-        updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+        updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
       });
     });
     bObjectPersisted = true;

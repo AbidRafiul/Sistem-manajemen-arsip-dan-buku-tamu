@@ -219,7 +219,7 @@ router.post("/surat-keluar/:id_surat_keluar/tanda-tangan", async (req, res) => {
     await DB.transaction(async trx => {
       await trx("trx_file_surat_keluar").where("id_surat_keluar", oPayload.id_surat_keluar).where("status", "active").update({
         status: "nonactive",
-        updated_at: new Date(), zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+        updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
       });
       await trx("trx_file_surat_keluar").insert({
         id_surat_keluar: oPayload.id_surat_keluar,
@@ -232,7 +232,7 @@ router.post("/surat-keluar/:id_surat_keluar/tanda-tangan", async (req, res) => {
         created_by: getUserId(req),
         updated_by: getUserId(req),
         created_at: new Date(),
-        updated_at: new Date(), zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+        updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
       });
       const signatureInsert = {
         id_surat_keluar: oPayload.id_surat_keluar,
@@ -264,7 +264,7 @@ router.post("/surat-keluar/:id_surat_keluar/tanda-tangan", async (req, res) => {
             hash_dokumen: hashDokumen,
             waktu_tindakan: signingTime,
             updated_by: getUserId(req),
-            updated_at: signingTime, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+            updated_at: signingTime, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
           });
         } else {
           await trx("trx_detail_alur_tanda_tangan").insert({
@@ -280,7 +280,7 @@ router.post("/surat-keluar/:id_surat_keluar/tanda-tangan", async (req, res) => {
             created_by: getUserId(req),
             updated_by: getUserId(req),
             created_at: signingTime,
-            updated_at: signingTime, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+            updated_at: signingTime, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
           });
         }
         if (alur.status_alur !== "selesai") {
@@ -288,7 +288,7 @@ router.post("/surat-keluar/:id_surat_keluar/tanda-tangan", async (req, res) => {
             status_alur: "aktif",
             urutan_aktif: urutan,
             updated_by: getUserId(req),
-            updated_at: signingTime, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+            updated_at: signingTime, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
           });
         }
       } else {
@@ -301,7 +301,7 @@ router.post("/surat-keluar/:id_surat_keluar/tanda-tangan", async (req, res) => {
           created_by: getUserId(req),
           updated_by: getUserId(req),
           created_at: signingTime,
-          updated_at: signingTime, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+          updated_at: signingTime, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
         });
         const idAlur = Array.isArray(insertedAlur) ? insertedAlur[0] : insertedAlur;
         await trx("trx_detail_alur_tanda_tangan").insert({
@@ -317,7 +317,7 @@ router.post("/surat-keluar/:id_surat_keluar/tanda-tangan", async (req, res) => {
           created_by: getUserId(req),
           updated_by: getUserId(req),
           created_at: signingTime,
-          updated_at: signingTime, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+          updated_at: signingTime, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
         });
       }
       await trx("trx_tracking_surat_keluar").insert({
@@ -328,7 +328,7 @@ router.post("/surat-keluar/:id_surat_keluar/tanda-tangan", async (req, res) => {
         tanggal: signingTime,
         dibuat_oleh: getUserId(req),
         created_at: signingTime,
-        updated_at: signingTime, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+        updated_at: signingTime, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
       });
     });
     await recordSignatureLog({

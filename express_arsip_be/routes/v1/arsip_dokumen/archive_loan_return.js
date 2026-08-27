@@ -53,7 +53,7 @@ const returnArchiveLoan = async (req, res) => {
       status: "returned",
       tanggal_kembali: dActualReturnDate,
       terlambat: bIsOverdue,
-      updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     await DB("trx_peminjaman_arsip")
