@@ -50,7 +50,8 @@ router.post("/", async (req, res) => {
       ...oPayload,
       updated_by: oPayload.updated_by || oPayload.created_by || null,
       created_at: dNow,
-      updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+      updated_at: dNow
+, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta'
     });
     return res.status(201).json({
       status: status.SUKSES,

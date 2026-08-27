@@ -85,7 +85,8 @@ const outgoingLetterArchive = async (req, res) => {
         qr_code: `DOC-${uuidv4()}`,
         status: "active",
         created_at: dNow,
-        updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+        updated_at: dNow
+, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta'
       });
       const cKodeDokumen = `${oLetter.nomor_agenda}-${nDocumentId}`;
       await trx("trx_dokumen").where("id_dokumen", nDocumentId).update({
@@ -103,7 +104,8 @@ const outgoingLetterArchive = async (req, res) => {
         catatan_persetujuan: "Versi awal dari file surat keluar",
         tanggal_transaksi: dNow,
         created_at: dNow,
-        updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+        updated_at: dNow
+, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta'
       });
       await trx("trx_tracking_surat_keluar").insert({
         id_surat_keluar: oLetter.id_surat_keluar,
@@ -113,7 +115,8 @@ const outgoingLetterArchive = async (req, res) => {
         tanggal: dNow,
         dibuat_oleh: nActorId,
         created_at: dNow,
-        updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+        updated_at: dNow
+, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta'
       });
       return {
         id_dokumen: nDocumentId,

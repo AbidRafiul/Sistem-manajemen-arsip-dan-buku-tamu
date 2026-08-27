@@ -11,7 +11,8 @@ router.post("/", async (req, res) => {
     const [id_menu] = await DB("mst_menu").insert({
       ...dataMenu,
       created_at: new Date(),
-      updated_at: new Date(), zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+      updated_at: new Date()
+, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta'
     });
     if (id_peran) {
       const peranArray = Array.isArray(id_peran) ? id_peran : [id_peran];
@@ -20,7 +21,8 @@ router.post("/", async (req, res) => {
           id_menu: id_menu,
           id_peran: peran,
           created_at: new Date(),
-          updated_at: new Date(), zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+          updated_at: new Date()
+, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta'
         }));
         await DB("mst_peran_menu").insert(insertPeranMenu);
       }

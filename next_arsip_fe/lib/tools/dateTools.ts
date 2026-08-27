@@ -4,7 +4,7 @@ import { formatInTimeZone } from "date-fns-tz";
 import * as Locales from "date-fns/locale";
 
 
-const timeZoneMap: Record<TZKey, string> = {
+const tzMap: Record<TZKey, string> = {
   wib: "Asia/Jakarta",
   wita: "Asia/Makassar",
   wit: "Asia/Jayapura",
@@ -14,14 +14,14 @@ const timeZoneMap: Record<TZKey, string> = {
 const formatDateCalendar = (
   date: string | Date = new Date(),
   formatStr: string = "yyyy-MM-dd HH:mm:ss",
-  timeZone: TZKey | null = null,
+  tz: TZKey | null = null,
   loc: string | null = null,
 ): string | null => {
 
   const locale = loc ? (Locales as any)[loc] : Locales['enUS']
 
-  if (timeZone) {
-    const tz = timeZoneMap[timeZone];
+  if (tz) {
+    const mappedTz = tzMap[tz];
 
     let dateObj: Date;
 
@@ -43,14 +43,14 @@ const formatDateCalendar = (
       dateObj = new Date();
     }
 
-    return formatInTimeZone(dateObj, tz, formatStr, { locale });
+    return formatInTimeZone(dateObj, mappedTz, formatStr, { locale });
   }
 
-  // Tanpa timezone
+  // Tanpa tz
   if (!date) return null;
 
   const dt = typeof date === "string" ? new Date(date) : date;
   return format(dt, formatStr, { locale });
 }
 
-export { formatDateCalendar, timeZoneMap }
+export { formatDateCalendar, tzMap }

@@ -53,7 +53,7 @@ export const validateTimestamp = async (req, res, next) => {
       });
     }
     const dInputDate = new Date(cTimestamp).toLocaleDateString("en-US", {
-      timeZone: "Asia/Jakarta",
+      tz: "Asia/Jakarta",
     });
 
     const dNow = new Date();
@@ -88,7 +88,7 @@ export const contextMiddleware = (req, res, next) => {
     url: req.url,
     body: req.body,
     auth: req?.auth || null,
-    timezone: req.headers["x-timezone"] || "Asia/Jakarta",
+    tz: req.headers["x-tz"] || "Asia/Jakarta",
   };
 
   als.run(oStore, () => {
@@ -173,7 +173,7 @@ export const validateSignature = async (req, res, next) => {
 
     req.context = {
       ...oUser,
-      timezone: req.headers["x-timezone"] || "Asia/Jakarta"
+      tz: req.headers["x-tz"] || "Asia/Jakarta"
     };
 
     // RBAC: Data Isolation by Cabang (Hierarchical)

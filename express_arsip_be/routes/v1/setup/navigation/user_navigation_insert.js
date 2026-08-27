@@ -61,12 +61,12 @@ router.post("/", async (req, res) => {
         id_pengguna: oPayload.id_pengguna,
         menu: oPayload.menu,
         created_at: formatDateSystem(),
-        updated_at: formatDateSystem(), zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+        updated_at: formatDateSystem(), tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
       })
       .onConflict("id_pengguna")
       .merge({
         menu: oPayload.menu,
-        updated_at: formatDateSystem(), zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+        updated_at: formatDateSystem(), tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
       });
 
     return res.status(200).json({

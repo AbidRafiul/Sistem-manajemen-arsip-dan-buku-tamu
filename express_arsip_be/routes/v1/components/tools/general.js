@@ -9,7 +9,7 @@ import { format, parse } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 const __filename = fileURLToPath(import.meta.url);
 export const __dirname = path.dirname(__filename);
-export const timeZoneMap = {
+export const tzMap = {
   WIB: "Asia/Jakarta",
   WITA: "Asia/Makassar",
   WIT: "Asia/Jayapura",
@@ -33,10 +33,10 @@ export const parseYmdHis = input => {
   const ss = input.slice(12, 14);
   return new Date(`${yyyy}-${MM}-${dd}T${HH}:${mm}:${ss}`);
 };
-export const formatDateSystem = (date = new Date(), formatStr = "yyyy-MM-dd HH:mm:ss", timeZoneKey) => {
+export const formatDateSystem = (date = new Date(), formatStr = "yyyy-MM-dd HH:mm:ss", tzKey) => {
   const dateObj = typeof date === "string" || typeof date === "number" ? new Date(date) : date;
-  if (timeZoneKey) {
-    const tz = timeZoneMap[timeZoneKey] || "Asia/Jakarta";
+  if (tzKey) {
+    const tz = tzMap[tzKey] || "Asia/Jakarta";
     return formatInTimeZone(dateObj, tz, formatStr);
   } else {
     return format(dateObj, formatStr);

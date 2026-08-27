@@ -92,7 +92,7 @@ const updateDocument = async (req, res) => {
     }
 
     const nUserId = req.context?.id_pengguna || req.auth?.id_pengguna || req.auth?.id || null;
-    const cTz = req.headers["x-timezone"] || "Asia/Jakarta";
+    const cTz = req.headers["x-tz"] || "Asia/Jakarta";
 
     const oData = {
       kode_klasifikasi: cClassificationCode,
@@ -108,8 +108,8 @@ const updateDocument = async (req, res) => {
       nama_pic: cPicName,
       lokasi_fisik: cPhysicalLocation,
       updated_by: nUserId,
-      zona_waktu: cTz,
-      updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      tz: cTz,
+      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     await DB("trx_dokumen")

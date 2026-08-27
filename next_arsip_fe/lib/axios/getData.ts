@@ -59,7 +59,7 @@ async function getData(endpoint: string, params: Record<string, any> = {}, custo
         // 1. Gabungkan header tambahan
         const mergedCustomHeaders = {
             'X-Level': "1",
-            'x-timezone': userTz,
+            'x-tz': userTz,
             ...filterHeaders,
             ...customHeader
         };

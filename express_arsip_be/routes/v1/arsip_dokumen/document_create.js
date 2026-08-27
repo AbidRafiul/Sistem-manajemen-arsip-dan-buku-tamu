@@ -92,7 +92,7 @@ const createDocument = async (req, res) => {
     }
 
     const nUserId = req.context?.id_pengguna || req.auth?.id_pengguna || req.auth?.id || null;
-    const cTz = req.headers["x-timezone"] || "Asia/Jakarta";
+    const cTz = req.headers["x-tz"] || "Asia/Jakarta";
 
     const oData = {
       id_cabang: nIdCabang,
@@ -112,9 +112,9 @@ const createDocument = async (req, res) => {
       status: "active",
       created_by: nUserId,
       updated_by: nUserId,
-      zona_waktu: cTz,
+      tz: cTz,
       created_at: dNow,
-      updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     let createdKodeDokumen = "";
@@ -167,7 +167,7 @@ const createDocument = async (req, res) => {
           disetujui_pada: dNow,
           tanggal_transaksi: dNow,
           created_at: dNow,
-          updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+          updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
         });
         firstVersionId = nVerId;
       }

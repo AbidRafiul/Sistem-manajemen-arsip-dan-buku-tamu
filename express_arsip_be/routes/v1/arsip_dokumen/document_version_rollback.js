@@ -85,7 +85,7 @@ const rollbackDocumentVersion = async (req, res) => {
       catatan_persetujuan: `Auto-approved: rollback ke versi ${oTargetVersion.nomor_versi}`,
       tanggal_transaksi: dNow,
       created_at: dNow,
-      updated_at: dNow, zona_waktu: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     const [nNewVersionId] = await DB("trx_versi_dokumen").insert(oNewVersion);
