@@ -50,20 +50,18 @@ const Table = ({ state, setState, formik, handleDelete, getData, toast }: TableP
     };
 
     const statusBodyTemplate = (rowData: any) => {
-        const isActive = rowData.status === 'active';
+        const isActive = rowData.status === 'active' || rowData.status === 'in' || rowData.status === 'Aktif';
         return (
-                            <div className="flex justify-content-center">
-                                {isActive ? (
-                                    <div className="bg-green-500 flex align-items-center justify-content-center" style={{ width: '24px', height: '24px', borderRadius: '4px' }}>
-                                        <i className="pi pi-check text-white" style={{ fontSize: '0.8rem' }}></i>
-                                    </div>
-                                ) : (
-                                    <div className="bg-red-500 flex align-items-center justify-content-center" style={{ width: '24px', height: '24px', borderRadius: '4px' }}>
-                                        <i className="pi pi-times text-white" style={{ fontSize: '0.8rem' }}></i>
-                                    </div>
-                                )}
-                            </div>
-                        );
+            <div className="flex align-items-center justify-content-center">
+                <div 
+                    className="w-2rem h-2rem border-round flex align-items-center justify-content-center text-white shadow-1"
+                    style={{ background: isActive ? '#22c55e' : '#ef4444', borderRadius: '8px' }}
+                    title={isActive ? 'Aktif' : 'Tidak Aktif'}
+                >
+                    <i className={`pi ${isActive ? 'pi-chevron-down' : 'pi-times'} text-xs font-bold`} />
+                </div>
+            </div>
+        );
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -77,11 +75,10 @@ const Table = ({ state, setState, formik, handleDelete, getData, toast }: TableP
     };
 
     return (
-        <div className="card shadow-2 border-1 surface-border border-round-xl p-4 bg-white">
-            <div className="flex flex-column gap-2 mb-6 px-1">
-                <h3 className="text-2xl font-semibold m-0 text-900">Data Master Divisi{titleSuffix}</h3>
-                <div className="text-sm text-600">
-                    Kelola master divisi organisasi.
+        <div className="card">
+            <div className="flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h2 className="m-0 text-900 font-bold text-2xl mb-1">Manajemen Divisi{titleSuffix}</h2>
                 </div>
             </div>
 
@@ -104,35 +101,30 @@ const Table = ({ state, setState, formik, handleDelete, getData, toast }: TableP
                 <div className="flex flex-row flex-wrap align-items-center gap-2">
                     
                 </div>
-                <div className="flex align-items-center gap-3 surface-50 p-2 border-round text-sm w-fit ml-auto" style={{ border: '1px solid var(--surface-200)' }}>
-                    <div className="flex align-items-center gap-2 font-semibold text-600">
-                        <i className="pi pi-info-circle"></i> KETERANGAN STATUS:
-                    </div>
-                    <div className="flex align-items-center gap-2 ml-2">
-                        <div className="bg-green-500 flex align-items-center justify-content-center" style={{ width: '18px', height: '18px', borderRadius: '3px' }}>
-                            <i className="pi pi-check text-white" style={{ fontSize: '0.6rem' }}></i>
-                        </div>
-                        <span className="text-700 font-medium text-xs">Aktif</span>
-                    </div>
-                    <div className="flex align-items-center gap-2 ml-2">
-                        <div className="bg-red-500 flex align-items-center justify-content-center" style={{ width: '18px', height: '18px', borderRadius: '3px' }}>
-                            <i className="pi pi-times text-white" style={{ fontSize: '0.6rem' }}></i>
-                        </div>
-                        <span className="text-700 font-medium text-xs">Tidak Aktif</span>
-                    </div>
-                </div>
-                
-                </div>
+            </div>
 
-            
-                <DataTable value={state.data} selection={state.selectedData} onSelectionChange={(e) => setState(p => ({ ...p, selectedData: e.value }))} dataKey="id_divisi" paginator rows={10} rowsPerPageOptions={[5, 10, 25]} globalFilterFields={["id_departemen", "kode_divisi", "nama_divisi", "deskripsi", "status"]} filters={state.filters} header={renderHeader()} emptyMessage="Tidak ada data ditemukan." loading={state.load} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
+            {/* KETERANGAN STATUS BAR */}
+            <div className="flex align-items-center gap-3 px-3 py-2 border-1 surface-border border-round-xl bg-white mb-3 shadow-1" style={{ width: 'fit-content' }}>
+                <div className="flex align-items-center gap-2 font-bold text-xs text-700 uppercase tracking-wider">
+                    <i className="pi pi-info-circle text-primary text-base"></i> KETERANGAN STATUS:
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="w-1rem h-1rem border-round inline-block" style={{ background: '#22c55e' }}></span>
+                    <span className="text-700">Aktif</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="w-1rem h-1rem border-round inline-block" style={{ background: '#ef4444' }}></span>
+                    <span className="text-700">Tidak Aktif</span>
+                </div>
+            </div>
+
+            <DataTable value={state.data} selection={state.selectedData} onSelectionChange={(e) => setState(p => ({ ...p, selectedData: e.value }))} dataKey="id_divisi" paginator rows={10} rowsPerPageOptions={[5, 10, 25]} globalFilterFields={["id_departemen", "kode_divisi", "nama_divisi", "deskripsi", "status"]} filters={state.filters} header={renderHeader()} emptyMessage="Tidak ada data ditemukan." loading={state.load} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
-                <Column body={statusBodyTemplate} header=""  style={{ width: '3rem', textAlign: 'center' }}></Column>
-                    <Column body={renderInduk} header="Departemen" sortable></Column>
+                <Column body={statusBodyTemplate} header="" style={{ width: '3.5rem', textAlign: 'center' }}></Column>
+                <Column body={renderInduk} header="Departemen" sortable></Column>
                 <Column field="kode_divisi" header="Kode" sortable></Column>
                 <Column field="nama_divisi" header="Nama Divisi" sortable></Column>
                 <Column field="deskripsi" header="Deskripsi" sortable></Column>
-                
                 <Column body={actionBodyTemplate} exportable={false} align="center" header="Aksi" style={{ minWidth: '8rem', textAlign: 'center' }}></Column>
             </DataTable>
         </div>

@@ -4,7 +4,6 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
-import { Dialog } from 'primereact/dialog';
 import { Divider } from 'primereact/divider';
 import { InputText } from 'primereact/inputtext';
 import { Tag } from 'primereact/tag';
@@ -20,7 +19,9 @@ const Table = ({ state, setState, formik, getData, handleDelete }: any) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-
+  if (state.add || state.edit) {
+    return <Form state={state} setState={setState} formik={formik} handleDelete={handleDelete} />;
+  }
 
   const renderHeader = () => (
     <div className="flex flex-wrap align-items-center justify-content-between gap-3">
@@ -41,20 +42,18 @@ const Table = ({ state, setState, formik, getData, handleDelete }: any) => {
   );
 
   const statusTemplate = (rowData: any) => {
-    const active = rowData.status === 'active';
+    const isActive = rowData.status === 'active' || rowData.status === 'in' || rowData.status === 'Aktif';
     return (
-                            <div className="flex justify-content-center">
-                                {active ? (
-                                    <div className="bg-green-500 flex align-items-center justify-content-center" style={{ width: '24px', height: '24px', borderRadius: '4px' }}>
-                                        <i className="pi pi-check text-white" style={{ fontSize: '0.8rem' }}></i>
-                                    </div>
-                                ) : (
-                                    <div className="bg-red-500 flex align-items-center justify-content-center" style={{ width: '24px', height: '24px', borderRadius: '4px' }}>
-                                        <i className="pi pi-times text-white" style={{ fontSize: '0.8rem' }}></i>
-                                    </div>
-                                )}
-                            </div>
-                        );
+        <div className="flex align-items-center justify-content-center">
+            <div 
+                className="w-2rem h-2rem border-round flex align-items-center justify-content-center text-white shadow-1"
+                style={{ background: isActive ? '#22c55e' : '#ef4444', borderRadius: '8px' }}
+                title={isActive ? 'Aktif' : 'Tidak Aktif'}
+            >
+                <i className={`pi ${isActive ? 'pi-chevron-down' : 'pi-times'} text-xs font-bold`} />
+            </div>
+        </div>
+    );
   };
 
   const actionTemplate = (rowData: any) => (
@@ -92,9 +91,7 @@ const Table = ({ state, setState, formik, getData, handleDelete }: any) => {
         </div>
       </div>
 
-      <div className="flex justify-content-between align-items-center w-full mb-3 px-1">
-                <div className="flex flex-row flex-wrap align-items-center gap-2">
-
+      <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
         {canCreate && <Button type="button" size="small" label="Tambah" icon="pi pi-plus" outlined onClick={() => {
           formik.resetForm();
           setState((p: State) => ({ ...p, add: true, selectedData: [] }));
@@ -103,53 +100,32 @@ const Table = ({ state, setState, formik, getData, handleDelete }: any) => {
         {canDelete && <Button type="button" size="small" label={state.selectedData.length> 0 ? `Nonaktifkan (${state.selectedData.length})` : 'Nonaktifkan'} icon="pi pi-trash" outlined severity="danger" onClick={() => setState((p: State) => ({ ...p, delete: true }))} disabled={state.selectedData.length === 0} />}
         {canDelete && <Divider layout="vertical" className="hidden md:inline" />}
         <Button type="button" size="small" label="Refresh" icon="pi pi-refresh" outlined onClick={() => getData()} loading={state.load} />
-                          </div>
-                <div className="flex align-items-center gap-3 surface-50 p-2 border-round text-sm w-fit ml-auto" style={{ border: '1px solid var(--surface-200)' }}>
-                    <div className="flex align-items-center gap-2 font-semibold text-600">
-                        <i className="pi pi-info-circle"></i> KETERANGAN STATUS:
-                    </div>
-                    <div className="flex align-items-center gap-2 ml-2">
-                        <div className="bg-green-500 flex align-items-center justify-content-center" style={{ width: '18px', height: '18px', borderRadius: '3px' }}>
-                            <i className="pi pi-check text-white" style={{ fontSize: '0.6rem' }}></i>
-                        </div>
-                        <span className="text-700 font-medium text-xs">Aktif</span>
-                    </div>
-                    <div className="flex align-items-center gap-2 ml-2">
-                        <div className="bg-red-500 flex align-items-center justify-content-center" style={{ width: '18px', height: '18px', borderRadius: '3px' }}>
-                            <i className="pi pi-times text-white" style={{ fontSize: '0.6rem' }}></i>
-                        </div>
-                        <span className="text-700 font-medium text-xs">Tidak Aktif</span>
-                    </div>
-                </div>
-                
-                </div>
+      </div>
 
-      
-                <DataTable value={state.data} selection={state.selectedData} onSelectionChange={(e) => setState((p: State) => ({ ...p, selectedData: e.value }))} dataKey="id" paginator rows={10} rowsPerPageOptions={[5, 10, 25]} globalFilterFields={['kode_template', 'nama_template', 'status']} filters={state.filters} header={renderHeader()} emptyMessage="Tidak ada data ditemukan." loading={state.load} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
+      {/* KETERANGAN STATUS BAR */}
+      <div className="flex align-items-center gap-3 px-3 py-2 border-1 surface-border border-round-xl bg-white mb-3 shadow-1" style={{ width: 'fit-content' }}>
+          <div className="flex align-items-center gap-2 font-bold text-xs text-700 uppercase tracking-wider">
+              <i className="pi pi-info-circle text-primary text-base"></i> KETERANGAN STATUS:
+          </div>
+          <div className="flex align-items-center gap-2 text-xs font-semibold">
+              <span className="w-1rem h-1rem border-round inline-block" style={{ background: '#22c55e' }}></span>
+              <span className="text-700">Aktif</span>
+          </div>
+          <div className="flex align-items-center gap-2 text-xs font-semibold">
+              <span className="w-1rem h-1rem border-round inline-block" style={{ background: '#ef4444' }}></span>
+              <span className="text-700">Tidak Aktif</span>
+          </div>
+      </div>
+
+      <DataTable value={state.data} selection={state.selectedData} onSelectionChange={(e) => setState((p: State) => ({ ...p, selectedData: e.value }))} dataKey="id" paginator rows={10} rowsPerPageOptions={[5, 10, 25]} globalFilterFields={['kode_template', 'nama_template', 'status']} filters={state.filters} header={renderHeader()} emptyMessage="Tidak ada data ditemukan." loading={state.load} paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown" currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data">
         {canDelete && <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />}
-        <Column body={statusTemplate} header=""    style={{ width: '3rem', textAlign: 'center' }} />
-                    <Column field="kode_template" header="Kode Template" sortable />
+        <Column body={statusTemplate} header="" style={{ width: '3.5rem', textAlign: 'center' }} />
+        <Column field="kode_template" header="Kode Template" sortable />
         <Column field="nama_template" header="Nama Template" sortable />
         <Column field="nama_jenis_surat" header="Jenis Surat" />
-        
         <Column field="updated_at" header="Tanggal Update" body={(rowData: any) => rowData.updated_at ? new Date(rowData.updated_at).toLocaleDateString('id-ID') : '-'} />
         <Column body={actionTemplate} header="Aksi" style={{ minWidth: '10rem', textAlign: 'center' }} />
       </DataTable>
-
-      <Dialog 
-        header="Preview Template Surat" 
-        visible={state.previewVisible} 
-        onHide={() => setState((p: State) => ({ ...p, previewVisible: false, previewContent: '' }))}
-        style={{ width: '50vw' }}
-        breakpoints={{ '960px': '75vw', '641px': '100vw' }}
-        maximizable
-      >
-        <div className="bg-white border-round p-3 border-1 surface-border mt-2">
-          <pre className="m-0 text-sm text-700" style={{ whiteSpace: 'pre-wrap', fontFamily: "Georgia, 'Times New Roman', serif" }}>
-            {state.previewContent || 'Tidak ada isi template.'}
-          </pre>
-        </div>
-      </Dialog>
     </div>
   );
 };

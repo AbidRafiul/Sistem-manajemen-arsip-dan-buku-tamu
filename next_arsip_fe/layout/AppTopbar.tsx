@@ -147,9 +147,9 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     return (
         <div className="layout-topbar">
             <div className="flex justify-content-between w-full align-items-center">
-                {/* Brand Logo & Sidebar Toggle */}
-                <div className="flex align-items-center gap-3">
-                    <Link href="/" className="layout-topbar-logo flex align-items-center gap-2 no-underline" style={{ cursor: 'pointer', width: 'auto' }}>
+                {/* Brand Logo, Branch Switcher & Sidebar Toggle */}
+                <div className="flex align-items-center gap-2">
+                    <Link href="/" className="layout-topbar-logo flex align-items-center gap-2 no-underline mr-1" style={{ cursor: 'pointer', width: 'auto' }}>
                         <Avatar
                             icon="pi pi-shield"
                             shape="square"
@@ -169,12 +169,30 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                         </div>
                     </Link>
 
-                    <button ref={menubuttonRef} type="button" className="p-link layout-menu-button layout-topbar-button" onClick={onMenuToggle}>
-                        <i className="pi pi-bars" />
-                    </button>
+                    <span className="text-300 mx-1">|</span>
 
                     {/* Branch Switcher */}
                     <BranchSwitcher />
+
+                    {/* Hamburger Button (Garis 3) di Sebelah Tombol Pusat */}
+                    <button
+                        ref={menubuttonRef}
+                        type="button"
+                        className="p-link layout-menu-button layout-topbar-button flex align-items-center justify-content-center border-round ml-1"
+                        onClick={onMenuToggle}
+                        style={{
+                            width: '2.25rem',
+                            height: '2.25rem',
+                            cursor: 'pointer',
+                            color: 'var(--text-color-secondary)',
+                            background: 'transparent',
+                            transition: 'background-color 0.2s'
+                        }}
+                        title="Buka / Tutup Sidebar"
+                        aria-label="Buka / Tutup Sidebar"
+                    >
+                        <i className="pi pi-bars text-xl" />
+                    </button>
                 </div>
 
                 {/* Clock & User Profile */}

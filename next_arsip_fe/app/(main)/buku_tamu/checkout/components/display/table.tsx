@@ -52,7 +52,7 @@ export default function GuestDataTable({
 
     const actionBodyTemplate = (rowData: any) => {
         return (
-            <div className="flex gap-2 justify-content-center">
+            <div className="flex gap-2">
                 <Button icon="pi pi-eye" severity="info" outlined onClick={() => onDetail(rowData)} tooltip="Detail" />
                 {canApprove && rowData.status_persetujuan === 'pending' && (
                     <>
@@ -71,20 +71,18 @@ export default function GuestDataTable({
     };
 
     const statusBodyTemplate = (rowData: any) => {
-        let severity: "success" | "info" | "warning" | "danger" | null = null;
-        let statusLabel = rowData.status;
-
-        if (rowData.status === 'in') {
-            severity = "success";
-            statusLabel = "in";
-        } else if (rowData.status === 'out') {
-            severity = "danger";
-            statusLabel = "out";
-        } else {
-            severity = "warning";
-        }
-
-        return <Tag severity={severity} value={statusLabel} />;
+        const isActive = rowData.status === 'in' || rowData.status === 'active' || rowData.status === 'Aktif';
+        return (
+            <div className="flex align-items-center justify-content-center">
+                <div 
+                    className="w-2rem h-2rem border-round flex align-items-center justify-content-center text-white shadow-1"
+                    style={{ background: isActive ? '#22c55e' : '#ef4444', borderRadius: '8px' }}
+                    title={isActive ? 'Aktif' : 'Tidak Aktif'}
+                >
+                    <i className={`pi ${isActive ? 'pi-chevron-down' : 'pi-times'} text-xs font-bold`} />
+                </div>
+            </div>
+        );
     };
 
     const approvalBodyTemplate = (rowData: any) => {
@@ -142,7 +140,23 @@ export default function GuestDataTable({
 
     return (
         <div className="card shadow-2 border-round p-4">
+            {/* KETERANGAN STATUS BAR */}
+            <div className="flex align-items-center gap-3 px-3 py-2 border-1 surface-border border-round-xl bg-white mb-3 shadow-1" style={{ width: 'fit-content' }}>
+                <div className="flex align-items-center gap-2 font-bold text-xs text-700 uppercase tracking-wider">
+                    <i className="pi pi-info-circle text-primary text-base"></i> KETERANGAN STATUS:
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="w-1rem h-1rem border-round inline-block" style={{ background: '#22c55e' }}></span>
+                    <span className="text-700">Aktif</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="w-1rem h-1rem border-round inline-block" style={{ background: '#ef4444' }}></span>
+                    <span className="text-700">Tidak Aktif</span>
+                </div>
+            </div>
+
             <DataTable value={state.data} loading={state.load} paginator rows={10} header={header} responsiveLayout="scroll" emptyMessage="Data kunjungan tamu kosong">
+                <Column body={statusBodyTemplate} header="" style={{ width: '3.5rem', textAlign: 'center' }} />
                 <Column field="nama_tamu" header="Nama Tamu" sortable />
                 {isSuperadmin && <Column field="BranchName" header="Kantor Cabang" sortable />}
                 <Column field="nomor_telepon" header="No. Telepon" />
@@ -151,7 +165,6 @@ export default function GuestDataTable({
                 <Column field="waktu_masuk" header="Check In" body={(r) => r.waktu_masuk && r.waktu_masuk !== '0000-00-00 00:00:00' ? formatDateCalendar(r.waktu_masuk, 'HH:mm dd/MM/yyyy') : '-'} sortable />
                 <Column field="waktu_keluar" header="Check Out" body={(r) => r.waktu_keluar && r.waktu_keluar !== '0000-00-00 00:00:00' ? formatDateCalendar(r.waktu_keluar, 'HH:mm dd/MM/yyyy') : '-'} />
                 <Column field="status_persetujuan" header="Persetujuan" body={approvalBodyTemplate} sortable />
-                <Column field="status" header=""  body={statusBodyTemplate} sortable  style={{ width: '3rem', textAlign: 'center' }} />
                 <Column align="center" header="Aksi" body={actionBodyTemplate} style={{ minWidth: '10rem' }} />
             </DataTable>
         </div>
