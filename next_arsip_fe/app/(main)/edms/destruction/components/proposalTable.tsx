@@ -90,18 +90,47 @@ export default function ProposalTable({
     };
 
     const statusBodyTemplate = (rowData: any) => {
+        let bg = '#f59e0b';
+        let iconClass = 'pi-clock';
+        let label = 'Menunggu Tinjauan';
+
         switch (rowData.status) {
             case 'submitted':
-                return <Tag value="Menunggu Tinjauan" severity="warning" className="font-semibold text-xs" />;
+                bg = '#f59e0b';
+                iconClass = 'pi-clock';
+                label = 'Menunggu Tinjauan';
+                break;
             case 'approved':
-                return <Tag value="Disetujui (Siap Musnah)" className="font-semibold text-xs" />;
+                bg = '#a855f7';
+                iconClass = 'pi-check-circle';
+                label = 'Disetujui (Siap Musnah)';
+                break;
             case 'rejected':
-                return <Tag value="Ditolak" severity="danger" className="font-semibold text-xs" />;
+                bg = '#ef4444';
+                iconClass = 'pi-times';
+                label = 'Ditolak';
+                break;
             case 'executed':
-                return <Tag value="Telah Dimusnahkan" severity="info" className="font-semibold text-xs" />;
+                bg = '#3b82f6';
+                iconClass = 'pi-trash';
+                label = 'Telah Dimusnahkan';
+                break;
             default:
-                return <Tag value={rowData.status} className="font-semibold text-xs" />;
+                label = rowData.status || '-';
+                break;
         }
+
+        return (
+            <div className="flex align-items-center justify-content-center">
+                <div
+                    className="w-2rem h-2rem border-round flex align-items-center justify-content-center text-white shadow-1"
+                    style={{ background: bg, borderRadius: '8px' }}
+                    title={label}
+                >
+                    <i className={`pi ${iconClass} text-xs font-bold`} />
+                </div>
+            </div>
+        );
     };
 
     const actionBodyTemplate = (rowData: any) => {
@@ -193,7 +222,30 @@ export default function ProposalTable({
     };
 
     return (
-        <div className="card border-none bg-white p-3">
+        <div className="px-3 pt-1 pb-3">
+            {/* KETERANGAN STATUS BAR */}
+            <div className="flex flex-wrap align-items-center gap-3 px-3 py-2 border-1 surface-border border-round-xl bg-white mb-3 shadow-1" style={{ width: 'fit-content', marginTop: '-0.25rem' }}>
+                <div className="flex align-items-center gap-2 font-bold text-xs text-700 uppercase tracking-wider">
+                    <i className="pi pi-info-circle text-primary text-base"></i> KETERANGAN STATUS:
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#f59e0b', borderRadius: '3px' }}></span>
+                    <span className="text-700">Menunggu Tinjauan</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#a855f7', borderRadius: '3px' }}></span>
+                    <span className="text-700">Disetujui</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#3b82f6', borderRadius: '3px' }}></span>
+                    <span className="text-700">Telah Dimusnahkan</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#ef4444', borderRadius: '3px' }}></span>
+                    <span className="text-700">Ditolak</span>
+                </div>
+            </div>
+
             <DataTable
                 value={data}
                 paginator
@@ -205,13 +257,13 @@ export default function ProposalTable({
                 className="text-sm"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data">
+                <Column body={statusBodyTemplate} header="" style={{ width: '3.5rem', textAlign: 'center' }}></Column>
                 <Column field="kode_dokumen" header="Kode Dokumen" sortable className="font-semibold text-primary"></Column>
                 <Column field="nomor_dokumen" header="No. Dokumen" sortable></Column>
                 <Column field="nama_dokumen" header="Nama Dokumen" sortable style={{ minWidth: '150px' }}></Column>
                 <Column field="alasan_usulan" header="Alasan Usulan" sortable></Column>
                 <Column field="diusulkan_oleh" header="Pengusul" sortable></Column>
                 <Column field="diusulkan_pada" header="Tgl. Usulan" sortable body={rowData => formatDate(rowData.diusulkan_pada)}></Column>
-                <Column body={statusBodyTemplate} header="Status" sortable field="status" style={{ minWidth: '150px' }}></Column>
                 <Column field="ditinjau_oleh" header="Peninjau" sortable body={rowData => rowData.ditinjau_oleh || '-'}></Column>
                 <Column field="catatan_tinjauan" header="Catatan Tinjauan" sortable body={rowData => rowData.catatan_tinjauan || '-'}></Column>
                 <Column field="file_berita_acara" header="Berita Acara" sortable body={rowData => rowData.file_berita_acara || '-'}></Column>

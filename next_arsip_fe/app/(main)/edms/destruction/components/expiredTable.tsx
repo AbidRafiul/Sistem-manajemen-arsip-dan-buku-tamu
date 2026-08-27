@@ -63,14 +63,22 @@ export default function ExpiredTable({
     };
 
     const actionTextTemplate = (rowData: any) => {
-        switch (rowData.tindakan_retensi) {
-            case 'destroy':
-                return <Tag value="Musnahkan" severity="danger" className="font-semibold text-xs" />;
-            case 'review':
-                return <Tag value="Tinjau Kembali" severity="warning" className="font-semibold text-xs" />;
-            default:
-                return <Tag value={rowData.tindakan_retensi} severity="info" className="font-semibold text-xs" />;
+        let bg = '#ef4444';
+        let label = 'Musnahkan';
+
+        if (rowData.tindakan_retensi === 'review') {
+            bg = '#f59e0b';
+            label = 'Tinjau Kembali';
+        } else if (rowData.tindakan_retensi === 'permanent') {
+            bg = '#22c55e';
+            label = 'Permanen';
         }
+
+        return (
+            <span className="inline-flex align-items-center gap-1.5 px-2.5 py-1 text-white text-xs font-semibold" style={{ background: bg, borderRadius: '4px' }}>
+                {label}
+            </span>
+        );
     };
 
     const actionBodyTemplate = (rowData: any) => {
@@ -145,7 +153,7 @@ export default function ExpiredTable({
     };
 
     return (
-        <div className="card border-none bg-white p-3">
+        <div className="px-3 pt-1 pb-3">
             <DataTable
                 value={data}
                 paginator

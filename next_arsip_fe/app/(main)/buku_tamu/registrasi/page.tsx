@@ -293,21 +293,7 @@ export default function RegistrasiKunjunganPage() {
 
     return (
         <>
-
             <Toast ref={toast} position="top-right" />
-
-            <div className="flex justify-content-between align-items-center mb-3">
-                <h2 className="m-0 text-900 font-bold text-2xl">Registrasi Kunjungan</h2>
-                <div className="flex flex-wrap gap-2">
-                    <Button type="button" 
-                        icon="pi pi-external-link" 
-                        label="Halaman Visitor (Publik)" 
-                        severity="info" 
-                        outlined 
-                        size="small"
-                        onClick={() => window.open('/visitor/booking', '_blank')} />
-                </div>
-            </div>
 
             <RegistrasiForm
                 formData={formData}

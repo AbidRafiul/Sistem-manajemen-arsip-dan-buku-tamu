@@ -15,6 +15,10 @@ import { useRouter } from "next/navigation";
 import { Html5Qrcode } from "html5-qrcode";
 import { DocumentData, LoanData, TableProps } from "../interfaces";
 import { formatDateCalendar } from "@/lib/tools/dateTools";
+import { OverlayPanel } from "primereact/overlaypanel";
+import postData from "@/lib/axios/postData";
+import { showError, showSuccess } from "@/lib/tools/generalTools";
+import { apiEndpointDocumentUpdate } from "../endpoints";
 import Form from "./form";
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -57,7 +61,7 @@ const Table = ({
                         setCameraActive(false);
                     }).catch(console.error);
                 },
-                () => {}
+                () => { }
             );
         } catch (err: any) {
             console.error("Gagal memulai kamera:", err);
@@ -77,7 +81,7 @@ const Table = ({
     useEffect(() => {
         return () => {
             if (html5QrRef.current) {
-                html5QrRef.current.stop().catch(() => {});
+                html5QrRef.current.stop().catch(() => { });
             }
         };
     }, []);
@@ -87,13 +91,52 @@ const Table = ({
         return String(value).slice(0, 10);
     };
 
-    const statusTemplate = (rowData: DocumentData) => (
-        <Tag
-            value={rowData.status === 'active' ? 'Aktif' : 'Nonaktif'}
-            severity={rowData.status === 'active' ? 'success' : 'danger'}
-            icon={rowData.status === 'active' ? 'pi pi-check-circle' : 'pi pi-times-circle'}
-            style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem' }} />
-    );
+    const statusBodyTemplate = (rowData: DocumentData) => {
+        const s = (rowData.status || '').toLowerCase();
+        let bg = '#22c55e';
+        let iconClass = 'pi-chevron-down';
+        let label = 'Aktif';
+
+        if (s === 'active' || s === 'aktif') {
+            bg = '#22c55e';
+            iconClass = 'pi-chevron-down';
+            label = 'Aktif';
+        } else if (s === 'inactive' || s === 'inaktif') {
+            bg = '#f97316';
+            iconClass = 'pi-clock';
+            label = 'Inaktif';
+        } else if (s === 'borrowed' || s === 'dipinjam') {
+            bg = '#3b82f6';
+            iconClass = 'pi-external-link';
+            label = 'Dipinjam';
+        } else if (s === 'proposal_destruction' || s === 'usul_musnah' || s === 'usulan_musnah') {
+            bg = '#a855f7';
+            iconClass = 'pi-exclamation-triangle';
+            label = 'Usul Musnah';
+        } else if (s === 'destroyed' || s === 'dimusnahkan') {
+            bg = '#6b7280';
+            iconClass = 'pi-trash';
+            label = 'Dimusnahkan';
+        } else if (s === 'nonactive' || s === 'nonaktif') {
+            bg = '#ef4444';
+            iconClass = 'pi-times';
+            label = 'Tidak Aktif';
+        } else {
+            label = rowData.status || 'Aktif';
+        }
+
+        return (
+            <div className="flex align-items-center justify-content-center">
+                <div
+                    className="w-2rem h-2rem border-round flex align-items-center justify-content-center text-white shadow-1"
+                    style={{ background: bg, borderRadius: '8px' }}
+                    title={label}
+                >
+                    <i className={`pi ${iconClass} text-xs font-bold`} />
+                </div>
+            </div>
+        );
+    };
 
     const documentTemplate = (rowData: DocumentData) => (
         <div>
@@ -237,7 +280,7 @@ const Table = ({
         <Card className="shadow-1 border-round-2xl border-none">
             {/* Page Header */}
             <div className="mb-3">
-                                <h2 className="m-0 text-900 font-bold text-2xl mb-1">Archive Documents</h2>
+                <h2 className="m-0 text-900 font-bold text-2xl mb-1">Archive Documents</h2>
                 <p className="m-0 text-color-secondary text-sm font-medium">Kelola metadata dokumen dan pantau riwayat versi serta peminjaman arsip.</p>
             </div>
 
@@ -249,7 +292,7 @@ const Table = ({
                             label="Tambah Dokumen"
                             icon="pi pi-plus"
                             outlined
-                           
+
                             onClick={() => {
                                 const name = (state.session?.user as any)?.name || (state.session?.user as any)?.nama_pengguna || '';
                                 formik.resetForm({
@@ -276,7 +319,7 @@ const Table = ({
                     {canDelete && (
                         <Button type="button"
                             size="small"
-                            label={`Hapus${state.selectedDocuments.length> 0 ? ` (${state.selectedDocuments.length})` : ''}`}
+                            label={`Hapus${state.selectedDocuments.length > 0 ? ` (${state.selectedDocuments.length})` : ''}`}
                             icon="pi pi-trash"
                             severity="danger"
                             outlined
@@ -311,6 +354,37 @@ const Table = ({
                         outlined
                         severity="help"
                         onClick={() => router.push('/edms/archive_document/search')} />
+                </div>
+            </div>
+
+            {/* Status Legend Bar */}
+            <div className="flex flex-wrap align-items-center gap-3 px-3 py-2 border-1 surface-border border-round-xl bg-white mb-3 shadow-1" style={{ width: 'fit-content' }}>
+                <div className="flex align-items-center gap-2 font-bold text-xs text-700 uppercase tracking-wider">
+                    <i className="pi pi-info-circle text-primary text-base"></i> KETERANGAN STATUS:
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#22c55e', borderRadius: '3px' }}></span>
+                    <span className="text-700">Aktif</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#f97316', borderRadius: '3px' }}></span>
+                    <span className="text-700">Inaktif</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#3b82f6', borderRadius: '3px' }}></span>
+                    <span className="text-700">Dipinjam</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#a855f7', borderRadius: '3px' }}></span>
+                    <span className="text-700">Usul Musnah</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#6b7280', borderRadius: '3px' }}></span>
+                    <span className="text-700">Dimusnahkan</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#ef4444', borderRadius: '3px' }}></span>
+                    <span className="text-700">Tidak Aktif</span>
                 </div>
             </div>
 
@@ -427,6 +501,7 @@ const Table = ({
                 className="p-datatable-sm border-round-xl border-1 surface-border overflow-hidden"
                 stripedRows>
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
+                <Column body={statusBodyTemplate} header="" style={{ width: '3.5rem', textAlign: 'center' }} />
                 <Column field="nomor_dokumen" header="Nomor / Nama Dokumen" body={documentTemplate} sortable style={{ minWidth: '16rem' }} />
                 <Column field="nama_jenis_dokumen" header="Tipe" sortable style={{ minWidth: '10rem' }} />
                 <Column field="nama_kategori_dokumen" header="Kategori" sortable style={{ minWidth: '12rem' }} />
@@ -435,7 +510,6 @@ const Table = ({
                 <Column field="nama_pic" header="PIC" body={picTemplate} sortable style={{ minWidth: '12rem' }} />
                 <Column field="tanggal" header="Tgl. Dokumen" body={(r) => formatDateCalendar(r.tanggal, 'yyyy-MM-dd')} sortable style={{ minWidth: '9rem' }} />
                 <Column field="tanggal_kedaluwarsa" header="Tgl. Kedaluwarsa" body={(r) => formatDateCalendar(r.tanggal_kedaluwarsa, 'yyyy-MM-dd')} sortable style={{ minWidth: '9rem' }} />
-                <Column field="status" header="Status" body={statusTemplate} sortable style={{ minWidth: '8rem' }} />
                 <Column header="Berkas" body={previewTemplate} style={{ width: '4rem', textAlign: 'center' }} />
                 <Column header="Aksi" body={actionTemplate} style={{ minWidth: '13rem', textAlign: 'center' }} />
             </DataTable>
@@ -613,7 +687,7 @@ const Table = ({
             style={{ width: '48rem', maxWidth: '95vw' }}
             onHide={() => {
                 if (html5QrRef.current) {
-                    html5QrRef.current.stop().catch(() => {});
+                    html5QrRef.current.stop().catch(() => { });
                 }
                 setCameraActive(false);
                 setState(p => ({ ...p, trackingDialog: false, trackingCode: '', trackingResult: null }));
@@ -641,7 +715,7 @@ const Table = ({
                         outlined={scanMode !== 'manual'}
                         className="font-bold text-xs px-3"
                         onClick={() => {
-                            if (html5QrRef.current) html5QrRef.current.stop().catch(() => {});
+                            if (html5QrRef.current) html5QrRef.current.stop().catch(() => { });
                             setCameraActive(false);
                             setScanMode('manual');
                         }} />
@@ -666,7 +740,7 @@ const Table = ({
                         {!cameraActive ? (
                             <Button label="Buka Kamera Live"
                                 icon="pi pi-video"
-                               
+
                                 className="p-button-sm font-bold"
                                 onClick={startCameraScanner} />
                         ) : (
@@ -805,7 +879,7 @@ const Table = ({
                                     }} />
                                 <Button icon="pi pi-save"
                                     label="Simpan Lokasi"
-                                   
+
                                     loading={state.updatingLocation}
                                     onClick={() => {
                                         const el = document.getElementById('lokasi_fisik_update') as HTMLInputElement;

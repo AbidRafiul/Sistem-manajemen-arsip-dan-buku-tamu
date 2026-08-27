@@ -60,6 +60,10 @@ const returnArchiveLoan = async (req, res) => {
       .where("id_peminjaman", nLoanId)
       .update(oData);
 
+    await DB("trx_dokumen")
+      .where("kode_dokumen", oLoan.kode_dokumen)
+      .update({ status: "active", updated_at: dNow });
+
     const cOverdueMessage = bIsOverdue
       ? ` (TERLAMBAT: seharusnya kembali ${oLoan.tanggal_pengembalian})`
       : "";
