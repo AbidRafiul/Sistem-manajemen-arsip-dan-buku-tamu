@@ -266,19 +266,40 @@ const Table = ({
         });
     };
 
-    const statusTemplate = (rowData: TableData) => {
-        const config = statusConfig[String(rowData.status).toLowerCase()] || {
-            label: rowData.status || "-",
-            severity: "info",
-            icon: "pi pi-circle",
-        };
+    const statusBodyTemplate = (rowData: TableData) => {
+        const s = String(rowData.status || '').toLowerCase();
+        let bg = '#f59e0b';
+        let icon = 'pi-file';
+        let label = 'Draft / Konsep';
+
+        if (s === 'pending_approval' || s === 'menunggu_persetujuan') {
+            bg = '#a855f7';
+            icon = 'pi-clock';
+            label = 'Menunggu Persetujuan';
+        } else if (s === 'approved' || s === 'disetujui') {
+            bg = '#3b82f6';
+            icon = 'pi-check-circle';
+            label = 'Disetujui';
+        } else if (s === 'sent' || s === 'terkirim' || s === 'completed') {
+            bg = '#22c55e';
+            icon = 'pi-send';
+            label = 'Terkirim';
+        } else if (s === 'rejected' || s === 'ditolak') {
+            bg = '#ef4444';
+            icon = 'pi-times';
+            label = 'Ditolak';
+        }
 
         return (
-            <Tag
-                value={config.label}
-                severity={config.severity}
-                icon={config.icon}
-                style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }} />
+            <div className="flex justify-content-center align-items-center">
+                <div
+                    className="w-2rem h-2rem flex align-items-center justify-content-center text-white shadow-1"
+                    style={{ background: bg, borderRadius: '8px' }}
+                    title={`Status: ${label}`}
+                >
+                    <i className={`pi ${icon} text-xs`}></i>
+                </div>
+            </div>
         );
     };
 
@@ -490,6 +511,33 @@ const Table = ({
                         onClick={refreshData} />
                 </div>
 
+                {/* KETERANGAN STATUS BAR */}
+                <div className="flex flex-wrap align-items-center gap-3 px-3 py-2 border-1 surface-border border-round-xl bg-white mb-3 shadow-1" style={{ width: 'fit-content', marginTop: '-0.25rem' }}>
+                    <div className="flex align-items-center gap-2 font-bold text-xs text-700 uppercase tracking-wider">
+                        <i className="pi pi-info-circle text-primary text-base"></i> KETERANGAN STATUS:
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#f59e0b', borderRadius: '3px' }}></span>
+                        <span className="text-700">Draft / Konsep</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#a855f7', borderRadius: '3px' }}></span>
+                        <span className="text-700">Menunggu Persetujuan</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#3b82f6', borderRadius: '3px' }}></span>
+                        <span className="text-700">Disetujui</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#22c55e', borderRadius: '3px' }}></span>
+                        <span className="text-700">Terkirim</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#ef4444', borderRadius: '3px' }}></span>
+                        <span className="text-700">Ditolak</span>
+                    </div>
+                </div>
+
                 <DataTable
                     value={filteredData}
                     paginator
@@ -514,6 +562,7 @@ const Table = ({
                     rowHover
                     className="text-sm">
                     <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
+                    <Column body={statusBodyTemplate} header="" style={{ width: '3.5rem', textAlign: 'center' }} />
                     <Column field="nomor_surat" header="Nomor Surat" sortable style={{ minWidth: "150px" }} />
                     <Column header="Perihal" body={letterTemplate} style={{ minWidth: "220px" }} />
                     <Column header="Tujuan" body={destinationTemplate} style={{ minWidth: "180px" }} />
@@ -522,7 +571,6 @@ const Table = ({
                     <Column field="tanggal_kirim" header="Tanggal Kirim" sortable body={(r) => formatDate(r.tanggal_kirim)} style={{ width: "130px" }} />
                     <Column field="media_pengiriman" header="Media" body={(r) => r.media_pengiriman || "-"} style={{ width: "120px" }} />
                     <Column header="File PDF" body={fileMetadataTemplate} style={{ minWidth: "220px" }} />
-                    <Column field="status" header="Status" sortable body={statusTemplate} style={{ width: "155px", textAlign: "center" }} />
                     <Column header="Aksi" body={actionTemplate} style={{ width: "120px", textAlign: "center" }} />
                 </DataTable>
             </Card>
@@ -600,7 +648,7 @@ const Table = ({
                                     }
                                     return null;
                                 })()}
-                                {detailLetter?.status && statusTemplate({ status: detailLetter.status } as TableData)}
+                                {detailLetter?.status && statusBodyTemplate({ status: detailLetter.status } as TableData)}
                             </div>
                         </div>
 

@@ -104,7 +104,7 @@ const createDocument = async (req, res) => {
       tanggal_kedaluwarsa: dExpiredDate,
       nama_pic: cPic,
       lokasi_fisik: cPhysicalLocation,
-      qr_code: cQRCode,
+      qr_code: oPayload.qr_code || null,
       status: "active",
       created_by: nUserId,
       updated_by: nUserId,

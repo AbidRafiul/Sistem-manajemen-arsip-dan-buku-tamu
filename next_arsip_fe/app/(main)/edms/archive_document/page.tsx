@@ -195,6 +195,7 @@ const Page = () => {
                     kode_tingkat_kerahasiaan: input.kode_tingkat_kerahasiaan,
                     lokasi_fisik: input.lokasi_fisik || null,
                     kode_retensi: input.kode_retensi || null,
+                    status: input.status || 'active',
                 });
             } else {
                 const formData = new FormData();

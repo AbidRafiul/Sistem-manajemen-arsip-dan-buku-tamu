@@ -42,7 +42,7 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
             >
                 <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-3 mt-2 fadein animation-duration-300">
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="kode_jenis_surat" className="text-sm font-semibold">Kode Jenis Surat *</label>
+                        <label htmlFor="kode_jenis_surat" className="text-sm font-semibold">Kode Jenis Surat <span className="text-red-500 ml-1">*</span></label>
                         <InputText
                             id="kode_jenis_surat"
                             name="kode_jenis_surat"
@@ -55,7 +55,7 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="nama_jenis_surat" className="text-sm font-semibold">Nama Jenis Surat *</label>
+                        <label htmlFor="nama_jenis_surat" className="text-sm font-semibold">Nama Jenis Surat <span className="text-red-500 ml-1">*</span></label>
                         <InputText
                             id="nama_jenis_surat"
                             name="nama_jenis_surat"
@@ -68,7 +68,7 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="arah_surat" className="text-sm font-semibold">Arah Surat *</label>
+                        <label htmlFor="arah_surat" className="text-sm font-semibold">Arah Surat <span className="text-red-500 ml-1">*</span></label>
                         <Dropdown
                             id="arah_surat"
                             name="arah_surat"
@@ -95,7 +95,7 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
 
                     {state.edit && (
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="status" className="text-sm font-semibold">Status Keaktifan *</label>
+                            <label htmlFor="status" className="text-sm font-semibold">Status Keaktifan <span className="text-red-500 ml-1">*</span></label>
                             <Dropdown
                                 id="status"
                                 name="status"

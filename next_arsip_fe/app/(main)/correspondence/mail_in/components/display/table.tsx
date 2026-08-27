@@ -179,9 +179,37 @@ const Table = ({
         </div>
     );
 
-    const statusTemplate = (rowData: TableData) => {
-        const config = getStatusConfig(rowData.status as string);
-        return <Tag value={config.label} severity={config.severity} icon={config.icon} style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }} />;
+    const statusBodyTemplate = (rowData: TableData) => {
+        const s = String(rowData.status || '').toLowerCase();
+        let bg = '#f59e0b';
+        let icon = 'pi-clock';
+        let label = 'Baru / Diproses';
+
+        if (s === 'didisposisi' || s === 'disposed') {
+            bg = '#a855f7';
+            icon = 'pi-send';
+            label = 'Didisposisi';
+        } else if (s === 'selesai' || s === 'completed') {
+            bg = '#22c55e';
+            icon = 'pi-check';
+            label = 'Selesai';
+        } else if (s === 'batal' || s === 'rejected') {
+            bg = '#ef4444';
+            icon = 'pi-times';
+            label = 'Batal / Ditolak';
+        }
+
+        return (
+            <div className="flex justify-content-center align-items-center">
+                <div
+                    className="w-2rem h-2rem flex align-items-center justify-content-center text-white shadow-1"
+                    style={{ background: bg, borderRadius: '8px' }}
+                    title={`Status: ${label}`}
+                >
+                    <i className={`pi ${icon} text-xs`}></i>
+                </div>
+            </div>
+        );
     };
 
     const actionTemplate = (rowData: TableData) => (
@@ -316,6 +344,29 @@ const Table = ({
                         onClick={refreshData} />
                 </div>
 
+                {/* KETERANGAN STATUS BAR */}
+                <div className="flex flex-wrap align-items-center gap-3 px-3 py-2 border-1 surface-border border-round-xl bg-white mb-3 shadow-1" style={{ width: 'fit-content', marginTop: '-0.25rem' }}>
+                    <div className="flex align-items-center gap-2 font-bold text-xs text-700 uppercase tracking-wider">
+                        <i className="pi pi-info-circle text-primary text-base"></i> KETERANGAN STATUS:
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#f59e0b', borderRadius: '3px' }}></span>
+                        <span className="text-700">Baru / Diproses</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#a855f7', borderRadius: '3px' }}></span>
+                        <span className="text-700">Didisposisi</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#22c55e', borderRadius: '3px' }}></span>
+                        <span className="text-700">Selesai</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#ef4444', borderRadius: '3px' }}></span>
+                        <span className="text-700">Ditolak / Batal</span>
+                    </div>
+                </div>
+
                 <DataTable
                     value={state.data}
                     paginator
@@ -339,6 +390,7 @@ const Table = ({
                     rowHover
                     className="text-sm">
                     <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
+                    <Column body={statusBodyTemplate} header="" style={{ width: '3.5rem', textAlign: 'center' }} />
                     <Column field="nomor_agenda" header="No. Surat" body={(r) => (
                         <div>
                             <div className="font-semibold text-sm text-900">{r.nomor_agenda || "-"}</div>
@@ -349,7 +401,6 @@ const Table = ({
                     <Column header="Pengirim" body={senderTemplate} style={{ minWidth: "180px" }} />
                     <Column field="tanggal_diterima" header="Tgl. Terima" sortable body={(r) => formatDateCalendar(r.tanggal_diterima)} style={{ width: "120px" }} />
                     <Column field="nama_jenis_surat" header="Jenis Surat" style={{ width: "120px" }} />
-                    <Column body={statusTemplate} header="Status" style={{ width: "130px", textAlign: "center" }} />
                     <Column field="created_at" header="Dibuat" sortable body={(r) => formatDateCalendar(r.created_at)} style={{ width: "120px" }} />
                     <Column align="center" header="Aksi" body={actionTemplate} style={{ width: "130px", textAlign: "center" }} />
                 </DataTable>
@@ -398,7 +449,7 @@ const Table = ({
                                 </div>
                             </div>
                             <div className="flex flex-column align-align-items-end gap-2">
-                                {detailLetter?.status && statusTemplate({ status: detailLetter.status } as TableData)}
+                                {detailLetter?.status && statusBodyTemplate({ status: detailLetter.status } as TableData)}
                                 {archivedDocument ? (
                                     <Button label="Lihat Arsip"
                                         icon="pi pi-folder-open"

@@ -85,6 +85,12 @@ const approveArchiveLoan = async (req, res) => {
       .where("id_peminjaman", nLoanId)
       .update(oData);
 
+    if (cStatus === "approved") {
+      await Knex("trx_dokumen")
+        .where("kode_dokumen", oLoan.kode_dokumen)
+        .update({ status: "borrowed", updated_at: dNow });
+    }
+
     try {
       const actionText = cStatus === "approved" ? "DISETUJUI" : "DITOLAK";
       const targetUser = await Knex("mst_pengguna")

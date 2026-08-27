@@ -46,17 +46,40 @@ const Table = ({
     const roleId = Number(sessionUser?.roleId || 0);
     const canApproveLoan = canApprove || ['superadmin', 'administrator', 'admin', 'adm'].includes(roleKey) || [1, 2].includes(roleId);
 
-    const getStatusConfig = (rowData: LoanData): { label: string; severity: 'success' | 'danger' | 'warning' | 'info'; icon: string } => {
-        if (rowData.terlambat === 1 && rowData.status === 'borrowed') return { label: 'Terlambat', severity: 'danger', icon: 'pi pi-exclamation-triangle' };
-        if (rowData.status === 'returned') return { label: 'Dikembalikan', severity: 'success', icon: 'pi pi-check-circle' };
-        if (rowData.status === 'rejected') return { label: 'Ditolak', severity: 'danger', icon: 'pi pi-times-circle' };
-        if (rowData.status === 'borrowed') return { label: 'Dipinjam', severity: 'info', icon: 'pi pi-info-circle' };
-        return { label: 'Pending', severity: 'warning', icon: 'pi pi-clock' };
-    };
+    const statusBodyTemplate = (rowData: LoanData) => {
+        let bg = '#f59e0b';
+        let iconClass = 'pi-clock';
+        let label = 'Menunggu';
 
-    const statusTemplate = (rowData: LoanData) => {
-        const config = getStatusConfig(rowData);
-        return <Tag value={config.label} severity={config.severity} icon={config.icon} style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem' }} />;
+        if (rowData.terlambat === 1 && rowData.status === 'borrowed') {
+            bg = '#ef4444';
+            iconClass = 'pi-exclamation-triangle';
+            label = 'Terlambat';
+        } else if (rowData.status === 'returned') {
+            bg = '#22c55e';
+            iconClass = 'pi-check';
+            label = 'Dikembalikan';
+        } else if (rowData.status === 'rejected') {
+            bg = '#ef4444';
+            iconClass = 'pi-times';
+            label = 'Ditolak';
+        } else if (rowData.status === 'borrowed') {
+            bg = '#3b82f6';
+            iconClass = 'pi-external-link';
+            label = 'Dipinjam';
+        }
+
+        return (
+            <div className="flex align-items-center justify-content-center">
+                <div
+                    className="w-2rem h-2rem border-round flex align-items-center justify-content-center text-white shadow-1"
+                    style={{ background: bg, borderRadius: '8px' }}
+                    title={label}
+                >
+                    <i className={`pi ${iconClass} text-xs font-bold`} />
+                </div>
+            </div>
+        );
     };
 
     const borrowerTemplate = (rowData: LoanData) => (
@@ -217,6 +240,29 @@ const Table = ({
                 ))}
             </div>
 
+            {/* KETERANGAN STATUS BAR */}
+            <div className="flex flex-wrap align-items-center gap-3 px-3 py-2 border-1 surface-border border-round-xl bg-white mb-3 shadow-1" style={{ width: 'fit-content' }}>
+                <div className="flex align-items-center gap-2 font-bold text-xs text-700 uppercase tracking-wider">
+                    <i className="pi pi-info-circle text-primary text-base"></i> KETERANGAN STATUS:
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#f59e0b', borderRadius: '3px' }}></span>
+                    <span className="text-700">Menunggu</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#3b82f6', borderRadius: '3px' }}></span>
+                    <span className="text-700">Dipinjam</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#22c55e', borderRadius: '3px' }}></span>
+                    <span className="text-700">Dikembalikan</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#ef4444', borderRadius: '3px' }}></span>
+                    <span className="text-700">Terlambat / Ditolak</span>
+                </div>
+            </div>
+
             <DataTable
                 value={filteredData}
                 paginator
@@ -234,12 +280,12 @@ const Table = ({
                 currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data"
                 rowHover
                 className="text-sm">
+                <Column body={statusBodyTemplate} header="" style={{ width: '3.5rem', textAlign: 'center' }} />
                 <Column header="Peminjam" body={borrowerTemplate} style={{ minWidth: '180px' }} />
                 <Column header="Dokumen" body={documentTemplate} style={{ minWidth: '180px' }} />
                 <Column field="tanggal_pinjam" header="Tgl. Pinjam" sortable body={rowData => formatDateOnly(rowData.tanggal_pinjam)} style={{ width: '120px' }} />
                 <Column field="tanggal_pengembalian" header="Tgl. Jatuh Tempo" sortable body={rowData => formatDateOnly(rowData.tanggal_pengembalian)} style={{ width: '140px' }} />
                 <Column field="tanggal_kembali" header="Tgl. Kembali" sortable body={rowData => formatDateOnly(rowData.tanggal_kembali)} style={{ width: '120px' }} />
-                <Column body={statusTemplate} header="Status" style={{ width: '130px', textAlign: 'center' }} />
                 <Column align="center" header="Aksi" body={actionTemplate} style={{ width: '130px', textAlign: 'center' }} />
             </DataTable>
         </Card>
@@ -269,7 +315,7 @@ const Table = ({
                             style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%)', color: '#FFFFFF', fontWeight: '700' }} />
                         <div>
                             <div className="font-bold text-900 text-lg">{selectedDetail.nama_peminjam}</div>
-                            <div className="mt-1">{statusTemplate(selectedDetail)}</div>
+                            <div className="mt-1">{statusBodyTemplate(selectedDetail)}</div>
                         </div>
                     </div>
 

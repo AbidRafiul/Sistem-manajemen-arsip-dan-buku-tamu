@@ -17,6 +17,9 @@ const outgoingLetterApprove = async (req, res) => {
     const oValidation = {
       id_surat_keluar: Joi.number().required(),
       catatan: Joi.string().allow(null, "").optional(),
+      alasan_penolakan: Joi.string().allow(null, "").optional(),
+      alasan: Joi.string().allow(null, "").optional(),
+      catatan_tinjauan: Joi.string().allow(null, "").optional(),
     };
 
     const oMessage = {
@@ -25,7 +28,7 @@ const outgoingLetterApprove = async (req, res) => {
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
-      allowUnknown: false,
+      allowUnknown: true,
     });
 
     if (cValidate) {

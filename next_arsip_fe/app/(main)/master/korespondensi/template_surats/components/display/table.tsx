@@ -108,11 +108,11 @@ const Table = ({ state, setState, formik, getData, handleDelete }: any) => {
               <i className="pi pi-info-circle text-primary text-base"></i> KETERANGAN STATUS:
           </div>
           <div className="flex align-items-center gap-2 text-xs font-semibold">
-              <span className="w-1rem h-1rem border-round inline-block" style={{ background: '#22c55e' }}></span>
+              <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#22c55e', borderRadius: '3px' }}></span>
               <span className="text-700">Aktif</span>
           </div>
           <div className="flex align-items-center gap-2 text-xs font-semibold">
-              <span className="w-1rem h-1rem border-round inline-block" style={{ background: '#ef4444' }}></span>
+              <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#ef4444', borderRadius: '3px' }}></span>
               <span className="text-700">Tidak Aktif</span>
           </div>
       </div>

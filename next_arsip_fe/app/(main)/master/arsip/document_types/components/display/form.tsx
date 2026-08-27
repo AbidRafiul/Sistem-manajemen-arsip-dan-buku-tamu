@@ -29,26 +29,26 @@ const Form = ({ state, setState, formik, handleDelete }: any) => {
             <Dialog visible={isDialogVisible} style={{ width: '450px' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header={state.add ? 'Tambah Jenis Dokumen' : 'Ubah Jenis Dokumen'} modal onHide={hideDialog}>
                 <form onSubmit={formik?.handleSubmit} className="flex flex-column gap-2 mt-0 fadein animation-duration-300">
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="kode_jenis_dokumen" className="text-sm">Kode Jenis Dokumen</label>
+                        <label htmlFor="kode_jenis_dokumen" className="text-sm font-semibold">Kode Jenis Dokumen <span className="text-red-500 ml-1">*</span></label>
                         <InputText id="kode_jenis_dokumen" name="kode_jenis_dokumen" value={formik?.values.kode_jenis_dokumen} onChange={formik?.handleChange} className={isFormFieldInvalid('kode_jenis_dokumen') ? 'p-invalid w-full' : 'w-full'} placeholder="Contoh: SK, ND, MOU" />
                         {getFormErrorMessage('kode_jenis_dokumen')}
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="nama_jenis_dokumen" className="text-sm">Nama Jenis Dokumen</label>
+                        <label htmlFor="nama_jenis_dokumen" className="text-sm font-semibold">Nama Jenis Dokumen <span className="text-red-500 ml-1">*</span></label>
                         <InputText id="nama_jenis_dokumen" name="nama_jenis_dokumen" value={formik?.values.nama_jenis_dokumen} onChange={formik?.handleChange} className={isFormFieldInvalid('nama_jenis_dokumen') ? 'p-invalid w-full' : 'w-full'} placeholder="Contoh: Surat Keputusan, Nota Dinas" />
                         {getFormErrorMessage('nama_jenis_dokumen')}
                     </div>
 
                     <div className="flex flex-column gap-2 w-full">
-                        <label htmlFor="deskripsi" className="text-sm">Deskripsi</label>
+                        <label htmlFor="deskripsi" className="text-sm font-semibold">Deskripsi</label>
                         <InputText id="deskripsi" name="deskripsi" value={formik?.values.deskripsi} onChange={formik?.handleChange} className={isFormFieldInvalid('deskripsi') ? 'p-invalid w-full' : 'w-full'} placeholder="Keterangan singkat jenis dokumen" />
                         {getFormErrorMessage('deskripsi')}
                     </div>
 
                     {state.edit && (
                         <div className="flex flex-column gap-2 w-full">
-                            <label htmlFor="status" className="text-sm">Status</label>
+                            <label htmlFor="status" className="text-sm font-semibold">Status <span className="text-red-500 ml-1">*</span></label>
                             <Dropdown id="status" name="status" value={formik?.values.status} options={[{label: "Aktif", value: "active"}, {label: "Nonaktif", value: "nonactive"}]} onChange={formik?.handleChange} className={isFormFieldInvalid('status') ? 'p-invalid w-full' : 'w-full'} />
                             {getFormErrorMessage('status')}
                         </div>

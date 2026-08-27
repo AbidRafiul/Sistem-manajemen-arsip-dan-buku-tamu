@@ -114,27 +114,23 @@ export default function DestructionPage() {
             <Card className="border-none shadow-1 border-round-2xl overflow-hidden" pt={{ body: { className: 'p-0' }, content: { className: 'p-0' } }}>
                 <TabView className="custom-tabview">
                     <TabPanel header="Arsip Kedaluwarsa" leftIcon="pi pi-exclamation-triangle mr-2">
-                        <div className="p-3">
-                            <ExpiredTable 
-                                toast={toast} 
-                                data={expiredData}
-                                categories={categories}
-                                loading={expiredLoading}
-                                fetchExpiredData={fetchExpiredData}
-                                proposeDestruction={proposeDestruction}
-                                refreshProposals={() => fetchProposals("")} />
-                        </div>
+                        <ExpiredTable 
+                            toast={toast} 
+                            data={expiredData}
+                            categories={categories}
+                            loading={expiredLoading}
+                            fetchExpiredData={fetchExpiredData}
+                            proposeDestruction={proposeDestruction}
+                            refreshProposals={() => fetchProposals("")} />
                     </TabPanel>
                     <TabPanel header="Usulan Pemusnahan" leftIcon="pi pi-file-export mr-2">
-                        <div className="p-3">
-                            <ProposalTable 
-                                toast={toast} 
-                                data={proposalData}
-                                loading={proposalLoading}
-                                fetchProposals={fetchProposals}
-                                reviewProposal={reviewProposal}
-                                executeProposal={executeProposal} />
-                        </div>
+                        <ProposalTable 
+                            toast={toast} 
+                            data={proposalData}
+                            loading={proposalLoading}
+                            fetchProposals={fetchProposals}
+                            reviewProposal={reviewProposal}
+                            executeProposal={executeProposal} />
                     </TabPanel>
                 </TabView>
             </Card>

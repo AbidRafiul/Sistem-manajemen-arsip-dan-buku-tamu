@@ -29,7 +29,7 @@ const getDocuments = async (req, res) => {
         "d.nama_pic",
         "d.lokasi_fisik",
         "d.qr_code",
-        "d.status",
+        DB.raw("CASE WHEN EXISTS (SELECT 1 FROM trx_peminjaman_arsip p WHERE (p.kode_dokumen = d.kode_dokumen OR p.kode_dokumen = d.nomor_dokumen) AND p.status = 'borrowed') THEN 'borrowed' ELSE d.status END as status"),
         "d.created_at",
         "d.updated_at",
         DB.raw(
