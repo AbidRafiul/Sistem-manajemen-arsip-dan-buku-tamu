@@ -1,6 +1,9 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { applyMultiTenantFilter } from "../components/tools/filter_helper.js";
+
+const router = express.Router();
 
 /**
  * Unified Search Endpoint (Metadata + Full-Text OCR Search)
@@ -185,4 +188,5 @@ const searchDocuments = async (req, res) => {
   }
 };
 
-export default searchDocuments;
+router.get("/", searchDocuments);
+export default router;

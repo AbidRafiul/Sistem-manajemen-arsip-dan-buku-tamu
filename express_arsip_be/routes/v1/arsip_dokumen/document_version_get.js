@@ -1,5 +1,8 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+
+const router = express.Router();
 
 const getDocumentVersions = async (req, res) => {
   const oQuery = req.query;
@@ -85,4 +88,5 @@ const getDocumentVersions = async (req, res) => {
   }
 };
 
-export default getDocumentVersions;
+router.get("/", getDocumentVersions);
+export default router;

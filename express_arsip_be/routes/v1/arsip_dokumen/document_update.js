@@ -1,6 +1,9 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { logDocumentChange, buildChangeDiff } from "../components/tools/audit_trail_helper.js";
+
+const router = express.Router();
 
 const updateDocument = async (req, res) => {
   const oPayload = req.body;
@@ -89,7 +92,7 @@ const updateDocument = async (req, res) => {
     }
 
     const nUserId = req.context?.id_pengguna || req.auth?.id_pengguna || req.auth?.id || null;
-    const cTz = req.headers["x-timezone"] || "Asia/Jakarta";
+    const cTz = req.headers["x-tz"] || "Asia/Jakarta";
 
     const oData = {
       kode_klasifikasi: cClassificationCode,
@@ -106,7 +109,7 @@ const updateDocument = async (req, res) => {
       lokasi_fisik: cPhysicalLocation,
       updated_by: nUserId,
       tz: cTz,
-      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     await DB("trx_dokumen")
@@ -161,4 +164,5 @@ const updateDocument = async (req, res) => {
   }
 };
 
-export default updateDocument;
+router.post("/", updateDocument);
+export default router;

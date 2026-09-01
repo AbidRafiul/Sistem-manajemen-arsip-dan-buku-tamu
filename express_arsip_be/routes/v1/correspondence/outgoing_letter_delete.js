@@ -73,7 +73,7 @@ const outgoingLetterDelete = async (req, res) => {
         .update({
           status: "dihapus",
           updated_by: oPayload.updated_by || null,
-          updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+          updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
         });
 
       await trx("trx_tracking_surat_keluar").insert({
@@ -84,7 +84,7 @@ const outgoingLetterDelete = async (req, res) => {
         tanggal: dNow,
         dibuat_oleh: oPayload.updated_by || null,
         created_at: dNow,
-        updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+        updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
       });
     });
 

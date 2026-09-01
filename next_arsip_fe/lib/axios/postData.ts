@@ -48,7 +48,7 @@ async function postData(endpoint: string, data = {}, customHeader = {}) {
         // 1. Gabungkan X-Level dengan customHeader (kalau misalnya ada tambahan lain dari luar)
         const mergedCustomHeaders = {
             'X-Level': '1',
-            'x-timezone': userTz,
+            'x-tz': userTz,
             ...filterHeaders,
             ...customHeader,
         };

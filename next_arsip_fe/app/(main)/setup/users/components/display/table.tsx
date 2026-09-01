@@ -41,18 +41,17 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                         Tampilkan Sub-Cabang
                     </label>
                 </div>
-                <span className="p-input-icon-left w-full md:w-20rem">
+                <span className="p-input-icon-left">
                     <i className="pi pi-search" />
                     <InputText
                         value={state.searchVal}
-                        className="w-full"
                         onChange={(e) => {
                             const value = e.target.value;
                             let _filters = { ...state.filters };
                             _filters['global'].value = value;
                             setState((p) => ({ ...p, searchVal: value, filters: _filters }));
                         }}
-                        placeholder="Cari Data..." />
+                        placeholder="Cari..." />
                 </span>
             </div>
         </div>

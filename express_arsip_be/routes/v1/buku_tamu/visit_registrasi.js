@@ -284,7 +284,8 @@ router.post(
             nomor_identitas: member.idNumber || member.nomor_identitas || null,
             foto_identitas: memberPhotoPath,
             created_at: formatDateSystem(),
-            updated_at: formatDateSystem(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+            updated_at: formatDateSystem()
+, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta'
           });
         });
         await Promise.all(insertPromises);

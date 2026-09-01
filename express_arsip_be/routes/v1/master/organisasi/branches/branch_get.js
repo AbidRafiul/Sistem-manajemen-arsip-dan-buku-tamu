@@ -11,7 +11,9 @@ router.post("/get-data", async (req, res) => {
     if (req.headers["x-filter-cabang"]) {
       const vaParentBranchIds = req.headers["x-filter-cabang"].split(",").map(Number);
       if (vaParentBranchIds.length > 0) {
-        query = query.whereIn("c.id_cabang", vaParentBranchIds);
+        query = query.where(function() {
+          this.whereIn("c.id_cabang", vaParentBranchIds).orWhereIn("c.id_induk", vaParentBranchIds);
+        });
       }
     }
 

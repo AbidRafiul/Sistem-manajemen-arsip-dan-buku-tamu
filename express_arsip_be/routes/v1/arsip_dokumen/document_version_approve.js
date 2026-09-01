@@ -1,6 +1,9 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { logDocumentChange } from "../components/tools/audit_trail_helper.js";
+
+const router = express.Router();
 
 const approveDocumentVersion = async (req, res) => {
   const oPayload = req.body;
@@ -59,7 +62,7 @@ const approveDocumentVersion = async (req, res) => {
       disetujui_oleh: cApprovedBy,
       disetujui_pada: dNow,
       catatan_persetujuan: cApprovalNotes,
-      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     await DB("trx_versi_dokumen")
@@ -112,4 +115,5 @@ const approveDocumentVersion = async (req, res) => {
   }
 };
 
-export default approveDocumentVersion;
+router.post("/", approveDocumentVersion);
+export default router;

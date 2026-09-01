@@ -64,137 +64,136 @@ router.use("/dashboard", dashboardSummary);
 // ════════════════════════════════════════════════════════════════════════════
 
 // POST /create — Create new document (with full metadata + auto QR)
-router.post("/create", uploadDocument, documentCreate);
+router.use("/create", documentCreate);
 
 // POST /upload — Upload dokumen file (standalone, tanpa auto-version)
-router.post("/upload", uploadDocument, documentUpload);
+router.use("/upload", documentUpload);
 
 // POST /update — Update document metadata
-router.post("/update", documentUpdate);
+router.use("/update", documentUpdate);
 
 // POST /delete — Soft delete document
-router.post("/delete", documentDelete);
+router.use("/delete", documentDelete);
 
 // GET /get — List documents with filters + JOIN master
-router.get("/get", documentGet);
+router.use("/get", documentGet);
 
 // GET /detail — Document detail + versions + loans + proposal
-router.get("/detail", documentDetail);
+router.use("/detail", documentDetail);
 
 // GET /preview — Document preview url generator
-router.get("/preview", documentPreview);
+router.use("/preview", documentPreview);
 
 // GET /number/generate — Auto-generate document number based on branch, classification, category, date, seq
-router.get("/number/generate", documentNumberGenerate);
+router.use("/number/generate", documentNumberGenerate);
 
 // GET /search — Unified Full-Text & Metadata Search
-router.get("/search", documentSearch);
+router.use("/search", documentSearch);
 
 // GET /history/get — Audit trail changelog per dokumen
-router.get("/history/get", documentHistoryGet);
+router.use("/history/get", documentHistoryGet);
 
 // ════════════════════════════════════════════════════════════════════════════
 // OCR & FULL-TEXT CONTENT
 // ════════════════════════════════════════════════════════════════════════════
 
 // POST /ocr/process — Trigger manual OCR process
-router.post("/ocr/process", processOcrManual);
+router.use("/ocr/process", processOcrManual);
 
 // GET /ocr/status — Check OCR status per document version
-router.get("/ocr/status", getOcrStatus);
+router.use("/ocr/status", getOcrStatus);
 
 // GET /content/get — Get extracted text content
-router.get("/content/get", documentContentGet);
+router.use("/content/get", documentContentGet);
 
 // ════════════════════════════════════════════════════════════════════════════
 // MASTER DATA (Dropdown data untuk FE)
 // ════════════════════════════════════════════════════════════════════════════
 
 // GET /master/category — List kategori dokumen
-router.get("/master/category", documentCategoryGet);
+router.use("/master/category", documentCategoryGet);
 
 // GET /master/type — List jenis dokumen
-router.get("/master/type", documentTypeGet);
+router.use("/master/type", documentTypeGet);
 
 // GET /master/confidentiality — List tingkat kerahasiaan
-router.get("/master/confidentiality", confidentialityLevelGet);
+router.use("/master/confidentiality", confidentialityLevelGet);
 
 // GET /master/retention — List jadwal retensi
-router.get("/master/retention", retentionScheduleGet);
+router.use("/master/retention", retentionScheduleGet);
 
 // ════════════════════════════════════════════════════════════════════════════
 // DOCUMENT VERSIONING
 // ════════════════════════════════════════════════════════════════════════════
 
 // POST /version/create — Buat versi baru (tanpa file)
-router.post("/version/create", documentVersionCreate);
+router.use("/version/create", documentVersionCreate);
 
 // POST /version/upload — Upload file + buat versi otomatis (pending approval)
-router.post("/version/upload", uploadDocument, documentVersionUpload);
+router.use("/version/upload", documentVersionUpload);
 
 // GET /version/get — List versi dokumen
-router.get("/version/get", documentVersionGet);
+router.use("/version/get", documentVersionGet);
 
 // POST /version/approve — Approve / reject versi dokumen
-router.post("/version/approve", documentVersionApprove);
+router.use("/version/approve", documentVersionApprove);
 
 // POST /version/rollback — Rollback ke versi sebelumnya
-router.post("/version/rollback", documentVersionRollback);
+router.use("/version/rollback", documentVersionRollback);
 
 // GET & POST /version/download — Download file versi dokumen
-router.get("/version/download", documentVersionDownload);
-router.post("/version/download", documentVersionDownload);
+router.use("/version/download", documentVersionDownload);
 
 // ════════════════════════════════════════════════════════════════════════════
 // ARCHIVE LOAN (Peminjaman Arsip)
 // ════════════════════════════════════════════════════════════════════════════
 
 // POST /loan/create — Buat pengajuan peminjaman (pending → needs approval)
-router.post("/loan/create", loanCreate);
+router.use("/loan/create", loanCreate);
 
 // GET /loan/get — List peminjaman dengan filter
-router.get("/loan/get", loanGet);
+router.use("/loan/get", loanGet);
 
 // POST /loan/approve — Approve / reject peminjaman (→ borrowed / rejected)
-router.post("/loan/approve", loanApprove);
+router.use("/loan/approve", loanApprove);
 
 // POST /loan/return — Tandai dokumen dikembalikan + overdue detection
-router.post("/loan/return", loanReturn);
+router.use("/loan/return", loanReturn);
 
 // GET /loan/overdue — List peminjaman yang terlambat
-router.get("/loan/overdue", loanOverdueGet);
+router.use("/loan/overdue", loanOverdueGet);
 
 // ════════════════════════════════════════════════════════════════════════════
 // JRA & PEMUSNAHAN ARSIP
 // ════════════════════════════════════════════════════════════════════════════
 
 // POST /destruction/create — Buat proposal pemusnahan
-router.post("/destruction/create", destructionProposalCreate);
+router.use("/destruction/create", destructionProposalCreate);
 
 // GET /destruction/get — List proposal pemusnahan
-router.get("/destruction/get", destructionProposalGet);
+router.use("/destruction/get", destructionProposalGet);
 
 // POST /destruction/review — Review (approve/reject) proposal
-router.post("/destruction/review", destructionProposalReview);
+router.use("/destruction/review", destructionProposalReview);
 
 // POST /destruction/execute — Eksekusi pemusnahan arsip
-router.post("/destruction/execute", destructionProposalExecute);
+router.use("/destruction/execute", destructionProposalExecute);
 
 // GET /retention/expired — List dokumen yang masa retensinya sudah habis
-router.get("/retention/expired", retentionExpiredGet);
+router.use("/retention/expired", retentionExpiredGet);
 
 // ════════════════════════════════════════════════════════════════════════════
 // QR CODE & BARCODE
 // ════════════════════════════════════════════════════════════════════════════
 
 // POST /qr/generate — Generate QR Code (return base64 PNG)
-router.post("/qr/generate", documentQrGenerate);
+router.use("/qr/generate", documentQrGenerate);
 
 // GET /qr/scan — Scan QR Code → cari dokumen
-router.get("/qr/scan", documentQrScan);
+router.use("/qr/scan", documentQrScan);
 
 // POST /location/update — Update lokasi fisik arsip
-router.post("/location/update", documentLocationUpdate);
+router.use("/location/update", documentLocationUpdate);
 
 export default router;
 

@@ -1,9 +1,13 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { v4 as uuidv4 } from "uuid";
 import { formatDateSystem } from "../components/tools/general.js";
 import { logDocumentChange } from "../components/tools/audit_trail_helper.js";
 import { processDocumentContent } from "../../../core/components/ocr_service.js";
+import { uploadDocument } from "../../../middleware/upload_document.js";
+
+const router = express.Router();
 
 const createDocument = async (req, res) => {
   const oPayload = req.body;
@@ -88,7 +92,7 @@ const createDocument = async (req, res) => {
     }
 
     const nUserId = req.context?.id_pengguna || req.auth?.id_pengguna || req.auth?.id || null;
-    const cTz = req.headers["x-timezone"] || "Asia/Jakarta";
+    const cTz = req.headers["x-tz"] || "Asia/Jakarta";
 
     const oData = {
       id_cabang: nIdCabang,
@@ -110,7 +114,7 @@ const createDocument = async (req, res) => {
       updated_by: nUserId,
       tz: cTz,
       created_at: dNow,
-      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     let createdKodeDokumen = "";
@@ -163,7 +167,7 @@ const createDocument = async (req, res) => {
           disetujui_pada: dNow,
           tanggal_transaksi: dNow,
           created_at: dNow,
-          updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+          updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
         });
         firstVersionId = nVerId;
       }
@@ -210,4 +214,5 @@ const createDocument = async (req, res) => {
   }
 };
 
-export default createDocument;
+router.post("/", uploadDocument, createDocument);
+export default router;

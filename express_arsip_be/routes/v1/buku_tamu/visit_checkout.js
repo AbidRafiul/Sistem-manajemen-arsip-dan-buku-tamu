@@ -44,7 +44,8 @@ router.put("/:id", async (req, res) => {
     const oDataUpdate = {
       status: "out",
       waktu_keluar: formatDateSystem(),
-      updated_at: formatDateSystem(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+      updated_at: formatDateSystem()
+, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta'
     };
 
     await DB("trx_kunjungan")

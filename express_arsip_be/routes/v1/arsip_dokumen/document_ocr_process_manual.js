@@ -1,6 +1,9 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { processDocumentContent } from "../../../core/components/ocr_service.js";
 import { Logging } from "../components/tools/servertool.js";
+
+const router = express.Router();
 
 /**
  * Trigger manual OCR process
@@ -58,3 +61,6 @@ export const processOcrManual = async (req, res) => {
     });
   }
 };
+
+router.post("/", processOcrManual);
+export default router;

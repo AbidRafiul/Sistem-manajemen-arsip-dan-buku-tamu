@@ -30,17 +30,17 @@ export async function up(knex) {
     const hasCreatedBy = await knex.schema.hasColumn(tableName, "created_by");
     const hasUpdatedBy = await knex.schema.hasColumn(tableName, "updated_by");
     const hasOldTz = await knex.schema.hasColumn(tableName, "tz");
-    const hasTz = await knex.schema.hasColumn(tableName, "tz");
+    const hasZonaWaktu = await knex.schema.hasColumn(tableName, "tz");
     const hasCreatedAt = await knex.schema.hasColumn(tableName, "created_at");
     const hasUpdatedAt = await knex.schema.hasColumn(tableName, "updated_at");
 
-    if (hasOldTz && !hasTz) {
+    if (hasOldTz && !hasZonaWaktu) {
       await knex.schema.alterTable(tableName, (table) => {
         table.renameColumn("tz", "tz");
       });
     }
 
-    if (!hasCreatedBy || !hasUpdatedBy || (!hasTz && !hasOldTz) || !hasCreatedAt || !hasUpdatedAt) {
+    if (!hasCreatedBy || !hasUpdatedBy || (!hasZonaWaktu && !hasOldTz) || !hasCreatedAt || !hasUpdatedAt) {
       await knex.schema.alterTable(tableName, (table) => {
         if (!hasCreatedBy) {
           table.integer("created_by").unsigned().nullable();
@@ -48,7 +48,7 @@ export async function up(knex) {
         if (!hasUpdatedBy) {
           table.integer("updated_by").unsigned().nullable();
         }
-        if (!hasTz && !hasOldTz) {
+        if (!hasZonaWaktu && !hasOldTz) {
           table.string("tz", 50).defaultTo("Asia/Jakarta").nullable();
         }
         if (!hasCreatedAt) {
@@ -89,9 +89,9 @@ export async function down(knex) {
     const hasTable = await knex.schema.hasTable(tableName);
     if (!hasTable) continue;
 
-    const hasTz = await knex.schema.hasColumn(tableName, "tz");
+    const hasZonaWaktu = await knex.schema.hasColumn(tableName, "tz");
 
-    if (hasTz) {
+    if (hasZonaWaktu) {
       await knex.schema.alterTable(tableName, (table) => {
         table.dropColumn("tz");
       });

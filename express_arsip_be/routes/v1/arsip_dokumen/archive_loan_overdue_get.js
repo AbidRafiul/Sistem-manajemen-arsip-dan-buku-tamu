@@ -1,5 +1,8 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+
+const router = express.Router();
 
 const getOverdueLoans = async (req, res) => {
   try {
@@ -69,4 +72,5 @@ const getOverdueLoans = async (req, res) => {
   }
 };
 
-export default getOverdueLoans;
+router.get("/", getOverdueLoans);
+export default router;

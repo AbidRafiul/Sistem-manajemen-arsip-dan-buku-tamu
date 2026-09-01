@@ -1,9 +1,12 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { downloadFileFromMinio } from "../../../core/components/tools/minio_helper.js";
+
+const router = express.Router();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -109,4 +112,5 @@ const downloadDocumentVersion = async (req, res) => {
   }
 };
 
-export default downloadDocumentVersion;
+router.get("/", downloadDocumentVersion);
+export default router;

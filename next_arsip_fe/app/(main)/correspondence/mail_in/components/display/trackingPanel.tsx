@@ -44,12 +44,22 @@ const renderStatusTag = (statusValue?: string) => {
         selesai: "pi pi-check-circle",
     };
 
+    let s = String(status || "").toLowerCase();
+    let bgClass = "bg-blue-500";
+    let icon = "pi pi-circle";
+    if (s === 'baru') { bgClass = "bg-gray-500"; icon = "pi pi-envelope"; }
+    else if (s === 'didisposisi') { bgClass = "bg-orange-500"; icon = "pi pi-share-alt"; }
+    else if (s === 'dibaca') { bgClass = "bg-blue-500"; icon = "pi pi-eye"; }
+    else if (s === 'diproses') { bgClass = "bg-orange-500"; icon = "pi pi-cog"; }
+    else if (s === 'selesai') { bgClass = "bg-green-500"; icon = "pi pi-check-circle"; }
+    
+    let label = s === 'baru' ? 'Baru' : s === 'didisposisi' ? 'Didisposisi' : s === 'dibaca' ? 'Dibaca' : s === 'diproses' ? 'Diproses' : s === 'selesai' ? 'Selesai' : s;
     return (
-        <Tag
-            value={statusLabel[status] || status}
-            severity={severityMap[status] || "info"}
-            icon={iconMap[status] || "pi pi-circle"}
-            style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }} />
+        <div className="flex justify-content-center">
+            <div className={`${bgClass} flex align-items-center justify-content-center`} style={{ width: '24px', height: '24px', borderRadius: '4px', flexShrink: 0 }} title={label}>
+                <i className={`${icon} text-white`} style={{ fontSize: '0.8rem' }}></i>
+            </div>
+        </div>
     );
 };
 
@@ -106,10 +116,10 @@ const TrackingPanel = ({ dispositions, loading }: TrackingPanelProps) => (
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
             className="text-sm"
             rowHover>
+            <Column header="Status" body={(r) => renderStatusTag(r.status)} align="center" style={{ width: "80px" }} />
             <Column header="Penerima" body={trackingReceiverTemplate} style={{ minWidth: "200px" }} />
             <Column header="Diproses Oleh" body={trackingProcessedTemplate} style={{ minWidth: "180px" }} />
             <Column header="Waktu Proses" body={trackingTimeTemplate} style={{ width: "140px" }} />
-            <Column header="Status" body={(r) => renderStatusTag(r.status)} style={{ width: "120px" }} />
         </DataTable>
     </Card>
 );

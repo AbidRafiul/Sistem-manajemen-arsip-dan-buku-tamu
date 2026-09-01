@@ -73,7 +73,7 @@ const outgoingLetterApprove = async (req, res) => {
         .update({
           status: "disetujui",
           updated_by: nActorId,
-          updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+          updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
         });
 
       // 2. Insert into tracking
@@ -85,7 +85,7 @@ const outgoingLetterApprove = async (req, res) => {
         tanggal: dNow,
         dibuat_oleh: nActorId,
         created_at: dNow,
-        updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+        updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
       });
     });
 

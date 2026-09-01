@@ -85,18 +85,23 @@ export default function ExpiredTable({
         const hasProposal = Boolean(rowData.ActiveProposalStatus);
         
         if (hasProposal) {
-            let severity: 'warning' | 'info' | 'success' | 'danger' = 'warning';
-            let label = 'Diproses';
+            let bgClass = "bg-orange-500";
+            let icon = "pi pi-clock";
+            let label = "Diproses";
             if (rowData.ActiveProposalStatus === 'approved') {
-                severity = 'success';
-                label = 'Disetujui';
+                bgClass = "bg-blue-500";
+                icon = "pi pi-check";
+                label = "Disetujui";
             } else if (rowData.ActiveProposalStatus === 'rejected') {
-                severity = 'danger';
-                label = 'Ditolak';
+                bgClass = "bg-red-500";
+                icon = "pi pi-times";
+                label = "Ditolak";
             }
             return (
-                <div className="flex flex-column align-items-center gap-1">
-                    <Tag value={`Usulan: ${label}`} severity={severity} className="text-xs font-semibold px-2" />
+                <div className="flex justify-content-center">
+                    <div className={`${bgClass} flex align-items-center justify-content-center`} style={{ width: '24px', height: '24px', borderRadius: '4px', flexShrink: 0 }} title={`Usulan: ${label}`}>
+                        <i className={`${icon} text-white`} style={{ fontSize: '0.8rem' }}></i>
+                    </div>
                 </div>
             );
         }
@@ -127,26 +132,51 @@ export default function ExpiredTable({
 
     const renderHeader = () => {
         return (
-            <div className="flex flex-wrap align-items-center justify-content-between gap-3 text-sm">
-                <span className="font-bold text-color">Dokumen Kedaluwarsa JRA</span>
-                <div className="flex gap-2 align-items-center">
-                    <Dropdown
-                        value={selectedCategory}
-                        options={categories.map(c => ({ label: c.nama_kategori_dokumen, value: c.kode_kategori_dokumen }))}
-                        onChange={(e) => setSelectedCategory(e.value)}
-                        placeholder="Filter Kategori"
-                        showClear
-                        className="text-xs"
-                        style={{ minWidth: '15rem', height: '2.25rem' }} />
-                    <span className="p-input-icon-left">
-                        <i className="pi pi-search" />
-                        <InputText
-                            value={searchVal}
-                            onChange={(e) => setSearchVal(e.target.value)}
-                            placeholder="Cari dokumen..."
-                            className="text-sm"
-                            style={{ height: '2.25rem' }} />
-                    </span>
+            <div className="flex flex-column gap-3">
+                <div className="flex align-items-center gap-3 surface-50 p-2 border-round text-sm w-fit" style={{ border: "1px solid var(--surface-200)" }}>
+                    <div className="flex align-items-center gap-2 font-semibold text-600">
+                        <i className="pi pi-info-circle"></i> KETERANGAN STATUS:
+                    </div>
+                    <div className="flex align-items-center gap-2 ml-2">
+                        <div className="bg-orange-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                            <i className="pi pi-clock text-white" style={{ fontSize: "0.6rem" }}></i>
+                        </div>
+                        <span className="text-700 font-medium text-xs">Diproses</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 ml-2">
+                        <div className="bg-blue-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                            <i className="pi pi-check text-white" style={{ fontSize: "0.6rem" }}></i>
+                        </div>
+                        <span className="text-700 font-medium text-xs">Disetujui</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 ml-2">
+                        <div className="bg-red-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                            <i className="pi pi-times text-white" style={{ fontSize: "0.6rem" }}></i>
+                        </div>
+                        <span className="text-700 font-medium text-xs">Ditolak</span>
+                    </div>
+                </div>
+                <div className="flex flex-wrap align-items-center justify-content-between gap-3 text-sm">
+                    <span className="font-bold text-color">Dokumen Kedaluwarsa JRA</span>
+                    <div className="flex gap-2 align-items-center">
+                        <Dropdown
+                            value={selectedCategory}
+                            options={categories.map(c => ({ label: c.nama_kategori_dokumen, value: c.kode_kategori_dokumen }))}
+                            onChange={(e) => setSelectedCategory(e.value)}
+                            placeholder="Filter Kategori"
+                            showClear
+                            className="text-xs"
+                            style={{ minWidth: '15rem', height: '2.25rem' }} />
+                        <span className="p-input-icon-left">
+                            <i className="pi pi-search" />
+                            <InputText
+                                value={searchVal}
+                                onChange={(e) => setSearchVal(e.target.value)}
+                                placeholder="Cari dokumen..."
+                                className="text-sm"
+                                style={{ height: '2.25rem' }} />
+                        </span>
+                    </div>
                 </div>
             </div>
         );
@@ -165,6 +195,7 @@ export default function ExpiredTable({
                 className="text-sm"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data">
+                <Column body={actionBodyTemplate} header="Status Pernyataan" align="center" style={{ width: '80px' }}></Column>
                 <Column field="kode_dokumen" header="Kode Dokumen" sortable className="font-semibold text-primary"></Column>
                 <Column field="nomor_dokumen" header="No. Dokumen" sortable></Column>
                 <Column field="nama_dokumen" header="Nama Dokumen" sortable style={{ minWidth: '200px' }}></Column>
@@ -173,7 +204,6 @@ export default function ExpiredTable({
                 <Column field="tahun_retensi" header="Masa Retensi" body={rowData => `${rowData.tahun_retensi} Thn`} sortable></Column>
                 <Column body={actionTextTemplate} header="Tindakan JRA" sortable field="tindakan_retensi"></Column>
                 <Column field="RetentionEndDate" header="Berakhir Retensi" sortable body={rowData => formatDate(rowData.RetentionEndDate)}></Column>
-                <Column body={actionBodyTemplate} header="Pernyataan" style={{ width: '130px', textAlign: 'center' }}></Column>
             </DataTable>
 
             <Dialog

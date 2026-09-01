@@ -1,6 +1,9 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { createNotification } from "../components/tools/notification_helper.js";
+
+const router = express.Router();
 
 const createArchiveLoan = async (req, res) => {
   const oPayload = req.body;
@@ -85,7 +88,7 @@ const createArchiveLoan = async (req, res) => {
       terlambat: 0,
       tanggal_transaksi: dLoanDate,
       created_at: dNow,
-      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     const [nLoanId] = await DB("trx_peminjaman_arsip").insert(oData);
@@ -153,4 +156,5 @@ const createArchiveLoan = async (req, res) => {
   }
 };
 
-export default createArchiveLoan;
+router.post("/", createArchiveLoan);
+export default router;

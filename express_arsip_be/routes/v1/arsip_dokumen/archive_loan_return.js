@@ -1,6 +1,9 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { createNotification } from "../components/tools/notification_helper.js";
+
+const router = express.Router();
 
 const returnArchiveLoan = async (req, res) => {
   const oPayload = req.body;
@@ -53,7 +56,7 @@ const returnArchiveLoan = async (req, res) => {
       status: "returned",
       tanggal_kembali: dActualReturnDate,
       terlambat: bIsOverdue,
-      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     await DB("trx_peminjaman_arsip")
@@ -140,4 +143,5 @@ const returnArchiveLoan = async (req, res) => {
   }
 };
 
-export default returnArchiveLoan;
+router.post("/", returnArchiveLoan);
+export default router;

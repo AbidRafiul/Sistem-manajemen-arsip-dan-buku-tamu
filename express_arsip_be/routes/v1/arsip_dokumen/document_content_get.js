@@ -1,5 +1,8 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+
+const router = express.Router();
 
 /**
  * Endpoint to retrieve extracted text content for a document or specific version
@@ -70,4 +73,5 @@ const getDocumentContent = async (req, res) => {
   }
 };
 
-export default getDocumentContent;
+router.get("/", getDocumentContent);
+export default router;

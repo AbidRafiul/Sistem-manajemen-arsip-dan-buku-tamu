@@ -1,6 +1,9 @@
+import express from "express";
 import Knex from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { createNotification } from "../components/tools/notification_helper.js";
+
+const router = express.Router();
 
 const approveArchiveLoan = async (req, res) => {
   const oPayload = req.body;
@@ -78,7 +81,7 @@ const approveArchiveLoan = async (req, res) => {
       disetujui_oleh: cApprovedBy,
       disetujui_pada: dNow,
       catatan_persetujuan: cApprovalNotes,
-      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     await Knex("trx_peminjaman_arsip")
@@ -165,4 +168,5 @@ const approveArchiveLoan = async (req, res) => {
   }
 };
 
-export default approveArchiveLoan;
+router.post("/", approveArchiveLoan);
+export default router;

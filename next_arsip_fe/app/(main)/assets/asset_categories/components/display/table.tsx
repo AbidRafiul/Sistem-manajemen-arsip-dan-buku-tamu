@@ -46,7 +46,7 @@ const Table = ({
     )
 
     const actionBodyTemplate = (rowData: TableData) => (
-        <div className="flex gap-2">
+        <div className="flex gap-2 justify-content-center">
             <Button icon="pi pi-pencil"
                 outlined
                 onClick={() => {

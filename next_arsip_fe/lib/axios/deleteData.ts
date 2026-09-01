@@ -28,7 +28,7 @@ async function deleteData(endpoint: string, customHeader = {}) {
 
         const mergedCustomHeaders = {
             'X-Level': '1',
-            'x-timezone': userTz,
+            'x-tz': userTz,
             ...customHeader,
         };
 

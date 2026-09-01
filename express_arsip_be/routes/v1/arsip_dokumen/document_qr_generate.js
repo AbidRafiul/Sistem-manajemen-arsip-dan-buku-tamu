@@ -1,7 +1,10 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import QRCode from "qrcode";
 import { v4 as uuidv4 } from "uuid";
+
+const router = express.Router();
 
 const generateDocumentQR = async (req, res) => {
   const oPayload = req.body;
@@ -42,7 +45,7 @@ const generateDocumentQR = async (req, res) => {
         .where("id_dokumen", nIdDokumen)
         .update({
           qr_code: cQRCodeString,
-          updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+          updated_at: new Date(), tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
         });
     }
 
@@ -89,4 +92,5 @@ const generateDocumentQR = async (req, res) => {
   }
 };
 
-export default generateDocumentQR;
+router.post("/", generateDocumentQR);
+export default router;

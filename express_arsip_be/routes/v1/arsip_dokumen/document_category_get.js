@@ -1,5 +1,8 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+
+const router = express.Router();
 
 const getDocumentCategories = async (req, res) => {
   try {
@@ -50,4 +53,5 @@ const getDocumentCategories = async (req, res) => {
   }
 };
 
-export default getDocumentCategories;
+router.get("/", getDocumentCategories);
+export default router;

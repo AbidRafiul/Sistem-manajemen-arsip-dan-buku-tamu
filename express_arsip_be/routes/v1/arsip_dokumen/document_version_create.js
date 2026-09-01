@@ -1,5 +1,8 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+
+const router = express.Router();
 
 const createDocumentVersion = async (req, res) => {
   const oPayload = req.body;
@@ -18,7 +21,7 @@ const createDocumentVersion = async (req, res) => {
       diunggah_oleh: req?.auth?.nama_pengguna || req?.context?.nama_pengguna || oPayload.diunggah_oleh || oPayload.uploaded_by || "system",
       tanggal_transaksi: dNow,
       created_at: dNow,
-      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     await DB("trx_versi_dokumen").insert(oData);
@@ -49,4 +52,5 @@ const createDocumentVersion = async (req, res) => {
   }
 };
 
-export default createDocumentVersion;
+router.post("/", createDocumentVersion);
+export default router;

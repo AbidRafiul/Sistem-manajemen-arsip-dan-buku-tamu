@@ -219,7 +219,8 @@ router.post("/verifikasi", upload.single("file"), async (req, res) => {
       created_by: getUserId(req),
       updated_by: getUserId(req),
       created_at: verificationTime,
-      updated_at: verificationTime, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta'
+      updated_at: verificationTime
+, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta'
     };
     await DB("trx_verifikasi_dokumen").insert(verificationInsert);
     return res.status(200).json({

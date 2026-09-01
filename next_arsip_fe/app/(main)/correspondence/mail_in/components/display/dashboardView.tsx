@@ -45,25 +45,21 @@ const statusLabel: Record<string, string> = {
 };
 
 const renderStatusTag = (statusValue?: string) => {
-    const status = getStatus(statusValue);
-    const severityMap: Record<string, "info" | "warning" | "success" | "danger"> = {
-        baru: "info",
-        didisposisi: "warning",
-        diproses: "warning",
-        selesai: "success",
-    };
-    const iconMap: Record<string, string> = {
-        baru: "pi pi-envelope",
-        didisposisi: "pi pi-share-alt",
-        diproses: "pi pi-cog",
-        selesai: "pi pi-check-circle",
-    };
+    const s = getStatus(statusValue);
+    let bgClass = "bg-blue-500";
+    let icon = "pi pi-circle";
+    if (s === 'baru') { bgClass = "bg-gray-500"; icon = "pi pi-envelope"; }
+    else if (s === 'didisposisi') { bgClass = "bg-orange-500"; icon = "pi pi-share-alt"; }
+    else if (s === 'diproses') { bgClass = "bg-orange-500"; icon = "pi pi-cog"; }
+    else if (s === 'selesai') { bgClass = "bg-green-500"; icon = "pi pi-check-circle"; }
+    
+    let label = s === 'baru' ? 'Baru' : s === 'didisposisi' ? 'Menunggu Disposisi' : s === 'diproses' ? 'Diproses' : s === 'selesai' ? 'Selesai' : s;
     return (
-        <Tag
-            value={statusLabel[status] || status}
-            severity={severityMap[status] || "info"}
-            icon={iconMap[status] || "pi pi-circle"}
-            style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }} />
+        <div className="flex justify-content-center">
+            <div className={`${bgClass} flex align-items-center justify-content-center`} style={{ width: '24px', height: '24px', borderRadius: '4px', flexShrink: 0 }} title={label}>
+                <i className={`${icon} text-white`} style={{ fontSize: '0.8rem' }}></i>
+            </div>
+        </div>
     );
 };
 
@@ -237,6 +233,36 @@ const DashboardView = ({
                                 onClick={onRefresh} />
                         </div>
 
+                        <div className="flex align-items-center gap-3 surface-50 p-2 border-round text-sm w-fit mb-3" style={{ border: "1px solid var(--surface-200)" }}>
+                            <div className="flex align-items-center gap-2 font-semibold text-600">
+                                <i className="pi pi-info-circle"></i> KETERANGAN STATUS:
+                            </div>
+                            <div className="flex align-items-center gap-2 ml-2">
+                                <div className="bg-gray-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                                    <i className="pi pi-envelope text-white" style={{ fontSize: "0.6rem" }}></i>
+                                </div>
+                                <span className="text-700 font-medium text-xs">Baru</span>
+                            </div>
+                            <div className="flex align-items-center gap-2 ml-2">
+                                <div className="bg-orange-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                                    <i className="pi pi-share-alt text-white" style={{ fontSize: "0.6rem" }}></i>
+                                </div>
+                                <span className="text-700 font-medium text-xs">Menunggu Disposisi</span>
+                            </div>
+                            <div className="flex align-items-center gap-2 ml-2">
+                                <div className="bg-orange-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                                    <i className="pi pi-cog text-white" style={{ fontSize: "0.6rem" }}></i>
+                                </div>
+                                <span className="text-700 font-medium text-xs">Diproses</span>
+                            </div>
+                            <div className="flex align-items-center gap-2 ml-2">
+                                <div className="bg-green-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                                    <i className="pi pi-check-circle text-white" style={{ fontSize: "0.6rem" }}></i>
+                                </div>
+                                <span className="text-700 font-medium text-xs">Selesai</span>
+                            </div>
+                        </div>
+
                         <DataTable
                             value={filteredLetters.slice(0, 6)}
                             loading={loading}
@@ -248,10 +274,10 @@ const DashboardView = ({
                             }
                             className="text-sm"
                             rowHover>
+                            <Column header="Status" body={(r) => renderStatusTag(r.status)} align="center" style={{ width: "80px" }} />
                             <Column header="No / Pengirim" body={letterNoTemplate} style={{ minWidth: "180px" }} />
                             <Column header="Perihal" body={letterSubjectTemplate} style={{ minWidth: "200px" }} />
                             <Column header="Tanggal Diterima" body={letterDateTemplate} style={{ width: "160px" }} />
-                            <Column header="Status Disposisi" body={(r) => renderStatusTag(r.status)} style={{ width: "150px" }} />
                         </DataTable>
 
                         <div className="flex align-items-center justify-content-start mt-4 pt-3 border-top-1 surface-border">

@@ -1,5 +1,8 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
+
+const router = express.Router();
 
 const updateDocumentLocation = async (req, res) => {
   const oPayload = req.body;
@@ -33,7 +36,7 @@ const updateDocumentLocation = async (req, res) => {
 
     const oData = {
       lokasi_fisik: cLokasiFisik || null,
-      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     await DB("trx_dokumen")
@@ -72,4 +75,5 @@ const updateDocumentLocation = async (req, res) => {
   }
 };
 
-export default updateDocumentLocation;
+router.post("/", updateDocumentLocation);
+export default router;

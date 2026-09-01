@@ -95,36 +95,23 @@ const formatFileSize = (size?: number | null) => {
 
 const getStatus = (value?: string) => String(value || "baru").toLowerCase();
 
-const statusLabel: Record<string, string> = {
-    baru: "Baru",
-    didisposisi: "Didisposisi",
-    dibaca: "Dibaca",
-    diproses: "Diproses",
-    selesai: "Selesai",
-};
-
 const renderStatusTag = (statusValue?: string) => {
-    const status = getStatus(statusValue);
-    const severityMap: Record<string, "info" | "warning" | "success" | "danger"> = {
-        baru: "info",
-        didisposisi: "warning",
-        dibaca: "warning",
-        diproses: "warning",
-        selesai: "success",
-    };
-    const iconMap: Record<string, string> = {
-        baru: "pi pi-envelope",
-        didisposisi: "pi pi-share-alt",
-        dibaca: "pi pi-eye",
-        diproses: "pi pi-cog",
-        selesai: "pi pi-check-circle",
-    };
+    const s = getStatus(statusValue);
+    let bgClass = "bg-blue-500";
+    let icon = "pi pi-circle";
+    if (s === 'baru') { bgClass = "bg-gray-500"; icon = "pi pi-envelope"; }
+    else if (s === 'didisposisi') { bgClass = "bg-orange-500"; icon = "pi pi-share-alt"; }
+    else if (s === 'dibaca') { bgClass = "bg-blue-500"; icon = "pi pi-eye"; }
+    else if (s === 'diproses') { bgClass = "bg-orange-500"; icon = "pi pi-cog"; }
+    else if (s === 'selesai') { bgClass = "bg-green-500"; icon = "pi pi-check-circle"; }
+    
+    let label = s === 'baru' ? 'Baru' : s === 'didisposisi' ? 'Didisposisi' : s === 'dibaca' ? 'Dibaca' : s === 'diproses' ? 'Diproses' : s === 'selesai' ? 'Selesai' : s;
     return (
-        <Tag
-            value={statusLabel[status] || status}
-            severity={severityMap[status] || "info"}
-            icon={iconMap[status] || "pi pi-circle"}
-            style={{ fontSize: "0.72rem", padding: "0.3rem 0.65rem" }} />
+        <div className="flex justify-content-center">
+            <div className={`${bgClass} flex align-items-center justify-content-center`} style={{ width: '24px', height: '24px', borderRadius: '4px', flexShrink: 0 }} title={label}>
+                <i className={`${icon} text-white`} style={{ fontSize: '0.8rem' }}></i>
+            </div>
+        </div>
     );
 };
 
@@ -375,20 +362,55 @@ const DispositionView = ({
                             </div>
                             <Chip label={`${pendingLetters.length} surat`} className="text-xs" style={{ height: "auto", padding: "0.2rem 0.6rem" }} />
                         </div>
+                        <div className="flex align-items-center gap-3 surface-50 p-2 border-round text-sm w-fit mb-3" style={{ border: "1px solid var(--surface-200)" }}>
+                            <div className="flex align-items-center gap-2 font-semibold text-600">
+                                <i className="pi pi-info-circle"></i> KETERANGAN STATUS:
+                            </div>
+                            <div className="flex align-items-center gap-2 ml-2">
+                                <div className="bg-gray-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                                    <i className="pi pi-envelope text-white" style={{ fontSize: "0.6rem" }}></i>
+                                </div>
+                                <span className="text-700 font-medium text-xs">Baru</span>
+                            </div>
+                            <div className="flex align-items-center gap-2 ml-2">
+                                <div className="bg-orange-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                                    <i className="pi pi-share-alt text-white" style={{ fontSize: "0.6rem" }}></i>
+                                </div>
+                                <span className="text-700 font-medium text-xs">Didisposisi</span>
+                            </div>
+                            <div className="flex align-items-center gap-2 ml-2">
+                                <div className="bg-blue-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                                    <i className="pi pi-eye text-white" style={{ fontSize: "0.6rem" }}></i>
+                                </div>
+                                <span className="text-700 font-medium text-xs">Dibaca</span>
+                            </div>
+                            <div className="flex align-items-center gap-2 ml-2">
+                                <div className="bg-orange-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                                    <i className="pi pi-cog text-white" style={{ fontSize: "0.6rem" }}></i>
+                                </div>
+                                <span className="text-700 font-medium text-xs">Diproses</span>
+                            </div>
+                            <div className="flex align-items-center gap-2 ml-2">
+                                <div className="bg-green-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
+                                    <i className="pi pi-check-circle text-white" style={{ fontSize: "0.6rem" }}></i>
+                                </div>
+                                <span className="text-700 font-medium text-xs">Selesai</span>
+                            </div>
+                        </div>
                         <DataTable
                             value={pendingLetters}
                             loading={loading}
                             emptyMessage={
                                 <div className="flex flex-column align-items-center py-4 gap-2 text-color-secondary">
                                     <i className="pi pi-check-circle text-2xl text-green-400" />
-                                    <span className="text-sm">Tidak ada surat yang menunggu disposisi.</span>
+                                    <span className="text-sm font-medium">Semua surat sudah didisposisi</span>
                                 </div>
                             }
                             className="text-sm"
                             rowHover>
+                            <Column body={(r) => renderStatusTag(r.status)} header="Status" align="center" style={{ width: "80px" }} />
                             <Column header="No / Pengirim" body={pendingLetterNoTemplate} style={{ minWidth: "150px" }} />
                             <Column header="Perihal" body={pendingLetterSubjectTemplate} style={{ minWidth: "200px" }} />
-                            <Column body={(r) => renderStatusTag(r.status)} header="Status" style={{ width: "120px" }} />
                             <Column header="Aksi" body={pendingActionTemplate} style={{ width: "130px", textAlign: "center" }} />
                         </DataTable>
                     </Card>
@@ -449,10 +471,10 @@ const DispositionView = ({
                     className="text-sm"
                     rowHover>
                     <Column header="Surat" body={dispositionLetterTemplate} style={{ minWidth: "160px" }} />
+                    <Column header="Status" body={(r) => renderStatusTag(r.status)} align="center" style={{ width: "80px" }} />
                     <Column header="Alur" body={dispositionFlowTemplate} style={{ minWidth: "200px" }} />
                     <Column header="Instruksi Pimpinan" body={dispositionInstructionTemplate} style={{ minWidth: "180px" }} />
                     <Column field="batas_waktu" header="Tenggat Waktu" body={(r) => formatDate(r.batas_waktu)} style={{ width: "110px" }} />
-                    <Column header="Status" body={(r) => renderStatusTag(r.status)} style={{ width: "120px" }} />
                     <Column header="Aksi" body={dispositionActionTemplate} style={{ width: "140px", textAlign: "center" }} />
                 </DataTable>
             </Card>

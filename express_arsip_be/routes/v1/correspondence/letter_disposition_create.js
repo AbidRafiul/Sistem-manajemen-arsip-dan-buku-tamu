@@ -213,7 +213,7 @@ const letterDispositionCreate = async (req, res) => {
         dispositionPayload,
         dispositionColumns,
         fromUserColumn,
-        oPayload.dari_pengguna_id || null
+        oPayload.dari_pengguna_id || req?.auth?.id_pengguna || req?.context?.id_pengguna || null
       );
       assignIfColumnExists(
         dispositionPayload,
@@ -385,7 +385,7 @@ const letterDispositionCreate = async (req, res) => {
           trackingPayload,
           trackingColumns,
           trackingFromColumn,
-          oPayload.dari_pengguna_id || null
+          oPayload.dari_pengguna_id || req?.auth?.id_pengguna || req?.context?.id_pengguna || null
         );
         assignIfColumnExists(
           trackingPayload,

@@ -1,6 +1,9 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { formatDateSystem } from "../components/tools/general.js";
+
+const router = express.Router();
 
 /**
  * Helper untuk mendapatkan inisial kantor berdasarkan nama cabang
@@ -111,4 +114,5 @@ const generateDocumentNumber = async (req, res) => {
   }
 };
 
-export default generateDocumentNumber;
+router.get("/", generateDocumentNumber);
+export default router;

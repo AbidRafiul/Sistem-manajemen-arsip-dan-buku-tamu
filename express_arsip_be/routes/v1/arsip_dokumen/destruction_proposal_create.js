@@ -1,6 +1,9 @@
+import express from "express";
 import DB from "../../../core/config/knex.js";
 import { Logging } from "../components/tools/servertool.js";
 import { createNotification } from "../components/tools/notification_helper.js";
+
+const router = express.Router();
 
 const createDestructionProposal = async (req, res) => {
   const oPayload = req.body;
@@ -85,7 +88,7 @@ const createDestructionProposal = async (req, res) => {
       file_berita_acara: null,
       tanggal_transaksi: dNow,
       created_at: dNow,
-      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.timezone || req.headers?.['x-timezone'] || 'Asia/Jakarta') : 'Asia/Jakarta',
+      updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
     };
 
     const [nProposalId] = await DB("trx_usulan_pemusnahan").insert(oData);
@@ -146,4 +149,5 @@ const createDestructionProposal = async (req, res) => {
   }
 };
 
-export default createDestructionProposal;
+router.post("/", createDestructionProposal);
+export default router;
