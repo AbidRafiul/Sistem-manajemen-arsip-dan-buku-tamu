@@ -41,18 +41,17 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                         Tampilkan Sub-Cabang
                     </label>
                 </div>
-                <span className="p-input-icon-left w-full md:w-20rem">
+                <span className="p-input-icon-left">
                     <i className="pi pi-search" />
                     <InputText
                         value={state.searchVal}
-                        className="w-full"
                         onChange={(e) => {
                             const value = e.target.value;
                             let _filters = { ...state.filters };
                             _filters['global'].value = value;
                             setState((p) => ({ ...p, searchVal: value, filters: _filters }));
                         }}
-                        placeholder="Cari Data..." />
+                        placeholder="Cari..." />
                 </span>
             </div>
         </div>
@@ -268,11 +267,11 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                         <i className="pi pi-info-circle text-primary text-base"></i> KETERANGAN STATUS:
                     </div>
                     <div className="flex align-items-center gap-2 text-xs font-semibold">
-                        <span className="w-1rem h-1rem border-round inline-block" style={{ background: '#22c55e' }}></span>
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#22c55e', borderRadius: '3px' }}></span>
                         <span className="text-700">Aktif</span>
                     </div>
                     <div className="flex align-items-center gap-2 text-xs font-semibold">
-                        <span className="w-1rem h-1rem border-round inline-block" style={{ background: '#ef4444' }}></span>
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#ef4444', borderRadius: '3px' }}></span>
                         <span className="text-700">Tidak Aktif</span>
                     </div>
                 </div>

@@ -266,22 +266,38 @@ const Table = ({
         });
     };
 
-    const statusTemplate = (rowData: TableData) => {
-        let s = String(rowData.status || "").toLowerCase();
-        let bgClass = "bg-blue-500";
-        let icon = "pi pi-circle";
-        if (s === 'draft') { bgClass = "bg-gray-500"; icon = "pi pi-file-edit"; }
-        else if (s === 'menunggu_approval' || s === 'menunggu') { bgClass = "bg-orange-500"; icon = "pi pi-clock"; }
-        else if (s === 'disetujui') { bgClass = "bg-green-500"; icon = "pi pi-check"; }
-        else if (s === 'ditolak') { bgClass = "bg-red-500"; icon = "pi pi-times"; }
-        else if (s === 'terkirim') { bgClass = "bg-blue-500"; icon = "pi pi-send"; }
-        else if (s === 'selesai') { bgClass = "bg-green-500"; icon = "pi pi-check-circle"; }
-        
-        let label = s === 'draft' ? 'Draft' : (s === 'menunggu_approval' || s === 'menunggu') ? 'Menunggu' : s === 'disetujui' ? 'Disetujui' : s === 'ditolak' ? 'Ditolak' : s === 'terkirim' ? 'Terkirim' : s === 'selesai' ? 'Selesai' : s;
+    const statusBodyTemplate = (rowData: TableData) => {
+        const s = String(rowData.status || '').toLowerCase();
+        let bg = '#f59e0b';
+        let icon = 'pi-file';
+        let label = 'Draft / Konsep';
+
+        if (s === 'pending_approval' || s === 'menunggu_persetujuan') {
+            bg = '#a855f7';
+            icon = 'pi-clock';
+            label = 'Menunggu Persetujuan';
+        } else if (s === 'approved' || s === 'disetujui') {
+            bg = '#3b82f6';
+            icon = 'pi-check-circle';
+            label = 'Disetujui';
+        } else if (s === 'sent' || s === 'terkirim' || s === 'completed') {
+            bg = '#22c55e';
+            icon = 'pi-send';
+            label = 'Terkirim';
+        } else if (s === 'rejected' || s === 'ditolak') {
+            bg = '#ef4444';
+            icon = 'pi-times';
+            label = 'Ditolak';
+        }
+
         return (
-            <div className="flex justify-content-center">
-                <div className={`${bgClass} flex align-items-center justify-content-center`} style={{ width: '24px', height: '24px', borderRadius: '4px', flexShrink: 0 }} title={label}>
-                    <i className={`${icon} text-white`} style={{ fontSize: '0.8rem' }}></i>
+            <div className="flex justify-content-center align-items-center">
+                <div
+                    className="w-2rem h-2rem flex align-items-center justify-content-center text-white shadow-1"
+                    style={{ background: bg, borderRadius: '8px' }}
+                    title={`Status: ${label}`}
+                >
+                    <i className={`pi ${icon} text-xs`}></i>
                 </div>
             </div>
         );
@@ -377,85 +393,67 @@ const Table = ({
     );
 
     const headerTemplate = (
-        <div className="flex flex-column gap-3">
-            <div className="flex align-items-center gap-3 overflow-x-auto pb-2 surface-50 p-2 border-round">
-                <div className="font-semibold text-xs text-color-secondary mr-2" style={{ whiteSpace: "nowrap" }}>
-                    KETERANGAN STATUS:
-                </div>
-                <div className="flex align-items-center gap-4">
-                    {Object.entries(statusConfig).map(([key, config]) => (
-                        <div key={key} className="flex align-items-center gap-2" style={{ whiteSpace: "nowrap" }}>
-                            <Tag severity={config.severity} className="p-1 px-2 flex align-items-center justify-content-center" style={{ borderRadius: "6px", minWidth: "30px", height: "24px" }}>
-                                <i className={`${config.icon} text-sm`} />
-                            </Tag>
-                            <span className="text-sm font-medium text-color">{config.label}</span>
-                        </div>
-                    ))}
-                </div>
+        <div className="flex flex-column xl:flex-row xl:align-items-center justify-content-between gap-3 w-full">
+            <div className="flex align-items-center gap-2" style={{ minWidth: "11rem", flexShrink: 0 }}>
+                <i className="pi pi-list text-primary text-sm" />
+                <span className="font-semibold text-color text-sm white-space-nowrap">Daftar Surat Keluar</span>
             </div>
-            
-            <div className="flex flex-column xl:flex-row xl:align-items-center justify-content-between gap-3 w-full">
-                <div className="flex align-items-center gap-2" style={{ minWidth: "11rem", flexShrink: 0 }}>
-                    <i className="pi pi-list text-primary text-sm" />
-                    <span className="font-semibold text-color text-sm white-space-nowrap">Daftar Surat Keluar</span>
+
+            <div className="flex flex-column md:flex-row flex-wrap gap-2 align-items-stretch md:align-items-center w-full xl:justify-content-end">
+                <span
+                    className="p-input-icon-left w-full"
+                    style={{ flex: "1 1 14rem", minWidth: "14rem", maxWidth: "22rem" }}>
+                    <i className="pi pi-search" />
+                    <InputText
+                        value={state.searchVal}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            setState((p) => ({
+                                ...p,
+                                searchVal: value,
+                                filters: { global: { value, matchMode: p.filters.global.matchMode } },
+                            }));
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") refreshData();
+                        }}
+                        placeholder="Cari surat..."
+                        className="text-sm w-full"
+                        style={{ height: "2.5rem" }} />
+                </span>
+
+                <div className="w-full" style={{ flex: "1 1 11rem", minWidth: "11rem", maxWidth: "15rem" }}>
+                    <Dropdown
+                        value={state.statusFilter}
+                        options={statusOptions}
+                        onChange={(e) => setState((p) => ({ ...p, statusFilter: e.value }))}
+                        placeholder="Filter Status"
+                        className="w-full text-sm"
+                        panelClassName="text-sm"
+                        style={{ height: "2.5rem" }} />
                 </div>
 
-                <div className="flex flex-column md:flex-row flex-wrap gap-2 align-items-stretch md:align-items-center w-full xl:justify-content-end">
-                    <span
-                        className="p-input-icon-left w-full"
-                        style={{ flex: "1 1 14rem", minWidth: "14rem", maxWidth: "22rem" }}>
-                        <i className="pi pi-search" />
-                        <InputText
-                            value={state.searchVal}
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                setState((p) => ({
-                                    ...p,
-                                    searchVal: value,
-                                    filters: { global: { value, matchMode: p.filters.global.matchMode } },
-                                }));
-                            }}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter") refreshData();
-                            }}
-                            placeholder="Cari surat..."
-                            className="text-sm w-full"
-                            style={{ height: "2.5rem" }} />
-                    </span>
-
-                    <div className="w-full" style={{ flex: "1 1 11rem", minWidth: "11rem", maxWidth: "15rem" }}>
-                        <Dropdown
-                            value={state.statusFilter}
-                            options={statusOptions}
-                            onChange={(e) => setState((p) => ({ ...p, statusFilter: e.value }))}
-                            placeholder="Filter Status"
-                            className="w-full text-sm"
-                            panelClassName="text-sm"
-                            style={{ height: "2.5rem" }} />
-                    </div>
-
-                    <div className="w-full" style={{ flex: "1 1 11rem", minWidth: "11rem", maxWidth: "15rem" }}>
-                        <Dropdown
-                            value={state.jenisSuratFilter || 0}
-                            options={letterTypeOptions}
-                            optionLabel="nama_jenis_surat"
-                            optionValue="jenis_surat_id"
-                            onChange={(e) => setState((p) => ({ ...p, jenisSuratFilter: e.value || null }))}
-                            placeholder="Filter Jenis"
-                            className="w-full text-sm"
-                            panelClassName="text-sm"
-                            style={{ height: "2.5rem" }} />
-                    </div>
-
-                    <Button icon="pi pi-filter"
-                        aria-label="Terapkan filter"
-                        outlined
-                        size="small"
-                        onClick={refreshData}
-                        tooltip="Terapkan filter"
-                        className="align-self-start md:align-self-auto"
-                        style={{ width: "2.5rem", height: "2.5rem", flex: "0 0 auto" }} />
+                <div className="w-full" style={{ flex: "1 1 11rem", minWidth: "11rem", maxWidth: "15rem" }}>
+                    <Dropdown
+                        value={state.jenisSuratFilter || 0}
+                        options={letterTypeOptions}
+                        optionLabel="nama_jenis_surat"
+                        optionValue="jenis_surat_id"
+                        onChange={(e) => setState((p) => ({ ...p, jenisSuratFilter: e.value || null }))}
+                        placeholder="Filter Jenis"
+                        className="w-full text-sm"
+                        panelClassName="text-sm"
+                        style={{ height: "2.5rem" }} />
                 </div>
+
+                <Button icon="pi pi-filter"
+                    aria-label="Terapkan filter"
+                    outlined
+                    size="small"
+                    onClick={refreshData}
+                    tooltip="Terapkan filter"
+                    className="align-self-start md:align-self-auto"
+                    style={{ width: "2.5rem", height: "2.5rem", flex: "0 0 auto" }} />
             </div>
         </div>
     );
@@ -513,6 +511,33 @@ const Table = ({
                         onClick={refreshData} />
                 </div>
 
+                {/* KETERANGAN STATUS BAR */}
+                <div className="flex flex-wrap align-items-center gap-3 px-3 py-2 border-1 surface-border border-round-xl bg-white mb-3 shadow-1" style={{ width: 'fit-content', marginTop: '-0.25rem' }}>
+                    <div className="flex align-items-center gap-2 font-bold text-xs text-700 uppercase tracking-wider">
+                        <i className="pi pi-info-circle text-primary text-base"></i> KETERANGAN STATUS:
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#f59e0b', borderRadius: '3px' }}></span>
+                        <span className="text-700">Draft / Konsep</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#a855f7', borderRadius: '3px' }}></span>
+                        <span className="text-700">Menunggu Persetujuan</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#3b82f6', borderRadius: '3px' }}></span>
+                        <span className="text-700">Disetujui</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#22c55e', borderRadius: '3px' }}></span>
+                        <span className="text-700">Terkirim</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#ef4444', borderRadius: '3px' }}></span>
+                        <span className="text-700">Ditolak</span>
+                    </div>
+                </div>
+
                 <DataTable
                     value={filteredData}
                     paginator
@@ -537,7 +562,7 @@ const Table = ({
                     rowHover
                     className="text-sm">
                     <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
-                    <Column field="status" header="Status" sortable body={statusTemplate} align="center" style={{ width: "80px" }} />
+                    <Column body={statusBodyTemplate} header="" style={{ width: '3.5rem', textAlign: 'center' }} />
                     <Column field="nomor_surat" header="Nomor Surat" sortable style={{ minWidth: "150px" }} />
                     <Column header="Perihal" body={letterTemplate} style={{ minWidth: "220px" }} />
                     <Column header="Tujuan" body={destinationTemplate} style={{ minWidth: "180px" }} />
@@ -623,7 +648,7 @@ const Table = ({
                                     }
                                     return null;
                                 })()}
-                                {detailLetter?.status && statusTemplate({ status: detailLetter.status } as TableData)}
+                                {detailLetter?.status && statusBodyTemplate({ status: detailLetter.status } as TableData)}
                             </div>
                         </div>
 

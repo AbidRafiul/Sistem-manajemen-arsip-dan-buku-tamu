@@ -18,6 +18,7 @@ export interface initValue {
     tanggal_transaksi: string
     lokasi_fisik: string
     kode_retensi: string
+    status?: string
     file?: File | null
 }
 
@@ -149,7 +150,7 @@ export interface State {
     categories: any[]
     confidentialities: any[]
     retentions: any[]
-    
+
     // Filters
     filterClassification?: string
     filterType?: string

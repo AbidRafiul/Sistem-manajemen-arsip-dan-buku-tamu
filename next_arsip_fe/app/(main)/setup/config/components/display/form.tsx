@@ -74,17 +74,12 @@ const Form = ({ state, setState, formik, toast, getData }: FormProps) => {
                         {state.load && <ProgressBar mode="indeterminate" style={{ height: '6px' }} />}
 
                         <div className="flex flex-column sm:flex-row gap-3">
-                            <div className="p-image-preview-container" style={{ width: '250px', height: '250px', borderRadius: '6px' }}>
-                                <img src={state.imgPrev ? state.imgPrev : '/layout/images/profile.png'} alt="logo_perusahaan" style={{ width: '100%', height: '250px', objectFit: 'cover', objectPosition: 'center', borderRadius: '6px' }} />
-                                <div
-                                    className="p-image-preview-indicator"
-                                    style={{
-                                        borderRadius: '6px'
-                                    }}
-                                    onClick={() => fileInputRef.current?.click()}>
-                                    <i className="pi pi-pencil"></i>
+                            <div className="flex flex-column gap-3 align-items-center" style={{ width: '250px' }}>
+                                <div className="p-image-preview-container" style={{ width: '250px', height: '250px', borderRadius: '6px', position: 'relative' }}>
+                                    <img src={state.imgPrev ? state.imgPrev : '/layout/images/profile.png'} alt="logo_perusahaan" style={{ width: '100%', height: '250px', objectFit: 'cover', objectPosition: 'center', borderRadius: '6px' }} />
+                                    <input type="file" ref={fileInputRef} id="fileInput" accept="image/*" style={{ display: 'none' }} onChange={onFileSelect} />
                                 </div>
-                                <input type="file" ref={fileInputRef} id="fileInput" accept="image/*" style={{ display: 'none' }} onChange={onFileSelect} />
+                                <Button type="button" label="Ganti Logo" icon="pi pi-upload" outlined size="small" className="w-full" onClick={() => fileInputRef.current?.click()} />
                             </div>
                             <div className="flex flex-column w-full gap-2">
                                 <div className="flex gap-2 w-full">

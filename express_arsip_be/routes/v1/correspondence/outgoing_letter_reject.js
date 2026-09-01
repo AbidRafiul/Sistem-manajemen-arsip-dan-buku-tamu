@@ -16,6 +16,9 @@ const outgoingLetterReject = async (req, res) => {
     const oValidation = {
       id_surat_keluar: Joi.number().required(),
       catatan: Joi.string().allow(null, "").optional(),
+      alasan_penolakan: Joi.string().allow(null, "").optional(),
+      alasan: Joi.string().allow(null, "").optional(),
+      catatan_tinjauan: Joi.string().allow(null, "").optional(),
     };
 
     const oMessage = {
@@ -24,7 +27,7 @@ const outgoingLetterReject = async (req, res) => {
     };
 
     const cValidate = await validatePayload(oValidation, oMessage, oPayload, {
-      allowUnknown: false,
+      allowUnknown: true,
     });
 
     if (cValidate) {
@@ -69,12 +72,14 @@ const outgoingLetterReject = async (req, res) => {
           updated_at: dNow, tz: typeof req !== 'undefined' ? (req.context?.tz || req.headers?.['x-tz'] || 'Asia/Jakarta') : 'Asia/Jakarta',
         });
 
+      const cCatatan = oPayload.catatan || oPayload.alasan_penolakan || oPayload.alasan || oPayload.catatan_tinjauan || "Surat keluar ditolak";
+
       // 2. Insert into tracking
       await trx("trx_tracking_surat_keluar").insert({
         id_surat_keluar: oPayload.id_surat_keluar,
         status: "ditolak",
         aktivitas: "surat_ditolak",
-        catatan: oPayload.catatan || "Surat keluar ditolak",
+        catatan: cCatatan,
         tanggal: dNow,
         dibuat_oleh: nActorId,
         created_at: dNow,
@@ -86,12 +91,13 @@ const outgoingLetterReject = async (req, res) => {
     try {
       const perihal =
         oLetter.perihal || oLetter.hal || `Surat Keluar #${oPayload.id_surat_keluar}`;
+      const cCatatan = oPayload.catatan || oPayload.alasan_penolakan || oPayload.alasan || oPayload.catatan_tinjauan || "-";
 
       if (oLetter.created_by) {
         await createNotification({
           id_pengguna: oLetter.created_by,
           judul: "Surat Keluar Ditolak",
-          pesan: `Surat keluar "${perihal}" telah DITOLAK oleh pimpinan. Catatan: ${oPayload.catatan || "-"}`,
+          pesan: `Surat keluar "${perihal}" telah DITOLAK oleh pimpinan. Catatan: ${cCatatan}`,
           tipe: "surat_keluar",
           tautan: "/correspondence/mail_out/data",
         });

@@ -100,7 +100,7 @@ export default function ChartSection({ chartData, isLoading }: ChartSectionProps
                                         className="flex align-items-center justify-content-between p-3 border-round-xl border-1 border-50 premium-hover-card"
                                         style={{ background: '#fafafa', transition: 'all 0.2s ease' }}>
                                         <div className="flex align-items-center gap-3">
-                                            <span className="border-circle" style={{ width: '0.75rem', height: '0.75rem', backgroundColor: color, flexShrink: 0 }} />
+                                            <span className="inline-block flex-shrink-0" style={{ width: '12px', height: '12px', backgroundColor: color, borderRadius: '3px' }} />
                                             <div>
                                                 <span className="font-bold text-sm text-800 block">{item.label}</span>
                                                 <span className="text-xs text-color-secondary font-medium">{item.count} Dokumen</span>

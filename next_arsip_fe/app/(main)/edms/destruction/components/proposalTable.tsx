@@ -90,26 +90,44 @@ export default function ProposalTable({
     };
 
     const statusBodyTemplate = (rowData: any) => {
-        let label = "Unknown";
-        let bgClass = "bg-gray-500";
-        let icon = "pi pi-circle";
+        let bg = '#f59e0b';
+        let iconClass = 'pi-clock';
+        let label = 'Menunggu Tinjauan';
+
         switch (rowData.status) {
             case 'submitted':
-                label = "Menunggu Tinjauan"; bgClass = "bg-orange-500"; icon = "pi pi-clock"; break;
+                bg = '#f59e0b';
+                iconClass = 'pi-clock';
+                label = 'Menunggu Tinjauan';
+                break;
             case 'approved':
-                label = "Disetujui (Siap Musnah)"; bgClass = "bg-blue-500"; icon = "pi pi-check"; break;
+                bg = '#a855f7';
+                iconClass = 'pi-check-circle';
+                label = 'Disetujui (Siap Musnah)';
+                break;
             case 'rejected':
-                label = "Ditolak"; bgClass = "bg-red-500"; icon = "pi pi-times"; break;
+                bg = '#ef4444';
+                iconClass = 'pi-times';
+                label = 'Ditolak';
+                break;
             case 'executed':
-                label = "Telah Dimusnahkan"; bgClass = "bg-green-500"; icon = "pi pi-check-circle"; break;
+                bg = '#3b82f6';
+                iconClass = 'pi-trash';
+                label = 'Telah Dimusnahkan';
+                break;
             default:
-                label = rowData.status; break;
+                label = rowData.status || '-';
+                break;
         }
 
         return (
-            <div className="flex justify-content-center">
-                <div className={`${bgClass} flex align-items-center justify-content-center`} style={{ width: '24px', height: '24px', borderRadius: '4px', flexShrink: 0 }} title={label}>
-                    <i className={`${icon} text-white`} style={{ fontSize: '0.8rem' }}></i>
+            <div className="flex align-items-center justify-content-center">
+                <div
+                    className="w-2rem h-2rem border-round flex align-items-center justify-content-center text-white shadow-1"
+                    style={{ background: bg, borderRadius: '8px' }}
+                    title={label}
+                >
+                    <i className={`pi ${iconClass} text-xs font-bold`} />
                 </div>
             </div>
         );
@@ -178,64 +196,56 @@ export default function ProposalTable({
 
     const renderHeader = () => {
         return (
-            <div className="flex flex-column gap-3">
-                <div className="flex align-items-center gap-3 surface-50 p-2 border-round text-sm w-fit" style={{ border: "1px solid var(--surface-200)" }}>
-                    <div className="flex align-items-center gap-2 font-semibold text-600">
-                        <i className="pi pi-info-circle"></i> KETERANGAN STATUS:
-                    </div>
-                    <div className="flex align-items-center gap-2 ml-2">
-                        <div className="bg-orange-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
-                            <i className="pi pi-clock text-white" style={{ fontSize: "0.6rem" }}></i>
-                        </div>
-                        <span className="text-700 font-medium text-xs">Menunggu Tinjauan</span>
-                    </div>
-                    <div className="flex align-items-center gap-2 ml-2">
-                        <div className="bg-blue-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
-                            <i className="pi pi-check text-white" style={{ fontSize: "0.6rem" }}></i>
-                        </div>
-                        <span className="text-700 font-medium text-xs">Disetujui</span>
-                    </div>
-                    <div className="flex align-items-center gap-2 ml-2">
-                        <div className="bg-red-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
-                            <i className="pi pi-times text-white" style={{ fontSize: "0.6rem" }}></i>
-                        </div>
-                        <span className="text-700 font-medium text-xs">Ditolak</span>
-                    </div>
-                    <div className="flex align-items-center gap-2 ml-2">
-                        <div className="bg-green-500 flex align-items-center justify-content-center" style={{ width: "18px", height: "18px", borderRadius: "3px" }}>
-                            <i className="pi pi-check-circle text-white" style={{ fontSize: "0.6rem" }}></i>
-                        </div>
-                        <span className="text-700 font-medium text-xs">Telah Dimusnahkan</span>
-                    </div>
-                </div>
-                <div className="flex flex-wrap align-items-center justify-content-between gap-3 text-sm">
-                    <span className="font-bold text-color">Daftar Usulan Pemusnahan</span>
-                    <div className="flex gap-2 align-items-center">
-                        <Dropdown
-                            value={statusFilter}
-                            options={proposalStatusFilterOptions}
-                            onChange={(e) => setStatusFilter(e.value)}
-                            placeholder="Filter Status"
-                            showClear
-                            className="text-xs"
-                            style={{ minWidth: '15rem', height: '2.25rem' }} />
-                        <span className="p-input-icon-left">
-                            <i className="pi pi-search" />
-                            <InputText
-                                value={searchVal}
-                                onChange={(e) => setSearchVal(e.target.value)}
-                                placeholder="Cari..."
-                                className="text-sm"
-                                style={{ height: '2.25rem' }} />
-                        </span>
-                    </div>
+            <div className="flex flex-wrap align-items-center justify-content-between gap-3 text-sm">
+                <span className="font-bold text-color">Daftar Usulan Pemusnahan</span>
+                <div className="flex gap-2 align-items-center">
+                    <Dropdown
+                        value={statusFilter}
+                        options={proposalStatusFilterOptions}
+                        onChange={(e) => setStatusFilter(e.value)}
+                        placeholder="Filter Status"
+                        showClear
+                        className="text-xs"
+                        style={{ minWidth: '15rem', height: '2.25rem' }} />
+                    <span className="p-input-icon-left">
+                        <i className="pi pi-search" />
+                        <InputText
+                            value={searchVal}
+                            onChange={(e) => setSearchVal(e.target.value)}
+                            placeholder="Cari..."
+                            className="text-sm"
+                            style={{ height: '2.25rem' }} />
+                    </span>
                 </div>
             </div>
         );
     };
 
     return (
-        <div className="card border-none bg-white p-3">
+        <div className="px-3 pt-1 pb-3">
+            {/* KETERANGAN STATUS BAR */}
+            <div className="flex flex-wrap align-items-center gap-3 px-3 py-2 border-1 surface-border border-round-xl bg-white mb-3 shadow-1" style={{ width: 'fit-content', marginTop: '-0.25rem' }}>
+                <div className="flex align-items-center gap-2 font-bold text-xs text-700 uppercase tracking-wider">
+                    <i className="pi pi-info-circle text-primary text-base"></i> KETERANGAN STATUS:
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#f59e0b', borderRadius: '3px' }}></span>
+                    <span className="text-700">Menunggu Tinjauan</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#a855f7', borderRadius: '3px' }}></span>
+                    <span className="text-700">Disetujui</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#3b82f6', borderRadius: '3px' }}></span>
+                    <span className="text-700">Telah Dimusnahkan</span>
+                </div>
+                <div className="flex align-items-center gap-2 text-xs font-semibold">
+                    <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#ef4444', borderRadius: '3px' }}></span>
+                    <span className="text-700">Ditolak</span>
+                </div>
+            </div>
+
             <DataTable
                 value={data}
                 paginator
@@ -247,7 +257,7 @@ export default function ProposalTable({
                 className="text-sm"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="Menampilkan {first}-{last} dari {totalRecords} data">
-                <Column body={statusBodyTemplate} header="Status" sortable field="status" align="center" style={{ width: '80px' }}></Column>
+                <Column body={statusBodyTemplate} header="" style={{ width: '3.5rem', textAlign: 'center' }}></Column>
                 <Column field="kode_dokumen" header="Kode Dokumen" sortable className="font-semibold text-primary"></Column>
                 <Column field="nomor_dokumen" header="No. Dokumen" sortable></Column>
                 <Column field="nama_dokumen" header="Nama Dokumen" sortable style={{ minWidth: '150px' }}></Column>

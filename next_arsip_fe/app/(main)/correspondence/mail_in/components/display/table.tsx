@@ -179,20 +179,34 @@ const Table = ({
         </div>
     );
 
-    const statusTemplate = (rowData: TableData) => {
-        let s = String(rowData.status || "baru").toLowerCase();
-        let bgClass = "bg-blue-500";
-        let icon = "pi pi-circle";
-        if (s === 'baru') { bgClass = "bg-gray-500"; icon = "pi pi-envelope"; }
-        else if (s === 'didisposisi') { bgClass = "bg-orange-500"; icon = "pi pi-share-alt"; }
-        else if (s === 'diproses') { bgClass = "bg-orange-500"; icon = "pi pi-cog"; }
-        else if (s === 'selesai') { bgClass = "bg-green-500"; icon = "pi pi-check-circle"; }
-        
-        let label = s === 'baru' ? 'Baru' : s === 'didisposisi' ? 'Menunggu Disposisi' : s === 'diproses' ? 'Diproses' : s === 'selesai' ? 'Selesai' : s;
+    const statusBodyTemplate = (rowData: TableData) => {
+        const s = String(rowData.status || '').toLowerCase();
+        let bg = '#f59e0b';
+        let icon = 'pi-clock';
+        let label = 'Baru / Diproses';
+
+        if (s === 'didisposisi' || s === 'disposed') {
+            bg = '#a855f7';
+            icon = 'pi-send';
+            label = 'Didisposisi';
+        } else if (s === 'selesai' || s === 'completed') {
+            bg = '#22c55e';
+            icon = 'pi-check';
+            label = 'Selesai';
+        } else if (s === 'batal' || s === 'rejected') {
+            bg = '#ef4444';
+            icon = 'pi-times';
+            label = 'Batal / Ditolak';
+        }
+
         return (
-            <div className="flex justify-content-center">
-                <div className={`${bgClass} flex align-items-center justify-content-center`} style={{ width: '24px', height: '24px', borderRadius: '4px', flexShrink: 0 }} title={label}>
-                    <i className={`${icon} text-white`} style={{ fontSize: '0.8rem' }}></i>
+            <div className="flex justify-content-center align-items-center">
+                <div
+                    className="w-2rem h-2rem flex align-items-center justify-content-center text-white shadow-1"
+                    style={{ background: bg, borderRadius: '8px' }}
+                    title={`Status: ${label}`}
+                >
+                    <i className={`pi ${icon} text-xs`}></i>
                 </div>
             </div>
         );
@@ -330,6 +344,29 @@ const Table = ({
                         onClick={refreshData} />
                 </div>
 
+                {/* KETERANGAN STATUS BAR */}
+                <div className="flex flex-wrap align-items-center gap-3 px-3 py-2 border-1 surface-border border-round-xl bg-white mb-3 shadow-1" style={{ width: 'fit-content', marginTop: '-0.25rem' }}>
+                    <div className="flex align-items-center gap-2 font-bold text-xs text-700 uppercase tracking-wider">
+                        <i className="pi pi-info-circle text-primary text-base"></i> KETERANGAN STATUS:
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#f59e0b', borderRadius: '3px' }}></span>
+                        <span className="text-700">Baru / Diproses</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#a855f7', borderRadius: '3px' }}></span>
+                        <span className="text-700">Didisposisi</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#22c55e', borderRadius: '3px' }}></span>
+                        <span className="text-700">Selesai</span>
+                    </div>
+                    <div className="flex align-items-center gap-2 text-xs font-semibold">
+                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#ef4444', borderRadius: '3px' }}></span>
+                        <span className="text-700">Ditolak / Batal</span>
+                    </div>
+                </div>
+
                 <DataTable
                     value={state.data}
                     paginator
@@ -353,7 +390,7 @@ const Table = ({
                     rowHover
                     className="text-sm">
                     <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
-                    <Column body={statusTemplate} header="Status" align="center" style={{ width: "80px" }} />
+                    <Column body={statusBodyTemplate} header="" style={{ width: '3.5rem', textAlign: 'center' }} />
                     <Column field="nomor_agenda" header="No. Surat" body={(r) => (
                         <div>
                             <div className="font-semibold text-sm text-900">{r.nomor_agenda || "-"}</div>
@@ -412,7 +449,7 @@ const Table = ({
                                 </div>
                             </div>
                             <div className="flex flex-column align-align-items-end gap-2">
-                                {detailLetter?.status && statusTemplate({ status: detailLetter.status } as TableData)}
+                                {detailLetter?.status && statusBodyTemplate({ status: detailLetter.status } as TableData)}
                                 {archivedDocument ? (
                                     <Button label="Lihat Arsip"
                                         icon="pi pi-folder-open"
