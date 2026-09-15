@@ -11,7 +11,7 @@ import { Divider } from 'primereact/divider';
 import { apiEndpointGet, apiEndpointCreate } from '../endpoints';
 import { Checkbox } from 'primereact/checkbox';
 import { useState, useContext, useEffect } from 'react';
-import { usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/layout/context/permissionContext';
 import { LayoutContext } from '@/layout/context/layoutcontext';
 import ExcelBulkAction from '@/app/components/excel_components/ExcelBulkAction';
 import Form from './form';
