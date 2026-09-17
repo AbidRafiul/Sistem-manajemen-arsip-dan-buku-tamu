@@ -11,7 +11,7 @@ import { Divider } from 'primereact/divider';
 import { apiEndpointGet, apiEndpointCreate } from '../endpoints';
 import { Checkbox } from 'primereact/checkbox';
 import { useState, useContext, useEffect } from 'react';
-import { usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/layout/context/permissionContext';
 import { LayoutContext } from '@/layout/context/layoutcontext';
 import ExcelBulkAction from '@/app/components/excel_components/ExcelBulkAction';
 import Form from './form';
@@ -126,7 +126,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                                     label="Tambah"
                                     icon="pi pi-plus"
                                     outlined
-                                   
+
                                     onClick={() => {
                                         setState((p) => ({ ...p, selectedUser: [], add: true }));
                                     }} />
@@ -162,7 +162,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                         {permissions.canDelete && (
                             <>
                                 <Button size="small"
-                                    label={`Hapus${state.selectedUsers.length> 0 ? ` (${state.selectedUsers.length})` : ''}`}
+                                    label={`Hapus${state.selectedUsers.length > 0 ? ` (${state.selectedUsers.length})` : ''}`}
                                     icon="pi pi-trash"
                                     severity="danger"
                                     outlined
@@ -299,7 +299,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                             const isActive = rowData.status === 'active' || rowData.status === 'in' || rowData.status === 'Aktif';
                             return (
                                 <div className="flex align-items-center justify-content-center">
-                                    <div 
+                                    <div
                                         className="w-2rem h-2rem border-round flex align-items-center justify-content-center text-white shadow-1"
                                         style={{ background: isActive ? '#22c55e' : '#ef4444', borderRadius: '8px' }}
                                         title={isActive ? 'Aktif' : 'Tidak Aktif'}
