@@ -81,30 +81,26 @@ const Table = ({
             </div>
 
             <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
-                <Button size="small"
-                    label="Tambah"
+                <Button label="Tambah"
                     icon="pi pi-plus"
                     outlined
                    
                     onClick={() => {
                         setState(p => ({ ...p, selectedUser: [], add: true }))
                     }} />
-                <Button size="small"
-                    label="Impor"
+                <Button label="Impor"
                     icon="pi pi-file-import"
                     outlined
                 // onClick={() => fileInputRef.current?.click()} 
                 />
 
-                <Button size="small"
-                    label="Cetak"
+                <Button label="Cetak"
                     icon="pi pi-print"
                     outlined
                 // onClick={() => setAdjustDialog(true)} 
                 />
                 <Divider layout="vertical" />
-                <Button size="small"
-                    label={`Hapus${state.selectedUsers.length> 0 ? ` (${state.selectedUsers.length})` : ''}`}
+                <Button label={`Hapus${state.selectedUsers.length> 0 ? ` (${state.selectedUsers.length})` : ''}`}
                     icon="pi pi-trash"
                     severity="danger"
                     outlined
@@ -118,8 +114,7 @@ const Table = ({
                     }}
                     disabled={state.selectedUsers.length === 0} />
                 <Divider layout="vertical" />
-                <Button size="small"
-                    label="Refresh"
+                <Button label="Refresh"
                     icon="pi pi-refresh"
                     outlined
                     onClick={() => getData(apiEndpointGet)}

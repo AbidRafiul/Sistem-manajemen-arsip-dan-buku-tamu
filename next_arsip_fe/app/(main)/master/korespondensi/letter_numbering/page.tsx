@@ -210,7 +210,6 @@ const Page = () => {
       {canUpdate && (
         <Button icon="pi pi-pencil"
           outlined
-          size="small"
           tooltip="Edit"
           onClick={() => {
             formik.setValues({
@@ -230,7 +229,7 @@ const Page = () => {
           }} />
       )}
       {canDelete && (
-        <Button icon="pi pi-trash" outlined severity="danger" size="small" tooltip="Nonaktifkan" onClick={() => confirmDelete(row)} />
+        <Button icon="pi pi-trash" outlined severity="danger" tooltip="Nonaktifkan" onClick={() => confirmDelete(row)} />
       )}
     </div>
   );
@@ -258,7 +257,6 @@ const Page = () => {
           <div className="flex flex-row gap-2">
             {canCreate && (
               <Button type="button"
-                size="small"
                 label="Tambah"
                 icon="pi pi-plus"
                 outlined
@@ -269,7 +267,7 @@ const Page = () => {
                 }} />
             )}
             {canCreate && <Divider layout="vertical" className="hidden md:inline" />}
-            <Button type="button" size="small" label="Refresh" icon="pi pi-refresh" outlined onClick={() => getData()} loading={load} />
+            <Button type="button" label="Refresh" icon="pi pi-refresh" outlined onClick={() => getData()} loading={load} />
           </div>
         </div>
 
@@ -404,7 +402,7 @@ const Page = () => {
               )}
               <div className="flex flex-wrap gap-2">
                 {tokens.map((token) => (
-                  <Button key={token} type="button" size="small" text label={token} onClick={() => insertToken(token)} />
+                  <Button key={token} type="button" text label={token} onClick={() => insertToken(token)} />
                 ))}
               </div>
             </div>
@@ -457,7 +455,7 @@ const Page = () => {
                 <div className="text-sm font-mono">{preview || '-'}</div>
                 {selectedLetterType && <div className="text-xs text-color-secondary mt-1">{selectedLetterType.kode_jenis_surat}</div>}
               </div>
-              <Button type="button" size="small" icon="pi pi-eye" label="Preview" outlined onClick={getPreview} />
+              <Button type="button" icon="pi pi-eye" label="Preview" outlined onClick={getPreview} />
             </div>
           </div>
 

@@ -122,8 +122,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                     <div className="flex flex-row align-items-center gap-2">
                         {permissions.canCreate && (
                             <>
-                                <Button size="small"
-                                    label="Tambah"
+                                <Button label="Tambah"
                                     icon="pi pi-plus"
                                     outlined
 
@@ -133,8 +132,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                                 <Divider layout="vertical" className="hidden sm:inline-block m-0" />
                             </>
                         )}
-                        <Button size="small"
-                            label="Cetak"
+                        <Button label="Cetak"
                             icon="pi pi-print"
                             outlined
                             onClick={() => {
@@ -161,8 +159,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                         <Divider layout="vertical" className="hidden sm:inline-block m-0" />
                         {permissions.canDelete && (
                             <>
-                                <Button size="small"
-                                    label={`Hapus${state.selectedUsers.length > 0 ? ` (${state.selectedUsers.length})` : ''}`}
+                                <Button label={`Hapus${state.selectedUsers.length > 0 ? ` (${state.selectedUsers.length})` : ''}`}
                                     icon="pi pi-trash"
                                     severity="danger"
                                     outlined
@@ -178,7 +175,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                                 <Divider layout="vertical" className="hidden sm:inline-block m-0" />
                             </>
                         )}
-                        <Button size="small" label="Refresh" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
+                        <Button label="Refresh" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
                     </div>
 
                     <div className="flex flex-row align-items-center gap-2">

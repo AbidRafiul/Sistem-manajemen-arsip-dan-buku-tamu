@@ -384,14 +384,12 @@ const Table = ({
         <div className="flex gap-1 justify-content-center">
             <Button icon="pi pi-eye"
                 text
-                size="small"
                 tooltip="Lihat Detail"
                 tooltipOptions={{ position: "top" }}
                 onClick={() => openDetail(rowData)} />
             <Button icon="pi pi-pencil"
                 text
                 severity="secondary"
-                size="small"
                 tooltip="Edit"
                 tooltipOptions={{ position: "top" }}
                 onClick={() => {
@@ -421,7 +419,6 @@ const Table = ({
             <Button icon="pi pi-trash"
                 text
                 severity="danger"
-                size="small"
                 tooltip="Hapus"
                 tooltipOptions={{ position: "top" }}
                 onClick={() => confirmDelete([rowData])} />
@@ -459,13 +456,11 @@ const Table = ({
 
             {/* Right: Filter Button, Search Bar, Reset Button */}
             <div className="flex align-items-center gap-2 flex-wrap">
-                <Button
-                    type="button"
+                <Button type="button"
                     icon="pi pi-filter"
                     label="Filter"
                     outlined
                     severity="secondary"
-                    size="small"
                     onClick={(e) => filterOverlayRef.current?.toggle(e)}
                     className="text-xs px-3"
                 />
@@ -480,12 +475,10 @@ const Table = ({
                     />
                 </div>
 
-                <Button
-                    type="button"
+                <Button type="button"
                     icon="pi pi-filter-slash"
                     severity="danger"
                     outlined
-                    size="small"
                     onClick={() => setState(p => ({ ...p, startDate: null, endDate: null, statusFilter: '', jenisSuratFilter: null, searchVal: '' }))}
                     tooltip="Reset Filter"
                     className="p-button-icon-only"
@@ -518,8 +511,7 @@ const Table = ({
 
                 <div className="flex justify-content-between mb-4">
                     <div className="flex flex-row align-items-center gap-2">
-                        <Button size="small"
-                        label="Tambah Surat"
+                        <Button label="Tambah Surat"
                         icon="pi pi-plus"
                         outlined
                        
@@ -528,16 +520,14 @@ const Table = ({
                             setState((p) => ({ ...p, selectedLetters: [], add: true, edit: false }));
                         }} />
                     <Divider layout="vertical" className="hidden md:inline m-0" />
-                    <Button size="small"
-                        label={`Hapus${state.selectedLetters.length ? ` (${state.selectedLetters.length})` : ""}`}
+                    <Button label={`Hapus${state.selectedLetters.length ? ` (${state.selectedLetters.length})` : ""}`}
                         icon="pi pi-trash"
                         severity="danger"
                         outlined
                         disabled={state.selectedLetters.length === 0}
                         onClick={() => confirmDelete(state.selectedLetters)} />
                     <Divider layout="vertical" className="hidden md:inline m-0" />
-                    <Button size="small"
-                        label="Refresh"
+                    <Button label="Refresh"
                         icon="pi pi-refresh"
                         outlined
                         loading={state.load}
@@ -702,7 +692,6 @@ const Table = ({
                                             <Button label="Arsipkan ke EDMS"
                                                 icon="pi pi-archive"
                                                
-                                                size="small"
                                                 loading={archiving}
                                                 onClick={confirmArchiveLetter}
                                                 style={{ fontSize: "0.75rem", padding: "0.3rem 0.65rem" }} />
@@ -786,7 +775,7 @@ const Table = ({
                                                             </div>
                                                             {fileUrl && (
                                                                 <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="no-underline">
-                                                                    <Button icon="pi pi-download" label="Unduh Berkas .docx" size="small" severity="info" outlined />
+                                                                    <Button icon="pi pi-download" label="Unduh Berkas .docx" severity="info" outlined />
                                                                 </a>
                                                             )}
                                                         </div>
@@ -836,7 +825,6 @@ const Table = ({
                                                         icon="pi pi-upload"
                                                         label="Unggah File"
                                                         outlined
-                                                        size="small"
                                                         loading={uploading}
                                                         onClick={() => fileInputRef.current?.click()}
                                                         style={{ fontSize: "0.75rem", padding: "0.3rem 0.65rem" }} />
@@ -875,7 +863,7 @@ const Table = ({
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="no-underline">
-                                                        <Button icon="pi pi-download" rounded text size="small" tooltip="Download File" />
+                                                        <Button icon="pi pi-download" rounded text tooltip="Download File" />
                                                     </a>
                                                 )}
                                             </div>

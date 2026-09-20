@@ -174,8 +174,7 @@ export default function GuestDataTable({
 
             {/* Right: Scan QR, Filter Button, Search Bar, Reset Button */}
             <div className="flex align-items-center gap-2 flex-wrap">
-                <Button
-                    type="button"
+                <Button type="button"
                     label="Scan QR"
                     icon="pi pi-qrcode"
                     className="p-button-sm px-3 text-white text-xs"
@@ -183,13 +182,11 @@ export default function GuestDataTable({
                     onClick={onScanQR}
                 />
 
-                <Button
-                    type="button"
+                <Button type="button"
                     icon="pi pi-filter"
                     label="Filter"
                     outlined
                     severity="secondary"
-                    size="small"
                     onClick={(e) => filterOverlayRef.current?.toggle(e)}
                     className="text-xs px-3"
                 />
@@ -204,12 +201,10 @@ export default function GuestDataTable({
                     />
                 </div>
 
-                <Button
-                    type="button"
+                <Button type="button"
                     icon="pi pi-filter-slash"
                     outlined
                     severity="danger"
-                    size="small"
                     tooltip="Reset Filter"
                     tooltipOptions={{ position: 'top' }}
                     onClick={() => {
@@ -253,7 +248,6 @@ export default function GuestDataTable({
                                 icon="pi pi-times"
                                 text
                                 severity="danger"
-                                size="small"
                                 className="p-0 text-xs"
                                 onClick={() => onFilterStatus('')} />
                         )}

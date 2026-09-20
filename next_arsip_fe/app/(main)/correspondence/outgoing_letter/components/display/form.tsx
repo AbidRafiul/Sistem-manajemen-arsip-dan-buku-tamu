@@ -1184,21 +1184,18 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                                 <label htmlFor="isi_surat_final" className="text-sm">Preview Naskah Final</label>
                                 <div className="flex align-items-center gap-2 flex-wrap">
                                     <Button type="button"
-                                        size="small"
                                         icon="pi pi-sync"
                                         label="Terapkan Data"
                                         outlined
                                         disabled={!selectedTemplate}
                                         onClick={applyTemplateToPreview} />
                                     <Button type="button"
-                                        size="small"
                                         icon="pi pi-file-pdf"
                                         label="Preview PDF"
                                         outlined
                                         disabled={!formik.values.isi_surat_final && !formik.values.isi_surat}
                                         onClick={generatePdfPreview} />
                                     <Button type="button"
-                                        size="small"
                                         icon="pi pi-download"
                                         label="Unduh DOCX"
                                         outlined

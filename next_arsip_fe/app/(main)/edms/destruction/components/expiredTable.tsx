@@ -140,7 +140,6 @@ export default function ExpiredTable({
             <Button type="button"
                 label="Usulkan"
                 icon="pi pi-file-export"
-                size="small"
                 outlined
                 severity="danger"
                 disabled={!canCreate}
@@ -219,13 +218,11 @@ export default function ExpiredTable({
                     </div>
 
                     <div className="flex align-items-center gap-2 flex-wrap">
-                        <Button
-                            type="button"
+                        <Button type="button"
                             icon="pi pi-filter"
                             label="Filter"
                             outlined
                             severity="secondary"
-                            size="small"
                             onClick={(e) => filterOverlayRef.current?.toggle(e)}
                             className="text-xs px-3"
                         />
@@ -240,12 +237,10 @@ export default function ExpiredTable({
                             />
                         </div>
 
-                        <Button
-                            type="button"
+                        <Button type="button"
                             icon="pi pi-filter-slash"
                             outlined
                             severity="danger"
-                            size="small"
                             tooltip="Reset Filter"
                             tooltipOptions={{ position: 'top' }}
                             onClick={() => {
@@ -267,7 +262,6 @@ export default function ExpiredTable({
                                     icon="pi pi-times"
                                     text
                                     severity="danger"
-                                    size="small"
                                     className="p-0 text-xs"
                                     onClick={() => setSelectedCategory('')} />
                             )}

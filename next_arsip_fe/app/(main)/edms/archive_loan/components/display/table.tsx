@@ -163,8 +163,7 @@ const ScanQrDialog = ({
                         placeholder="Scan atau tempel UUID / Kode QR..."
                         className="text-sm"
                         disabled={loading} />
-                    <Button
-                        type="button"
+                    <Button type="button"
                         icon={loading ? "pi pi-spin pi-spinner" : "pi pi-search"}
                         label="Cari"
                         onClick={() => handleProcessScan(manualCode)}
@@ -261,7 +260,6 @@ const Table = ({
                 <Button icon="pi pi-eye"
                     text
                     severity="secondary"
-                    size="small"
                     tooltip="Lihat Detail"
                     tooltipOptions={{ position: 'top' }}
                     onClick={() => { setSelectedDetail(rowData); setDetailDialog(true); }} />
@@ -271,7 +269,6 @@ const Table = ({
                             rounded
                             text
                            
-                            size="small"
                             tooltip="Setujui Peminjaman"
                             tooltipOptions={{ position: 'top' }}
                             onClick={() => { setSelectedDetail(rowData); setTargetStatus('approved'); setNotes(''); setApprovalDialog(true); }} />
@@ -279,7 +276,6 @@ const Table = ({
                             rounded
                             text
                             severity="danger"
-                            size="small"
                             tooltip="Tolak Peminjaman"
                             tooltipOptions={{ position: 'top' }}
                             onClick={() => { setSelectedDetail(rowData); setTargetStatus('rejected'); setNotes(''); setApprovalDialog(true); }} />
@@ -290,7 +286,6 @@ const Table = ({
                         rounded
                         text
                         severity="info"
-                        size="small"
                         tooltip="Kembalikan Dokumen"
                         tooltipOptions={{ position: 'top' }}
                         onClick={() => {
@@ -363,13 +358,11 @@ const Table = ({
 
             {/* Right: Filter Button, Search Bar, Reset Button */}
             <div className="flex align-items-center gap-2 flex-wrap">
-                <Button
-                    type="button"
+                <Button type="button"
                     icon="pi pi-filter"
                     label="Filter"
                     outlined
                     severity="secondary"
-                    size="small"
                     onClick={(e) => filterOverlayRef.current?.toggle(e)}
                     className="text-xs px-3"
                 />
@@ -384,12 +377,10 @@ const Table = ({
                     />
                 </div>
 
-                <Button
-                    type="button"
+                <Button type="button"
                     icon="pi pi-filter-slash"
                     outlined
                     severity="danger"
-                    size="small"
                     tooltip="Reset Filter"
                     tooltipOptions={{ position: 'top' }}
                     onClick={() => setState(p => ({ ...p, startDate: '', endDate: '', searchVal: '', activeTab: 'all' }))}
@@ -413,7 +404,6 @@ const Table = ({
                     <div className="flex flex-row align-items-center gap-2">
                     {canCreate && (
                         <Button type="button"
-                            size="small"
                             label="Form Peminjaman Baru"
                             icon="pi pi-plus"
                             outlined
@@ -422,7 +412,6 @@ const Table = ({
                     )}
                     {canCreate && <Divider layout="vertical" className="hidden md:inline m-0" />}
                     <Button type="button"
-                        size="small"
                         label="Scan QR Code Peminjaman"
                         icon="pi pi-qrcode"
                         outlined
@@ -430,7 +419,6 @@ const Table = ({
                         onClick={() => setState(p => ({ ...p, scanDialog: true, scanCode: '', scanResult: null }))} />
                     <Divider layout="vertical" className="hidden md:inline m-0" />
                     <Button type="button"
-                        size="small"
                         label="Refresh"
                         icon="pi pi-refresh"
                         outlined
@@ -482,9 +470,7 @@ const Table = ({
                             />
                         </div>
                         <div className="flex justify-content-end gap-2 mt-2">
-                            <Button
-                                label="Reset"
-                                size="small"
+                            <Button label="Reset"
                                 severity="secondary"
                                 outlined
                                 onClick={() => {
@@ -492,9 +478,7 @@ const Table = ({
                                     filterOverlayRef.current?.hide();
                                 }}
                             />
-                            <Button
-                                label="Terapkan"
-                                size="small"
+                            <Button label="Terapkan"
                                 onClick={() => filterOverlayRef.current?.hide()}
                             />
                         </div>
@@ -647,12 +631,10 @@ const Table = ({
                     <Button label="Batal"
                         severity="secondary"
                         outlined
-                        size="small"
                         onClick={() => { setApprovalDialog(false); setSelectedDetail(null); setNotes(''); setTargetStatus(''); }} />
                     <Button label={targetStatus === 'approved' ? 'Ya, Setujui' : 'Ya, Tolak'}
                         icon={targetStatus === 'approved' ? 'pi pi-check' : 'pi pi-times'}
                         severity={targetStatus === 'approved' ? 'success' : 'danger'}
-                        size="small"
                         onClick={async () => {
                             if (selectedDetail && targetStatus) {
                                 await handleApproveReject(selectedDetail.id_peminjaman, targetStatus, notes);
@@ -701,12 +683,10 @@ const Table = ({
                     <Button label="Batal"
                         severity="secondary"
                         outlined
-                        size="small"
                         onClick={() => { setReturnDialog(false); setSelectedDetail(null); }} />
                     <Button label="Ya, Kembalikan"
                         icon="pi pi-check"
                         severity="info"
-                        size="small"
                         onClick={async () => {
                             if (selectedDetail) {
                                 await handleReturn(selectedDetail.id_peminjaman);

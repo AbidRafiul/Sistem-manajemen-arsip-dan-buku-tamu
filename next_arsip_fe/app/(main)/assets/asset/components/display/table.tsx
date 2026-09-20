@@ -124,8 +124,7 @@ const Table = ({
 
             <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
                 {canCreate && (
-                    <Button size="small"
-                        label="New"
+                    <Button label="New"
                         icon="pi pi-plus"
                         outlined
                        
@@ -136,8 +135,7 @@ const Table = ({
                 {canDelete && (
                     <>
                         <Divider layout="vertical" />
-                        <Button size="small"
-                            label={`Delete${state.selectedUsers.length> 0 ? ` (${state.selectedUsers.length})` : ''}`}
+                        <Button label={`Delete${state.selectedUsers.length> 0 ? ` (${state.selectedUsers.length})` : ''}`}
                             icon="pi pi-trash"
                             severity="danger"
                             outlined
@@ -153,8 +151,7 @@ const Table = ({
                     </>
                 )}
                 <Divider layout="vertical" />
-                <Button size="small"
-                    label="Refresh"
+                <Button label="Refresh"
                     icon="pi pi-refresh"
                     outlined
                     onClick={() => getData(apiEndpointGet)}

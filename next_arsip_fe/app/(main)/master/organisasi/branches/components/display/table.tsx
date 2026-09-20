@@ -85,17 +85,17 @@ const Table = ({ state, setState, formik, handleDelete, getData, toast }: TableP
             <div className="flex justify-content-between mb-4">
                 <div className="flex flex-row align-items-center gap-2">
                     {canCreate && (
-                        <Button size="small" label="Tambah" icon="pi pi-plus" outlined onClick={() => {
+                        <Button label="Tambah" icon="pi pi-plus" outlined onClick={() => {
                             formik.resetForm();
                             setState(p => ({ ...p, add: true, selectedData: [] }));
                         }} />
                     )}
                     {canCreate && canDelete && <Divider layout="vertical" className="hidden md:inline m-0" />}
                     {canDelete && (
-                        <Button size="small" label={"Hapus" + (state.selectedData.length> 0 ? " (" + state.selectedData.length + ")" : "")} icon="pi pi-trash" outlined severity="danger" onClick={() => setState(p => ({ ...p, delete: true }))} disabled={state.selectedData.length === 0} />
+                        <Button label={"Hapus" + (state.selectedData.length> 0 ? " (" + state.selectedData.length + ")" : "")} icon="pi pi-trash" outlined severity="danger" onClick={() => setState(p => ({ ...p, delete: true }))} disabled={state.selectedData.length === 0} />
                     )}
                     {(canCreate || canDelete) && <Divider layout="vertical" className="hidden md:inline m-0" />}
-                    <Button size="small" label="Refresh" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
+                    <Button label="Refresh" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
                 </div>
             </div>
 

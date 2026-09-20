@@ -226,7 +226,6 @@ const DashboardView = ({
                                     } />
                             </div>
                             <Button text
-                                size="small"
                                 icon="pi pi-refresh"
                                 label="Refresh"
                                 loading={loading}

@@ -235,8 +235,7 @@ const DispositionView = ({
     );
 
     const pendingActionTemplate = (rowData: TableData) => (
-        <Button size="small"
-            icon="pi pi-send"
+        <Button icon="pi pi-send"
             label={rowData.status === "baru" ? "Disposisikan" : "Tambah"}
             style={{ backgroundColor: "#10b981", border: "none", fontSize: "0.75rem" }}
             onClick={() => onOpenCreate(rowData)} />
@@ -281,16 +280,16 @@ const DispositionView = ({
         return (
             <div className="flex gap-1 align-items-center justify-content-center">
                 {onOpenDetail && (
-                    <Button size="small" icon="pi pi-eye" text tooltip="Lihat Detail" tooltipOptions={{ position: "top" }} onClick={() => onOpenDetail(row.surat_masuk_id)} />
+                    <Button icon="pi pi-eye" text tooltip="Lihat Detail" tooltipOptions={{ position: "top" }} onClick={() => onOpenDetail(row.surat_masuk_id)} />
                 )}
                 {canApprove && !isDone && !isProcess && (
-                    <Button size="small" icon="pi pi-play" text severity="warning" tooltip="Proses" tooltipOptions={{ position: "top" }} onClick={() => onOpenAction("process", row)} />
+                    <Button icon="pi pi-play" text severity="warning" tooltip="Proses" tooltipOptions={{ position: "top" }} onClick={() => onOpenAction("process", row)} />
                 )}
                 {!isDone && (
-                    <Button size="small" icon="pi pi-share-alt" text severity="info" tooltip="Teruskan" tooltipOptions={{ position: "top" }} onClick={() => onOpenForward(row)} />
+                    <Button icon="pi pi-share-alt" text severity="info" tooltip="Teruskan" tooltipOptions={{ position: "top" }} onClick={() => onOpenForward(row)} />
                 )}
                 {canApprove && !isDone && (
-                    <Button size="small" icon="pi pi-check" text tooltip="Selesaikan" tooltipOptions={{ position: "top" }} onClick={() => onOpenAction("complete", row)} />
+                    <Button icon="pi pi-check" text tooltip="Selesaikan" tooltipOptions={{ position: "top" }} onClick={() => onOpenAction("complete", row)} />
                 )}
                 {isDone && <span className="text-xs text-color-secondary">—</span>}
             </div>
@@ -319,11 +318,9 @@ const DispositionView = ({
                                 placeholder="Cari surat atau disposisi..."
                                 className="text-sm" style={{ height: "2.25rem" }} />
                         </span>
-                        <Button icon="pi pi-send" label="Buat Disposisi" size="small"
-                            style={{ backgroundColor: "#10b981", border: "none", boxShadow: "0 4px 12px rgba(16,185,129,0.2)" }}
+                        <Button icon="pi pi-send" label="Buat Disposisi" style={{ backgroundColor: "#10b981", border: "none", boxShadow: "0 4px 12px rgba(16,185,129,0.2)" }}
                             onClick={() => onOpenCreate()} />
-                        <Button icon="pi pi-refresh" label="Refresh" outlined size="small"
-                            loading={loading} onClick={onRefresh} />
+                        <Button icon="pi pi-refresh" label="Refresh" outlined loading={loading} onClick={onRefresh} />
                     </div>
                 </div>
 
@@ -589,10 +586,9 @@ const DispositionView = ({
                         <Divider className="my-2" />
 
                         <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                            <Button label="Batal" icon="pi pi-times" severity="secondary" outlined size="small" onClick={onCloseDialog} disabled={loading} />
+                            <Button label="Batal" icon="pi pi-times" severity="secondary" outlined onClick={onCloseDialog} disabled={loading} />
                             <Button label={dialogMode === "forward" ? "Teruskan" : "Buat Disposisi"}
-                                icon="pi pi-send" size="small"
-                                style={{ backgroundColor: "#10b981", border: "none" }}
+                                icon="pi pi-send" style={{ backgroundColor: "#10b981", border: "none" }}
                                 onClick={onSaveDisposition} loading={loading} />
                         </div>
                     </div>
@@ -630,11 +626,10 @@ const DispositionView = ({
                         <Divider className="my-2" />
 
                         <div className="flex mt-4 pt-3 border-top-1 surface-border">
-                            <Button label="Batal" icon="pi pi-times" severity="secondary" outlined size="small" onClick={onCloseDialog} disabled={loading} />
+                            <Button label="Batal" icon="pi pi-times" severity="secondary" outlined onClick={onCloseDialog} disabled={loading} />
                             <Button label={dialogMode === "complete" ? "Selesaikan" : "Proses"}
                                 icon={dialogMode === "complete" ? "pi pi-check" : "pi pi-play"}
                                 severity={dialogMode === "complete" ? "success" : "warning"}
-                                size="small"
                                 onClick={onSaveAction} loading={loading} />
                         </div>
                     </div>
@@ -715,8 +710,8 @@ const DispositionView = ({
                                                             </div>
                                                         </div>
                                                         <div className="flex gap-1">
-                                                            <Button icon="pi pi-eye" text size="small" tooltip="Lihat file" onClick={() => previewUploadedFile(file)} />
-                                                            <Button icon="pi pi-download" rounded text size="small" tooltip="Download" onClick={() => downloadUploadedFile(file)} />
+                                                            <Button icon="pi pi-eye" text tooltip="Lihat file" onClick={() => previewUploadedFile(file)} />
+                                                            <Button icon="pi pi-download" rounded text tooltip="Download" onClick={() => downloadUploadedFile(file)} />
                                                         </div>
                                                     </div>
                                                 </div>

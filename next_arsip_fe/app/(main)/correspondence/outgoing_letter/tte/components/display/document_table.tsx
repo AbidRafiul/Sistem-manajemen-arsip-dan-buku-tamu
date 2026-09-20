@@ -151,7 +151,6 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
         <div className="flex gap-1 justify-content-center">
             <Button icon="pi pi-eye"
                 text
-                size="small"
                 tooltip="Lihat Detail"
                 tooltipOptions={{ position: "top" }}
                 onClick={() => handleOpenDetail(rowData)} />
@@ -159,7 +158,6 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
                 rounded
                 text
                 severity="secondary"
-                size="small"
                 tooltip="Buka Dokumen"
                 tooltipOptions={{ position: "top" }}
                 onClick={() => {
@@ -191,7 +189,6 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
                 </span>
                 <Button icon="pi pi-filter"
                     outlined
-                    size="small"
                     onClick={refreshData}
                     style={{ width: "2.5rem", height: "2.5rem" }} />
             </div>
@@ -206,7 +203,7 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
     const actionBar = (
         <div className="flex justify-content-between mb-4">
             <div className="flex flex-row align-items-center gap-2">
-                <Button size="small" label="Refresh" icon="pi pi-refresh" outlined loading={state.load} onClick={refreshData} />
+                <Button label="Refresh" icon="pi pi-refresh" outlined loading={state.load} onClick={refreshData} />
             </div>
         </div>
     );
@@ -281,7 +278,6 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
                                     {fileUrl && (
                                         <Button label="Buka Dokumen"
                                             icon="pi pi-external-link"
-                                            size="small"
                                             outlined
                                             onClick={() => window.open(fileUrl, "_blank", "noopener,noreferrer")} />
                                     )}
@@ -310,7 +306,6 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
                         {mode === "pending" && (
                             <div className="flex align-items-center gap-2 flex-wrap">
                                 <Button label="Lihat Detail & TTE" 
-                                    size="small" 
                                     severity="info" 
                                     onClick={() => handleOpenDetail(detailLetter)} />
                                 <Button label="Finalisasi"

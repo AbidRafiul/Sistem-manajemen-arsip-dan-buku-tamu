@@ -449,7 +449,6 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
         <div className="flex gap-1 justify-content-center">
             <Button icon="pi pi-eye"
                 text
-                size="small"
                 tooltip="Lihat Detail"
                 tooltipOptions={{ position: "top" }}
                 onClick={() => openDetail(rowData)} />
@@ -458,7 +457,6 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                     rounded
                     text
                    
-                    size="small"
                     tooltip="Proses Persetujuan"
                     tooltipOptions={{ position: "top" }}
                     onClick={() => openProcessDialog(rowData)} />
@@ -497,13 +495,11 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
 
             {/* Right: Filter Button, Search Bar, Reset Button */}
             <div className="flex align-items-center gap-2 flex-wrap">
-                <Button
-                    type="button"
+                <Button type="button"
                     icon="pi pi-filter"
                     label="Filter"
                     outlined
                     severity="secondary"
-                    size="small"
                     onClick={(e) => filterOverlayRef.current?.toggle(e)}
                     className="text-xs px-3"
                 />
@@ -518,12 +514,10 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                     />
                 </div>
 
-                <Button
-                    type="button"
+                <Button type="button"
                     icon="pi pi-filter-slash"
                     severity="danger"
                     outlined
-                    size="small"
                     onClick={() => setState((p: any) => ({ ...p, startDate: null, endDate: null, statusFilter: '', jenisSuratFilter: null, searchVal: '' }))}
                     tooltip="Reset Filter"
                     className="p-button-icon-only"
@@ -577,16 +571,14 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
 
                 <div className="flex justify-content-between mb-4">
                     <div className="flex flex-row align-items-center gap-2">
-                        <Button size="small"
-                        label={`Proses Terpilih${state.selectedLetters.length ? ` (${state.selectedLetters.length})` : ""}`}
+                        <Button label={`Proses Terpilih${state.selectedLetters.length ? ` (${state.selectedLetters.length})` : ""}`}
                         icon="pi pi-check-square"
                        
                         outlined
                         disabled={state.selectedLetters.length === 0}
                         onClick={() => openProcessDialog("bulk")} />
                     <Divider layout="vertical" className="hidden md:inline m-0" />
-                    <Button size="small"
-                        label="Refresh"
+                    <Button label="Refresh"
                         icon="pi pi-refresh"
                         outlined
                         loading={state.load}
@@ -784,7 +776,6 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                                 <Button icon="pi pi-file-pdf"
                                     label="Preview PDF"
                                     outlined
-                                    size="small"
                                     disabled={!detailLetter?.isi_surat_final}
                                     loading={pdfPreviewLoading}
                                     onClick={openPdfPreview} />
@@ -884,7 +875,7 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="no-underline">
-                                                    <Button icon="pi pi-download" rounded text size="small" tooltip="Download File" />
+                                                    <Button icon="pi pi-download" rounded text tooltip="Download File" />
                                                 </a>
                                             )}
                                         </div>

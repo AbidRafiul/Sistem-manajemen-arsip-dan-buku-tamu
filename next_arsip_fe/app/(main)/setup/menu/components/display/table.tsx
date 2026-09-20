@@ -117,8 +117,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                 <div className="flex flex-row align-items-center gap-2">
                 {canCreate && (
                     <>
-                        <Button size="small"
-                            label="Tambah"
+                        <Button label="Tambah"
                             icon="pi pi-plus"
                             outlined
                             onClick={() => {
@@ -130,8 +129,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                 )}
                 {canDelete && (
                     <>
-                        <Button size="small"
-                            label={`Hapus${state.selectedData.length> 0 ? ` (${state.selectedData.length})` : ''}`}
+                        <Button label={`Hapus${state.selectedData.length> 0 ? ` (${state.selectedData.length})` : ''}`}
                             icon="pi pi-trash"
                             outlined
                             severity="danger"
@@ -140,8 +138,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                         <Divider layout="vertical" />
                     </>
                 )}
-                <Button size="small"
-                    label="Refresh"
+                <Button label="Refresh"
                     icon="pi pi-refresh"
                     outlined
                     onClick={() => getData('/setup/menu/data')}

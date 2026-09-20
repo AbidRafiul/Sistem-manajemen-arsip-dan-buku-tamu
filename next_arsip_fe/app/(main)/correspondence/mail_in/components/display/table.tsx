@@ -262,13 +262,11 @@ const Table = ({
     const actionTemplate = (rowData: TableData) => (
         <div className="flex gap-1 justify-content-center">
             <Button icon="pi pi-eye"
-                text size="small"
-                tooltip="Lihat Detail" tooltipOptions={{ position: "top" }}
+                text tooltip="Lihat Detail" tooltipOptions={{ position: "top" }}
                 onClick={() => onOpenDetail(rowData)} />
             {canUpdate && (
                 <Button icon="pi pi-pencil"
-                    text severity="secondary" size="small"
-                    tooltip="Edit" tooltipOptions={{ position: "top" }}
+                    text severity="secondary" tooltip="Edit" tooltipOptions={{ position: "top" }}
                     onClick={() => {
                         formik.setValues({
                             surat_masuk_id: rowData.surat_masuk_id,
@@ -294,8 +292,7 @@ const Table = ({
             )}
             {canDelete && (
                 <Button icon="pi pi-trash"
-                    text severity="danger" size="small"
-                    tooltip="Hapus" tooltipOptions={{ position: "top" }}
+                    text severity="danger" tooltip="Hapus" tooltipOptions={{ position: "top" }}
                     onClick={() => setState((p) => ({ ...p, delete: true, selectedLetters: [rowData] }))} />
             )}
         </div>
@@ -348,13 +345,11 @@ const Table = ({
 
             {/* Right: Filter Button, Search Bar, Reset Button */}
             <div className="flex align-items-center gap-2 flex-wrap">
-                <Button
-                    type="button"
+                <Button type="button"
                     icon="pi pi-filter"
                     label="Filter"
                     outlined
                     severity="secondary"
-                    size="small"
                     onClick={(e) => filterOverlayRef.current?.toggle(e)}
                     className="text-xs px-3"
                 />
@@ -369,12 +364,10 @@ const Table = ({
                     />
                 </div>
 
-                <Button
-                    type="button"
+                <Button type="button"
                     icon="pi pi-filter-slash"
                     outlined
                     severity="danger"
-                    size="small"
                     tooltip="Reset Filter"
                     tooltipOptions={{ position: 'top' }}
                     onClick={() => setState(p => ({ ...p, searchVal: '', statusFilter: '', startDate: '', endDate: '' }))}
@@ -399,8 +392,7 @@ const Table = ({
                     <div className="flex flex-row align-items-center gap-2">
                     {canCreate && (
                         <>
-                            <Button size="small"
-                                label="Tambah Surat"
+                            <Button label="Tambah Surat"
                                 icon="pi pi-plus"
                                 outlined
                                
@@ -410,8 +402,7 @@ const Table = ({
                     {canCreate && canDelete && <Divider layout="vertical" className="hidden md:inline m-0" />}
                     {canDelete && (
                         <>
-                            <Button size="small"
-                                label={`Hapus${state.selectedLetters.length > 0 ? ` (${state.selectedLetters.length})` : ""}`}
+                            <Button label={`Hapus${state.selectedLetters.length > 0 ? ` (${state.selectedLetters.length})` : ""}`}
                                 icon="pi pi-trash"
                                 severity="danger"
                                 outlined
@@ -423,8 +414,7 @@ const Table = ({
                         </>
                     )}
                     {(canCreate || canDelete) && <Divider layout="vertical" className="hidden md:inline m-0" />}
-                    <Button size="small"
-                        label="Refresh"
+                    <Button label="Refresh"
                         icon="pi pi-refresh"
                         outlined
                         loading={state.load}
@@ -464,7 +454,6 @@ const Table = ({
                                     icon="pi pi-times"
                                     text
                                     severity="danger"
-                                    size="small"
                                     className="p-0 text-xs"
                                     onClick={() => setState(p => ({ ...p, statusFilter: '' }))} />
                             )}
@@ -567,14 +556,11 @@ const Table = ({
                                 {archivedDocument ? (
                                     <Button label="Lihat Arsip"
                                         icon="pi pi-folder-open"
-                                        size="small"
                                         outlined
                                         onClick={() => router.push(`/edms/archive_document/${archivedDocument.id_dokumen}/versions`)} />
                                 ) : (
                                     <Button label="Arsipkan"
                                         icon="pi pi-archive"
-                                        size="small"
-                                       
                                         loading={state.load}
                                         disabled={detailFiles.length < 1}
                                         onClick={confirmArchiveLetter}
@@ -629,8 +615,8 @@ const Table = ({
                                                             </div>
                                                         </div>
                                                         <div className="flex gap-1">
-                                                            <Button icon="pi pi-eye" text size="small" tooltip="Lihat file" onClick={() => previewUploadedFile(file)} />
-                                                            <Button icon="pi pi-download" rounded text size="small" tooltip="Download" onClick={() => downloadUploadedFile(file)} />
+                                                            <Button icon="pi pi-eye" text tooltip="Lihat file" onClick={() => previewUploadedFile(file)} />
+                                                            <Button icon="pi pi-download" rounded text tooltip="Download" onClick={() => downloadUploadedFile(file)} />
                                                         </div>
                                                     </div>
                                                 </div>
