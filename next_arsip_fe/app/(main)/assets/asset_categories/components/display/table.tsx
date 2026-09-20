@@ -72,10 +72,11 @@ const Table = ({
 
 
     return <>
-        <div className="card">
-            <div className="flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h2 className="m-0 text-900 font-bold text-2xl mb-1">Manajemen Kategori Aset</h2>
+        <div className="card shadow-2 border-1 surface-border border-round-xl p-4 bg-white">
+            <div className="flex flex-column gap-2 mb-6 px-1">
+                <h3 className="text-2xl font-semibold m-0 text-900">Data Master Kategori Aset</h3>
+                <div className="text-sm text-600">
+                    Kelola data master kategori aset.
                 </div>
             </div>
 

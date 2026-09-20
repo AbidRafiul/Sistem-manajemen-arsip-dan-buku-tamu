@@ -66,15 +66,17 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                 </div>
             </div>
 
-            <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
+            <div className="flex justify-content-between mb-4">
+                <div className="flex flex-row align-items-center gap-2">
                 <Button type="button" size="small" label="Tambah" icon="pi pi-plus" outlined onClick={() => {
                     formik.resetForm();
                     setState(p => ({ ...p, add: true, selectedData: [] }));
                 }} />
-                <Divider layout="vertical" className="hidden md:inline" />
+                <Divider layout="vertical" className="hidden md:inline m-0" />
                 <Button type="button" size="small" label={"Hapus" + (state.selectedData.length> 0 ? " (" + state.selectedData.length + ")" : "")} icon="pi pi-trash" outlined severity="danger" onClick={() => setState(p => ({ ...p, delete: true }))} disabled={state.selectedData.length === 0} />
-                <Divider layout="vertical" className="hidden md:inline" />
+                <Divider layout="vertical" className="hidden md:inline m-0" />
                 <Button type="button" size="small" label="Refresh" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
+                </div>
             </div>
 
             {/* KETERANGAN STATUS BAR */}

@@ -111,7 +111,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
     return (
         <>
             <div className="card shadow-2 border-1 surface-border border-round-xl p-4 bg-white">
-                <div className="flex flex-column gap-2 mb-6 px-1">
+                <div className="flex flex-column gap-2 mb-4 px-1">
                     <h3 className="text-2xl font-semibold m-0 text-900">Data Master User</h3>
                     <div className="text-sm text-600">
                         Kelola master user tenant dan admin.
@@ -119,7 +119,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                 </div>
 
                 <div className="flex justify-content-between mb-4">
-                    <div className="flex flex-row gap-2">
+                    <div className="flex flex-row align-items-center gap-2">
                         {permissions.canCreate && (
                             <>
                                 <Button size="small"
@@ -130,7 +130,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                                     onClick={() => {
                                         setState((p) => ({ ...p, selectedUser: [], add: true }));
                                     }} />
-                                <Divider layout="vertical" className="hidden sm:inline-block" />
+                                <Divider layout="vertical" className="hidden sm:inline-block m-0" />
                             </>
                         )}
                         <Button size="small"
@@ -158,7 +158,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                                     columnStyles
                                 }));
                             }} />
-                        <Divider layout="vertical" className="hidden sm:inline-block" />
+                        <Divider layout="vertical" className="hidden sm:inline-block m-0" />
                         {permissions.canDelete && (
                             <>
                                 <Button size="small"
@@ -175,13 +175,13 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                                         setState((p) => ({ ...p, delete: true }));
                                     }}
                                     disabled={state.selectedUsers.length === 0} />
-                                <Divider layout="vertical" className="hidden sm:inline-block" />
+                                <Divider layout="vertical" className="hidden sm:inline-block m-0" />
                             </>
                         )}
                         <Button size="small" label="Refresh" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
                     </div>
 
-                    <div className="flex flex-row gap-2">
+                    <div className="flex flex-row align-items-center gap-2">
                         <ExcelBulkAction
                             title="Data Pengguna"
                             data={state.data}

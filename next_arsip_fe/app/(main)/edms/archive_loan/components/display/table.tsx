@@ -400,14 +400,17 @@ const Table = ({
 
     return (
         <>
-            <Card className="shadow-1 border-round-2xl border-none">
+            <div className="card shadow-2 border-1 surface-border border-round-xl p-4 bg-white">
                 {/* Page Header */}
-                <div className="mb-3">
-                    <h2 className="m-0 text-900 font-bold text-2xl mb-1">Peminjaman & Pengembalian Arsip</h2>
-                    <p className="m-0 text-color-secondary text-sm font-medium">Kelola sirkulasi peminjaman berkas fisik, konfirmasi pengembalian, dan lacak status keterlambatan.</p>
+                <div className="flex flex-column gap-2 mb-4 px-1">
+                    <h3 className="text-2xl font-semibold m-0 text-900">Peminjaman & Pengembalian Arsip</h3>
+                    <div className="text-sm text-600">
+                        Kelola sirkulasi peminjaman berkas fisik, konfirmasi pengembalian, dan lacak status keterlambatan.
+                    </div>
                 </div>
 
-                <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
+                <div className="flex justify-content-between mb-4">
+                    <div className="flex flex-row align-items-center gap-2">
                     {canCreate && (
                         <Button type="button"
                             size="small"
@@ -417,7 +420,7 @@ const Table = ({
                            
                             onClick={() => setState((p) => ({ ...p, add: true, edit: false, selectedLoan: null }))} />
                     )}
-                    {canCreate && <Divider layout="vertical" />}
+                    {canCreate && <Divider layout="vertical" className="hidden md:inline m-0" />}
                     <Button type="button"
                         size="small"
                         label="Scan QR Code Peminjaman"
@@ -425,7 +428,7 @@ const Table = ({
                         outlined
                         severity="info"
                         onClick={() => setState(p => ({ ...p, scanDialog: true, scanCode: '', scanResult: null }))} />
-                    <Divider layout="vertical" />
+                    <Divider layout="vertical" className="hidden md:inline m-0" />
                     <Button type="button"
                         size="small"
                         label="Refresh"
@@ -433,6 +436,7 @@ const Table = ({
                         outlined
                         loading={state.load}
                         onClick={getLoans} />
+                    </div>
                 </div>
 
                 {/* Status Legend Bar */}
@@ -522,7 +526,7 @@ const Table = ({
                 <Column field="tanggal_kembali" header="Tgl. Kembali" sortable body={rowData => formatDateOnly(rowData.tanggal_kembali)} style={{ width: '120px' }} />
                 <Column align="center" header="Aksi" body={actionTemplate} style={{ width: '130px', textAlign: 'center' }} />
             </DataTable>
-        </Card>
+        </div>
 
         <Form state={state} setState={setState} formik={formik} toast={toast} handleScan={handleScan} />
 

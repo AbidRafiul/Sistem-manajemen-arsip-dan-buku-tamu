@@ -377,15 +377,17 @@ const Table = ({
     );
 
     return <>
-        <Card className="shadow-1 border-round-2xl border-none">
+        <div className="card shadow-2 border-1 surface-border border-round-xl p-4 bg-white">
             {/* Page Header */}
-            <div className="mb-3">
-                <h2 className="m-0 text-900 font-bold text-2xl mb-1">Archive Documents</h2>
-                <p className="m-0 text-color-secondary text-sm font-medium">Kelola metadata dokumen dan pantau riwayat versi serta peminjaman arsip.</p>
+            <div className="flex flex-column gap-2 mb-4 px-1">
+                <h3 className="text-2xl font-semibold m-0 text-900">Archive Documents</h3>
+                <div className="text-sm text-600">
+                    Kelola metadata dokumen dan pantau riwayat versi serta peminjaman arsip.
+                </div>
             </div>
 
-            <div className="flex flex-column sm:flex-row align-items-stretch sm:align-items-center justify-content-between gap-2 mb-3">
-                <div className="flex flex-row flex-wrap align-items-center gap-2">
+            <div className="flex justify-content-between mb-4">
+                <div className="flex flex-row align-items-center gap-2">
                     {canCreate && (
                         <Button type="button"
                             size="small"
@@ -418,7 +420,7 @@ const Table = ({
                     )}
                     {canDelete && (
                         <>
-                            <Divider layout="vertical" className="hidden sm:inline" />
+                            <Divider layout="vertical" className="hidden sm:inline m-0" />
                             <Button type="button"
                                 size="small"
                                 label={`Hapus${state.selectedDocuments.length > 0 ? ` (${state.selectedDocuments.length})` : ''}`}
@@ -429,7 +431,7 @@ const Table = ({
                                 onClick={() => setState((p) => ({ ...p, delete: true }))} />
                         </>
                     )}
-                    <Divider layout="vertical" className="hidden sm:inline" />
+                    <Divider layout="vertical" className="hidden md:inline m-0" />
                     <Button type="button"
                         size="small"
                         label="Refresh"
@@ -439,7 +441,7 @@ const Table = ({
                         onClick={getDocuments} />
                 </div>
 
-                <div className="flex flex-row flex-wrap align-items-center gap-2">
+                <div className="flex flex-row align-items-center gap-2">
                     <Button type="button"
                         size="small"
                         label="Scan & Track QR"
@@ -449,7 +451,7 @@ const Table = ({
                         tooltip="Pindai Stiker QR Berkas Fisik dengan Kamera Live atau USB Scanner"
                         tooltipOptions={{ position: 'top' }}
                         onClick={() => setState(p => ({ ...p, trackingDialog: true, trackingCode: '', trackingResult: null }))} />
-                    <Divider layout="vertical" className="hidden sm:inline" />
+                    <Divider layout="vertical" className="hidden md:inline" />
                     <Button type="button"
                         size="small"
                         label="Pencarian OCR & Teks"
@@ -617,7 +619,7 @@ const Table = ({
                 <Column header="Berkas" body={previewTemplate} style={{ width: '4rem', textAlign: 'center' }} />
                 <Column header="Aksi" body={actionTemplate} style={{ minWidth: '13rem', textAlign: 'center' }} />
             </DataTable>
-        </Card>
+        </div>
 
         {/* Modal Form Tambah / Edit Dokumen */}
         <Form

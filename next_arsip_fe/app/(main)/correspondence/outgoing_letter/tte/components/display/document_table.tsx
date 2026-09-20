@@ -204,21 +204,23 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
     }, []);
 
     const actionBar = (
-        <div className="flex flex-row flex-wrap align-items-center gap-2 mb-4">
-            <Button size="small" label="Refresh" icon="pi pi-refresh" outlined loading={state.load} onClick={refreshData} />
+        <div className="flex justify-content-between mb-4">
+            <div className="flex flex-row align-items-center gap-2">
+                <Button size="small" label="Refresh" icon="pi pi-refresh" outlined loading={state.load} onClick={refreshData} />
+            </div>
         </div>
     );
 
     return (
         <>
             <ConfirmDialog />
-            <Card className="shadow-1 border-round-2xl border-none">
-                <div className="mb-4">
-                    <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: "0.1em" }}>
-                        Tanda Tangan Elektronik
-                    </span>
-                    <h2 className="m-0 text-900 font-extrabold text-2xl mt-1 mb-2">{title}</h2>
-                    <p className="m-0 text-color-secondary text-sm font-medium">{subtitle}</p>
+            <div className="card shadow-2 border-1 surface-border border-round-xl p-4 bg-white">
+                {/* Page Header */}
+                <div className="flex flex-column gap-2 mb-4 px-1">
+                    <h3 className="text-2xl font-semibold m-0 text-900">{title}</h3>
+                    <div className="text-sm text-600">
+                        {subtitle}
+                    </div>
                 </div>
 
                 {actionBar}
@@ -245,7 +247,7 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
                     <Column field="status" header="Status" body={(r) => <Tag value={r.status || "-"} severity={statusTone(r.status)} icon={statusIcon(r.status)} />} style={{ width: "140px" }} />
                     <Column header="Aksi" body={actionTemplate} style={{ width: "120px", textAlign: "center" }} />
                 </DataTable>
-            </Card>
+            </div>
 
             <Dialog
                 header={

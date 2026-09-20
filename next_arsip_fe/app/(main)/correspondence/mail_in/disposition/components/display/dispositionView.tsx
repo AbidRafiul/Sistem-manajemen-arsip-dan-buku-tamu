@@ -302,12 +302,13 @@ const DispositionView = ({
     return (
         <>
             {/* ─── Page Header ──────────────────────────────────────────────── */}
-            <Card className="shadow-1 border-round-2xl border-none mb-4">
+            <Card className="shadow-2 border-1 surface-border border-round-xl p-4 bg-white border-none mb-4">
                 <div className="flex flex-column md:flex-row md:align-items-center justify-content-between gap-3 mb-4">
-                    <div>
-                        <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: "0.1em" }}>Mail In · Korespondensi</span>
-                        <h2 className="m-0 text-900 font-extrabold text-2xl mt-1 mb-2" style={{ letterSpacing: "-0.02em" }}>Workflow Disposisi</h2>
-                        <p className="m-0 text-color-secondary text-sm font-medium">Kelola disposisi berjenjang, instruksi pimpinan, catatan, dan tracking status surat masuk.</p>
+                    <div className="flex flex-column gap-2 mb-2 px-1">
+                        <h3 className="text-2xl font-semibold m-0 text-900">Workflow Disposisi</h3>
+                        <div className="text-sm text-600">
+                            Kelola disposisi berjenjang, instruksi pimpinan, catatan, dan tracking status surat masuk.
+                        </div>
                     </div>
                     <div className="flex flex-wrap align-items-center gap-2 flex-shrink-0">
                         <span className="p-input-icon-left">
@@ -321,7 +322,7 @@ const DispositionView = ({
                         <Button icon="pi pi-send" label="Buat Disposisi" size="small"
                             style={{ backgroundColor: "#10b981", border: "none", boxShadow: "0 4px 12px rgba(16,185,129,0.2)" }}
                             onClick={() => onOpenCreate()} />
-                        <Button icon="pi pi-refresh" label="Refresh" text size="small"
+                        <Button icon="pi pi-refresh" label="Refresh" outlined size="small"
                             loading={loading} onClick={onRefresh} />
                     </div>
                 </div>

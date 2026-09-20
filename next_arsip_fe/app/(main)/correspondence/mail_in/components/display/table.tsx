@@ -386,15 +386,17 @@ const Table = ({
     return (
         <>
             <ConfirmDialog />
-            <Card className="shadow-1 border-round-2xl border-none">
+            <div className="card shadow-2 border-1 surface-border border-round-xl p-4 bg-white">
                 {/* Page Header */}
-                <div className="mb-3">
-                    <span className="text-primary font-bold text-xs uppercase" style={{ letterSpacing: "0.1em" }}>Korespondensi</span>
-                    <h2 className="m-0 text-900 font-bold text-2xl mb-1" style={{ letterSpacing: "-0.02em" }}>Surat Masuk</h2>
-                    <p className="m-0 text-color-secondary text-sm font-medium">Kelola seluruh surat masuk, upload file, dan pantau status disposisi.</p>
+                <div className="flex flex-column gap-2 mb-4 px-1">
+                    <h3 className="text-2xl font-semibold m-0 text-900">Surat Masuk</h3>
+                    <div className="text-sm text-600">
+                        Kelola seluruh surat masuk, upload file, dan pantau status disposisi.
+                    </div>
                 </div>
 
-                <div className="flex flex-row flex-wrap align-items-center gap-2 mb-3">
+                <div className="flex justify-content-between mb-4">
+                    <div className="flex flex-row align-items-center gap-2">
                     {canCreate && (
                         <>
                             <Button size="small"
@@ -403,9 +405,9 @@ const Table = ({
                                 outlined
                                
                                 onClick={() => { formik.resetForm(); setState((p) => ({ ...p, selectedLetters: [], add: true, edit: false, delete: false })); }} />
-                            <Divider layout="vertical" />
                         </>
                     )}
+                    {canCreate && canDelete && <Divider layout="vertical" className="hidden md:inline m-0" />}
                     {canDelete && (
                         <>
                             <Button size="small"
@@ -418,15 +420,16 @@ const Table = ({
                                     if (state.selectedLetters.length < 1) return;
                                     setState((p) => ({ ...p, delete: true }));
                                 }} />
-                            <Divider layout="vertical" />
                         </>
                     )}
+                    {(canCreate || canDelete) && <Divider layout="vertical" className="hidden md:inline m-0" />}
                     <Button size="small"
                         label="Refresh"
                         icon="pi pi-refresh"
                         outlined
                         loading={state.load}
                         onClick={refreshData} />
+                    </div>
                 </div>
 
                 {/* KETERANGAN STATUS BAR */}
@@ -515,7 +518,7 @@ const Table = ({
                     <Column field="created_at" header="Dibuat" sortable body={(r) => formatDateCalendar(r.created_at)} style={{ width: "120px" }} />
                     <Column align="center" header="Aksi" body={actionTemplate} style={{ width: "130px", textAlign: "center" }} />
                 </DataTable>
-            </Card>
+            </div>
 
                 <Form 
                     getData={getData} 
