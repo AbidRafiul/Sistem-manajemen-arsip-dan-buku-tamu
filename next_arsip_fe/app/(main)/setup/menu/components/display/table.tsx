@@ -41,7 +41,7 @@ const Table = ({ state, setState, formik, handleDelete, getData }: TableProps) =
                                 }
                                 setState(p => ({ ...p, searchVal: value, filters: _filters }));
                             }}
-                            placeholder="Cari menu..." />
+                            placeholder="Cari menu..." className="w-full sm:w-24rem" />
                     </span>
                 </div>
             </div>

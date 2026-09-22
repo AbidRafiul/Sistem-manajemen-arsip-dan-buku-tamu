@@ -39,7 +39,7 @@ const Table = ({
                             _filters['global'].value = value;
                             setState((p) => ({ ...p, searchVal: value, filters: _filters }));
                         }}
-                        placeholder="Cari kategori..." />
+                        placeholder="Cari kategori..." className="w-full sm:w-24rem" />
                 </span>
             </div>
         </div>

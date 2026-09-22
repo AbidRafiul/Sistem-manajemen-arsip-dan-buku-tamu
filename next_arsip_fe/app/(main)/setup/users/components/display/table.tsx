@@ -51,7 +51,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                             _filters['global'].value = value;
                             setState((p) => ({ ...p, searchVal: value, filters: _filters }));
                         }}
-                        placeholder="Cari..." />
+                        placeholder="Cari..." className="w-full sm:w-24rem" />
                 </span>
             </div>
         </div>

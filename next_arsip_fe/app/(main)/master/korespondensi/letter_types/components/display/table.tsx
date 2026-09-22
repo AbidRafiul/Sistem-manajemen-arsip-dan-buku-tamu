@@ -27,7 +27,7 @@ const Table = ({ state, setState, formik, getData }: TableProps) => {
                         const filters = { ...state.filters };
                         filters.global.value = value;
                         setState((p) => ({ ...p, searchVal: value, filters }));
-                    }} placeholder="Cari..." />
+                    }} placeholder="Cari..." className="w-full sm:w-24rem" />
                 </span>
             </div>
         );

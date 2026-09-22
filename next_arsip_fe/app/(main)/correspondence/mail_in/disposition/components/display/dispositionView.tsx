@@ -237,7 +237,7 @@ const DispositionView = ({
     const pendingActionTemplate = (rowData: TableData) => (
         <Button icon="pi pi-send"
             label={rowData.status === "baru" ? "Disposisikan" : "Tambah"}
-            style={{ backgroundColor: "#10b981", border: "none", fontSize: "0.75rem" }}
+            style={{ border: "none", fontSize: "0.75rem" }}
             onClick={() => onOpenCreate(rowData)} />
     );
 
@@ -316,9 +316,9 @@ const DispositionView = ({
                                 value={search}
                                 onChange={(e) => onSearchChange(e.target.value)}
                                 placeholder="Cari surat atau disposisi..."
-                                className="text-sm" style={{ height: "2.25rem" }} />
+                                className="w-full sm:w-24rem" />
                         </span>
-                        <Button icon="pi pi-send" label="Buat Disposisi" style={{ backgroundColor: "#10b981", border: "none", boxShadow: "0 4px 12px rgba(16,185,129,0.2)" }}
+                        <Button icon="pi pi-send" label="Buat Disposisi" style={{ border: "none" }}
                             onClick={() => onOpenCreate()} />
                         <Button icon="pi pi-refresh" label="Refresh" outlined loading={loading} onClick={onRefresh} />
                     </div>
@@ -348,7 +348,7 @@ const DispositionView = ({
                         <div className="text-color-secondary text-sm">Status surat bergerak otomatis berdasarkan aksi disposisi.</div>
                     </div>
                     <div className="flex align-items-center justify-content-center border-circle font-extrabold text-lg"
-                        style={{ width: "4rem", height: "4rem", backgroundColor: "#10b981", color: "#fff", flexShrink: 0 }}>
+                        style={{ width: "4rem", height: "4rem", backgroundColor: "var(--primary-color)", color: "#fff", flexShrink: 0 }}>
                         {completionRate}%
                     </div>
                 </div>
@@ -553,11 +553,13 @@ const DispositionView = ({
 
                         <div className="flex flex-column gap-1 mb-3">
                             <label htmlFor="disp_instruction" className="font-semibold text-900">Instruksi Tambahan</label>
-                            <InputText
+                            <InputTextarea
                                 id="disp_instruction"
                                 value={form.instruksi}
                                 onChange={(e) => onFormChange("instruksi", e.target.value)}
                                 placeholder="Contoh: Mohon telaah dan siapkan bahan tindak lanjut"
+                                rows={3}
+                                style={{ resize: "none" }}
                                 className="w-full" />
                         </div>
 
@@ -588,7 +590,7 @@ const DispositionView = ({
                         <div className="flex mt-4 pt-3 border-top-1 surface-border">
                             <Button label="Batal" icon="pi pi-times" severity="secondary" outlined onClick={onCloseDialog} disabled={loading} />
                             <Button label={dialogMode === "forward" ? "Teruskan" : "Buat Disposisi"}
-                                icon="pi pi-send" style={{ backgroundColor: "#10b981", border: "none" }}
+                                icon="pi pi-send" style={{ border: "none" }}
                                 onClick={onSaveDisposition} loading={loading} />
                         </div>
                     </div>

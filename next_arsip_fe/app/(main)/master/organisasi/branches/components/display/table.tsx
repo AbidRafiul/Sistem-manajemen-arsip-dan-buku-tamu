@@ -36,7 +36,7 @@ const Table = ({ state, setState, formik, handleDelete, getData, toast }: TableP
                             let _filters = { ...state.filters };
                             _filters['global'].value = value;
                             setState(p => ({ ...p, searchVal: value, filters: _filters }));
-                        }} placeholder="Cari..." />
+                        }} placeholder="Cari..." className="w-full sm:w-24rem" />
                     </span>
                 </div>
             </div>

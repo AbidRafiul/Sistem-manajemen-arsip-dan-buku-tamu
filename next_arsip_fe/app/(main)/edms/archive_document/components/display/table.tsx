@@ -307,11 +307,11 @@ const Table = ({
                     outlined
                     severity="secondary"
                     onClick={(e) => filterOverlayRef.current?.toggle(e)}
-                    className="text-xs px-3"
+                    className="px-3"
                 />
 
-                <div className="p-input-icon-left flex-1 sm:w-16rem">
-                    <i className="pi pi-search text-xs" />
+                <div className="p-input-icon-left flex-1 sm:w-24rem">
+                    <i className="pi pi-search" />
                     <InputText
                         value={state.searchVal}
                         onChange={(e) => {
@@ -321,7 +321,7 @@ const Table = ({
                             setState((p) => ({ ...p, searchVal: value, filters }));
                         }}
                         placeholder="Cari Data..."
-                        className="text-xs p-inputtext-sm w-full"
+                        className="w-full"
                     />
                 </div>
 

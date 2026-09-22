@@ -36,7 +36,7 @@ const Table = ({ state, setState, formik, getData, handleDelete }: any) => {
             filters.global.value = value;
             setState((p: State) => ({ ...p, searchVal: value, filters }));
           }}
-          placeholder="Cari template..." />
+          placeholder="Cari template..." className="w-full sm:w-24rem" />
       </span>
     </div>
   );

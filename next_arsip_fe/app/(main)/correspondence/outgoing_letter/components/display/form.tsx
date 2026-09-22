@@ -1035,13 +1035,15 @@ const Form = ({ state, setState, formik, toast, getData, apiSaveLetter, apiUploa
                         <label htmlFor="perihal" className="text-sm">
                             Perihal <span className="text-red-500">*</span>
                         </label>
-                        <InputText
+                        <InputTextarea
                             id="perihal"
                             className={`w-full ${isFormFieldInvalid("perihal") ? "p-invalid" : ""}`}
                             value={formik.values.perihal}
                             onChange={(e) => formik.setFieldValue("perihal", e.target.value)}
                             onBlur={() => formik.setFieldTouched("perihal", true)}
-                            placeholder="Perihal surat" />
+                            placeholder="Perihal surat"
+                            rows={3}
+                            style={{ resize: "none" }} />
                         {getFormErrorMessage("perihal")}
                     </div>
 

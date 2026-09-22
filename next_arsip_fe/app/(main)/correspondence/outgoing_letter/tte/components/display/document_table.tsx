@@ -175,7 +175,7 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
             </div>
 
             <div className="flex align-items-center gap-2 w-full xl:justify-content-end">
-                <span className="p-input-icon-left w-full" style={{ flex: "1 1 16rem", minWidth: "15rem", maxWidth: "24rem" }}>
+                <span className="p-input-icon-left w-full sm:w-24rem">
                     <i className="pi pi-search" />
                     <InputText
                         value={state.searchVal}
@@ -184,8 +184,8 @@ const DocumentTable = ({ state, setState, toast, getData, openDetail, finalizeDo
                             if (e.key === "Enter") refreshData();
                         }}
                         placeholder="Cari nomor, perihal, tujuan..."
-                        className="w-full text-sm"
-                        style={{ height: "2.5rem" }} />
+                        className="w-full"
+                    />
                 </span>
                 <Button icon="pi pi-filter"
                     outlined

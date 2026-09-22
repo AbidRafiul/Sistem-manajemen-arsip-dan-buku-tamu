@@ -194,12 +194,14 @@ const Form = ({
                         </div>
                         <div className="col-12 flex flex-column gap-2">
                             <label htmlFor="perihal" className="text-sm">Perihal <span className="text-red-500">*</span></label>
-                            <InputText
+                            <InputTextarea
                                 id="perihal"
                                 className={`w-full ${isFormFieldInvalid("perihal") ? "p-invalid" : ""}`}
                                 value={formik.values.perihal}
                                 onChange={(e) => formik.setFieldValue("perihal", e.target.value)}
-                                placeholder="Perihal / pokok isi surat" />
+                                placeholder="Perihal / pokok isi surat"
+                                rows={3}
+                                style={{ resize: "none" }} />
                             {getFormErrorMessage("perihal")}
                         </div>
                         <div className="col-12 flex flex-column gap-2">

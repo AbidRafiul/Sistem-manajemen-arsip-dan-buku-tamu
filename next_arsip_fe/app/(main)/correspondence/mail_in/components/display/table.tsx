@@ -326,7 +326,7 @@ const Table = ({
                         placeholder="YYYY-MM-DD"
                         showIcon
                         icon="pi pi-calendar"
-                        className="text-xs w-full p-inputtext-sm"
+                        className="w-full"
                     />
                 </div>
                 <span className="text-xs font-semibold text-color-secondary px-1">s.d</span>
@@ -338,7 +338,7 @@ const Table = ({
                         placeholder="YYYY-MM-DD"
                         showIcon
                         icon="pi pi-calendar"
-                        className="text-xs w-full p-inputtext-sm"
+                        className="w-full"
                     />
                 </div>
             </div>
@@ -351,16 +351,16 @@ const Table = ({
                     outlined
                     severity="secondary"
                     onClick={(e) => filterOverlayRef.current?.toggle(e)}
-                    className="text-xs px-3"
+                    className="px-3"
                 />
 
-                <div className="p-input-icon-left flex-1 sm:w-16rem">
-                    <i className="pi pi-search text-xs" />
+                <div className="p-input-icon-left flex-1 sm:w-24rem">
+                    <i className="pi pi-search" />
                     <InputText
                         value={state.searchVal || ''}
                         onChange={(e) => setState(p => ({ ...p, searchVal: e.target.value }))}
                         placeholder="Cari Data..."
-                        className="text-xs p-inputtext-sm w-full"
+                        className="w-full"
                     />
                 </div>
 
@@ -465,7 +465,7 @@ const Table = ({
                                 options={statusOptions}
                                 onChange={(e) => setState(p => ({ ...p, statusFilter: e.value }))}
                                 placeholder="Pilih Status"
-                                className="w-full text-xs p-inputtext-sm" />
+                                className="w-full" />
                         </div>
                     </div>
                 </OverlayPanel>
