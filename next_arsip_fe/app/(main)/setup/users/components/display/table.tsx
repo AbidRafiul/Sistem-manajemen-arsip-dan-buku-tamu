@@ -15,6 +15,7 @@ import { usePermissions } from '@/layout/context/permissionContext';
 import { LayoutContext } from '@/layout/context/layoutcontext';
 import ExcelBulkAction from '@/app/components/excel_components/ExcelBulkAction';
 import Form from './form';
+import ManageRoleForm from './manage_role_form';
 
 const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBar, navBar, getNav, handleSave, handleDelete }: TableProps) => {
     const permissions = usePermissions();
@@ -58,7 +59,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
     );
 
     const roleBodyTemplate = (rowData: TableData) => {
-        const roleColors: RoleColors = {
+        const roleColors: Record<string, string> = {
             superadmin: 'danger',
             pimpinan: 'warning',
             sekretaris: 'info',
@@ -68,8 +69,21 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
             auditor: 'warning'
         };
 
-        const roleStr = String(rowData.role);
-        return <Tag value={roleStr} severity={roleColors[roleStr.toLowerCase() as keyof RoleColors] || 'info'} className="text-xs font-semibold px-2 py-1" style={{ minWidth: '105px' }} />;
+        const roleStr = String(rowData.role || '');
+        const roles = roleStr.split(',').map(r => r.trim()).filter(Boolean);
+        
+        return (
+            <div className="flex gap-1 flex-wrap justify-content-center">
+                {roles.map((r, idx) => (
+                    <Tag 
+                        key={idx} 
+                        value={r} 
+                        severity={(roleColors[r.toLowerCase()] as any) || 'info'} 
+                        className="text-xs font-semibold px-2 py-1" 
+                    />
+                ))}
+            </div>
+        );
     };
 
     const actionBodyTemplate = (rowData: TableData) => (
@@ -84,9 +98,24 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                             ...rowData
                         }));
 
-                        setState((p) => ({ ...p, add: false, delete: false, edit: true }));
+                        setState((p) => ({ ...p, add: false, delete: false, edit: true, manageRole: false }));
                     }}
                     tooltip="Edit" />
+            )}
+            {permissions.canUpdate && (
+                <Button icon="pi pi-key"
+                    outlined
+                    severity="warning"
+                    className="p-button-sm"
+                    onClick={() => {
+                        formik.setValues((p) => ({
+                            ...p,
+                            ...rowData
+                        }));
+
+                        setState((p) => ({ ...p, add: false, delete: false, edit: false, manageRole: true }));
+                    }}
+                    tooltip="Atur Peran" />
             )}
             {permissions.canDelete && (
                 <Button icon="pi pi-trash" outlined severity="danger" className="p-button-sm" onClick={() => setState((p) => ({ ...p, delete: true, selectedUsers: [rowData] }))} tooltip="Delete" />
@@ -318,6 +347,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
             </div>
 
             <Form getData={getData} toast={toast} state={state} setState={setState} formik={formik} handleSave={handleSave} handleDelete={handleDelete} />
+            <ManageRoleForm state={state} setState={setState} formik={formik} handleSave={handleSave} handleDelete={handleDelete} />
         </>
     );
 };
