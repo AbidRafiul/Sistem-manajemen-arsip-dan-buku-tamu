@@ -15,6 +15,7 @@ import { usePermissions } from '@/layout/context/permissionContext';
 import { LayoutContext } from '@/layout/context/layoutcontext';
 import ExcelBulkAction from '@/app/components/excel_components/ExcelBulkAction';
 import Form from './form';
+import ManageRoleForm from './manage_role_form';
 
 const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBar, navBar, getNav, handleSave, handleDelete }: TableProps) => {
     const permissions = usePermissions();
@@ -51,14 +52,14 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                             _filters['global'].value = value;
                             setState((p) => ({ ...p, searchVal: value, filters: _filters }));
                         }}
-                        placeholder="Cari..." />
+                        placeholder="Cari..." className="w-full sm:w-24rem" />
                 </span>
             </div>
         </div>
     );
 
     const roleBodyTemplate = (rowData: TableData) => {
-        const roleColors: RoleColors = {
+        const roleColors: Record<string, string> = {
             superadmin: 'danger',
             pimpinan: 'warning',
             sekretaris: 'info',
@@ -68,8 +69,21 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
             auditor: 'warning'
         };
 
-        const roleStr = String(rowData.role);
-        return <Tag value={roleStr} severity={roleColors[roleStr.toLowerCase() as keyof RoleColors] || 'info'} className="text-xs font-semibold px-2 py-1" style={{ minWidth: '105px' }} />;
+        const roleStr = String(rowData.role || '');
+        const roles = roleStr.split(',').map(r => r.trim()).filter(Boolean);
+        
+        return (
+            <div className="flex gap-1 flex-wrap justify-content-center">
+                {roles.map((r, idx) => (
+                    <Tag 
+                        key={idx} 
+                        value={r} 
+                        severity={(roleColors[r.toLowerCase()] as any) || 'info'} 
+                        className="text-xs font-semibold px-2 py-1" 
+                    />
+                ))}
+            </div>
+        );
     };
 
     const actionBodyTemplate = (rowData: TableData) => (
@@ -84,9 +98,24 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                             ...rowData
                         }));
 
-                        setState((p) => ({ ...p, add: false, delete: false, edit: true }));
+                        setState((p) => ({ ...p, add: false, delete: false, edit: true, manageRole: false }));
                     }}
                     tooltip="Edit" />
+            )}
+            {permissions.canUpdate && (
+                <Button icon="pi pi-key"
+                    outlined
+                    severity="warning"
+                    className="p-button-sm"
+                    onClick={() => {
+                        formik.setValues((p) => ({
+                            ...p,
+                            ...rowData
+                        }));
+
+                        setState((p) => ({ ...p, add: false, delete: false, edit: false, manageRole: true }));
+                    }}
+                    tooltip="Atur Peran" />
             )}
             {permissions.canDelete && (
                 <Button icon="pi pi-trash" outlined severity="danger" className="p-button-sm" onClick={() => setState((p) => ({ ...p, delete: true, selectedUsers: [rowData] }))} tooltip="Delete" />
@@ -111,7 +140,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
     return (
         <>
             <div className="card shadow-2 border-1 surface-border border-round-xl p-4 bg-white">
-                <div className="flex flex-column gap-2 mb-6 px-1">
+                <div className="flex flex-column gap-2 mb-4 px-1">
                     <h3 className="text-2xl font-semibold m-0 text-900">Data Master User</h3>
                     <div className="text-sm text-600">
                         Kelola master user tenant dan admin.
@@ -119,22 +148,20 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                 </div>
 
                 <div className="flex justify-content-between mb-4">
-                    <div className="flex flex-row gap-2">
+                    <div className="flex flex-row align-items-center gap-2">
                         {permissions.canCreate && (
                             <>
-                                <Button size="small"
-                                    label="Tambah"
+                                <Button label="Tambah"
                                     icon="pi pi-plus"
                                     outlined
 
                                     onClick={() => {
                                         setState((p) => ({ ...p, selectedUser: [], add: true }));
                                     }} />
-                                <Divider layout="vertical" className="hidden sm:inline-block" />
+                                <Divider layout="vertical" className="hidden sm:inline-block m-0" />
                             </>
                         )}
-                        <Button size="small"
-                            label="Cetak"
+                        <Button label="Cetak"
                             icon="pi pi-print"
                             outlined
                             onClick={() => {
@@ -158,11 +185,10 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                                     columnStyles
                                 }));
                             }} />
-                        <Divider layout="vertical" className="hidden sm:inline-block" />
+                        <Divider layout="vertical" className="hidden sm:inline-block m-0" />
                         {permissions.canDelete && (
                             <>
-                                <Button size="small"
-                                    label={`Hapus${state.selectedUsers.length > 0 ? ` (${state.selectedUsers.length})` : ''}`}
+                                <Button label={`Hapus${state.selectedUsers.length > 0 ? ` (${state.selectedUsers.length})` : ''}`}
                                     icon="pi pi-trash"
                                     severity="danger"
                                     outlined
@@ -175,13 +201,13 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                                         setState((p) => ({ ...p, delete: true }));
                                     }}
                                     disabled={state.selectedUsers.length === 0} />
-                                <Divider layout="vertical" className="hidden sm:inline-block" />
+                                <Divider layout="vertical" className="hidden sm:inline-block m-0" />
                             </>
                         )}
-                        <Button size="small" label="Refresh" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
+                        <Button label="Refresh" icon="pi pi-refresh" outlined onClick={() => getData(apiEndpointGet)} loading={state.load} />
                     </div>
 
-                    <div className="flex flex-row gap-2">
+                    <div className="flex flex-row align-items-center gap-2">
                         <ExcelBulkAction
                             title="Data Pengguna"
                             data={state.data}
@@ -321,6 +347,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
             </div>
 
             <Form getData={getData} toast={toast} state={state} setState={setState} formik={formik} handleSave={handleSave} handleDelete={handleDelete} />
+            <ManageRoleForm state={state} setState={setState} formik={formik} handleSave={handleSave} handleDelete={handleDelete} />
         </>
     );
 };
