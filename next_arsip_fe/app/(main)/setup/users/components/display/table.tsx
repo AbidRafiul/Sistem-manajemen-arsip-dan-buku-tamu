@@ -54,6 +54,19 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                         }}
                         placeholder="Cari..." className="w-full sm:w-24rem" />
                 </span>
+                <Button
+                    type="button"
+                    icon="pi pi-filter-slash"
+                    outlined
+                    severity="danger"
+                    className="p-button-sm"
+                    onClick={() => {
+                        let _filters = { ...state.filters };
+                        _filters['global'].value = null;
+                        setState((p) => ({ ...p, searchVal: '', filters: _filters }));
+                    }}
+                    tooltip="Clear Filter"
+                />
             </div>
         </div>
     );
@@ -87,7 +100,7 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
     };
 
     const actionBodyTemplate = (rowData: TableData) => (
-        <div className="flex gap-2">
+        <div className="flex gap-2 justify-content-center">
             {permissions.canUpdate && (
                 <Button icon="pi pi-pencil"
                     outlined
@@ -120,16 +133,6 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
             {permissions.canDelete && (
                 <Button icon="pi pi-trash" outlined severity="danger" className="p-button-sm" onClick={() => setState((p) => ({ ...p, delete: true, selectedUsers: [rowData] }))} tooltip="Delete" />
             )}
-            {/* {permissions.canApprove && (
-                <Button icon="pi pi-wrench"
-                    onClick={() => {
-                        getNav?.(rowData?.id_pengguna || '');
-                    }}
-                    severity="warning"
-                    outlined
-                    rounded
-                    loading={navBar?.load} />
-            )} */}
         </div>
     );
 
@@ -141,7 +144,10 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
         <>
             <div className="card shadow-2 border-1 surface-border border-round-xl p-4 bg-white">
                 <div className="flex flex-column gap-2 mb-4 px-1">
-                    <h3 className="text-2xl font-semibold m-0 text-900">Data Master User</h3>
+                    <h3 className="text-2xl font-bold m-0 text-900 flex align-items-center gap-2">
+                        <i className="pi pi-users text-primary"></i>
+                        <span>Data Master User</span>
+                    </h3>
                     <div className="text-sm text-600">
                         Kelola master user tenant dan admin.
                     </div>
@@ -288,16 +294,16 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                 </div>
 
                 {/* KETERANGAN STATUS BAR */}
-                <div className="flex align-items-center gap-3 px-3 py-2 border-1 surface-border border-round-xl bg-white mb-3 shadow-1" style={{ width: 'fit-content' }}>
+                <div className="flex align-items-center gap-3 px-3 py-2 border-1 surface-border border-round-xl bg-white mb-3 shadow-1 w-full">
                     <div className="flex align-items-center gap-2 font-bold text-xs text-700 uppercase tracking-wider">
                         <i className="pi pi-info-circle text-primary text-base"></i> KETERANGAN STATUS:
                     </div>
                     <div className="flex align-items-center gap-2 text-xs font-semibold">
-                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#22c55e', borderRadius: '3px' }}></span>
+                        <span className="inline-block flex-shrink-0 shadow-1" style={{ width: '16px', height: '16px', backgroundColor: '#22c55e', borderRadius: '4px' }}></span>
                         <span className="text-700">Aktif</span>
                     </div>
                     <div className="flex align-items-center gap-2 text-xs font-semibold">
-                        <span className="inline-block flex-shrink-0" style={{ width: '14px', height: '14px', backgroundColor: '#ef4444', borderRadius: '3px' }}></span>
+                        <span className="inline-block flex-shrink-0 shadow-1" style={{ width: '16px', height: '16px', backgroundColor: '#ef4444', borderRadius: '4px' }}></span>
                         <span className="text-700">Tidak Aktif</span>
                     </div>
                 </div>
@@ -317,17 +323,17 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                     emptyMessage="Data Kosong"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Menampilkan {first} - {last} dari {totalRecords} data"
-                    className="p-datatable-sm"
+                    className=""
                     rowHover>
-                    <Column align="center" selectionMode="multiple" headerStyle={{ width: '3rem' }} />
+                    <Column align="center" selectionMode="multiple" headerStyle={{ width: '3.5rem' }} />
                     <Column align="center"
                         body={(rowData) => {
                             const isActive = rowData.status === 'active' || rowData.status === 'in' || rowData.status === 'Aktif';
                             return (
                                 <div className="flex align-items-center justify-content-center">
                                     <div
-                                        className="w-2rem h-2rem border-round flex align-items-center justify-content-center text-white shadow-1"
-                                        style={{ background: isActive ? '#22c55e' : '#ef4444', borderRadius: '8px' }}
+                                        className="flex align-items-center justify-content-center text-white shadow-1"
+                                        style={{ width: '2.25rem', height: '2.25rem', backgroundColor: isActive ? '#22c55e' : '#ef4444', borderRadius: '8px' }}
                                         title={isActive ? 'Aktif' : 'Tidak Aktif'}
                                     >
                                         <i className={`pi ${isActive ? 'pi-chevron-down' : 'pi-times'} text-xs font-bold`} />
@@ -335,14 +341,14 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                                 </div>
                             );
                         }}
-                        header="" style={{ width: '3.5rem' }}></Column>
+                        header="Status" style={{ width: '5.5rem' }}></Column>
                     <Column align="center" field="id_pengguna" header="Unique ID" className="font-semibold text-800" style={{ width: '130px' }}></Column>
                     <Column align="center" field="nama_lengkap" header="Name" className="font-medium text-900"></Column>
                     <Column align="center" field="nama_pengguna" header="Username" className="font-medium"></Column>
                     <Column align="center" field="telepon" header="Phone" style={{ width: '150px' }}></Column>
                     <Column align="center" field="role" body={roleBodyTemplate} header="Role" style={{ width: '130px' }}></Column>
                     <Column align="center" field="created_at" sortable body={(rowData) => formatDateCalendar(rowData.created_at)} header="Datetime" style={{ width: '150px' }}></Column>
-                    <Column align="center" headerStyle={{ textAlign: 'center' }} header="Action" body={actionBodyTemplate} style={{ width: '120px' }}></Column>
+                    <Column align="center" headerStyle={{ textAlign: 'center' }} header="Aksi" body={actionBodyTemplate} style={{ width: '7rem' }}></Column>
                 </DataTable>
             </div>
 
