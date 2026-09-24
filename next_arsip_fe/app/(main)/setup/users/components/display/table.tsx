@@ -65,7 +65,8 @@ const Table = ({ state, setState, formik, getData, toast, setDataRekap, setNavBa
                         _filters['global'].value = null;
                         setState((p) => ({ ...p, searchVal: '', filters: _filters }));
                     }}
-                    tooltip="Clear Filter"
+                    tooltip="Reset Filter"
+                    tooltipOptions={{ position: 'top' }}
                 />
             </div>
         </div>

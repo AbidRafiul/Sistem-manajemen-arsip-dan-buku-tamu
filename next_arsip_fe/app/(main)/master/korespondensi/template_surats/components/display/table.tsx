@@ -52,7 +52,8 @@ const Table = ({ state, setState, formik, getData, handleDelete }: any) => {
             }
             setState((p: State) => ({ ...p, searchVal: '', filters }));
           }}
-          tooltip="Clear Filter"
+          tooltip="Reset Filter"
+          tooltipOptions={{ position: 'top' }}
         />
       </div>
     </div>

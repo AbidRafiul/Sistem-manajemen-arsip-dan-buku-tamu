@@ -520,6 +520,7 @@ const Table = ({ state, setState, getData, toast, fetchLetterTypes, fetchDetail,
                     outlined
                     onClick={() => setState((p: any) => ({ ...p, startDate: null, endDate: null, statusFilter: '', jenisSuratFilter: null, searchVal: '' }))}
                     tooltip="Reset Filter"
+                    tooltipOptions={{ position: 'top' }}
                     className="p-button-icon-only"
                 />
             </div>

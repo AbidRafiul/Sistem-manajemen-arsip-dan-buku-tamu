@@ -323,7 +323,8 @@ const Page = () => {
                     setSearchVal('');
                     setFilters({ global: { value: null, matchMode: FilterMatchMode.CONTAINS } });
                   }}
-                  tooltip="Clear Filter"
+                  tooltip="Reset Filter"
+                  tooltipOptions={{ position: 'top' }}
                 />
               </div>
             </div>
