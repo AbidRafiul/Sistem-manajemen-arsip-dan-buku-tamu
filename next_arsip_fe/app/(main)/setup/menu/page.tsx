@@ -137,6 +137,7 @@ const MenuPage = () => {
             const finalPayload = { IdMenu: vaIdMenu.map(Number) };
 
             const vaData = await postData(apiEndpointDeleteMenu, finalPayload);
+            await postData('setup/menu/rebuild', {});
             showSuccess(toast, vaData.data?.message || 'Menu Berhasil Dihapus');
 
             setState((p: any) => ({ ...p, selectedData: [], delete: false }));

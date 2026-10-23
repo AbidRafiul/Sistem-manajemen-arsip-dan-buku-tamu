@@ -1,6 +1,7 @@
 import express from "express";
 import DB from "../../../../core/config/knex.js";
 import { Logging } from "../../components/tools/servertool.js";
+import { buildAndCacheMenu } from "../../components/tools/menu_builder.js";
 const router = express.Router();
 router.post("/", async (req, res) => {
   try {
@@ -25,6 +26,13 @@ router.post("/", async (req, res) => {
       }));
       await DB("mst_peran_menu").insert(vaPeranMenu);
     }
+
+    // Otomatis refresh cache menu navigasi semua role
+    const roles = await DB("mst_peran").select("id_peran");
+    for (const role of roles) {
+      await buildAndCacheMenu(role.id_peran);
+    }
+
     return res.status(200).json({
       message: "Menu berhasil diupdate!"
     });

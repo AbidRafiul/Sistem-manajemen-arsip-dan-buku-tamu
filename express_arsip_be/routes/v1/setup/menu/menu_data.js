@@ -4,7 +4,33 @@ import { Logging } from "../../components/tools/servertool.js";
 const router = express.Router();
 router.post("/", async (req, res) => {
   try {
-    const rawData = await DB("mst_menu").select("id_menu as id", "id_menu as id_menu", "id_menu_induk as id_menu_induk", "kode_menu as kode_menu", "nama_menu as name", "nama_menu as nama_menu", "jalur_menu as jalur_menu", "ikon_menu as ikon_menu", "urutan as urutan", "status_aktif as status_aktif").where("status_aktif", 1).orderBy("urutan", "asc");
+    const rawData = await DB("mst_menu")
+      .select(
+        "id_menu as id",
+        "id_menu as id_menu",
+        "id_menu_induk as id_menu_induk",
+        "kode_menu as kode_menu",
+        "nama_menu as name",
+        "nama_menu as nama_menu",
+        "jalur_menu as jalur_menu",
+        "ikon_menu as ikon_menu",
+        "urutan as urutan",
+        "status_aktif as status_aktif"
+      )
+      .where("status_aktif", ">=", 0)
+      .orderBy("urutan", "asc");
+
+    // Ambil mapping peran menu agar saat edit form hak akses peran terisi
+    const peranMenus = await DB("mst_peran_menu").select("id_menu", "id_peran");
+    const peranMap = {};
+    for (const pm of peranMenus) {
+      if (!peranMap[pm.id_menu]) peranMap[pm.id_menu] = [];
+      peranMap[pm.id_menu].push(pm.id_peran);
+    }
+
+    for (const item of rawData) {
+      item.id_peran = peranMap[item.id_menu] || [];
+    }
 
     // Flatten hierarchical tree to array
     const buildFlatTree = (parentId = null) => {
@@ -16,7 +42,15 @@ router.post("/", async (req, res) => {
       }
       return oResult;
     };
-    const vaData = buildFlatTree(null);
+    let vaData = buildFlatTree(null);
+
+    // Antisipasi menu yatim (jika parent di-soft-delete tapi anak masih ada)
+    const handledIds = new Set(vaData.map(d => d.id));
+    const orphans = rawData.filter(d => !handledIds.has(d.id));
+    if (orphans.length > 0) {
+      vaData = vaData.concat(orphans);
+    }
+
     return res.status(200).json({
       status: "SUKSES",
       data: vaData
